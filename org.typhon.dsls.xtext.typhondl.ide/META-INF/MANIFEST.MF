@@ -8,5 +8,9 @@ Bundle-SymbolicName: org.typhon.dsls.xtext.typhondl.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.typhon.dsls.xtext.typhondl,
  org.eclipse.xtext.ide,
- org.eclipse.xtext.xbase.ide
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Bundle-RequiredExecutionEnvironment: JavaSE-10
+Export-Package: org.typhon.dsls.xtext.ide.contentassist.antlr.internal,
+ org.typhon.dsls.xtext.ide.contentassist.antlr
+

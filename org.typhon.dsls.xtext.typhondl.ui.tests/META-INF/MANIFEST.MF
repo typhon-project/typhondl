@@ -11,5 +11,9 @@ Require-Bundle: org.typhon.dsls.xtext.typhondl.ui,
  org.eclipse.xtext.testing,
  org.eclipse.xtext.xbase.testing,
  org.eclipse.xtext.junit4,
- org.eclipse.xtext.xbase.junit
+ org.eclipse.xtext.xbase.junit,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.workbench;resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-10
+Export-Package: org.typhon.dsls.xtext.ui.tests;x-internal=true
+
