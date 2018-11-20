@@ -1,0 +1,110 @@
+grammar org.typhon.dsls.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
+
+DeploymentModel:
+    (elements+=Type)*;
+   
+Type:
+    PlatformType | DataType | Deployment | DBType | Entity ;
+
+DataType:
+    'datatype' name=ID
+;
+
+PlatformType:
+	'platformtype' name=ID
+;
+	
+DBType:
+	'dbtype' name=ID
+;
+
+Deployment: 
+	Platform | Cluster | Application | Container | Service
+;
+
+Platform :
+	{Platform}
+	'platform' name=ID ':' type=[PlatformType] '{'
+    //(features+=Feature)*
+     (clusters+=Cluster)*
+     '}'
+;
+
+Cluster :
+	{Cluster}
+	'cluster' name=ID '{'
+		//(features+=Feature)*
+		(applications+=Application)*
+     '}'
+;
+
+Application :
+	{Application}
+	'application' name=ID '{'
+		(containers+=Container)*     
+     '}'
+;
+
+Container :
+	{Container}
+	'container' name=ID '{'
+		(properties+=Property | features+=Feature)*
+		//(services+=Service)*
+	'}'
+;
+
+Service :
+	DBService | BusinessService
+;
+
+DBService :
+	'dbService' name=ID '{'
+     (features+=Feature)*
+     '}'
+;
+
+BusinessService :
+	'businessService' name=ID '{'
+     (features+=Feature)*
+     '}'
+;
+
+Entity :
+    'entity' name=ID ('extends' superType=[Entity])? '{'
+     (features+=Feature)*
+     '}'
+;
+
+Property :
+	Assignment | AssignmentList | CommaSeparatedAssignmentList
+;
+	
+AssignmentList : 
+	name=ID '{' (assignments+=Assignment)+ '}'
+;
+
+CommaSeparatedAssignmentList : 
+	name=ID '['
+		(value=Value)(','values+=Value)*
+	']'
+;
+
+Assignment : 
+	name=ID '=' value=Value
+;
+
+Value : 
+	(STRING|ID|INT|'/'|':'|'-'|'.')+
+;
+
+//EString returns ecore::EString:
+//	STRING | ID;
+
+Feature:
+    name=ID ':' type=[Type]
+;
+	
