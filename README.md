@@ -14,4 +14,6 @@ Open `org.typhon.dsls.xtext.typhondl/src/org.typhon.dsls.xtext/TyphonDL.xtext` i
 
 In your new Runtime environment create a new Java-Project and add `docker-compose-example.tdl`
 
+To see the Tree (as in the ML-example) create a new Sirius Modelling-Project and add the `docker-compose-example.tdl`-file
+
 
