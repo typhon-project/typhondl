@@ -12,8 +12,6 @@ A brief description of the plugin
 ## How to run
 Open `org.typhon.dsls.xtext.typhondl/src/org.typhon.dsls.xtext/TyphonDL.xtext` in Eclipse. Right-click inside opened editor `Run As -> Generate Xtext Artefacts`. Next right-click on the Project `org.typhon.dsls.xtext.typhondl` in your Project Explorer `Run As -> Eclipse Application`
 
-In your new Runtime environment create a new Java-Project and add `docker-compose-example.tdl`
-
-To see the Tree (as in the ML-example) create a new Sirius Modelling-Project and add the `docker-compose-example.tdl`-file
+Add `example.typhondl` as a project to your new Runtime environment. You should be able to edit the .tdl-file and see the Sirius-modeltree
 
 
