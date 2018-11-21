@@ -17,6 +17,8 @@ Add `example.typhondl` as a project to your new Runtime environment. You should 
 
 At some point you will be asked if you want to convert 'example.typhondl' to an Xtext project. Answer with YES.
 
+To auto-generate yaml-file add `example.gen.typhondl` to the Project Explorer of your Runtime environment. Open the .tdl file, change something, revert it and save the file. You will find the .yaml-file in `src-gen`.
+
 ## TODO
-- automatically generate docker-compose-file 
+- correct intendation in yaml-file
 - add a Sirius design to have a graphical representation of the model
