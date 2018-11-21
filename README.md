@@ -20,5 +20,5 @@ At some point you will be asked if you want to convert 'example.typhondl' to an 
 To auto-generate yaml-file add `example.gen.typhondl` to the Project Explorer of your Runtime environment. Open the .tdl file, change something, revert it and save the file. You will find the .yaml-file in `src-gen`.
 
 ## TODO
-- correct intendation in yaml-file
+- correct indentation in yaml-file
 - add a Sirius design to have a graphical representation of the model
