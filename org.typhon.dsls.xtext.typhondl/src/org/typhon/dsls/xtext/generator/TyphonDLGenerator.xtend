@@ -7,6 +7,12 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.typhon.dsls.xtext.typhonDL.Application
+import org.typhon.dsls.xtext.typhonDL.Container
+import org.typhon.dsls.xtext.typhonDL.Assignment
+import org.typhon.dsls.xtext.typhonDL.Property
+import org.typhon.dsls.xtext.typhonDL.AssignmentList
+import org.typhon.dsls.xtext.typhonDL.CommaSeparatedAssignmentList
 
 /**
  * Generates code from your model files on save.
@@ -16,10 +22,80 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class TyphonDLGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		
+		for (app : resource.allContents.toIterable.filter(Application)) {
+			fsa.generateFile(app.name + ".yaml", app.compile);
+		}
+		
 //		fsa.generateFile('greetings.txt', 'People to greet: ' + 
 //			resource.allContents
 //				.filter(Greeting)
 //				.map[name]
 //				.join(', '))
 	}
+	
+	def compile(Application app)'''
+		version: '3.5'
+		
+		services: «FOR container:app.containers»
+				    «container.compile»
+				  «ENDFOR»
+	'''
+	
+	def compile(Container container)'''
+	  «container.name»:
+	«FOR property:container.properties»
+	  «property.compileProp»
+	«ENDFOR»
+	'''
+	
+	def dispatch compileProp(Assignment assignment)'''
+	  «assignment.name»: «assignment.value»
+	'''
+	
+	def dispatch compileProp(AssignmentList assList)'''
+	«assList.name»:
+	«FOR assignment:assList.assignments»
+	    - «assignment.compileProp»
+	«ENDFOR»
+	'''	
+	
+	def dispatch compileProp(CommaSeparatedAssignmentList commaAssList)'''
+	«commaAssList.name»: [
+	«commaAssList.value»«FOR value:commaAssList.values»,
+	«value»«ENDFOR»
+	]
+	'''
 }
+
+
+//	/**
+//	 * the actual template code for an entity
+//	 */
+//	def compile(Entity e) '''
+//		«IF e.eContainer.fullyQualifiedName !== null»
+//			package «e.eContainer.fullyQualifiedName»;
+//		«ENDIF»
+//		public class «e.name» «IF e.superType !==null» extends «e.superType.fullyQualifiedName» «ENDIF» {
+//			«FOR f:e.features»
+//				«f.compile»
+//			«ENDFOR»
+//		}
+//	'''
+//	
+//	/**
+//	 * Even though the template will compile the Entities without any complaints, it still lacks support for 
+//	 * the Java properties that each of the declared features should yield. For that purpose, you have to 
+//	 * create another Xtend function that compiles a single feature to the respective Java code.
+//	 */
+//	def compile(Feature f)'''
+//		private «f.type.fullyQualifiedName» «f.name»;
+//		
+//		public «f.type.fullyQualifiedName» get«f.name.toFirstUpper»(){
+//			return «f.name»;
+//		}
+//		
+//		public void set«f.name.toFirstUpper»(«f.type.fullyQualifiedName» «f.name») {
+//			this.«f.name» = «f.name»;
+//		}
+//	'''

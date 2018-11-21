@@ -16,3 +16,7 @@ Open `org.typhon.dsls.xtext.typhondl/src/org.typhon.dsls.xtext/TyphonDL.xtext` i
 Add `example.typhondl` as a project to your new Runtime environment. You should be able to edit the .tdl-file and see the Sirius-modeltree
 
 At some point you will be asked if you want to convert 'example.typhondl' to an Xtext project. Answer with YES.
+
+## TODO
+- automatically generate docker-compose-file 
+- add a Sirius design to have a graphical representation of the model
