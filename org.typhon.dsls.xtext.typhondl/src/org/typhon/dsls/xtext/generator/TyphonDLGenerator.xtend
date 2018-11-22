@@ -8,11 +8,11 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.typhon.dsls.xtext.typhonDL.Application
-import org.typhon.dsls.xtext.typhonDL.Container
 import org.typhon.dsls.xtext.typhonDL.Assignment
-import org.typhon.dsls.xtext.typhonDL.Property
 import org.typhon.dsls.xtext.typhonDL.AssignmentList
 import org.typhon.dsls.xtext.typhonDL.CommaSeparatedAssignmentList
+import org.typhon.dsls.xtext.typhonDL.Container
+import org.typhon.dsls.xtext.typhonDL.EnvList
 
 /**
  * Generates code from your model files on save.
@@ -38,12 +38,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 		version: '3.5'
 		
 		services: «FOR container:app.containers»
-				    «container.compile»
+				    	«container.compile»
 				  «ENDFOR»
 	'''
 	
 	def compile(Container container)'''
-	  «container.name»:
+	  	«container.name»:
 	«FOR property:container.properties»
 	  «property.compileProp»
 	«ENDFOR»
@@ -56,46 +56,22 @@ class TyphonDLGenerator extends AbstractGenerator {
 	def dispatch compileProp(AssignmentList assList)'''
 	«assList.name»:
 	«FOR assignment:assList.assignments»
-	    - «assignment.compileProp»
+		- «assignment.value»
 	«ENDFOR»
 	'''	
 	
 	def dispatch compileProp(CommaSeparatedAssignmentList commaAssList)'''
 	«commaAssList.name»: [
-	«commaAssList.value»«FOR value:commaAssList.values»,
+		«commaAssList.value»«FOR value:commaAssList.values»,
 	«value»«ENDFOR»
 	]
 	'''
+	
+	def dispatch compileProp(EnvList envList)'''
+	environment:
+		«FOR string:envList.environmentVars»
+«««			cut off quotation marks:
+			- «string.substring(1,string.length-1)» 
+		«ENDFOR»
+	'''
 }
-
-
-//	/**
-//	 * the actual template code for an entity
-//	 */
-//	def compile(Entity e) '''
-//		«IF e.eContainer.fullyQualifiedName !== null»
-//			package «e.eContainer.fullyQualifiedName»;
-//		«ENDIF»
-//		public class «e.name» «IF e.superType !==null» extends «e.superType.fullyQualifiedName» «ENDIF» {
-//			«FOR f:e.features»
-//				«f.compile»
-//			«ENDFOR»
-//		}
-//	'''
-//	
-//	/**
-//	 * Even though the template will compile the Entities without any complaints, it still lacks support for 
-//	 * the Java properties that each of the declared features should yield. For that purpose, you have to 
-//	 * create another Xtend function that compiles a single feature to the respective Java code.
-//	 */
-//	def compile(Feature f)'''
-//		private «f.type.fullyQualifiedName» «f.name»;
-//		
-//		public «f.type.fullyQualifiedName» get«f.name.toFirstUpper»(){
-//			return «f.name»;
-//		}
-//		
-//		public void set«f.name.toFirstUpper»(«f.type.fullyQualifiedName» «f.name») {
-//			this.«f.name» = «f.name»;
-//		}
-//	'''

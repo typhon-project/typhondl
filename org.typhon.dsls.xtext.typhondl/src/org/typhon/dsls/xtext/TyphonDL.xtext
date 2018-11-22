@@ -80,7 +80,11 @@ Entity :
 ;
 
 Property :
-	Assignment | AssignmentList | CommaSeparatedAssignmentList
+	Assignment | AssignmentList | CommaSeparatedAssignmentList | EnvList
+;
+
+EnvList:
+	'environment' '{' (environmentVars+=MYSTRING)+ '}'
 ;
 	
 AssignmentList : 
@@ -107,4 +111,8 @@ Value :
 Feature:
     name=ID ':' type=[Type]
 ;
+
+terminal MYSTRING:
+			'"' ('A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9'|'=')* '"'
+			;
 	
