@@ -80,16 +80,16 @@ Entity :
 ;
 
 Property :
-	Assignment | AssignmentList | CommaSeparatedAssignmentList | EnvList
+	Assignment | CommaSeparatedAssignmentList | EnvList// | AssignmentList
 ;
 
 EnvList:
-	'environment' '{' (environmentVars+=MYSTRING)+ '}'
+	name=ID '{' (environmentVars+=MYSTRING)+ '}'
 ;
 	
-AssignmentList : 
-	name=ID '{' (assignments+=Assignment)+ '}'
-;
+//AssignmentList : 
+//	name=ID '{' (assignments+=Assignment)+ '}'
+//;
 
 CommaSeparatedAssignmentList : 
 	name=ID '['

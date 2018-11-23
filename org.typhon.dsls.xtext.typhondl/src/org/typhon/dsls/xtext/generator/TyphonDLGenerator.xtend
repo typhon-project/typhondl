@@ -9,7 +9,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.typhon.dsls.xtext.typhonDL.Application
 import org.typhon.dsls.xtext.typhonDL.Assignment
-import org.typhon.dsls.xtext.typhonDL.AssignmentList
+//import org.typhon.dsls.xtext.typhonDL.AssignmentList
 import org.typhon.dsls.xtext.typhonDL.CommaSeparatedAssignmentList
 import org.typhon.dsls.xtext.typhonDL.Container
 import org.typhon.dsls.xtext.typhonDL.EnvList
@@ -24,7 +24,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		
 		for (app : resource.allContents.toIterable.filter(Application)) {
-			fsa.generateFile(app.name + ".yaml", app.compile);
+			fsa.generateFile("docker-compose.yaml", app.compile);
 		}
 		
 //		fsa.generateFile('greetings.txt', 'People to greet: ' + 
@@ -53,12 +53,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 	  «assignment.name»: «assignment.value»
 	'''
 	
-	def dispatch compileProp(AssignmentList assList)'''
-	«assList.name»:
-	«FOR assignment:assList.assignments»
-		- «assignment.value»
-	«ENDFOR»
-	'''	
+//	def dispatch compileProp(AssignmentList assList)'''
+//	«assList.name»:
+//	«FOR assignment:assList.assignments»
+//		- «assignment.value»
+//	«ENDFOR»
+//	'''	
 	
 	def dispatch compileProp(CommaSeparatedAssignmentList commaAssList)'''
 	«commaAssList.name»: [
@@ -68,7 +68,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 	'''
 	
 	def dispatch compileProp(EnvList envList)'''
-	environment:
+	«envList.name»:
 		«FOR string:envList.environmentVars»
 «««			cut off quotation marks:
 			- «string.substring(1,string.length-1)» 
