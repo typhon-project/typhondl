@@ -1,9 +1,11 @@
 platformtype AWS
+dbtype relationalDB
 
 platform myAWSPlatform : AWS {	
 	cluster myAWSCluster {
 		application myApplication {
 			container mariadb {
+				type : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8
     			environment {
       				"MYSQL_ROOT_PASSWORD=geheim"

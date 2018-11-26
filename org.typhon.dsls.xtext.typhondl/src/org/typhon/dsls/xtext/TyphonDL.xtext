@@ -8,9 +8,9 @@ DeploymentModel:
     (elements+=Type)*;
    
 Type:
-    PlatformType | DataType | Deployment | DBType | Entity ;
+    PlatformType | DataType | Deployment | DBType ;
 
-DataType:
+DataType returns DataType:
     'datatype' name=ID
 ;
 
@@ -29,7 +29,6 @@ Deployment:
 Platform :
 	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
-    //(features+=Feature)*
      (clusters+=Cluster)*
      '}'
 ;
@@ -37,7 +36,6 @@ Platform :
 Cluster :
 	{Cluster}
 	'cluster' name=ID '{'
-		//(features+=Feature)*
 		(applications+=Application)*
      '}'
 ;
@@ -73,25 +71,22 @@ BusinessService :
      '}'
 ;
 
-Entity :
-    'entity' name=ID ('extends' superType=[Entity])? '{'
-     (features+=Feature)*
-     '}'
-;
-
-Property :
-	Assignment | CommaSeparatedAssignmentList | EnvList// | AssignmentList
-;
-
-EnvList:
-	name=ID '{' (environmentVars+=MYSTRING)+ '}'
-;
-	
-//AssignmentList : 
-//	name=ID '{' (assignments+=Assignment)+ '}'
+//Entity :
+//    'entity' name=ID ('extends' superType=[Entity])? '{'
+//     (features+=Feature)*
+//     '}'
 //;
 
-CommaSeparatedAssignmentList : 
+Property :
+	Assignment | Array | KeyValueList
+;
+
+
+KeyValueList:
+	name=ID '{' (environmentVars+=MYSTRING)+ '}'
+;
+
+Array : 
 	name=ID '['
 		(value=Value)(','values+=Value)*
 	']'
@@ -102,7 +97,7 @@ Assignment :
 ;
 
 Value : 
-	(STRING|ID|INT|'/'|':'|'-'|'.')+
+	(STRING|ID|INT|'/'|':'|'-'|'.'|'=')+
 ;
 
 //EString returns ecore::EString:

@@ -10,9 +10,9 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import org.typhon.dsls.xtext.typhonDL.Application
 import org.typhon.dsls.xtext.typhonDL.Assignment
 //import org.typhon.dsls.xtext.typhonDL.AssignmentList
-import org.typhon.dsls.xtext.typhonDL.CommaSeparatedAssignmentList
 import org.typhon.dsls.xtext.typhonDL.Container
-import org.typhon.dsls.xtext.typhonDL.EnvList
+import org.typhon.dsls.xtext.typhonDL.Array
+import org.typhon.dsls.xtext.typhonDL.KeyValueList
 
 /**
  * Generates code from your model files on save.
@@ -60,14 +60,14 @@ class TyphonDLGenerator extends AbstractGenerator {
 //	«ENDFOR»
 //	'''	
 	
-	def dispatch compileProp(CommaSeparatedAssignmentList commaAssList)'''
+	def dispatch compileProp(Array commaAssList)'''
 	«commaAssList.name»: [
 		«commaAssList.value»«FOR value:commaAssList.values»,
 	«value»«ENDFOR»
 	]
 	'''
 	
-	def dispatch compileProp(EnvList envList)'''
+	def dispatch compileProp(KeyValueList envList)'''
 	«envList.name»:
 		«FOR string:envList.environmentVars»
 «««			cut off quotation marks:
