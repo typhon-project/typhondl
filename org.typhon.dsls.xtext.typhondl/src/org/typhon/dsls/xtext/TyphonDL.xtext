@@ -5,12 +5,14 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
 
 DeploymentModel:
-    (elements+=Type)*;
+    (elements+=Element)*;
+
+Element : Deployment | Type;
    
 Type:
-    PlatformType | DataType | Deployment | DBType | Entity ;
+    PlatformType | DataType | DBType ;
 
-DataType:
+DataType returns DataType:
     'datatype' name=ID
 ;
 
@@ -29,7 +31,6 @@ Deployment:
 Platform :
 	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
-    //(features+=Feature)*
      (clusters+=Cluster)*
      '}'
 ;
@@ -37,7 +38,6 @@ Platform :
 Cluster :
 	{Cluster}
 	'cluster' name=ID '{'
-		//(features+=Feature)*
 		(applications+=Application)*
      '}'
 ;
@@ -73,25 +73,16 @@ BusinessService :
      '}'
 ;
 
-Entity :
-    'entity' name=ID ('extends' superType=[Entity])? '{'
-     (features+=Feature)*
-     '}'
-;
-
 Property :
-	Assignment | AssignmentList | CommaSeparatedAssignmentList | EnvList
+	Assignment | Array | KeyValueList
 ;
 
-EnvList:
-	'environment' '{' (environmentVars+=MYSTRING)+ '}'
-;
-	
-AssignmentList : 
-	name=ID '{' (assignments+=Assignment)+ '}'
+
+KeyValueList:
+	name=ID '{' (environmentVars+=MYSTRING)+ '}'
 ;
 
-CommaSeparatedAssignmentList : 
+Array : 
 	name=ID '['
 		(value=Value)(','values+=Value)*
 	']'
@@ -102,14 +93,11 @@ Assignment :
 ;
 
 Value : 
-	(STRING|ID|INT|'/'|':'|'-'|'.')+
+	(STRING|ID|INT|'/'|':'|'-'|'.'|'=')+
 ;
 
-//EString returns ecore::EString:
-//	STRING | ID;
-
 Feature:
-    name=ID ':' type=[Type]
+    name=ID ':' type=[Element]
 ;
 
 terminal MYSTRING:

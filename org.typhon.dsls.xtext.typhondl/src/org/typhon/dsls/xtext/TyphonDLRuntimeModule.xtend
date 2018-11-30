@@ -3,9 +3,15 @@
  */
 package org.typhon.dsls.xtext
 
+import com.google.inject.Binder
+import org.typhon.dsls.xtext.formatting.PooslFormatterPreferenceProvider
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 class TyphonDLRuntimeModule extends AbstractTyphonDLRuntimeModule {
+	
+	def configureFormatterPreferences(Binder binder) {
+			binder.bind(org.eclipse.xtext.preferences.IPreferenceValuesProvider).annotatedWith(org.eclipse.xtext.formatting2.FormatterPreferences).to(PooslFormatterPreferenceProvider);
+		}
 }

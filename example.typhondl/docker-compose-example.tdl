@@ -1,9 +1,11 @@
 platformtype AWS
+dbtype relationalDB
 
 platform myAWSPlatform : AWS {	
-	cluster myAWSCluster {
+	cluster myAWSCluster {		
 		application myApplication {
 			container mariadb {
+				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8
     			environment {
       				"MYSQL_ROOT_PASSWORD=geheim"
@@ -11,7 +13,7 @@ platform myAWSPlatform : AWS {
       				"MYSQL_USER=locman"
       				"MYSQL_PASSWORD=geheim"
       			}
-    			volumes = /opt/locman-staging/db:/var/lib/mysql
+    			volumes = /opt/locman-staging/db:/var/lib
     			networks = locman
     		}
 	
