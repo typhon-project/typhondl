@@ -1,11 +1,9 @@
 # TyphonDL
 > Eclipse Xtext plugin
 
-A brief description of the plugin
-
 ## What you need:
 - [Eclipse Photon (4.8)](https://www.eclipse.org/downloads/packages/release/photon/r/eclipse-ide-java-ee-developers)
-- JDK 10
+- JDK 10 (will be changed to 8)
 - Xtext Plugin
 - Sirius Plugin (check mark for Xtext support)
 - (optional) "YAML Editor" Plugin
@@ -24,4 +22,3 @@ At some point you will be asked if you want to convert 'example.typhondl' to an 
 		- value
 		- value
 - correct indentation in yaml-file
-- add a Sirius design to have a graphical representation of the model
