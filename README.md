@@ -3,7 +3,7 @@
 
 ## What you need:
 - [Eclipse Photon (4.8)](https://www.eclipse.org/downloads/packages/release/photon/r/eclipse-ide-java-ee-developers)
-- JDK 10 (will be changed to 8)
+- JDK 8
 - Xtext Plugin
 - Sirius Plugin (check mark for Xtext support)
 - (optional) "YAML Editor" Plugin

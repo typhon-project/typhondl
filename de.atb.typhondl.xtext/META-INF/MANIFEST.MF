@@ -1,0 +1,30 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: de.atb.typhondl.xtext
+Bundle-ManifestVersion: 2
+Bundle-Name: de.atb.typhondl.xtext
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: de.atb.typhondl.xtext; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.common,
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: de.atb.typhondl.xtext.validation,
+ de.atb.typhondl.xtext.generator,
+ de.atb.typhondl.xtext.parser.antlr.internal,
+ de.atb.typhondl.xtext.typhonDL.util,
+ de.atb.typhondl.xtext,
+ de.atb.typhondl.xtext.services,
+ de.atb.typhondl.xtext.typhonDL,
+ de.atb.typhondl.xtext.parser.antlr,
+ de.atb.typhondl.xtext.scoping,
+ de.atb.typhondl.xtext.serializer,
+ de.atb.typhondl.xtext.typhonDL.impl
+Import-Package: org.apache.log4j
