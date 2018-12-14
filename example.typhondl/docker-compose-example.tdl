@@ -1,10 +1,11 @@
 platformtype AWS
+containertype Docker
 dbtype relationalDB
 
 platform myAWSPlatform : AWS {	
 	cluster myAWSCluster {		
 		application myApplication {
-			container mariadb {
+			container mariadb : Docker {
 				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8
     			environment {
@@ -15,9 +16,8 @@ platform myAWSPlatform : AWS {
       			}
     			volumes = /opt/locman-staging/db:/var/lib
     			networks = locman
-    		}
-	
-			container locman {
+    		}	
+			container locman : Docker {
 				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT
 			    entrypoint [
       				'/maven/wait-for.sh',
@@ -31,7 +31,6 @@ platform myAWSPlatform : AWS {
       				'/maven/location-mgmt-datastore-0.2.0-SNAPSHOT.jar',
       				'--spring.profiles.active=default,staging'
 			    ] 				
-    			depends_on : mariadb
     			environment {
       				"MARIADB_HOST=mariadb"
       				"MARIADB_PORT=someportnumer"
