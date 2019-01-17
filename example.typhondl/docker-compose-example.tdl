@@ -16,7 +16,8 @@ platform myAWSPlatform : AWS {
       			}
     			volumes = /opt/locman-staging/db:/var/lib
     			networks = locman
-    		}	
+    		}
+	
 			container locman : Docker {
 				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT
 			    entrypoint [
@@ -31,6 +32,7 @@ platform myAWSPlatform : AWS {
       				'/maven/location-mgmt-datastore-0.2.0-SNAPSHOT.jar',
       				'--spring.profiles.active=default,staging'
 			    ] 				
+    			depends_on : mariadb
     			environment {
       				"MARIADB_HOST=mariadb"
       				"MARIADB_PORT=someportnumer"
