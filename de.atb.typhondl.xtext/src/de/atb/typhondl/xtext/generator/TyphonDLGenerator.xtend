@@ -7,11 +7,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import de.atb.typhondl.xtext.typhonDL.Application
-import de.atb.typhondl.xtext.typhonDL.Container
-import de.atb.typhondl.xtext.typhonDL.Assignment
-import de.atb.typhondl.xtext.typhonDL.Array
-import de.atb.typhondl.xtext.typhonDL.KeyValueList
 
 /**
  * Generates code from your model files on save.
@@ -19,45 +14,49 @@ import de.atb.typhondl.xtext.typhonDL.KeyValueList
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class TyphonDLGenerator extends AbstractGenerator {
-
-	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		
-		for (app : resource.allContents.toIterable.filter(Application)) {
-			fsa.generateFile(app.name + "/docker-compose.yaml", app.compile);
-		}
+	
+	override doGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
-	
-	def compile(Application app)'''
-		version: '3.5'
-		
-		services: «FOR container:app.containers»
-				    	«container.compile»
-				  «ENDFOR»
-	'''
-	
-	def compile(Container container)'''
-	  	«container.name»:
-	«FOR property:container.properties»
-	  «property.compileProp»
-	«ENDFOR»
-	'''
-	
-	def dispatch compileProp(Assignment assignment)'''
-	  «assignment.name»: «assignment.value»
-	'''
-	
-	def dispatch compileProp(Array array)'''
-	«array.name»: [
-		«array.value»«FOR value:array.values»,
-	«value»«ENDFOR»
-	]
-	'''
-	
-	def dispatch compileProp(KeyValueList keyValueList)'''
-	«keyValueList.name»:
-		«FOR string:keyValueList.environmentVars»
-«««			cut off quotation marks:
-			- «string.substring(1,string.length-1)» 
-		«ENDFOR»
-	'''
+
+//	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+//		
+//		for (app : resource.allContents.toIterable.filter(Application)) {
+//			fsa.generateFile(app.name + "/docker-compose.yaml", app.compile);
+//		}
+//	}
+//	
+//	def compile(Application app)'''
+//		version: '3.5'
+//		
+//		services: «FOR container:app.containers»
+//				    	«container.compile»
+//				  «ENDFOR»
+//	'''
+//	
+//	def compile(Container container)'''
+//	  	«container.name»:
+//	«FOR property:container.properties»
+//	  «property.compileProp»
+//	«ENDFOR»
+//	'''
+//	
+//	def dispatch compileProp(Assignment assignment)'''
+//	  «assignment.name»: «assignment.value»
+//	'''
+//	
+//	def dispatch compileProp(Array array)'''
+//	«array.name»: [
+//		«array.value»«FOR value:array.values»,
+//	«value»«ENDFOR»
+//	]
+//	'''
+//	
+//	def dispatch compileProp(KeyValueList keyValueList)'''
+//	«keyValueList.name»:
+//		«FOR string:keyValueList.environmentVars»
+//«««			cut off quotation marks:
+//			- «string.substring(1,string.length-1)» 
+//		«ENDFOR»
+//	'''
 }
