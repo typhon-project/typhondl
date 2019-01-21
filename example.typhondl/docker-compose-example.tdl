@@ -1,10 +1,11 @@
 platformtype AWS
+containertype Docker
 dbtype relationalDB
 
 platform myAWSPlatform : AWS {	
 	cluster myAWSCluster {		
 		application myApplication {
-			container mariadb {
+			container mariadb : Docker {
 				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8
     			environment {
@@ -17,7 +18,7 @@ platform myAWSPlatform : AWS {
     			networks = locman
     		}
 	
-			container locman {
+			container locman : Docker {
 				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT
 			    entrypoint [
       				'/maven/wait-for.sh',

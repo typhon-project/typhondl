@@ -13,27 +13,24 @@ Element:
 ;
    
 Type:
-    PlatformType | DataType | DBType 
-;
-
-DataType returns DataType:
-    'datatype' name=ID
+    PlatformType | ContainerType | DBType 
 ;
 
 PlatformType:
 	'platformtype' name=ID
 ;
 	
+ContainerType:
+	'containertype' name=ID
+;
+	
 DBType:
 	'dbtype' name=ID
 ;
 
-Deployment: 
-	Platform | Cluster | Application | Container | Service
-;
 
-Platform :
-	{Platform}
+Deployment :
+	{Deployment}
 	'platform' name=ID ':' type=[PlatformType] '{'
      (clusters+=Cluster)*
      '}'
@@ -55,45 +52,27 @@ Application :
 
 Container :
 	{Container}
-	'container' name=ID '{'
+	'container' name=ID ':' type=[ContainerType]'{'
 		(properties+=Property | features+=Feature)*
-		//(services+=Service)*
 	'}'
 ;
 
-Service :
-	DBService | BusinessService
-;
-
-DBService :
-	'dbService' name=ID '{'
-     (features+=Feature)*
-     '}'
-;
-
-BusinessService :
-	'businessService' name=ID '{'
-     (features+=Feature)*
-     '}'
-;
-
 Property :
-	Assignment | Array | KeyValueList
+	Key_Value | Key_ValueArray | Key_ValueList
 ;
 
-
-KeyValueList:
-	name=ID '{' (environmentVars+=MYSTRING)+ '}'
+Key_Value : 
+	name=ID '=' value=Value
 ;
 
-Array : 
+Key_ValueList:
+	name=ID '{' (environmentVars+=QSTRING)+ '}'
+;
+
+Key_ValueArray : 
 	name=ID '['
 		(value=Value)(','values+=Value)*
 	']'
-;
-
-Assignment : 
-	name=ID '=' value=Value
 ;
 
 Value : 
@@ -104,6 +83,6 @@ Feature:
     name=ID ':' type=[Element]
 ;
 
-terminal MYSTRING:
+terminal QSTRING:
 			'"' ('A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9'|'=')* '"'
 ;
