@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+    web:
+     build: .
+     ports:
+       - "5055:80"
+     image: 192.168.99.100:5000/my-web	
+     deploy:
+       resources:
+         limits:
+          cpus: '0.50'
+         reservations:
+          cpus: '0.20'
+     links:
+       - sqldb
+     volumes:
+       - .:/code
+     labels:
+        kompose.service.type: NodePort
+    sqldb:
+      image: "mysql:5" 
+      environment:
+                - MYSQL_DATABASE=registration
+                - MYSQL_USER=nisha
+                - MYSQL_PASSWORD=desai
+                - MYSQL_ROOT_PASSWORD=root
+      volumes:
+            - C:/Users/desai/minikube/mysql:/etc/mysql/conf.d
+      ports:
+            - "3306:3306"
+    phpmyadmin:
+     image: phpmyadmin/phpmyadmin
+     environment:
+            PMA_ARBITRARY: 1
+            MYSQL_USER: nisha
+            MYSQL_PASSWORD: desai
+            MYSQL_ROOT_PASSWORD: root
+     ports:
+            - "54:80"	 
+     labels:
+        kompose.service.type: NodePort
+     links:
+            # for mysql container (phpmyadmin server : sql_db)
+            - "sqldb:db"
+volumes:
+    db:
+        driver: "local"

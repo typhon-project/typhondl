@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.service.type: NodePort
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: phpmyadmin
+  name: phpmyadmin
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: phpmyadmin
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_PASSWORD
+          value: desai
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        - name: MYSQL_USER
+          value: nisha
+        - name: PMA_ARBITRARY
+          value: "1"
+        image: phpmyadmin/phpmyadmin
+        name: phpmyadmin
+        ports:
+        - containerPort: 80
+        resources: {}
+      restartPolicy: Always
+status: {}
