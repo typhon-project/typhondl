@@ -431,4 +431,33 @@
 			type="text">
 		</fileTypes>
 	</extension>
+		<extension
+		point="org.eclipse.ui.newWizards">
+		<category id="de.atb.typhondl.xtext.ui.category" name="TyphonDL">
+		</category>
+		<wizard
+			category="de.atb.typhondl.xtext.ui.category"
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.wizard.MyNewProjectWizard"
+			id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"
+			name="TyphonDL Project"
+			icon="icons/new_TyphonDL_proj.gif"
+			project="true">
+		</wizard>
+	</extension>
+	<extension
+		point="org.eclipse.xtext.ui.projectTemplate">
+		<projectTemplateProvider
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.wizard.TyphonDLProjectTemplateProvider"
+			grammarName="de.atb.typhondl.xtext.TyphonDL">
+		</projectTemplateProvider>
+	</extension>
+	<extension
+		point="org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
+			<newWizardShortcut id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"/>
+		</perspectiveExtension>
+		<perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
+			<newWizardShortcut id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"/>
+		</perspectiveExtension>
+	</extension>
 </plugin>
