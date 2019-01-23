@@ -64,7 +64,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		
 		Composite selectionGroup = new Composite(composite, SWT.NONE);
 		GridLayout layout = new GridLayout();
-        layout.numColumns = 3;
+        layout.numColumns = 2;
         selectionGroup.setLayout(layout);
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -81,13 +81,13 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		DBType dbType = db.getType();
 		
 		Label name = new Label(parent, SWT.NONE);
-		name.setText(dbName);
+		name.setText(dbName + " (" + dbType.toString() + ")");
 		
-		Label type = new Label(parent, SWT.NONE);
-		type.setText(dbType.toString());
+//		Label type = new Label(parent, SWT.NONE);
+//		type.setText(dbType.toString());
 		
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
-		dbms.setItems(dbType.getPossibleDBMSs());
+		dbms.setItems(dbType.getPossibleDBMSs()); // not pretty!!
 	}
 
 	private List<Database> loadData() {
