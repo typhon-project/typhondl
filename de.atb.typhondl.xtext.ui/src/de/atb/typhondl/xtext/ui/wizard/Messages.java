@@ -15,6 +15,15 @@ public class Messages extends NLS {
 	public static String WizardLoadModel_locationError;
 	public static String WizardLoadModel_directoryLabel;
 	
+	public static String TemplateNewProjectWizard_title_suffix;
+	public static String TemplateNewProjectWizard_create_new_prefix;
+	public static String TemplateNewProjectWizard_create_new_suffix;
+	
+	public static String WizardSelectionPage_title_suffix;
+	public static String WizardSelectionPage_description;
+	
+	
+	
 	static {
 	// initialize resource bundle
 	NLS.initializeMessages(BUNDLE_NAME, Messages.class);

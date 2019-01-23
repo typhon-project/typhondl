@@ -4,7 +4,6 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
 import org.eclipse.xtext.ui.wizard.IExtendedProjectInfo;
-import org.eclipse.xtext.ui.wizard.template.Messages;
 import org.eclipse.xtext.ui.wizard.template.NewProjectWizardTemplateSelectionPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
@@ -19,7 +18,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	protected MyWizardNewProjectCreationPage mainPage;
 	protected NewProjectWizardTemplateSelectionPage templatePage;
 	protected TemplateParameterPage templateParameterPage;
-	//protected MyWizardChoosingDBMSPage choosingPage;
+	protected MyWizardDBMSSelectionPage selectionPage;
 	
 	/**
 	 * 
@@ -45,7 +44,8 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 					+ Messages.TemplateNewProjectWizard_create_new_suffix);
 			addPage(mainPage);
 			
-//			choosingPage = createChoosingPage("choosingNewProjectPage", mainPage.getModelPath());
+			selectionPage = createSelectionPage("DBMSSelectionNewProjectPage", mainPage.getModelPath());
+			
 //			templatePage = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
 //			System.out.println("TemplatePage created: " + templatePage == null);
 //			templatePage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
@@ -54,8 +54,8 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 //			addPage(templatePage);
 		}
 		
-		private MyWizardChoosingDBMSPage createChoosingPage(String pageName, String modelPath) {
-			return new MyWizardChoosingDBMSPage(pageName, modelPath);
+		private MyWizardDBMSSelectionPage createSelectionPage(String pageName, String modelPath) {
+			return new MyWizardDBMSSelectionPage(pageName, modelPath);
 		}
 
 		@Override
