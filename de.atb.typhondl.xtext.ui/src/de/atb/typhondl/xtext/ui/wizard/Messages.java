@@ -9,6 +9,11 @@ public class Messages extends NLS {
 	public static String HelloWorldProject_Description;
 	
 	public static String WizardLoadModel_nameLabel;
+	public static String WizardLoadModel_useModel;
+	public static String WizardLoadModel_browseLabel;
+	public static String WizardLoadModel_fileLocationEmpty;
+	public static String WizardLoadModel_locationError;
+	public static String WizardLoadModel_directoryLabel;
 	
 	static {
 	// initialize resource bundle

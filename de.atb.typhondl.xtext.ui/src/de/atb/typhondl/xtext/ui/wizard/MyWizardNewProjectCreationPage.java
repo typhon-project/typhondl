@@ -55,7 +55,7 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 	};
 
 	private ProjectContentsLocationArea locationArea;
-	private FileFolderSelectionDialog fileLocationArea;
+	private MyFileLocationArea fileLocationArea;
 
 	private WorkingSetGroup workingSetGroup;
 
@@ -92,11 +92,11 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			locationArea.updateProjectName(initialProjectFieldValue);
 		}
 
-        createLoadModelGroup(composite);
-		fileLocationArea = new FileFolderSelectionDialog(parent.getShell(), false, IResource.FILE);
+        fileLocationArea = new MyFileLocationArea(getErrorReporter(), composite);
         
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
+		setButtonLayoutData(fileLocationArea.getBrowseButton());
 
         setPageComplete(validatePage());
         // Show description on opening
@@ -105,35 +105,6 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         setControl(composite);
         Dialog.applyDialogFont(composite);
     }
-
-    private void createLoadModelGroup(Composite parent) {
-    	Composite modelGroup = new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        modelGroup.setLayout(layout);
-        modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        // new load label
-        Label modelLabel = new Label(modelGroup, SWT.NONE);
-        modelLabel.setText(Messages.WizardLoadModel_nameLabel);
-        modelLabel.setFont(parent.getFont());
-        
-        // new project name entry field
-        modelNameField = new Text(modelGroup, SWT.BORDER);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        data.widthHint = SIZING_TEXT_FIELD_WIDTH;
-        modelNameField.setLayoutData(data);
-        modelNameField.setFont(parent.getFont());
-
-        // Set the initial value first before listener
-        // to avoid handling an event during the creation.
-//        if (initialModelFieldValue != null) {
-//        	modelNameField.setText(initialModelFieldValue);
-//		}
-        modelNameField.addListener(SWT.Modify, nameModifyListener);
-        BidiUtils.applyBidiProcessing(modelNameField, BidiUtils.BTD_DEFAULT);
-		
-	}
 
 
 	/**
@@ -358,6 +329,12 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 		String validLocationMessage = locationArea.checkValidLocation();
 		if (validLocationMessage != null) { // there is no destination location given
 			setErrorMessage(validLocationMessage);
+			return false;
+		}
+		
+		String validModelLocationMessage = fileLocationArea.checkValidLocation();
+		if (validModelLocationMessage != null) { // there is no destination location given
+			setErrorMessage(validModelLocationMessage);
 			return false;
 		}
 
