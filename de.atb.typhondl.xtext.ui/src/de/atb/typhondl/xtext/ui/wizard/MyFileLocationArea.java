@@ -236,6 +236,10 @@ public class MyFileLocationArea {
 		}
 		return configuration.getContributor().getURI(locationPathField.getText());
 	}
+
+	public boolean useModel() {
+		return useModel;
+	}
 	
 	
 	

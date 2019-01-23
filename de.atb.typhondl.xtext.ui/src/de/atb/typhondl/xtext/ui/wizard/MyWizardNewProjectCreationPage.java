@@ -31,7 +31,6 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMessageReporter;
-import org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog;
 
 /**
  * @author flug
@@ -40,12 +39,11 @@ import org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog;
 @SuppressWarnings("restriction")
 public class MyWizardNewProjectCreationPage extends WizardPage {
 
-	   // initial value stores
+	// initial value stores
     private String initialProjectFieldValue;
 
     // widgets
     Text projectNameField;
-    Text modelNameField;
     
     private Listener nameModifyListener = e -> {
 		setLocationForSelection();
@@ -93,7 +91,7 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 		}
 
         fileLocationArea = new MyFileLocationArea(getErrorReporter(), composite);
-        
+        System.out.println("fileLocationArea == null? " + fileLocationArea == null);
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
 		setButtonLayoutData(fileLocationArea.getBrowseButton());
@@ -107,7 +105,11 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
     }
     
     public String getModelPath() {
-    	return fileLocationArea.getFileLocation();
+    	return fileLocationArea == null ? null : fileLocationArea.getFileLocation();
+    }
+    
+    public boolean useModel() {
+    	return fileLocationArea == null ? null : fileLocationArea.useModel();
     }
 
 

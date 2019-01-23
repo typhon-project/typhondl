@@ -3,10 +3,15 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.util.List;
+
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.xtext.ui.wizard.IExtendedProjectInfo;
+import org.eclipse.xtext.ui.wizard.template.AbstractProjectTemplate;
 import org.eclipse.xtext.ui.wizard.template.NewProjectWizardTemplateSelectionPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
+import org.eclipse.xtext.ui.wizard.template.TemplateVariable;
 
 /**
  * @author flug
@@ -43,28 +48,75 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 			mainPage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
 					+ Messages.TemplateNewProjectWizard_create_new_suffix);
 			addPage(mainPage);
-			
-			selectionPage = createSelectionPage("DBMSSelectionNewProjectPage", mainPage.getModelPath());
-			
-//			templatePage = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
-//			System.out.println("TemplatePage created: " + templatePage == null);
-//			templatePage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
-//			templatePage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
-//					+ Messages.TemplateNewProjectWizard_create_new_suffix);
-//			addPage(templatePage);
 		}
 		
 		private MyWizardDBMSSelectionPage createSelectionPage(String pageName, String modelPath) {
 			return new MyWizardDBMSSelectionPage(pageName, modelPath);
 		}
-
-		@Override
-		protected IExtendedProjectInfo createProjectInfo() {
-			// TODO Auto-generated method stub
-			return super.createProjectInfo();
+		
+		private String getModelPath() {
+			//printModelPath();
+			return mainPage == null? "test" : mainPage.getModelPath();
 		}
 		
+		private void printModelPath() {
+			System.out.println("modelPath: " + mainPage.getModelPath());
+		}
+
 		private String shortName(String fullName) {
 			return fullName.contains(".") ? fullName.substring(fullName.lastIndexOf('.') + 1) : fullName; //$NON-NLS-1$
+		}
+		
+		protected IExtendedProjectInfo getProjectInfo() {
+			IExtendedProjectInfo projectInfo = createProjectInfo();
+			projectInfo.setProjectName(mainPage.getProjectName());
+			if (!mainPage.useDefaults()) {
+				projectInfo.setLocationPath(mainPage.getLocationPath());
+			}
+			return projectInfo;
+		}
+		
+		@Override
+		public IWizardPage getNextPage(IWizardPage page) {
+			if (page instanceof NewProjectWizardTemplateSelectionPage) {
+				AbstractProjectTemplate selectedTemplate = templatePage.getSelectedTemplate();
+				if (selectedTemplate == null)
+					return null;
+				List<TemplateVariable> variables = selectedTemplate.getVariables();
+				if (variables.isEmpty())
+					return null;
+				//selectedTemplate.setProjectInfo(getProjectInfo()); // doens't work because setProjectInfo is not public
+				TemplateParameterPage parameterPage = new TemplateParameterPage(selectedTemplate);
+
+				parameterPage.setWizard(this);
+				templateParameterPage = parameterPage;
+				parameterPage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
+				parameterPage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
+						+ Messages.TemplateNewProjectWizard_create_new_suffix);
+				return parameterPage;
+			}
+			
+			if (page instanceof MyWizardNewProjectCreationPage  && ((MyWizardNewProjectCreationPage) page).useModel()) {
+				MyWizardDBMSSelectionPage dbmsSelectionPage = createSelectionPage("DBMSSelectionNewProjectPage", getModelPath());
+				dbmsSelectionPage.setWizard(this);
+				selectionPage = dbmsSelectionPage;
+				selectionPage.setTitle(Messages.WizardSelectionPage_title_suffix);
+				selectionPage.setDescription(Messages.WizardSelectionPage_description);
+				return selectionPage;
+			}
+			
+			if (page instanceof MyWizardDBMSSelectionPage) {
+				NewProjectWizardTemplateSelectionPage templateSelection = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
+				templateSelection.setWizard(this);
+				templatePage =  templateSelection;
+				super.templatePage = templatePage;
+				templatePage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
+				templatePage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
+						+ Messages.TemplateNewProjectWizard_create_new_suffix);
+				return templatePage;
+			}
+			
+			
+			return super.getNextPage(page);
 		}
 }
