@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,6 +20,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
@@ -136,33 +138,27 @@ public class MyFileLocationArea {
 	/**
 	 * Open an appropriate directory browser
 	 */
-	protected void handleBrowseButtonPressed() { //TODO
-		String selectedDirectory = null;
-		//String fileName = getPathFromLocationField();
-		FileFolderSelectionDialog fileSelectionDialog = new FileFolderSelectionDialog(locationPathField.getShell(), false, IResource.FILE);
-		fileSelectionDialog.open();
-		selectedDirectory = (String) fileSelectionDialog.getFirstResult();
-		System.out.println(selectedDirectory);
-//		fileSelectionDialog.addFilter(new ViewerFilter() { //TODO
-//			/**
-//			 * Returns whether the given element makes it through this filter.
-//			 *
-//			 * @param viewer
-//			 *            the viewer
-//			 * @param parentElement
-//			 *            the parent element
-//			 * @param element
-//			 *            the element
-//			 * @return <code>true</code> if element is included in the filtered set, and
-//			 *         <code>false</code> if excluded
-//			 */
-//			@Override
-//			public boolean select(Viewer viewer, Object parentElement, Object element) {
-//				String extension = ".tdl";
-//				return false;
-//			}
-//		});
+	protected void handleBrowseButtonPressed() {
+		String selectedFile = null;
+
+		FileDialog dialog = new FileDialog(locationPathField.getShell(), SWT.SHEET);
+		dialog.setText("Select the TyphonML-file");
+		String[] extensions = {"*.tml", "*.xmi"};
+		dialog.setFilterExtensions(extensions);
+		selectedFile = dialog.open();
 		
+		if (selectedFile != null) {
+			updateLocationField(selectedFile);
+		}
+	}
+	
+	/**
+	 * Update the location field based on the selected path.
+	 *
+	 * @param selectedPath
+	 */
+	private void updateLocationField(String selectedFile) {
+		locationPathField.setText(TextProcessor.process(selectedFile));
 	}
 
 	/**

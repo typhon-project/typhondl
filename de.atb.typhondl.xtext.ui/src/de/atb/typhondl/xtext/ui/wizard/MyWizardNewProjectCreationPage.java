@@ -105,6 +105,10 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         setControl(composite);
         Dialog.applyDialogFont(composite);
     }
+    
+    public String getModelPath() {
+    	return fileLocationArea.getFileLocation();
+    }
 
 
 	/**

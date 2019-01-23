@@ -19,6 +19,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	protected MyWizardNewProjectCreationPage mainPage;
 	protected NewProjectWizardTemplateSelectionPage templatePage;
 	protected TemplateParameterPage templateParameterPage;
+	//protected MyWizardChoosingDBMSPage choosingPage;
 	
 	/**
 	 * 
@@ -38,20 +39,25 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	*/
 		@Override
 		public void addPages() {
-			System.out.println("in addPages() in TyphonDLNewProjectWizard");
 			mainPage = createMyMainPage("basicNewProjectPage"); //$NON-NLS-1$
 			mainPage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
 			mainPage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
 					+ Messages.TemplateNewProjectWizard_create_new_suffix);
 			addPage(mainPage);
-			templatePage = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
-			System.out.println("TemplatePage created: " + templatePage == null);
-			templatePage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
-			templatePage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
-					+ Messages.TemplateNewProjectWizard_create_new_suffix);
-			addPage(templatePage);
+			
+//			choosingPage = createChoosingPage("choosingNewProjectPage", mainPage.getModelPath());
+//			templatePage = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
+//			System.out.println("TemplatePage created: " + templatePage == null);
+//			templatePage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
+//			templatePage.setDescription(Messages.TemplateNewProjectWizard_create_new_prefix + shortName(getGrammarName())
+//					+ Messages.TemplateNewProjectWizard_create_new_suffix);
+//			addPage(templatePage);
 		}
 		
+		private MyWizardChoosingDBMSPage createChoosingPage(String pageName, String modelPath) {
+			return new MyWizardChoosingDBMSPage(pageName, modelPath);
+		}
+
 		@Override
 		protected IExtendedProjectInfo createProjectInfo() {
 			// TODO Auto-generated method stub
