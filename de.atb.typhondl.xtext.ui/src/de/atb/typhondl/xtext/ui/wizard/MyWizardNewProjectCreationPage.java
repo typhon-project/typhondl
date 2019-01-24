@@ -89,9 +89,7 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         if(initialProjectFieldValue != null) {
 			locationArea.updateProjectName(initialProjectFieldValue);
 		}
-
         fileLocationArea = new MyFileLocationArea(getErrorReporter(), composite);
-        System.out.println("fileLocationArea == null? " + fileLocationArea == null);
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
 		setButtonLayoutData(fileLocationArea.getBrowseButton());
@@ -153,10 +151,23 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			if(valid) {
 				valid = validatePage();
 			}
-
 			setPageComplete(valid);
 		};
 	}
+	
+	/**
+	 * If a TyphonML model is used it's not possible to "Finish" the wizard.
+	 * You have to flip to the next page.
+	 * @return boolean
+	 */
+    @Override
+	public boolean canFlipToNextPage() {
+    	if (fileLocationArea.useModel()) {
+    		setPageComplete(false);
+    		return getNextPage() != null;
+    	}
+        return isPageComplete() && getNextPage() != null;
+    }
 
     /**
      * Creates the project name specification controls.
@@ -337,13 +348,13 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			setErrorMessage(validLocationMessage);
 			return false;
 		}
-		
-		String validModelLocationMessage = fileLocationArea.checkValidLocation();
-		if (validModelLocationMessage != null) { // there is no destination location given
-			setErrorMessage(validModelLocationMessage);
+		String fileLocationValid = fileLocationArea.checkValidLocation();
+		if (fileLocationValid != null) {
+			setErrorMessage(fileLocationValid);
 			return false;
 		}
-
+		
+		
         setErrorMessage(null);
         setMessage(null);
         return true;

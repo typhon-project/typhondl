@@ -52,7 +52,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		
 		selectDBMSArea(composite);
 		// TODO
-		
+        System.out.println("SelectionPage.createControl complete: " + isPageComplete());
         setErrorMessage(null);
         setMessage(null);
         setControl(composite);

@@ -6,6 +6,7 @@ package de.atb.typhondl.xtext.ui.wizard;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
@@ -48,6 +49,7 @@ public class MyFileLocationArea {
 	private Text locationPathField;
 	private Button browseButton;
 	private static final int SIZING_TEXT_FIELD_WIDTH = 250;
+	private final String[] extensions = {"*.tml", "*.xmi"};
 
 	public MyFileLocationArea(IErrorMessageReporter errorReporter, Composite parent) {
 		this.errorReporter = errorReporter;
@@ -86,10 +88,13 @@ public class MyFileLocationArea {
 			public void widgetSelected(SelectionEvent e) {
 				useModel = useModelButton.getSelection();
 				setUserEntryAreaEnabled();
-				checkValidLocation();
+				//TODO finish button has to be disabled if useModel 
+				String error = checkValidLocation();
+				errorReporter.reportError(error,
+						error != null);
 			}
 		});
-		
+		checkValidLocation();
 		
 	}
 
@@ -143,8 +148,7 @@ public class MyFileLocationArea {
 
 		FileDialog dialog = new FileDialog(locationPathField.getShell(), SWT.SHEET);
 		dialog.setText("Select the TyphonML-file");
-		String[] extensions = {"*.tml", "*.xmi"};
-		dialog.setFilterExtensions(extensions);
+		dialog.setFilterExtensions(extensions); // TODO maybe problematic on Linux and MacOS
 		selectedFile = dialog.open();
 		
 		if (selectedFile != null) {
@@ -203,22 +207,21 @@ public class MyFileLocationArea {
 	 * @return String
 	 */
 	public String checkValidLocation() {
-
+		
 		if (!useModel) {
 			return null;
 		}
 		
 		String locationFieldContents = locationPathField.getText();
-		if (locationFieldContents.length() == 0) {
+		if (locationFieldContents.length() == 0 || locationFieldContents.equals("")) {
 			return Messages.WizardLoadModel_fileLocationEmpty;
 		}
 
 		URI newPath = getFileURI();
 		if (newPath == null) {
 			return Messages.WizardLoadModel_locationError;
-		} else {
-			//System.out.println(newPath.toString());
-		}
+		} 
+		// TODO REALLY validate path. maybe via the String[] extensions
 
 		return null;
 	}
