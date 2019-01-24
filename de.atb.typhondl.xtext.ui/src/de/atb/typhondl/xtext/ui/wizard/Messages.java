@@ -4,6 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "de.atb.typhondl.xtext.ui.wizard.messages"; //$NON-NLS-1$
+
 	
 	public static String HelloWorldProject_Label;
 	public static String HelloWorldProject_Description;
@@ -19,6 +20,8 @@ public class Messages extends NLS {
 	public static String TemplateNewProjectWizard_title;
 	public static String WizardSelectionPage_title_suffix;
 	public static String WizardSelectionPage_description;
+	public static String WizardLoadModel_existError;
+	public static String WizardLoadModel_fileError;
 	
 	static {
 	// initialize resource bundle

@@ -3,16 +3,11 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,14 +19,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
-import org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMessageReporter;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemConfiguration;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemSupportRegistry;
-import org.eclipse.xtend.lib.macro.file.Path;
-
-import com.google.inject.spi.Message;
 
 /**
  * @author flug
@@ -207,36 +197,6 @@ public class MyFileLocationArea {
 	 */
 	public String checkValidLocation() {
 		
-//		public String checkValidLocation() {
-//
-//			String locationFieldContents = locationPathField.getText();
-//			if (locationFieldContents.length() == 0) {
-//				return IDEWorkbenchMessages.WizardNewProjectCreationPage_projectLocationEmpty;
-//			}
-//
-//			URI newPath = getProjectLocationURI();
-//			if (newPath == null) {
-//				return IDEWorkbenchMessages.ProjectLocationSelectionDialog_locationError;
-//			}
-//
-//			if (existingProject != null) {
-//				URI projectPath = existingProject.getLocationURI();
-//				if (projectPath != null && URIUtil.equals(projectPath, newPath)) {
-//					return IDEWorkbenchMessages.ProjectLocationSelectionDialog_locationIsSelf;
-//				}
-//			}
-//
-//			if (!isDefault()) {
-//				IStatus locationStatus = ResourcesPlugin.getWorkspace()
-//						.validateProjectLocationURI(existingProject, newPath);
-//
-//				if (!locationStatus.isOK()) {
-//					return locationStatus.getMessage();
-//				}
-//			}
-//
-//			return null;
-//		}	
 		if (!useModel) {
 			return null;
 		}
@@ -251,16 +211,36 @@ public class MyFileLocationArea {
 			return Messages.WizardLoadModel_locationError;
 		} 
 		
-		IStatus locationStatus = ResourcesPlugin.getWorkspace().validatePath(locationFieldContents, IResource.FILE);
-		if (!locationStatus.isOK()) {
-			return locationStatus.getMessage();
+		Path path = new Path(locationFieldContents); 
+		if (!path.isValidPath(locationFieldContents) && !path.isAbsolute()) {
+			return Messages.WizardLoadModel_locationError;
+		}
+		// locationFieldContents = C:\Users\...
+		 //newPath = file:/C:/User...
+		
+		File f = new File(locationFieldContents);
+		String extension = getExtension(locationFieldContents);
+		System.out.println(extension);
+		if(!f.exists() || f.isDirectory()) {
+			return Messages.WizardLoadModel_existError;
 		}
 		
-		// TODO REALLY validate path. maybe via the String[] extensions or have a look at the project path
+		// TODO validate extensions
 
 		return null;
 	}
 	
+	private String getExtension(String path) {
+		if (path.lastIndexOf("\\")==-1) {
+			return Messages.WizardLoadModel_fileError;
+		}
+		String file = path.substring(path.lastIndexOf("\\")); //TODO only windows?
+		if (file.lastIndexOf(".")==-1) {
+			return Messages.WizardLoadModel_fileError;
+		}
+		return file.substring(file.lastIndexOf("."));
+	}
+
 	/**
 	 * Get the URI for the location field if possible.
 	 *
