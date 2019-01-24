@@ -6,6 +6,7 @@ package de.atb.typhondl.xtext.ui.wizard;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
 import org.eclipse.core.runtime.Path;
 import org.eclipse.osgi.util.TextProcessor;
@@ -41,6 +42,7 @@ public class MyFileLocationArea {
 	private Button browseButton;
 	private static final int SIZING_TEXT_FIELD_WIDTH = 250;
 	private final String[] extensions = {"*.tml", "*.xmi"};
+	private final String[] extensionsForValidation = {".tml", ".xmi"};
 
 	public MyFileLocationArea(IErrorMessageReporter errorReporter, Composite parent) {
 		this.errorReporter = errorReporter;
@@ -219,17 +221,18 @@ public class MyFileLocationArea {
 		 //newPath = file:/C:/User...
 		
 		File f = new File(locationFieldContents);
-		String extension = getExtension(uri);
-		System.out.println(extension);
 		if(!f.exists() || f.isDirectory()) {
 			return Messages.WizardLoadModel_existError;
 		}
 		
-		// TODO validate extensions
+		String extension = getExtension(uri);
+		
+		if (!Arrays.stream(extensionsForValidation).anyMatch((String ext) -> ext.equals(extension))) {
+			return Messages.WizardLoadModel_wrongExtension;
+		}
 
 		return null;
 	}
-	
 	private String getExtension(URI uri) {
 		String path = uri.toString();
 		if (path.lastIndexOf("/")==-1) {
@@ -249,7 +252,8 @@ public class MyFileLocationArea {
 	 */
 	public URI getFileURI() {
 
-		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); //TODO maybe choose other configuration?
+		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); 
+		//QUESTION maybe choose other configuration?
 		if (configuration == null) {
 			return null;
 		}

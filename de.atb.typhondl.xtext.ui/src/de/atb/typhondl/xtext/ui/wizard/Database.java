@@ -14,7 +14,7 @@ public class Database {
 		return name;
 	}
 
-//	public void setName(String name) { // TODO Not allowed to change name?
+//	public void setName(String name) { // QUESTION Not allowed to change name?
 //		this.name = name;
 //	}
 
@@ -22,7 +22,7 @@ public class Database {
 		return type;
 	}
 
-//	public void setType(DBType type) { // TODO Not allowed to change type?
+//	public void setType(DBType type) { // QUESTION Not allowed to change type?
 //		this.type = type;
 //	}
 }
