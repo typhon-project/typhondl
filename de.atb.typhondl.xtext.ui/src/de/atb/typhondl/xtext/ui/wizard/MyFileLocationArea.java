@@ -29,6 +29,7 @@ import org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMessageReporter;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemConfiguration;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemSupportRegistry;
+import org.eclipse.xtend.lib.macro.file.Path;
 
 import com.google.inject.spi.Message;
 
@@ -206,6 +207,36 @@ public class MyFileLocationArea {
 	 */
 	public String checkValidLocation() {
 		
+//		public String checkValidLocation() {
+//
+//			String locationFieldContents = locationPathField.getText();
+//			if (locationFieldContents.length() == 0) {
+//				return IDEWorkbenchMessages.WizardNewProjectCreationPage_projectLocationEmpty;
+//			}
+//
+//			URI newPath = getProjectLocationURI();
+//			if (newPath == null) {
+//				return IDEWorkbenchMessages.ProjectLocationSelectionDialog_locationError;
+//			}
+//
+//			if (existingProject != null) {
+//				URI projectPath = existingProject.getLocationURI();
+//				if (projectPath != null && URIUtil.equals(projectPath, newPath)) {
+//					return IDEWorkbenchMessages.ProjectLocationSelectionDialog_locationIsSelf;
+//				}
+//			}
+//
+//			if (!isDefault()) {
+//				IStatus locationStatus = ResourcesPlugin.getWorkspace()
+//						.validateProjectLocationURI(existingProject, newPath);
+//
+//				if (!locationStatus.isOK()) {
+//					return locationStatus.getMessage();
+//				}
+//			}
+//
+//			return null;
+//		}	
 		if (!useModel) {
 			return null;
 		}
@@ -219,6 +250,12 @@ public class MyFileLocationArea {
 		if (newPath == null) {
 			return Messages.WizardLoadModel_locationError;
 		} 
+		
+		IStatus locationStatus = ResourcesPlugin.getWorkspace().validatePath(locationFieldContents, IResource.FILE);
+		if (!locationStatus.isOK()) {
+			return locationStatus.getMessage();
+		}
+		
 		// TODO REALLY validate path. maybe via the String[] extensions or have a look at the project path
 
 		return null;
