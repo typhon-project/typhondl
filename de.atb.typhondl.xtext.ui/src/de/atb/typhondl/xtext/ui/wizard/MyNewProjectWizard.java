@@ -77,6 +77,14 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		}
 		
 		@Override
+		public boolean canFinish() {
+			if (mainPage.useModel()) {
+				return (templateParameterPage != null)? templateParameterPage.isPageComplete() : false;
+			}
+			return super.canFinish();
+		}
+		
+		@Override
 		public IWizardPage getNextPage(IWizardPage page) {
 			if (page instanceof NewProjectWizardTemplateSelectionPage) {
 				AbstractProjectTemplate selectedTemplate = templatePage.getSelectedTemplate();

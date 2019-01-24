@@ -45,13 +45,12 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         initializeDialogUnits(parent);
 
         PlatformUI.getWorkbench().getHelpSystem().setHelp(composite,
-                IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE); //TODO
-
+                IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE); 
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		selectDBMSArea(composite);
-		// TODO
+		// TODO set pageComplete false as long as there are unchosen combos
         System.out.println("SelectionPage.createControl complete: " + isPageComplete());
         setErrorMessage(null);
         setMessage(null);
@@ -69,7 +68,6 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		List<Database> dbs = loadData();
-		//TODO for each Database a label and combo
 		for (Database db : dbs) {
 			databaseArea(db, selectionGroup);
 		}
@@ -87,7 +85,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 //		type.setText(dbType.toString());
 		
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
-		dbms.setItems(dbType.getPossibleDBMSs()); // not pretty!!
+		dbms.setItems(dbType.getPossibleDBMSs()); // TODO this needs to be aligned
 	}
 
 	private List<Database> loadData() {

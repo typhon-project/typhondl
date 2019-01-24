@@ -88,7 +88,6 @@ public class MyFileLocationArea {
 			public void widgetSelected(SelectionEvent e) {
 				useModel = useModelButton.getSelection();
 				setUserEntryAreaEnabled();
-				//TODO finish button has to be disabled if useModel 
 				String error = checkValidLocation();
 				errorReporter.reportError(error,
 						error != null);
@@ -120,7 +119,7 @@ public class MyFileLocationArea {
 		
 		locationPathField = new Text(parent, SWT.BORDER);
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
-		//data.widthHint = SIZING_TEXT_FIELD_WIDTH;
+		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		data.horizontalSpan = 2;
 		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		locationPathField.setLayoutData(data);
@@ -128,7 +127,6 @@ public class MyFileLocationArea {
 		
 		browseButton = new Button(parent, SWT.PUSH);
 		browseButton.setText(Messages.WizardLoadModel_browseLabel);
-		// TODO actionListener
 		
 		setUserEntryAreaEnabled();
 		
@@ -221,7 +219,7 @@ public class MyFileLocationArea {
 		if (newPath == null) {
 			return Messages.WizardLoadModel_locationError;
 		} 
-		// TODO REALLY validate path. maybe via the String[] extensions
+		// TODO REALLY validate path. maybe via the String[] extensions or have a look at the project path
 
 		return null;
 	}
@@ -233,7 +231,7 @@ public class MyFileLocationArea {
 	 */
 	public URI getFileURI() {
 
-		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); //TODO maybe chose other configuration?
+		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); //TODO maybe choose other configuration?
 		if (configuration == null) {
 			return null;
 		}

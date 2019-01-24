@@ -154,20 +154,6 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			setPageComplete(valid);
 		};
 	}
-	
-	/**
-	 * If a TyphonML model is used it's not possible to "Finish" the wizard.
-	 * You have to flip to the next page.
-	 * @return boolean
-	 */
-    @Override
-	public boolean canFlipToNextPage() {
-    	if (fileLocationArea.useModel()) {
-    		setPageComplete(false);
-    		return getNextPage() != null;
-    	}
-        return isPageComplete() && getNextPage() != null;
-    }
 
     /**
      * Creates the project name specification controls.
