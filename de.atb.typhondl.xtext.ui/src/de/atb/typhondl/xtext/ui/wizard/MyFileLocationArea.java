@@ -206,8 +206,8 @@ public class MyFileLocationArea {
 			return Messages.WizardLoadModel_fileLocationEmpty;
 		}
 
-		URI newPath = getFileURI();
-		if (newPath == null) {
+		URI uri = getFileURI();
+		if (uri == null) {
 			return Messages.WizardLoadModel_locationError;
 		} 
 		
@@ -219,7 +219,7 @@ public class MyFileLocationArea {
 		 //newPath = file:/C:/User...
 		
 		File f = new File(locationFieldContents);
-		String extension = getExtension(locationFieldContents);
+		String extension = getExtension(uri);
 		System.out.println(extension);
 		if(!f.exists() || f.isDirectory()) {
 			return Messages.WizardLoadModel_existError;
@@ -230,11 +230,12 @@ public class MyFileLocationArea {
 		return null;
 	}
 	
-	private String getExtension(String path) {
-		if (path.lastIndexOf("\\")==-1) {
+	private String getExtension(URI uri) {
+		String path = uri.toString();
+		if (path.lastIndexOf("/")==-1) {
 			return Messages.WizardLoadModel_fileError;
 		}
-		String file = path.substring(path.lastIndexOf("\\")); //TODO only windows?
+		String file = path.substring(path.lastIndexOf("/")); //TEST only windows?
 		if (file.lastIndexOf(".")==-1) {
 			return Messages.WizardLoadModel_fileError;
 		}
