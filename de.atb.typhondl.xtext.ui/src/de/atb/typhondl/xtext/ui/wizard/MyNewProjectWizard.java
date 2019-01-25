@@ -3,6 +3,7 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.jface.wizard.IWizardPage;
@@ -50,12 +51,12 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		addPage(mainPage);
 	}
 
-	private MyWizardDBMSSelectionPage createSelectionPage(String pageName, String modelPath) {
+	private MyWizardDBMSSelectionPage createSelectionPage(String pageName, URI modelPath) {
 		return new MyWizardDBMSSelectionPage(pageName, modelPath);
 	}
 
-	private String getModelPath() {
-		return mainPage == null? "" : mainPage.getModelPath();
+	private URI getModelPath() {
+		return mainPage == null? null : mainPage.getModelPath();
 	}
 
 	private String shortName(String fullName) {

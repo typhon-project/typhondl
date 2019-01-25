@@ -3,6 +3,7 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	 * @param pageName
 	 * @param modelPath 
 	 */
-	public MyWizardDBMSSelectionPage(String pageName, String modelPath) {
+	public MyWizardDBMSSelectionPage(String pageName, URI modelPath) {
 		super(pageName);
 		loadDataToMap(modelPath);
 		setPageComplete(false);
@@ -103,8 +104,9 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		return !combos.stream().anyMatch((combo -> combo.getText().equals("")));
 	}
 
-	private void loadDataToMap(String modelPath){
+	private void loadDataToMap(URI modelPath){
 		// TODO read modelPath
+		ModelReader reader = new ModelReader(modelPath);
 		dbsMap = new HashMap<String, Database>();
 		//test:
 		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));

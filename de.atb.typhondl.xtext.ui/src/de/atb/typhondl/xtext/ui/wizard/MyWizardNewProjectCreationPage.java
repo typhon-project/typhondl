@@ -3,6 +3,8 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+
+
 import java.net.URI;
 
 import org.eclipse.core.resources.IProject;
@@ -102,8 +104,8 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         Dialog.applyDialogFont(composite);
     }
     
-    public String getModelPath() {
-    	return fileLocationArea == null ? null : fileLocationArea.getFileLocation();
+    public URI getModelPath() {
+    	return fileLocationArea == null ? null : fileLocationArea.getFileURI();
     }
     
     public boolean useModel() {

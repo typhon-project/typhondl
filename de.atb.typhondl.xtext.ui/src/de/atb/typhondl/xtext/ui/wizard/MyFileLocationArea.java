@@ -233,6 +233,7 @@ public class MyFileLocationArea {
 
 		return null;
 	}
+	
 	private String getExtension(URI uri) {
 		String path = uri.toString();
 		if (path.lastIndexOf("/")==-1) {
@@ -254,10 +255,7 @@ public class MyFileLocationArea {
 
 		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); 
 		//QUESTION maybe choose other configuration?
-		if (configuration == null) {
-			return null;
-		}
-		return configuration.getContributor().getURI(locationPathField.getText());
+		return (configuration == null)? null : configuration.getContributor().getURI(locationPathField.getText());
 	}
 
 	public boolean useModel() {
