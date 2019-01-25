@@ -28,9 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 public class MyWizardDBMSSelectionPage extends WizardPage {
 
 	// QUESTION all private?
-	String modelPath;
 	private HashMap<String, Database> dbsMap;
-	List<Combo> combos;
+	List<Combo> combos = new ArrayList<>();
 	
 	/**
 	 * @param pageName
@@ -38,8 +37,8 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	 */
 	public MyWizardDBMSSelectionPage(String pageName, String modelPath) {
 		super(pageName);
+		loadDataToMap(modelPath);
 		setPageComplete(false);
-		this.modelPath = modelPath;
 	}
 
 	@Override
@@ -53,7 +52,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
                 IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE); 
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		
+        
 		selectDBMSArea(composite);
 		// TODO set pageComplete true when all combos have a selection
         setErrorMessage(null);
@@ -70,10 +69,6 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         layout.numColumns = 2;
         selectionGroup.setLayout(layout);
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		loadDataToMap();
-		
-		combos = new ArrayList<>();
 		// label + combo for each db
 		for (Database db : dbsMap.values()) {
 			databaseArea(db, selectionGroup);
@@ -95,6 +90,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		combos.add(dbms);
 		dbms.setItems(dbType.getPossibleDBMSs()); // TODO this needs to be aligned
 		dbms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		dbms.setText(db.getDbms());
 		dbms.addModifyListener(new ModifyListener() {			
 			@Override
 			public void modifyText(ModifyEvent e) {
@@ -105,27 +101,18 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	}
 
 	protected boolean checkComplete() {
-		for (Combo combo : combos) {
-			if (combo.getText() == null) {
-				return false;
-			}
-		}
-		return true;
+		return !combos.stream().anyMatch((combo -> combo.getText().equals("")));
 	}
 
-	private void loadDataToMap(){
+	private void loadDataToMap(String modelPath){
 		// TODO read modelPath
 		dbsMap = new HashMap<String, Database>();
 		//test:
-		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, null));
-		dbsMap.put("Products", new Database("Products", DBType.graphdb, null));
-		dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, null));
-		dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, null));
-		dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, null));
-	}
-
-	public void setModelPath(String modelPath) {
-		this.modelPath = modelPath;
+		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
+		dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
+		dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
+		dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
+		dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));
 	}
 
 }

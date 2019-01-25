@@ -95,7 +95,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 					return null;
 				//selectedTemplate.setProjectInfo(getProjectInfo()); // doens't work because setProjectInfo is not public
 				TemplateParameterPage parameterPage = new TemplateParameterPage(selectedTemplate);
-
+				parameterPage.setPageComplete(false); // TODO put this in own TemplateParameterPage
 				parameterPage.setWizard(this);
 				templateParameterPage = parameterPage;
 				parameterPage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
@@ -113,7 +113,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 				return selectionPage;
 			}
 			
-			if (page instanceof MyWizardDBMSSelectionPage) {
+			if (page instanceof MyWizardDBMSSelectionPage && page.isPageComplete()) {
 				NewProjectWizardTemplateSelectionPage templateSelection = createTemplatePage("templateNewProjectPage"); //$NON-NLS-1$
 				templateSelection.setWizard(this);
 				templatePage =  templateSelection;
