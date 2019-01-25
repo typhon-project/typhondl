@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -22,10 +24,13 @@ import org.eclipse.swt.widgets.Composite;
  * @author flug
  *
  */
+@SuppressWarnings("restriction")
 public class MyWizardDBMSSelectionPage extends WizardPage {
 
+	// QUESTION all private?
 	String modelPath;
-	HashMap<DBType, List<String>> data;
+	private HashMap<String, Database> dbsMap;
+	List<Combo> combos;
 	
 	/**
 	 * @param pageName
@@ -33,7 +38,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	 */
 	public MyWizardDBMSSelectionPage(String pageName, String modelPath) {
 		super(pageName);
-		setPageComplete(true);
+		setPageComplete(false);
 		this.modelPath = modelPath;
 	}
 
@@ -50,8 +55,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		selectDBMSArea(composite);
-		// TODO set pageComplete false as long as there are unchosen combos
-        System.out.println("SelectionPage.createControl complete: " + isPageComplete());
+		// TODO set pageComplete true when all combos have a selection
         setErrorMessage(null);
         setMessage(null);
         setControl(composite);
@@ -67,8 +71,11 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         selectionGroup.setLayout(layout);
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		List<Database> dbs = loadData();
-		for (Database db : dbs) {
+		loadDataToMap();
+		
+		combos = new ArrayList<>();
+		// label + combo for each db
+		for (Database db : dbsMap.values()) {
 			databaseArea(db, selectionGroup);
 		}
 	}
@@ -85,19 +92,36 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 //		type.setText(dbType.toString());
 		
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
+		combos.add(dbms);
 		dbms.setItems(dbType.getPossibleDBMSs()); // TODO this needs to be aligned
+		dbms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		dbms.addModifyListener(new ModifyListener() {			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				db.setDbms(dbms.getText());			
+				setPageComplete(checkComplete());
+			}
+		});
 	}
 
-	private List<Database> loadData() {
+	protected boolean checkComplete() {
+		for (Combo combo : combos) {
+			if (combo.getText() == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void loadDataToMap(){
 		// TODO read modelPath
-		List<Database> dbs = new ArrayList<>();
+		dbsMap = new HashMap<String, Database>();
 		//test:
-		dbs.add(new Database("Orders", DBType.relationaldb));
-		dbs.add(new Database("Products", DBType.graphdb));
-		dbs.add(new Database("Photos", DBType.keyvaluedb));
-		dbs.add(new Database("Reviews", DBType.documentdb));
-		dbs.add(new Database("MyOwn", DBType.relationaldb));
-		return dbs;
+		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, null));
+		dbsMap.put("Products", new Database("Products", DBType.graphdb, null));
+		dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, null));
+		dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, null));
+		dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, null));
 	}
 
 	public void setModelPath(String modelPath) {
