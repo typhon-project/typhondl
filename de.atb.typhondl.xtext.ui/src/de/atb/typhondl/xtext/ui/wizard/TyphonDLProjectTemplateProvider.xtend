@@ -21,14 +21,14 @@ import static org.eclipse.core.runtime.IStatus.*
  */
 class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 	override getProjectTemplates() {
-		#[new HelloWorldProject]
+		#[new DockerCompose]
 	}
 }
 
-@ProjectTemplate(label="Hello World", icon="project_template.png", description="<p><b>Hello World</b></p>
+@ProjectTemplate(label="Docker-Compose", icon="project_template.png", description="<p><b>Hello World</b></p>
 <p>This is a parameterized hello world for TyphonDL. You can set a parameter to modify the content in the generated file
 and a parameter to set the package the file is created in.</p>")
-final class HelloWorldProject {
+final class DockerCompose {
 	val advanced = check("Advanced:", false)
 	val advancedGroup = group("Properties")
 	val name = combo("Name:", #["Xtext", "World", "Foo", "Bar"], "The name to say 'Hello' to", advancedGroup)

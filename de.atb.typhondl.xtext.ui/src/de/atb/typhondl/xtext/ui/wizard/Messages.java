@@ -22,6 +22,8 @@ public class Messages extends NLS {
 	public static String TemplateNewProjectWizard_title;
 	public static String WizardSelectionPage_title_suffix;
 	public static String WizardSelectionPage_description;
+	public static String DockerCompose_Label;
+	public static String DockerCompose_Description;
 	
 	static {
 	// initialize resource bundle

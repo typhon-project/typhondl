@@ -4,6 +4,7 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.wizard.IWizardPage;
@@ -12,6 +13,7 @@ import org.eclipse.xtext.ui.wizard.template.AbstractProjectTemplate;
 import org.eclipse.xtext.ui.wizard.template.NewProjectWizardTemplateSelectionPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
+import org.eclipse.xtext.ui.wizard.template.TemplateProjectInfo;
 import org.eclipse.xtext.ui.wizard.template.TemplateVariable;
 
 /**
@@ -55,6 +57,17 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		return new MyWizardDBMSSelectionPage(pageName, modelPath);
 	}
 
+	@Override
+	public IExtendedProjectInfo createProjectInfo() {
+		// TODO pass loaded data from selectionPage nope not happening here. this will be done after clicking finish
+		boolean test = selectionPage == null;
+		System.out.println("createProjectInfo() : " + test);
+		if (!test) {
+			HashMap<String, Database> data = selectionPage.getData();	
+		}
+		return new TemplateProjectInfo(templatePage == null ? null : templatePage.getSelectedTemplate());
+	}
+	
 	private URI getModelPath() {
 		return mainPage == null? null : mainPage.getModelPath();
 	}

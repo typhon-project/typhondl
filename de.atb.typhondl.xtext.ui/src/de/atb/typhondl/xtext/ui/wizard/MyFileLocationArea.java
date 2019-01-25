@@ -139,7 +139,7 @@ public class MyFileLocationArea {
 
 		FileDialog dialog = new FileDialog(locationPathField.getShell(), SWT.SHEET);
 		dialog.setText("Select the TyphonML-file");
-		dialog.setFilterExtensions(extensions); // TODO maybe problematic on Linux and MacOS
+		dialog.setFilterExtensions(extensions); // TEST maybe problematic on Linux and MacOS
 		selectedFile = dialog.open();
 		
 		if (selectedFile != null) {

@@ -84,8 +84,6 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		Label name = new Label(parent, SWT.NONE);
 		name.setText(dbName + " (" + dbType.toString() + ")");
 		
-//		Label type = new Label(parent, SWT.NONE);
-//		type.setText(dbType.toString());
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
 		combos.add(dbms);
 		dbms.setItems(dbType.getPossibleDBMSs());
@@ -105,15 +103,12 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	}
 
 	private void loadDataToMap(URI modelPath){
-		// TODO read modelPath
 		ModelReader reader = new ModelReader(modelPath);
 		dbsMap = reader.getData();
-		//test:
-		//dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
-		//dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
-		//dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
-		//dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
-		//dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));
+	}
+
+	public HashMap<String, Database> getData() {
+		return dbsMap;
 	}
 
 }
