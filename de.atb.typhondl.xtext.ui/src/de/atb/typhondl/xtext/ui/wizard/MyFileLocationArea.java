@@ -3,15 +3,12 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -23,13 +20,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
-import org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMessageReporter;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemConfiguration;
 import org.eclipse.ui.internal.ide.filesystem.FileSystemSupportRegistry;
-
-import com.google.inject.spi.Message;
 
 /**
  * @author flug
@@ -48,6 +41,8 @@ public class MyFileLocationArea {
 	private Text locationPathField;
 	private Button browseButton;
 	private static final int SIZING_TEXT_FIELD_WIDTH = 250;
+	private final String[] extensions = {"*.tml", "*.xmi"};
+	private final String[] extensionsForValidation = {".tml", ".xmi"};
 
 	public MyFileLocationArea(IErrorMessageReporter errorReporter, Composite parent) {
 		this.errorReporter = errorReporter;
@@ -86,10 +81,12 @@ public class MyFileLocationArea {
 			public void widgetSelected(SelectionEvent e) {
 				useModel = useModelButton.getSelection();
 				setUserEntryAreaEnabled();
-				checkValidLocation();
+				String error = checkValidLocation();
+				errorReporter.reportError(error,
+						error != null);
 			}
 		});
-		
+		checkValidLocation();
 		
 	}
 
@@ -115,7 +112,7 @@ public class MyFileLocationArea {
 		
 		locationPathField = new Text(parent, SWT.BORDER);
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
-		//data.widthHint = SIZING_TEXT_FIELD_WIDTH;
+		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		data.horizontalSpan = 2;
 		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		locationPathField.setLayoutData(data);
@@ -123,7 +120,6 @@ public class MyFileLocationArea {
 		
 		browseButton = new Button(parent, SWT.PUSH);
 		browseButton.setText(Messages.WizardLoadModel_browseLabel);
-		// TODO actionListener
 		
 		setUserEntryAreaEnabled();
 		
@@ -143,8 +139,7 @@ public class MyFileLocationArea {
 
 		FileDialog dialog = new FileDialog(locationPathField.getShell(), SWT.SHEET);
 		dialog.setText("Select the TyphonML-file");
-		String[] extensions = {"*.tml", "*.xmi"};
-		dialog.setFilterExtensions(extensions);
+		dialog.setFilterExtensions(extensions); // TODO maybe problematic on Linux and MacOS
 		selectedFile = dialog.open();
 		
 		if (selectedFile != null) {
@@ -203,26 +198,54 @@ public class MyFileLocationArea {
 	 * @return String
 	 */
 	public String checkValidLocation() {
-
+		
 		if (!useModel) {
 			return null;
 		}
 		
 		String locationFieldContents = locationPathField.getText();
-		if (locationFieldContents.length() == 0) {
+		if (locationFieldContents.length() == 0 || locationFieldContents.equals("")) {
 			return Messages.WizardLoadModel_fileLocationEmpty;
 		}
 
-		URI newPath = getFileURI();
-		if (newPath == null) {
+		URI uri = getFileURI();
+		if (uri == null) {
 			return Messages.WizardLoadModel_locationError;
-		} else {
-			//System.out.println(newPath.toString());
+		} 
+		
+		Path path = new Path(locationFieldContents); 
+		if (!path.isValidPath(locationFieldContents) && !path.isAbsolute()) {
+			return Messages.WizardLoadModel_locationError;
+		}
+		// locationFieldContents = C:\Users\...
+		 //newPath = file:/C:/User...
+		
+		File f = new File(locationFieldContents);
+		if(!f.exists() || f.isDirectory()) {
+			return Messages.WizardLoadModel_existError;
+		}
+		
+		String extension = getExtension(uri);
+		
+		if (!Arrays.stream(extensionsForValidation).anyMatch((String ext) -> ext.equals(extension))) {
+			return Messages.WizardLoadModel_wrongExtension;
 		}
 
 		return null;
 	}
 	
+	private String getExtension(URI uri) {
+		String path = uri.toString();
+		if (path.lastIndexOf("/")==-1) {
+			return Messages.WizardLoadModel_fileError;
+		}
+		String file = path.substring(path.lastIndexOf("/")); //TEST only windows?
+		if (file.lastIndexOf(".")==-1) {
+			return Messages.WizardLoadModel_fileError;
+		}
+		return file.substring(file.lastIndexOf("."));
+	}
+
 	/**
 	 * Get the URI for the location field if possible.
 	 *
@@ -230,11 +253,9 @@ public class MyFileLocationArea {
 	 */
 	public URI getFileURI() {
 
-		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); //TODO maybe chose other configuration?
-		if (configuration == null) {
-			return null;
-		}
-		return configuration.getContributor().getURI(locationPathField.getText());
+		FileSystemConfiguration configuration = FileSystemSupportRegistry.getInstance().getDefaultConfiguration(); 
+		//QUESTION maybe choose other configuration?
+		return (configuration == null)? null : configuration.getContributor().getURI(locationPathField.getText());
 	}
 
 	public boolean useModel() {

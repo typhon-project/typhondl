@@ -13,6 +13,9 @@ public class Messages extends NLS {
 	public static String WizardLoadModel_fileLocationEmpty;
 	public static String WizardLoadModel_locationError;
 	public static String WizardLoadModel_directoryLabel;
+	public static String WizardLoadModel_existError;
+	public static String WizardLoadModel_fileError;
+	public static String WizardLoadModel_wrongExtension;
 	public static String TemplateNewProjectWizard_title_suffix;
 	public static String TemplateNewProjectWizard_create_new_prefix;
 	public static String TemplateNewProjectWizard_create_new_suffix;

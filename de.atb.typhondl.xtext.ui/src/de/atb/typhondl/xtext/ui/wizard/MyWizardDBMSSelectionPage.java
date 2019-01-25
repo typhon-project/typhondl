@@ -3,6 +3,7 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -22,19 +25,21 @@ import org.eclipse.swt.widgets.Composite;
  * @author flug
  *
  */
+@SuppressWarnings("restriction")
 public class MyWizardDBMSSelectionPage extends WizardPage {
 
-	String modelPath;
-	HashMap<DBType, List<String>> data;
+	// QUESTION all private?
+	private HashMap<String, Database> dbsMap;
+	List<Combo> combos = new ArrayList<>();
 	
 	/**
 	 * @param pageName
 	 * @param modelPath 
 	 */
-	public MyWizardDBMSSelectionPage(String pageName, String modelPath) {
+	public MyWizardDBMSSelectionPage(String pageName, URI modelPath) {
 		super(pageName);
-		setPageComplete(true);
-		this.modelPath = modelPath;
+		loadDataToMap(modelPath);
+		setPageComplete(false);
 	}
 
 	@Override
@@ -45,13 +50,11 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         initializeDialogUnits(parent);
 
         PlatformUI.getWorkbench().getHelpSystem().setHelp(composite,
-                IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE); //TODO
-
+                IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE); 
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		
+        
 		selectDBMSArea(composite);
-		// TODO
 		
         setErrorMessage(null);
         setMessage(null);
@@ -64,13 +67,11 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		
 		Composite selectionGroup = new Composite(composite, SWT.NONE);
 		GridLayout layout = new GridLayout();
-        layout.numColumns = 3;
+        layout.numColumns = 2;
         selectionGroup.setLayout(layout);
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		List<Database> dbs = loadData();
-		//TODO for each Database a label and combo
-		for (Database db : dbs) {
+		// label + combo for each db
+		for (Database db : dbsMap.values()) {
 			databaseArea(db, selectionGroup);
 		}
 	}
@@ -81,29 +82,38 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		DBType dbType = db.getType();
 		
 		Label name = new Label(parent, SWT.NONE);
-		name.setText(dbName);
+		name.setText(dbName + " (" + dbType.toString() + ")");
 		
-		Label type = new Label(parent, SWT.NONE);
-		type.setText(dbType.toString());
-		
+//		Label type = new Label(parent, SWT.NONE);
+//		type.setText(dbType.toString());
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
+		combos.add(dbms);
 		dbms.setItems(dbType.getPossibleDBMSs());
+		dbms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		dbms.setText(db.getDbms());
+		dbms.addModifyListener(new ModifyListener() {			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				db.setDbms(dbms.getText());			
+				setPageComplete(checkComplete());
+			}
+		});
 	}
 
-	private List<Database> loadData() {
+	protected boolean checkComplete() {
+		return !combos.stream().anyMatch((combo -> combo.getText().equals("")));
+	}
+
+	private void loadDataToMap(URI modelPath){
 		// TODO read modelPath
-		List<Database> dbs = new ArrayList<>();
+		ModelReader reader = new ModelReader(modelPath);
+		dbsMap = reader.getData();
 		//test:
-		dbs.add(new Database("Orders", DBType.relationaldb));
-		dbs.add(new Database("Products", DBType.graphdb));
-		dbs.add(new Database("Photos", DBType.keyvaluedb));
-		dbs.add(new Database("Reviews", DBType.documentdb));
-		dbs.add(new Database("MyOwn", DBType.relationaldb));
-		return dbs;
-	}
-
-	public void setModelPath(String modelPath) {
-		this.modelPath = modelPath;
+		//dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
+		//dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
+		//dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
+		//dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
+		//dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));
 	}
 
 }

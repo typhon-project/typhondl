@@ -3,6 +3,8 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+
+
 import java.net.URI;
 
 import org.eclipse.core.resources.IProject;
@@ -89,9 +91,7 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         if(initialProjectFieldValue != null) {
 			locationArea.updateProjectName(initialProjectFieldValue);
 		}
-
         fileLocationArea = new MyFileLocationArea(getErrorReporter(), composite);
-        System.out.println("fileLocationArea == null? " + fileLocationArea == null);
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
 		setButtonLayoutData(fileLocationArea.getBrowseButton());
@@ -104,8 +104,8 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         Dialog.applyDialogFont(composite);
     }
     
-    public String getModelPath() {
-    	return fileLocationArea == null ? null : fileLocationArea.getFileLocation();
+    public URI getModelPath() {
+    	return fileLocationArea == null ? null : fileLocationArea.getFileURI();
     }
     
     public boolean useModel() {
@@ -153,7 +153,6 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			if(valid) {
 				valid = validatePage();
 			}
-
 			setPageComplete(valid);
 		};
 	}
@@ -337,13 +336,13 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
 			setErrorMessage(validLocationMessage);
 			return false;
 		}
-		
-		String validModelLocationMessage = fileLocationArea.checkValidLocation();
-		if (validModelLocationMessage != null) { // there is no destination location given
-			setErrorMessage(validModelLocationMessage);
+		String fileLocationValid = fileLocationArea.checkValidLocation();
+		if (fileLocationValid != null) {
+			setErrorMessage(fileLocationValid);
 			return false;
 		}
-
+		
+		
         setErrorMessage(null);
         setMessage(null);
         return true;
