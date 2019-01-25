@@ -107,10 +107,10 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	private void loadDataToMap(URI modelPath){
 		// TODO read modelPath
 		ModelReader reader = new ModelReader(modelPath);
-		dbsMap = new HashMap<String, Database>();
+		dbsMap = reader.getData();
 		//test:
-		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
-		dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
+		//dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
+		//dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
 		//dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
 		//dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
 		//dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));

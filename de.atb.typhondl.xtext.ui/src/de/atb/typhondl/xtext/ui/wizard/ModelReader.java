@@ -27,7 +27,19 @@ public class ModelReader {
 
 	private void readFile(URI uri) throws IOException {
 		try (Stream<String> stream = Files.lines(Paths.get(uri))) {
-	        stream.forEach(System.out::println);
+	        stream.forEach((String line) -> dbsMap
+	        		.put(line.substring(0, line.indexOf(":")-1), new Database(line.substring(0, line.indexOf(":")-1), //name
+	        								  convertStringToDBType(line.substring(line.indexOf(":")+2)), //type
+	        								  "")) //dbms
+	        		);
 		}
+	}
+	
+	private DBType convertStringToDBType (String toConvert) {
+		return DBType.valueOf(toConvert);
+	}
+	
+	public HashMap<String, Database> getData(){
+		return dbsMap;
 	}
 }
