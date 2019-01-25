@@ -54,7 +54,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         
 		selectDBMSArea(composite);
-		// TODO set pageComplete true when all combos have a selection
+		
         setErrorMessage(null);
         setMessage(null);
         setControl(composite);
@@ -85,10 +85,9 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		
 //		Label type = new Label(parent, SWT.NONE);
 //		type.setText(dbType.toString());
-		
 		Combo dbms = new Combo(parent, SWT.READ_ONLY);
 		combos.add(dbms);
-		dbms.setItems(dbType.getPossibleDBMSs()); // TODO this needs to be aligned
+		dbms.setItems(dbType.getPossibleDBMSs());
 		dbms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		dbms.setText(db.getDbms());
 		dbms.addModifyListener(new ModifyListener() {			
@@ -110,9 +109,9 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		//test:
 		dbsMap.put("Orders", new Database("Orders", DBType.relationaldb, ""));
 		dbsMap.put("Products", new Database("Products", DBType.graphdb, ""));
-		dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
-		dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
-		dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));
+		//dbsMap.put("Photos", new Database("Photos", DBType.keyvaluedb, ""));
+		//dbsMap.put("Reviews", new Database("Reviews", DBType.documentdb, ""));
+		//dbsMap.put("MyOwn", new Database("MyOwn", DBType.relationaldb, ""));
 	}
 
 }
