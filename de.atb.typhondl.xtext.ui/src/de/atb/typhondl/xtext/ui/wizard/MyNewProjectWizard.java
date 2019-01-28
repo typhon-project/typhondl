@@ -59,13 +59,18 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 
 	@Override
 	public IExtendedProjectInfo createProjectInfo() {
-		// TODO pass loaded data from selectionPage nope not happening here. this will be done after clicking finish
+		// TODO not pretty
 		boolean test = selectionPage == null;
 		System.out.println("createProjectInfo() : " + test);
+		HashMap<String, Database> data = new HashMap<String, Database>();
 		if (!test) {
-			HashMap<String, Database> data = selectionPage.getData();	
+			data = selectionPage.getData();	
 		}
-		return new TemplateProjectInfo(templatePage == null ? null : templatePage.getSelectedTemplate());
+		if (templatePage == null) {
+			return null;
+		}
+		MyProjectInfo info = new MyProjectInfo(templatePage.getSelectedTemplate(), data);
+		return info;
 	}
 	
 	private URI getModelPath() {

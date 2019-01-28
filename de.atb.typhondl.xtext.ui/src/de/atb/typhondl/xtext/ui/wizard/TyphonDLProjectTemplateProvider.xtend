@@ -13,6 +13,7 @@ import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
 
 import static org.eclipse.core.runtime.IStatus.*
+import org.eclipse.xtext.ui.wizard.IExtendedProjectInfo
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -28,39 +29,21 @@ class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 @ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Combose</b></p>
 <p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
-	val advanced = check("Advanced Compose Properties:", false)
-	val advancedGroup = group("Properties")
-	val name = text("Name:", "MyApplication", advancedGroup)
-	val path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
-
-	override protected updateVariables() {
-		name.enabled = advanced.value
-		path.enabled = advanced.value
-		if (!advanced.value) {
-			name.value = "MyApplication"
-			path.value = "tdl"
-		}
-	}
-
-	override protected validate() {
-		if (path.value.matches('[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*'))
-			null
-		else
-			new Status(ERROR, "Wizard", "'" + path + "' is not a valid package name")
-	}
-
+	
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
-			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
+			var projectInfoClass = projectInfo.class.toString
+			projectNatures += #[JavaCore.NATURE_ID, XtextProjectHelper.NATURE_ID]
 			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
 			folders += "model"
-			addFile('''model/«name».tdl''', '''
+			addFile('''model/Test.tdl''', '''
 				/*
 				 * This is an example model
 				 */
-				Hello «name»!
+				Hello Test!
+				Class of Project info: «projectInfoClass»
 			''')
 		])
 	}
