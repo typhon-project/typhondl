@@ -21,24 +21,23 @@ import static org.eclipse.core.runtime.IStatus.*
  */
 class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 	override getProjectTemplates() {
-		#[new DockerCompose]
+		#[new DockerCompose, new Kubernetes]
 	}
 }
 
-@ProjectTemplate(label="Docker-Compose", icon="project_template.png", description="<p><b>Hello World</b></p>
-<p>This is a parameterized hello world for TyphonDL. You can set a parameter to modify the content in the generated file
-and a parameter to set the package the file is created in.</p>")
+@ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Combose</b></p>
+<p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
-	val advanced = check("Advanced:", false)
+	val advanced = check("Advanced Compose Properties:", false)
 	val advancedGroup = group("Properties")
-	val name = combo("Name:", #["Xtext", "World", "Foo", "Bar"], "The name to say 'Hello' to", advancedGroup)
+	val name = text("Name:", "MyApplication", advancedGroup)
 	val path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
 
 	override protected updateVariables() {
 		name.enabled = advanced.value
 		path.enabled = advanced.value
 		if (!advanced.value) {
-			name.value = "Xtext"
+			name.value = "MyApplication"
 			path.value = "tdl"
 		}
 	}
@@ -56,8 +55,51 @@ final class DockerCompose {
 			location = projectInfo.locationPath
 			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
 			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
-			folders += "src"
-			addFile('''src/«path»/Model.tdl''', '''
+			folders += "model"
+			addFile('''model/«name».tdl''', '''
+				/*
+				 * This is an example model
+				 */
+				Hello «name»!
+			''')
+		])
+	}
+}
+
+@ProjectTemplate(label="Kubernetes", icon="kubernetes.png", description="<p><b>Kubernetes</b></p>
+<p>Descriptive text about using Kubernetes</p>")
+final class Kubernetes {
+	val requiredGroup = group("Required Properties")
+	val numberOfNodes = text("Number of max. nodes:", "", requiredGroup)
+	val advanced = check("Advanced Kubernetes Properties:", false)
+	val advancedGroup = group("Properties")
+	val name = text("Name:", "MyApplication", advancedGroup)
+	val path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
+
+	override protected updateVariables() {
+		name.enabled = advanced.value
+		path.enabled = advanced.value
+		if (!advanced.value) {
+			name.value = "MyApplication"
+			path.value = "tdl"
+		}
+	}
+
+	override protected validate() {
+		if (path.value.matches('[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*'))
+			null
+		else
+			new Status(ERROR, "Wizard", "'" + path + "' is not a valid package name")
+	}
+
+	override generateProjects(IProjectGenerator generator) {
+		generator.generate(new PluginProjectFactory => [
+			projectName = projectInfo.projectName
+			location = projectInfo.locationPath
+			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
+			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+			folders += "model"
+			addFile('''model/«name».tdl''', '''
 				/*
 				 * This is an example model
 				 */
