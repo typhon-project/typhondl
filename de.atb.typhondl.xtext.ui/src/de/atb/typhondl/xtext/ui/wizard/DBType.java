@@ -13,7 +13,7 @@ public enum DBType {
 	},
 	documentdb(){
 		@Override String[] getPossibleDBMSs(){
-			return new String[] {"MongoDB", "CouchDB"};
+			return new String[] {"Mongo", "CouchDB"};
 		}
 	},
 	keyvaluedb(){

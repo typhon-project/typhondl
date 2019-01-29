@@ -35,9 +35,28 @@ final class DockerCompose {
 			var data = info.data;
 			projectNatures += #[JavaCore.NATURE_ID, XtextProjectHelper.NATURE_ID]
 			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
-			folders += "model"
-			addFile('''model/Test.tdl''', '''
-				Data collected : «data.forEach[key, value| showData(key,value)]»
+			folders += "model" // TODO: «data.forEach[key, value| doStuff]»
+			addFile('''model/MyApplication.tdl''', '''
+				platformtype default //TODO (e.g. AWS)
+				containertype Docker
+				«FOR key : data.keySet»
+					dbtype «data.get(key).type»
+				«ENDFOR»	
+				
+				platform platformname : default { //TODO
+					cluster clustername { //TODO
+						application applicationName { //TODO
+							«FOR key : data.keySet»
+								container «data.get(key).name» : Docker {
+									dbType : «data.get(key).type»
+									dbms = «data.get(key).dbms»
+									image = «data.get(key).dbms.toLowerCase»:latest // TODO
+									// TODO: evironment, volumes, networks, ports etc.
+								}
+							«ENDFOR»	
+						}
+					}
+				}					
 			''')
 		])
 	}
