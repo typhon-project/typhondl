@@ -3,7 +3,6 @@
  */
 package de.atb.typhondl.xtext.ui.wizard
 
-
 import org.eclipse.core.runtime.Status
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.xtext.ui.XtextProjectHelper
@@ -13,7 +12,6 @@ import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
 
 import static org.eclipse.core.runtime.IStatus.*
-import org.eclipse.xtext.ui.wizard.IExtendedProjectInfo
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -29,35 +27,37 @@ class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 @ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Combose</b></p>
 <p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
-	
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
-			var projectInfoClass = projectInfo.class.toString
+			val info = projectInfo as MyProjectInfo
+			var data = info.data;
 			projectNatures += #[JavaCore.NATURE_ID, XtextProjectHelper.NATURE_ID]
 			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
 			folders += "model"
 			addFile('''model/Test.tdl''', '''
-				/*
-				 * This is an example model
-				 */
-				Hello Test!
-				Class of Project info: «projectInfoClass»
+				Data collected : «data.forEach[key, value| showData(key,value)]»
 			''')
 		])
 	}
+	
+	def showData(String string, Database database) {
+		'''«string» («database.type») : «database.dbms»
+		'''
+	}
+	
 }
 
 @ProjectTemplate(label="Kubernetes", icon="kubernetes.png", description="<p><b>Kubernetes</b></p>
 <p>Descriptive text about using Kubernetes</p>")
 final class Kubernetes {
 	val requiredGroup = group("Required Properties")
-	val numberOfNodes = text("Number of max. nodes:", "", requiredGroup)
+	var numberOfNodes = text("Number of max. nodes:", "", requiredGroup)
 	val advanced = check("Advanced Kubernetes Properties:", false)
 	val advancedGroup = group("Properties")
-	val name = text("Name:", "MyApplication", advancedGroup)
-	val path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
+	var name = text("Name:", "MyApplication", advancedGroup)
+	var path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
 
 	override protected updateVariables() {
 		name.enabled = advanced.value
