@@ -13,7 +13,6 @@ import org.eclipse.xtext.ui.wizard.template.AbstractProjectTemplate;
 import org.eclipse.xtext.ui.wizard.template.NewProjectWizardTemplateSelectionPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
-import org.eclipse.xtext.ui.wizard.template.TemplateProjectInfo;
 import org.eclipse.xtext.ui.wizard.template.TemplateVariable;
 
 /**

@@ -460,4 +460,14 @@
 			<newWizardShortcut id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"/>
 		</perspectiveExtension>
 	</extension>
+	<extension
+ 		name="ModelingNature"
+ 		id="modelingNature"
+ 		point="org.eclipse.core.resources.natures">
+ 		<runtime>
+ 			<run
+ 				class="org.eclipse.sirius.nature.modelingproject">
+ 			</run>
+ 		</runtime>
+ 	</extension>
 </plugin>

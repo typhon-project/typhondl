@@ -24,7 +24,7 @@ class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 	}
 }
 
-@ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Combose</b></p>
+@ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Compose</b></p>
 <p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
 	override generateProjects(IProjectGenerator generator) {
@@ -33,10 +33,12 @@ final class DockerCompose {
 			location = projectInfo.locationPath
 			val info = projectInfo as MyProjectInfo
 			var data = info.data;
-			projectNatures += #[JavaCore.NATURE_ID, XtextProjectHelper.NATURE_ID]
-			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+			var appName = "MyApplication" //TODO where to get this from?
+			projectNatures += #["org.eclipse.sirius.nature.modelingproject",
+								XtextProjectHelper.NATURE_ID]
+			builderIds += #[XtextProjectHelper.BUILDER_ID]
 			folders += "model" // TODO: «data.forEach[key, value| doStuff]»
-			addFile('''model/MyApplication.tdl''', '''
+			addFile('''model/«appName».tdl''', '''
 				platformtype default //TODO (e.g. AWS)
 				containertype Docker
 				«FOR key : data.keySet»
@@ -57,6 +59,12 @@ final class DockerCompose {
 						}
 					}
 				}					
+			''')
+			addFile('''representation.aird''','''
+			<?xml version="1.0" encoding="UTF-8"?>
+			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xmi:id="_QL4C8OyqEeiO5ZfTEpz-IQ" version="13.0.0.201804031646">
+			  <semanticResources>model/«appName».tdl</semanticResources>
+			</viewpoint:DAnalysis>
 			''')
 		])
 	}
