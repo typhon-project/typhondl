@@ -108,7 +108,7 @@
 			<enabledWhen>
 				<adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
-   			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+   			<!--<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>-->
 		</page>
 	</extension>
 	<extension
@@ -282,7 +282,7 @@
 			<enabledWhen>
 				<adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
-			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+			<!--<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>-->
 		</page>
 	</extension>
 	<extension point="org.eclipse.ui.menus">
@@ -460,4 +460,14 @@
 			<newWizardShortcut id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"/>
 		</perspectiveExtension>
 	</extension>
+	<extension
+ 		name="ModelingNature"
+ 		id="modelingNature"
+ 		point="org.eclipse.core.resources.natures">
+ 		<runtime>
+ 			<run
+ 				class="org.eclipse.sirius.nature.modelingproject">
+ 			</run>
+ 		</runtime>
+ 	</extension>
 </plugin>
