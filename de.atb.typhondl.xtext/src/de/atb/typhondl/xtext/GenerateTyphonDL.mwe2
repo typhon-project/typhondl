@@ -38,7 +38,7 @@ Workflow {
 			}
 			projectWizard = {
 				generate = true
-				pluginProject = true
+				//pluginProject = true
     		}
 			
 			validator = {

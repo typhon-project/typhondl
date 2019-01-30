@@ -108,7 +108,7 @@
 			<enabledWhen>
 				<adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
-			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+   			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
 		</page>
 	</extension>
 	<extension
@@ -440,7 +440,7 @@
 			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.wizard.MyNewProjectWizard"
 			id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"
 			name="TyphonDL Project"
-			icon="icons/new_TyphonDL_proj.gif"
+			icon="icons/typhon_icon.png"
 			project="true">
 		</wizard>
 	</extension>
@@ -460,4 +460,14 @@
 			<newWizardShortcut id="de.atb.typhondl.xtext.ui.wizard.TyphonDLNewProjectWizard"/>
 		</perspectiveExtension>
 	</extension>
+	<extension
+ 		name="ModelingNature"
+ 		id="modelingNature"
+ 		point="org.eclipse.core.resources.natures">
+ 		<runtime>
+ 			<run
+ 				class="org.eclipse.sirius.nature.modelingproject">
+ 			</run>
+ 		</runtime>
+ 	</extension>
 </plugin>

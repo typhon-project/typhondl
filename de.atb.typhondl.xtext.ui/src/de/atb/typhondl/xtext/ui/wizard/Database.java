@@ -24,15 +24,7 @@ public class Database {
 		return name;
 	}
 
-//	public void setName(String name) { // QUESTION Not allowed to change name?
-//		this.name = name;
-//	}
-
 	public DBType getType() {
 		return type;
 	}
-
-//	public void setType(DBType type) { // QUESTION Not allowed to change type?
-//		this.type = type;
-//	}
 }

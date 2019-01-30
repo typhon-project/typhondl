@@ -4,6 +4,7 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.wizard.IWizardPage;
@@ -25,6 +26,8 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	protected NewProjectWizardTemplateSelectionPage templatePage;
 	protected TemplateParameterPage templateParameterPage;
 	protected MyWizardDBMSSelectionPage selectionPage;
+	
+	private boolean finishAfterTemplateSelection = false;
 
 	/**
 	 * 
@@ -55,6 +58,22 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		return new MyWizardDBMSSelectionPage(pageName, modelPath);
 	}
 
+	@Override
+	public IExtendedProjectInfo createProjectInfo() {
+		// TODO not pretty
+		boolean test = selectionPage == null;
+		System.out.println("createProjectInfo() : " + test);
+		HashMap<String, Database> data = new HashMap<String, Database>();
+		if (!test) {
+			data = selectionPage.getData();	
+		}
+		if (templatePage == null) {
+			return null;
+		}
+		MyProjectInfo info = new MyProjectInfo(templatePage.getSelectedTemplate(), data);
+		return info;
+	}
+	
 	private URI getModelPath() {
 		return mainPage == null? null : mainPage.getModelPath();
 	}
@@ -75,6 +94,9 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	@Override
 	public boolean canFinish() {
 		if (mainPage.useModel()) {
+			if (finishAfterTemplateSelection) {
+				return true; //TODO explain
+			}
 			return (templateParameterPage != null)? templateParameterPage.isPageComplete() : false;
 		}
 		return super.canFinish();
@@ -84,14 +106,19 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	public IWizardPage getNextPage(IWizardPage page) {
 		if (page instanceof NewProjectWizardTemplateSelectionPage) {
 			AbstractProjectTemplate selectedTemplate = templatePage.getSelectedTemplate();
-			if (selectedTemplate == null)
+			if (selectedTemplate == null) {
+				System.out.println("No template selected");
 				return null;
+			}
 			List<TemplateVariable> variables = selectedTemplate.getVariables();
-			if (variables.isEmpty())
+			if (variables.isEmpty()) {
+				finishAfterTemplateSelection = true;
 				return null;
+			}
+			finishAfterTemplateSelection = false;
 			//selectedTemplate.setProjectInfo(getProjectInfo()); // doens't work because setProjectInfo is not public
 			TemplateParameterPage parameterPage = new TemplateParameterPage(selectedTemplate);
-			parameterPage.setPageComplete(false); // TODO put this in own TemplateParameterPage
+			parameterPage.setPageComplete(variables.isEmpty()); // TODO put this in own TemplateParameterPage
 			parameterPage.setWizard(this);
 			templateParameterPage = parameterPage;
 			parameterPage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);
@@ -125,3 +152,4 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		return super.getNextPage(page);
 	}
 }
+	
