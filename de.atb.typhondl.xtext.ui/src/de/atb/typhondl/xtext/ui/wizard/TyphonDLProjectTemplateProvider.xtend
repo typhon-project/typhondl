@@ -47,7 +47,7 @@ final class DockerCompose {
 				
 				platform platformname : default { //TODO
 					cluster clustername { //TODO
-						application applicationName { //TODO
+						application «appName» { //TODO
 							«FOR key : data.keySet»
 								container «data.get(key).name» : Docker {
 									dbType : «data.get(key).type»
@@ -80,41 +80,49 @@ final class DockerCompose {
 <p>Descriptive text about using Kubernetes</p>")
 final class Kubernetes {
 	val requiredGroup = group("Required Properties")
-	var numberOfNodes = text("Number of max. nodes:", "", requiredGroup)
-	val advanced = check("Advanced Kubernetes Properties:", false)
-	val advancedGroup = group("Properties")
-	var name = text("Name:", "MyApplication", advancedGroup)
-	var path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
-
-	override protected updateVariables() {
-		name.enabled = advanced.value
-		path.enabled = advanced.value
-		if (!advanced.value) {
-			name.value = "MyApplication"
-			path.value = "tdl"
-		}
-	}
-
-	override protected validate() {
-		if (path.value.matches('[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*'))
-			null
-		else
-			new Status(ERROR, "Wizard", "'" + path + "' is not a valid package name")
-	}
+	var appName = text("Application Name:", "", requiredGroup)
 
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
-			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
-			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+			val info = projectInfo as MyProjectInfo
+			var data = info.data;
+			projectNatures += #["org.eclipse.sirius.nature.modelingproject", XtextProjectHelper.NATURE_ID]
+			builderIds += #[XtextProjectHelper.BUILDER_ID]
 			folders += "model"
-			addFile('''model/«name».tdl''', '''
-				/*
-				 * This is an example model
-				 */
-				Hello «name»!
+			addFile('''model/«appName».tdl''', '''
+				platformtype default //TODO (e.g. AWS)
+				containertype Docker
+				«FOR key : data.keySet»
+					dbtype «data.get(key).type»
+				«ENDFOR»	
+				
+				platform platformname : default { //TODO
+					cluster clustername { //TODO
+						application «appName» {
+							«FOR key : data.keySet»
+								container «data.get(key).name» : Docker {
+									dbType : «data.get(key).type»
+									dbms = «data.get(key).dbms»
+									image = «data.get(key).dbms.toLowerCase»:latest // TODO
+									// TODO: evironment, volumes, networks, ports etc.
+								}
+							«ENDFOR»	
+						}
+					}
+				}					
 			''')
+			addFile('''representation.aird''','''
+			<?xml version="1.0" encoding="UTF-8"?>
+			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xmi:id="_QL4C8OyqEeiO5ZfTEpz-IQ" version="13.0.0.201804031646">
+			  <semanticResources>model/«appName».tdl</semanticResources>
+			</viewpoint:DAnalysis>
+			''')
+			folders += "scripts"
+			addFile('''scripts/kompose.sh''','''
+			model/kompose convert''') //TODO how to do this within eclipse?
+			folders += "kubernetes"
 		])
 	}
 }
