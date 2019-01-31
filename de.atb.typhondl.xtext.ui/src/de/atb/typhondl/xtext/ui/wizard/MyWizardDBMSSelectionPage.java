@@ -3,16 +3,20 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
+import org.xml.sax.SAXException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -38,7 +42,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 	 */
 	public MyWizardDBMSSelectionPage(String pageName, URI modelPath) {
 		super(pageName);
-		loadDataToMap(modelPath);
+		dbsMap = loadDataToMap(modelPath);
 		setPageComplete(false);
 	}
 
@@ -72,6 +76,7 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// label + combo for each db
 		for (Database db : dbsMap.values()) {
+			System.out.println("in selectDBMSArea:" + db.getName());
 			databaseArea(db, selectionGroup);
 		}
 	}
@@ -102,13 +107,33 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
 		return !combos.stream().anyMatch((combo -> combo.getText().equals("")));
 	}
 
-	private void loadDataToMap(URI modelPath){
-		ModelReader reader = new ModelReader(modelPath);
-		dbsMap = reader.getData();
+	private HashMap<String, Database> loadDataToMap(URI modelPath){
+		ModelReader reader = new ModelReader();
+		String path = modelPath.toString();
+		if (path.endsWith("xmi")) {
+			try {
+				return reader.readXMIFile(modelPath);
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				e.printStackTrace();
+			} 
+		}
+		if (path.endsWith("tml")) {
+			try {
+				return reader.readTMLFile(modelPath);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Something went wrong with " + path);
+		return null;
 	}
 
 	public HashMap<String, Database> getData() {
 		return dbsMap;
+	}
+
+	public void updateModelPath(URI modelPath) {
+		dbsMap = loadDataToMap(modelPath);
 	}
 
 }

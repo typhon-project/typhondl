@@ -26,7 +26,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	protected NewProjectWizardTemplateSelectionPage templatePage;
 	protected TemplateParameterPage templateParameterPage;
 	protected MyWizardDBMSSelectionPage selectionPage;
-	
+
 	private boolean finishAfterTemplateSelection = false;
 
 	/**
@@ -62,7 +62,6 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 	public IExtendedProjectInfo createProjectInfo() {
 		// TODO not pretty
 		boolean test = selectionPage == null;
-		System.out.println("createProjectInfo() : " + test);
 		HashMap<String, Database> data = new HashMap<String, Database>();
 		if (!test) {
 			data = selectionPage.getData();	
@@ -73,7 +72,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		MyProjectInfo info = new MyProjectInfo(templatePage.getSelectedTemplate(), data);
 		return info;
 	}
-	
+
 	private URI getModelPath() {
 		return mainPage == null? null : mainPage.getModelPath();
 	}
@@ -107,7 +106,6 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		if (page instanceof NewProjectWizardTemplateSelectionPage) {
 			AbstractProjectTemplate selectedTemplate = templatePage.getSelectedTemplate();
 			if (selectedTemplate == null) {
-				System.out.println("No template selected");
 				return null;
 			}
 			List<TemplateVariable> variables = selectedTemplate.getVariables();
@@ -128,13 +126,10 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		}
 
 		if (page instanceof MyWizardNewProjectCreationPage  && ((MyWizardNewProjectCreationPage) page).useModel()) {
-			boolean test = selectionPage==null;
-			if (test) {
-				selectionPage = createSelectionPage("DBMSSelectionNewProjectPage", getModelPath());
-				selectionPage.setWizard(this);
-				selectionPage.setTitle(Messages.WizardSelectionPage_title_suffix);
-				selectionPage.setDescription(Messages.WizardSelectionPage_description);
-			}
+			selectionPage = createSelectionPage("DBMSSelectionNewProjectPage", getModelPath());
+			selectionPage.setWizard(this);
+			selectionPage.setTitle(Messages.WizardSelectionPage_title_suffix);
+			selectionPage.setDescription(Messages.WizardSelectionPage_description);
 			return selectionPage;
 		}
 
@@ -152,4 +147,4 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		return super.getNextPage(page);
 	}
 }
-	
+
