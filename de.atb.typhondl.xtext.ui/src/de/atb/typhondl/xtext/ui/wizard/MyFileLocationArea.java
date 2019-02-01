@@ -118,14 +118,8 @@ public class MyFileLocationArea {
 		data.horizontalSpan = 2;
 		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		locationPathField.setLayoutData(data);
-		locationPathField.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				errorReporter.reportError(checkValidLocation(), false);
-				// TODO model path used in selectionpage creation has to be updated
-			}
-		});
-		
+        locationPathField.addModifyListener(e -> errorReporter.reportError(checkValidLocation(), false));
+
 		browseButton = new Button(parent, SWT.PUSH);
 		browseButton.setText(Messages.WizardLoadModel_browseLabel);
 		
