@@ -81,6 +81,7 @@ public class MyFileLocationArea {
 		useModelButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				//TODO create (almost) empty .tdl file in new project
 				useModel = useModelButton.getSelection();
 				setUserEntryAreaEnabled();
 				String error = checkValidLocation();
