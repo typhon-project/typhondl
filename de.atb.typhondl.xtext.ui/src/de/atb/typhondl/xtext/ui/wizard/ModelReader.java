@@ -37,7 +37,6 @@ public class ModelReader {
 	               dbsMap.put(name, new Database(name, convertStringToDBType(dbType), ""));
 			}
 		}
-		System.out.println("print xmi");
 		return dbsMap;
 	}
 	
@@ -53,7 +52,6 @@ public class ModelReader {
 	        								  "")) // TODO linesplit(":")
 	        		);
 		}
-		System.out.println("print tml:");
 		return dbsMap;
 	}
 	

@@ -12,6 +12,8 @@ import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
 
 import static org.eclipse.core.runtime.IStatus.*
+import java.util.List
+import com.google.common.collect.Lists
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -24,15 +26,33 @@ class TyphonDLProjectTemplateProvider implements IProjectTemplateProvider {
 	}
 }
 
+@ProjectTemplate(label="Empty Project", icon="project_template.png", description="<p><b>Empty Model</b></p>")
+final class EmptyProject {
+	
+	override generateProjects(IProjectGenerator generator) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub") //TODO empty project template
+	}
+	
+}
+
 @ProjectTemplate(label="Docker-Compose", icon="docker.png", description="<p><b>Docker-Compose</b></p>
 <p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
+	
+	List<DBType> usedTypes = Lists.newArrayList()
+	
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
 			val info = projectInfo as MyProjectInfo
-			var data = info.data;
+			var data = info.data
+			for (key : data.keySet) {
+				println("hier: " + data.get(key).type)
+				if (!usedTypes.contains(data.get(key).type)) {
+					usedTypes += data.get(key).type
+				}
+			}
 			var appName = "MyApplication" //TODO where to get this from?
 			projectNatures += #["org.eclipse.sirius.nature.modelingproject",
 								XtextProjectHelper.NATURE_ID]
@@ -41,8 +61,8 @@ final class DockerCompose {
 			addFile('''model/«appName».tdl''', '''
 				platformtype default //TODO (e.g. AWS)
 				containertype Docker
-				«FOR key : data.keySet»
-					dbtype «data.get(key).type»
+				«FOR db : usedTypes»
+					dbtype «db»
 				«ENDFOR»	
 				
 				platform platformname : default { //TODO

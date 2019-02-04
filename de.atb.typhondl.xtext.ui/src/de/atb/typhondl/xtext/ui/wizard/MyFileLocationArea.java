@@ -43,8 +43,8 @@ public class MyFileLocationArea {
 	private Text locationPathField;
 	private Button browseButton;
 	private static final int SIZING_TEXT_FIELD_WIDTH = 250;
-	private final String[] extensions = {"*.tml", "*.xmi"};
-	private final String[] extensionsForValidation = {".tml", ".xmi"};
+	private final String[] extensions = {"*.xmi", "*.tml"};
+	private final String[] extensionsForValidation = {".xmi", ".tml"};
 
 	public MyFileLocationArea(IErrorMessageReporter errorReporter, Composite parent) {
 		this.errorReporter = errorReporter;

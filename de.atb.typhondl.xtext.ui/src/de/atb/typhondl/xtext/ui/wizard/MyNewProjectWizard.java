@@ -3,13 +3,19 @@
  */
 package de.atb.typhondl.xtext.ui.wizard;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.xtext.ui.wizard.IExtendedProjectInfo;
+import org.eclipse.xtext.ui.wizard.IProjectInfo;
 import org.eclipse.xtext.ui.wizard.template.AbstractProjectTemplate;
+import org.eclipse.xtext.ui.wizard.template.IProjectGenerator;
 import org.eclipse.xtext.ui.wizard.template.NewProjectWizardTemplateSelectionPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
@@ -89,6 +95,34 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 		}
 		return projectInfo;
 	}
+	
+	@Override
+	public boolean performFinish() {
+		final IProjectInfo projectInfo = getProjectInfo();
+		IRunnableWithProgress op = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException {
+				try {
+					doFinish(projectInfo, monitor);
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				} finally {
+					monitor.done();
+				}
+			}
+		};
+		try {
+			getContainer().run(true, false, op);
+		} catch (InterruptedException e) {
+			return false;
+		} catch (InvocationTargetException e) {
+			//logger.error(e.getMessage(), e);
+			Throwable realException = e.getTargetException();
+			MessageDialog.openError(getShell(), "Error", realException.getMessage()); //$NON-NLS-1$
+			return false;
+		}
+		return true;
+	}
 
 	@Override
 	public boolean canFinish() {
@@ -124,7 +158,11 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 			+ Messages.TemplateNewProjectWizard_create_new_suffix);
 			return parameterPage;
 		}
-
+		
+		if (page instanceof MyWizardNewProjectCreationPage && !((MyWizardNewProjectCreationPage) page).useModel()) {
+			AbstractProjectTemplate selectedTemplate = new EmptyProject(); //TODO create empty project
+		}
+		
 		if (page instanceof MyWizardNewProjectCreationPage  && ((MyWizardNewProjectCreationPage) page).useModel()) {
 			selectionPage = createSelectionPage("DBMSSelectionNewProjectPage", getModelPath());
 			selectionPage.setWizard(this);

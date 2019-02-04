@@ -26,6 +26,8 @@ public class Messages extends NLS {
 	public static String DockerCompose_Description;
 	public static String Kubernetes_Label;
 	public static String Kubernetes_Description;
+	public static String EmptyProject_Label;
+	public static String EmptyProject_Description;
 	
 	static {
 	// initialize resource bundle

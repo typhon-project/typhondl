@@ -245,7 +245,7 @@ public class MyWizardNewProjectCreationPage extends WizardPage {
         if (projectNameField == null) {
 			return initialProjectFieldValue;
 		}
-
+        System.out.println("getProjectName: " + projectNameField.getText());
         return getProjectNameFieldValue();
     }
 
