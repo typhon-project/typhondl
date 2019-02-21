@@ -100,7 +100,7 @@
 							-p
 						</argument>
 						<argument>
-							runtimeProject=/${project.basedir}
+							rootPath=.
 						</argument>
 					</arguments>
 				</configuration>
