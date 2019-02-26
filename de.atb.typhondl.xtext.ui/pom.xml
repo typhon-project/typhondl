@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>de.atb.typhondl.xtext.TyphonDL</groupId>
-		<artifactId>releng</artifactId>
+		<artifactId>typhondl</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
