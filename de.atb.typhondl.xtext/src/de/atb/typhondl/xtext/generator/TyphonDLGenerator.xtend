@@ -3,10 +3,18 @@
  */
 package de.atb.typhondl.xtext.generator
 
+import de.atb.typhondl.xtext.typhonDL.Application
+import de.atb.typhondl.xtext.typhonDL.Container
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import de.atb.typhondl.xtext.typhonDL.Key_Value
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
+import de.atb.typhondl.xtext.typhonDL.Key_ValueList
+import java.util.ArrayList
+import de.atb.typhondl.xtext.typhonDL.ContainerType
+import java.applet.Applet
 
 /**
  * Generates code from your model files on save.
@@ -15,47 +23,84 @@ import org.eclipse.xtext.generator.IGeneratorContext
  */
 class TyphonDLGenerator extends AbstractGenerator {
 
+	val yamlList = new ArrayList<String>();
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		// TODO different compile for each technology
+		for (app : resource.allContents.toIterable.filter(Application)) {
+			val list = new ArrayList<ContainerType>()
+			for (container : app.containers){
+				if (!list.contains(container.type)) {
+					list.add(container.type)
+				}
+			}
+			for (containerType : list){
+				if (containerType.name.equalsIgnoreCase("docker")){
+					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					yamlList.add(app.name + "/docker-compose.yaml")
+					fsa.generateFile("scripts/start" + app.name + ".java", app.dockerScript)
+				}
+				if (containerType.name.equalsIgnoreCase("kubernetes")){
+					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					fsa.generateFile("scripts/start" + app.name + ".java", app.kubernetesScript)
+					yamlList.add(app.name + "/docker-compose.yaml")
+				}
+			}
+			
+		}
 	}
-}
+	
+	override void afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context){
+		for (file : yamlList){
+			fsa.generateFile(file, fsa.readTextFile(file).toString.replace("\t","  ").replace("tab","  "))
+		}		
+	}
+	
+	def compose(Application app)'''
+		version: '3.7'Â«Â»
+		
+		services: Â«FOR container:app.containersÂ»
+				  tabÂ«container.compileÂ»
+				  Â«ENDFORÂ»
+	'''
+	
+	// 1. go to src-gen/app.name
+	// 2. docker-compose up
+	def dockerScript(Application app)'''
 
-//	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		
-//		for (app : resource.allContents.toIterable.filter(Application)) {
-//			fsa.generateFile(app.name + "/docker-compose.yaml", app.compile);
-//		}
-//	}
-//	
-//	def compile(Application app)'''
-//		version: '3.5'
-//		
-//		services: «FOR container:app.containers»
-//				    	«container.compile»
-//				  «ENDFOR»
-//	'''
-//	
-//	def compile(Container container)'''
-//	  	«container.name»:
-//	«FOR property:container.properties»
-//	  «property.compileProp»
-//	«ENDFOR»
-//	'''
-//	
-//	def dispatch compileProp(Assignment assignment)'''
-//	  «assignment.name»: «assignment.value»
-//	'''
-//	
-//	def dispatch compileProp(Array array)'''
-//	«array.name»: [
-//		«array.value»«FOR value:array.values»,
-//	«value»«ENDFOR»
-//	]
-//	'''
-//	
-//	def dispatch compileProp(KeyValueList keyValueList)'''
-//	«keyValueList.name»:
-//		«FOR string:keyValueList.environmentVars»
-//«««			cut off quotation marks:
-//			- «string.substring(1,string.length-1)» 
-//		«ENDFOR»
-//	'''
+	'''
+	
+	// 1. go to src-gen/app.name
+	// 2. start kompose in a container?
+	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
+	// 4. run kubectl create -f [all kubernetes yaml files]
+	def kubernetesScript(Application app)'''
+	kompose convert
+	'''
+	
+	def compile(Container container)'''
+	Â«container.nameÂ»:
+	Â«FOR property:container.propertiesÂ»
+	tabtabÂ«property.compilePropÂ»
+	Â«ENDFORÂ»
+	'''
+	
+	def dispatch compileProp(Key_Value key_value)'''
+	Â«key_value.nameÂ»: Â«key_value.valueÂ»
+	'''
+	
+	def dispatch compileProp(Key_ValueArray array)'''
+	Â«array.nameÂ»: [
+	tabtabÂ«array.valueÂ»Â«FOR value:array.valuesÂ»,
+	Â«valueÂ»Â«ENDFORÂ»
+	]
+	'''
+	
+	def dispatch compileProp(Key_ValueList list)'''
+	Â«list.nameÂ»:
+	Â«FOR string:list.environmentVarsÂ»
+	//cut off quotation marks:
+	tabtab- Â«string.substring(1,string.length-1)Â» 
+	Â«ENDFORÂ»
+	'''
+
+}
