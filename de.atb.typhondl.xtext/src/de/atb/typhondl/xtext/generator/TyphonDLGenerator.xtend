@@ -29,33 +29,33 @@ class TyphonDLGenerator extends AbstractGenerator {
 //	def compile(Application app)'''
 //		version: '3.5'
 //		
-//		services: Â«FOR container:app.containersÂ»
-//				    	Â«container.compileÂ»
-//				  Â«ENDFORÂ»
+//		services: «FOR container:app.containers»
+//				    	«container.compile»
+//				  «ENDFOR»
 //	'''
 //	
 //	def compile(Container container)'''
-//	  	Â«container.nameÂ»:
-//	Â«FOR property:container.propertiesÂ»
-//	  Â«property.compilePropÂ»
-//	Â«ENDFORÂ»
+//	  	«container.name»:
+//	«FOR property:container.properties»
+//	  «property.compileProp»
+//	«ENDFOR»
 //	'''
 //	
 //	def dispatch compileProp(Assignment assignment)'''
-//	  Â«assignment.nameÂ»: Â«assignment.valueÂ»
+//	  «assignment.name»: «assignment.value»
 //	'''
 //	
 //	def dispatch compileProp(Array array)'''
-//	Â«array.nameÂ»: [
-//		Â«array.valueÂ»Â«FOR value:array.valuesÂ»,
-//	Â«valueÂ»Â«ENDFORÂ»
+//	«array.name»: [
+//		«array.value»«FOR value:array.values»,
+//	«value»«ENDFOR»
 //	]
 //	'''
 //	
 //	def dispatch compileProp(KeyValueList keyValueList)'''
-//	Â«keyValueList.nameÂ»:
-//		Â«FOR string:keyValueList.environmentVarsÂ»
-//Â«Â«Â«			cut off quotation marks:
-//			- Â«string.substring(1,string.length-1)Â» 
-//		Â«ENDFORÂ»
+//	«keyValueList.name»:
+//		«FOR string:keyValueList.environmentVars»
+//«««			cut off quotation marks:
+//			- «string.substring(1,string.length-1)» 
+//		«ENDFOR»
 //	'''
