@@ -23,25 +23,29 @@ import java.applet.Applet
  */
 class TyphonDLGenerator extends AbstractGenerator {
 
-	val yamlList = new ArrayList<String>();
+	val yamlList = new ArrayList<String>
+	val containerList = new ArrayList<ContainerObject>
+	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
 		for (app : resource.allContents.toIterable.filter(Application)) {
-			val list = new ArrayList<ContainerType>()
+			val typeList = new ArrayList<ContainerType>()
 			for (container : app.containers){
-				if (!list.contains(container.type)) {
-					list.add(container.type)
+				if (!typeList.contains(container.type)) {
+					typeList.add(container.type)
 				}
+				containerList.add(createContainerObjects(container))
 			}
-			for (containerType : list){
+			for (containerType : typeList){
 				if (containerType.name.equalsIgnoreCase("docker")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/start" + app.name + ".java", app.dockerScript)
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+					fsa.generateFile("script/pom.xml", app.pom)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					fsa.generateFile("scripts/start" + app.name + ".java", app.kubernetesScript)
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
 					yamlList.add(app.name + "/docker-compose.yaml")
 				}
 			}
@@ -49,11 +53,23 @@ class TyphonDLGenerator extends AbstractGenerator {
 		}
 	}
 	
+	def ContainerObject createContainerObjects(Container container) {
+		
+		for (property : container.properties){
+			
+		}
+		val containerObject = new ContainerObject => [
+			name = container.name
+		]
+		return containerObject
+	}
+	
 	override void afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context){
 		for (file : yamlList){
 			fsa.generateFile(file, fsa.readTextFile(file).toString.replace("\t","  ").replace("tab","  "))
 		}		
 	}
+	
 	
 	def compose(Application app)'''
 		version: '3.7'«»
@@ -63,12 +79,40 @@ class TyphonDLGenerator extends AbstractGenerator {
 				  «ENDFOR»
 	'''
 	
+	def pom(Application app)'''
+	<dependency>
+	    <groupId>com.github.docker-java</groupId>
+	    <artifactId>docker-java</artifactId>
+	    <version>3.1.1</version>
+	</dependency>
+	'''
+	
 	// 1. go to src-gen/app.name
 	// 2. docker-compose up
 	def dockerScript(Application app)'''
+	public class Start«app.name»{
+		
+		public static void main(String [] args) {
+			
+			«FOR container:app.containers»
+			«container.create»
+			«ENDFOR»
 
+		}
+	}
 	'''
 	
+	def create(Container container)'''
+	
+	DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+	CreateContainerResponse «container.name»
+		= dockerClient.createContainerCmd(mongo:latest)
+			.withCmd("--bind_ip_all")
+			.withName("mongo")
+			.withHostName("flug")
+			.withPortBindings(PortBinding.parse("9999:27017"))
+			.withBinds(Bind.parse("/Users/flug/mongo/data/db:/data/db")).exec();
+	'''
 	// 1. go to src-gen/app.name
 	// 2. start kompose in a container?
 	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
