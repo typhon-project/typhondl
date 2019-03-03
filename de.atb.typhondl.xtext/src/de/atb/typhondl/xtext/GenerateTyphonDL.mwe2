@@ -19,7 +19,7 @@ Workflow {
 					enabled = true
 				}
 				eclipsePluginTest = {
-					enabled = true
+					enabled = false
 				}
 				createEclipseMetaData = true
 			}
@@ -36,6 +36,11 @@ Workflow {
 			serializer = {
 				generateStub = false
 			}
+			projectWizard = {
+				generate = true
+				//pluginProject = true
+    		}
+			
 			validator = {
 				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 				// Generates checks for @Deprecated grammar annotations, an IssueProvider and a corresponding PropertyPage
