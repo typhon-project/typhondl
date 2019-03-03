@@ -14,7 +14,6 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
 import de.atb.typhondl.xtext.typhonDL.Key_ValueList
 import java.util.ArrayList
 import de.atb.typhondl.xtext.typhonDL.ContainerType
-import java.applet.Applet
 
 /**
  * Generates code from your model files on save.
@@ -41,12 +40,13 @@ class TyphonDLGenerator extends AbstractGenerator {
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
-					fsa.generateFile("script/pom.xml", app.pom)
+					fsa.generateFile("scripts/pom.xml", app.dockerPom)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
 					yamlList.add(app.name + "/docker-compose.yaml")
+					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
 				}
 			}
 			
@@ -54,14 +54,31 @@ class TyphonDLGenerator extends AbstractGenerator {
 	}
 	
 	def ContainerObject createContainerObjects(Container container) {
-		
-		for (property : container.properties){
-			
-		}
 		val containerObject = new ContainerObject => [
 			name = container.name
-		]
+			tech = container.type.name
+		]		
+		for (property : container.properties){
+			switch property.name {
+				case "image" : containerObject.image = property.saveProp
+				case "ports" : containerObject.ports = property.saveProp
+				case "volumes" : containerObject.volumes = property.saveProp
+			}
+		}
+
 		return containerObject
+	}
+	
+	def dispatch String saveProp(Key_Value key_value){
+		return key_value.value
+	}
+	
+	def dispatch String saveProp(Key_ValueArray array){
+		return ""
+	}
+	
+	def dispatch String saveProp(Key_ValueList list){
+		return ""
 	}
 	
 	override void afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context){
@@ -79,11 +96,20 @@ class TyphonDLGenerator extends AbstractGenerator {
 				  «ENDFOR»
 	'''
 	
-	def pom(Application app)'''
+	def dockerPom(Application app)'''
 	<dependency>
 	    <groupId>com.github.docker-java</groupId>
 	    <artifactId>docker-java</artifactId>
 	    <version>3.1.1</version>
+	</dependency>
+	'''
+	
+	def kubernetesPom(Application app)'''
+	<dependency>
+	    <groupId>io.kubernetes</groupId>
+	    <artifactId>client-java</artifactId>
+	    <version>3.0.0</version>
+	    <scope>compile</scope>
 	</dependency>
 	'''
 	
@@ -93,8 +119,8 @@ class TyphonDLGenerator extends AbstractGenerator {
 	public class Start«app.name»{
 		
 		public static void main(String [] args) {
-			
-			«FOR container:app.containers»
+			DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+			«FOR container:containerList»
 			«container.create»
 			«ENDFOR»
 
@@ -102,23 +128,102 @@ class TyphonDLGenerator extends AbstractGenerator {
 	}
 	'''
 	
-	def create(Container container)'''
+	def create(ContainerObject container)'''	
 	
-	DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+	// creating container «container.name»
 	CreateContainerResponse «container.name»
-		= dockerClient.createContainerCmd(mongo:latest)
+		= dockerClient.createContainerCmd("«container.image»")
 			.withCmd("--bind_ip_all")
-			.withName("mongo")
+			.withName("«container.name»")
 			.withHostName("flug")
-			.withPortBindings(PortBinding.parse("9999:27017"))
-			.withBinds(Bind.parse("/Users/flug/mongo/data/db:/data/db")).exec();
+			«IF (container.ports !== null)»
+			.withPortBindings(PortBinding.parse("«container.ports»"))
+			«ENDIF»
+			«IF (container.volumes !== null)»
+			.withBinds(Bind.parse("«container.volumes»")).exec();
+			«ENDIF»
+	dockerClient.startContainerCmd(container.getId()).exec();
+	 
+	dockerClient.stopContainerCmd(container.getId()).exec();
+	 
+	dockerClient.killContainerCmd(container.getId()).exec();
 	'''
 	// 1. go to src-gen/app.name
 	// 2. start kompose in a container?
 	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
 	// 4. run kubectl create -f [all kubernetes yaml files]
 	def kubernetesScript(Application app)'''
-	kompose convert
+	/*
+	Copyright 2018 The Kubernetes Authors.
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	    http://www.apache.org/licenses/LICENSE-2.0
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+	*/
+	package io.kubernetes.client.examples;
+	
+	import io.kubernetes.client.ApiException;
+	import io.kubernetes.client.custom.IntOrString;
+	import io.kubernetes.client.models.V1Pod;
+	import io.kubernetes.client.models.V1PodBuilder;
+	import io.kubernetes.client.models.V1Service;
+	import io.kubernetes.client.models.V1ServiceBuilder;
+	import io.kubernetes.client.util.Yaml;
+	import java.io.IOException;
+	import java.util.HashMap;
+	
+	/**
+	 * A simple example of how to parse a Kubernetes object.
+	 *
+	 * <p>Easiest way to run this: mvn exec:java
+	 * -Dexec.mainClass="io.kubernetes.client.examples.YamlExample"
+	 *
+	 * <p>From inside $REPO_DIR/examples
+	 */
+	public class YamlExample {
+	  public static void main(String[] args) throws IOException, ApiException, ClassNotFoundException {
+	    V1Pod pod =
+	        new V1PodBuilder()
+	            .withNewMetadata()
+	            .withName("apod")
+	            .endMetadata()
+	            .withNewSpec()
+	            .addNewContainer()
+	            .withName("www")
+	            .withImage("nginx")
+	            .withNewResources()
+	            .withLimits(new HashMap<>())
+	            .endResources()
+	            .endContainer()
+	            .endSpec()
+	            .build();
+	    System.out.println(Yaml.dump(pod));
+	
+	    V1Service svc =
+	        new V1ServiceBuilder()
+	            .withNewMetadata()
+	            .withName("aservice")
+	            .endMetadata()
+	            .withNewSpec()
+	            .withSessionAffinity("ClientIP")
+	            .withType("NodePort")
+	            .addNewPort()
+	            .withProtocol("TCP")
+	            .withName("client")
+	            .withPort(8008)
+	            .withNodePort(8080)
+	            .withTargetPort(new IntOrString(8080))
+	            .endPort()
+	            .endSpec()
+	            .build();
+	    System.out.println(Yaml.dump(svc));
+	  }
+	}
 	'''
 	
 	def compile(Container container)'''
@@ -134,16 +239,15 @@ class TyphonDLGenerator extends AbstractGenerator {
 	
 	def dispatch compileProp(Key_ValueArray array)'''
 	«array.name»: [
-	tabtab«array.value»«FOR value:array.values»,
-	«value»«ENDFOR»
-	]
+	tabtabtab«array.value»«FOR value:array.values»,
+	tabtabtab«value»«ENDFOR»
+	tabtab]
 	'''
 	
 	def dispatch compileProp(Key_ValueList list)'''
 	«list.name»:
 	«FOR string:list.environmentVars»
-	//cut off quotation marks:
-	tabtab- «string.substring(1,string.length-1)» 
+	tabtabtab- «string.substring(1,string.length-1)» 
 	«ENDFOR»
 	'''
 
