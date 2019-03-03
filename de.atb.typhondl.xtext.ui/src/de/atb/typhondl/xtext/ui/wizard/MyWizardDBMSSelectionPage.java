@@ -76,7 +76,6 @@ public class MyWizardDBMSSelectionPage extends WizardPage {
         selectionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// label + combo for each db
 		for (Database db : dbsMap.values()) {
-			System.out.println("in selectDBMSArea:" + db.getName());
 			databaseArea(db, selectionGroup);
 		}
 	}

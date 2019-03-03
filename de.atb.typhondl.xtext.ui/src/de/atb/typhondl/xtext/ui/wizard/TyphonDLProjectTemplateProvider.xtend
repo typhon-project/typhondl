@@ -3,17 +3,12 @@
  */
 package de.atb.typhondl.xtext.ui.wizard
 
-import org.eclipse.core.runtime.Status
-import org.eclipse.jdt.core.JavaCore
+import java.util.ArrayList
 import org.eclipse.xtext.ui.XtextProjectHelper
 import org.eclipse.xtext.ui.util.PluginProjectFactory
 import org.eclipse.xtext.ui.wizard.template.IProjectGenerator
 import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
-
-import static org.eclipse.core.runtime.IStatus.*
-import java.util.List
-import com.google.common.collect.Lists
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -39,7 +34,7 @@ final class EmptyProject {
 <p>Descriptive text about using Docker-Compose</p>")
 final class DockerCompose {
 	
-	List<DBType> usedTypes = Lists.newArrayList()
+	var usedTypes = new ArrayList<DBType>
 	
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
@@ -48,7 +43,6 @@ final class DockerCompose {
 			val info = projectInfo as MyProjectInfo
 			var data = info.data
 			for (key : data.keySet) {
-				println("hier: " + data.get(key).type)
 				if (!usedTypes.contains(data.get(key).type)) {
 					usedTypes += data.get(key).type
 				}
@@ -71,7 +65,6 @@ final class DockerCompose {
 							«FOR key : data.keySet»
 								container «data.get(key).name» : Docker {
 									dbType : «data.get(key).type»
-									dbms = «data.get(key).dbms»
 									image = «data.get(key).dbms.toLowerCase»:latest // TODO
 									// TODO: evironment, volumes, networks, ports etc.
 								}
@@ -100,7 +93,7 @@ final class DockerCompose {
 <p>Descriptive text about using Kubernetes</p>")
 final class Kubernetes {
 	val requiredGroup = group("Required Properties")
-	var appName = text("Application Name:", "", requiredGroup)
+	var appName = text("Application Name:", "MyApplication", requiredGroup)
 
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
@@ -113,7 +106,7 @@ final class Kubernetes {
 			folders += "model"
 			addFile('''model/«appName».tdl''', '''
 				platformtype default //TODO (e.g. AWS)
-				containertype Docker
+				containertype Kubernetes
 				«FOR key : data.keySet»
 					dbtype «data.get(key).type»
 				«ENDFOR»	
@@ -122,9 +115,8 @@ final class Kubernetes {
 					cluster clustername { //TODO
 						application «appName» {
 							«FOR key : data.keySet»
-								container «data.get(key).name» : Docker {
+								container «data.get(key).name» : Kubernetes {
 									dbType : «data.get(key).type»
-									dbms = «data.get(key).dbms»
 									image = «data.get(key).dbms.toLowerCase»:latest // TODO
 									// TODO: evironment, volumes, networks, ports etc.
 								}
@@ -139,10 +131,6 @@ final class Kubernetes {
 			  <semanticResources>model/«appName».tdl</semanticResources>
 			</viewpoint:DAnalysis>
 			''')
-			folders += "scripts"
-			addFile('''scripts/kompose.sh''','''
-			model/kompose convert''') //TODO how to do this within eclipse?
-			folders += "kubernetes"
 		])
 	}
 }

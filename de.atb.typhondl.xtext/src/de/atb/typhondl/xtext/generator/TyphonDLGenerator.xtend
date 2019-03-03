@@ -3,10 +3,17 @@
  */
 package de.atb.typhondl.xtext.generator
 
+import de.atb.typhondl.xtext.typhonDL.Application
+import de.atb.typhondl.xtext.typhonDL.Container
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import de.atb.typhondl.xtext.typhonDL.Key_Value
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
+import de.atb.typhondl.xtext.typhonDL.Key_ValueList
+import java.util.ArrayList
+import de.atb.typhondl.xtext.typhonDL.ContainerType
 
 /**
  * Generates code from your model files on save.
@@ -15,11 +22,233 @@ import org.eclipse.xtext.generator.IGeneratorContext
  */
 class TyphonDLGenerator extends AbstractGenerator {
 
+	val yamlList = new ArrayList<String>
+	val containerList = new ArrayList<ContainerObject>
+	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(Greeting)
-//				.map[name]
-//				.join(', '))
+		// TODO different compile for each technology
+		for (app : resource.allContents.toIterable.filter(Application)) {
+			val typeList = new ArrayList<ContainerType>()
+			for (container : app.containers){
+				if (!typeList.contains(container.type)) {
+					typeList.add(container.type)
+				}
+				containerList.add(createContainerObjects(container))
+			}
+			for (containerType : typeList){
+				if (containerType.name.equalsIgnoreCase("docker")){
+					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					yamlList.add(app.name + "/docker-compose.yaml")
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+					fsa.generateFile("scripts/pom.xml", app.dockerPom)
+				}
+				if (containerType.name.equalsIgnoreCase("kubernetes")){
+					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
+					yamlList.add(app.name + "/docker-compose.yaml")
+					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
+				}
+			}
+			
+		}
 	}
+	
+	def ContainerObject createContainerObjects(Container container) {
+		val containerObject = new ContainerObject => [
+			name = container.name
+			tech = container.type.name
+		]		
+		for (property : container.properties){
+			switch property.name {
+				case "image" : containerObject.image = property.saveProp
+				case "ports" : containerObject.ports = property.saveProp
+				case "volumes" : containerObject.volumes = property.saveProp
+			}
+		}
+
+		return containerObject
+	}
+	
+	def dispatch String saveProp(Key_Value key_value){
+		return key_value.value
+	}
+	
+	def dispatch String saveProp(Key_ValueArray array){
+		return ""
+	}
+	
+	def dispatch String saveProp(Key_ValueList list){
+		return ""
+	}
+	
+	override void afterGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context){
+		for (file : yamlList){
+			fsa.generateFile(file, fsa.readTextFile(file).toString.replace("\t","  ").replace("tab","  "))
+		}		
+	}
+	
+	
+	def compose(Application app)'''
+		version: '3.7'«»
+		
+		services: «FOR container:app.containers»
+				  tab«container.compile»
+				  «ENDFOR»
+	'''
+	
+	def dockerPom(Application app)'''
+	<dependency>
+	    <groupId>com.github.docker-java</groupId>
+	    <artifactId>docker-java</artifactId>
+	    <version>3.1.1</version>
+	</dependency>
+	'''
+	
+	def kubernetesPom(Application app)'''
+	<dependency>
+	    <groupId>io.kubernetes</groupId>
+	    <artifactId>client-java</artifactId>
+	    <version>3.0.0</version>
+	    <scope>compile</scope>
+	</dependency>
+	'''
+	
+	// 1. go to src-gen/app.name
+	// 2. docker-compose up
+	def dockerScript(Application app)'''
+	public class Start«app.name»{
+		
+		public static void main(String [] args) {
+			DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+			«FOR container:containerList»
+			«container.create»
+			«ENDFOR»
+
+		}
+	}
+	'''
+	
+	def create(ContainerObject container)'''	
+	
+	// creating container «container.name»
+	CreateContainerResponse «container.name»
+		= dockerClient.createContainerCmd("«container.image»")
+			.withCmd("--bind_ip_all")
+			.withName("«container.name»")
+			.withHostName("flug")
+			«IF (container.ports !== null)»
+			.withPortBindings(PortBinding.parse("«container.ports»"))
+			«ENDIF»
+			«IF (container.volumes !== null)»
+			.withBinds(Bind.parse("«container.volumes»")).exec();
+			«ENDIF»
+	dockerClient.startContainerCmd(container.getId()).exec();
+	 
+	dockerClient.stopContainerCmd(container.getId()).exec();
+	 
+	dockerClient.killContainerCmd(container.getId()).exec();
+	'''
+	// 1. go to src-gen/app.name
+	// 2. start kompose in a container?
+	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
+	// 4. run kubectl create -f [all kubernetes yaml files]
+	def kubernetesScript(Application app)'''
+	/*
+	Copyright 2018 The Kubernetes Authors.
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	    http://www.apache.org/licenses/LICENSE-2.0
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+	*/
+	package io.kubernetes.client.examples;
+	
+	import io.kubernetes.client.ApiException;
+	import io.kubernetes.client.custom.IntOrString;
+	import io.kubernetes.client.models.V1Pod;
+	import io.kubernetes.client.models.V1PodBuilder;
+	import io.kubernetes.client.models.V1Service;
+	import io.kubernetes.client.models.V1ServiceBuilder;
+	import io.kubernetes.client.util.Yaml;
+	import java.io.IOException;
+	import java.util.HashMap;
+	
+	/**
+	 * A simple example of how to parse a Kubernetes object.
+	 *
+	 * <p>Easiest way to run this: mvn exec:java
+	 * -Dexec.mainClass="io.kubernetes.client.examples.YamlExample"
+	 *
+	 * <p>From inside $REPO_DIR/examples
+	 */
+	public class YamlExample {
+	  public static void main(String[] args) throws IOException, ApiException, ClassNotFoundException {
+	    V1Pod pod =
+	        new V1PodBuilder()
+	            .withNewMetadata()
+	            .withName("apod")
+	            .endMetadata()
+	            .withNewSpec()
+	            .addNewContainer()
+	            .withName("www")
+	            .withImage("nginx")
+	            .withNewResources()
+	            .withLimits(new HashMap<>())
+	            .endResources()
+	            .endContainer()
+	            .endSpec()
+	            .build();
+	    System.out.println(Yaml.dump(pod));
+	
+	    V1Service svc =
+	        new V1ServiceBuilder()
+	            .withNewMetadata()
+	            .withName("aservice")
+	            .endMetadata()
+	            .withNewSpec()
+	            .withSessionAffinity("ClientIP")
+	            .withType("NodePort")
+	            .addNewPort()
+	            .withProtocol("TCP")
+	            .withName("client")
+	            .withPort(8008)
+	            .withNodePort(8080)
+	            .withTargetPort(new IntOrString(8080))
+	            .endPort()
+	            .endSpec()
+	            .build();
+	    System.out.println(Yaml.dump(svc));
+	  }
+	}
+	'''
+	
+	def compile(Container container)'''
+	«container.name»:
+	«FOR property:container.properties»
+	tabtab«property.compileProp»
+	«ENDFOR»
+	'''
+	
+	def dispatch compileProp(Key_Value key_value)'''
+	«key_value.name»: «key_value.value»
+	'''
+	
+	def dispatch compileProp(Key_ValueArray array)'''
+	«array.name»: [
+	tabtabtab«array.value»«FOR value:array.values»,
+	tabtabtab«value»«ENDFOR»
+	tabtab]
+	'''
+	
+	def dispatch compileProp(Key_ValueList list)'''
+	«list.name»:
+	«FOR string:list.environmentVars»
+	tabtabtab- «string.substring(1,string.length-1)» 
+	«ENDFOR»
+	'''
+
 }
