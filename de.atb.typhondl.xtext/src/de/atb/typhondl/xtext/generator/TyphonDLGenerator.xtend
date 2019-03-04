@@ -23,10 +23,11 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType
 class TyphonDLGenerator extends AbstractGenerator {
 
 	val yamlList = new ArrayList<String>
-	val containerList = new ArrayList<ContainerObject>
+	ArrayList<ContainerObject> containerList
 	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
+		containerList = new ArrayList<ContainerObject>
 		for (app : resource.allContents.toIterable.filter(Application)) {
 			val typeList = new ArrayList<ContainerType>()
 			for (container : app.containers){
@@ -98,6 +99,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 	'''
 	
 	def dockerPom(Application app)'''
+	<resource>
+		<includes>
+			<include>**/docker-compose-*.yml</include>
+		</includes>
+	</resource>
+	
 	<dependency>
 	    <groupId>com.github.docker-java</groupId>
 	    <artifactId>docker-java</artifactId>
