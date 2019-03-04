@@ -62,7 +62,7 @@ Property :
 ;
 
 Key_Value : 
-	name=ID '=' value=Value
+	name=ID '=' value=Value';'
 ;
 
 Key_ValueList:

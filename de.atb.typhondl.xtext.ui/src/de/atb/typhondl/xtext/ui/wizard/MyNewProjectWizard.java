@@ -150,7 +150,7 @@ public class MyNewProjectWizard extends TemplateNewProjectWizard {
 			finishAfterTemplateSelection = false;
 			//selectedTemplate.setProjectInfo(getProjectInfo()); // doens't work because setProjectInfo is not public
 			TemplateParameterPage parameterPage = new TemplateParameterPage(selectedTemplate);
-			parameterPage.setPageComplete(variables.isEmpty()); // TODO put this in own TemplateParameterPage
+			parameterPage.setPageComplete(variables.isEmpty()); // TODO edit setPageComplete in TemplateParameterPage
 			parameterPage.setWizard(this);
 			templateParameterPage = parameterPage;
 			parameterPage.setTitle(shortName(getGrammarName()) + Messages.TemplateNewProjectWizard_title_suffix);

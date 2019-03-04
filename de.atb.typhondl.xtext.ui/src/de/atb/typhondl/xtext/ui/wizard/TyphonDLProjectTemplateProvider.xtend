@@ -47,12 +47,12 @@ final class DockerCompose {
 					usedTypes += data.get(key).type
 				}
 			}
-			var appName = "MyApplication" //TODO where to get this from?
+			var appName = "myApplication" //TODO enter this at some place. Maybe first page of wizard? Get from ML-model?
 			projectNatures += #["org.eclipse.sirius.nature.modelingproject",
 								XtextProjectHelper.NATURE_ID]
 			builderIds += #[XtextProjectHelper.BUILDER_ID]
-			folders += "model" // TODO: «data.forEach[key, value| doStuff]»
-			addFile('''model/«appName».tdl''', '''
+		 	// TODO: «data.forEach[key, value| doStuff]»
+			addFile('''deploymentModel.tdl''', '''
 				platformtype default //TODO (e.g. AWS)
 				containertype Docker
 				«FOR db : usedTypes»
@@ -65,7 +65,7 @@ final class DockerCompose {
 							«FOR key : data.keySet»
 								container «data.get(key).name» : Docker {
 									dbType : «data.get(key).type»
-									image = «data.get(key).dbms.toLowerCase»:latest // TODO
+									image = «data.get(key).dbms.toLowerCase»:latest; // TODO
 									// TODO: evironment, volumes, networks, ports etc.
 								}
 							«ENDFOR»	
@@ -76,7 +76,7 @@ final class DockerCompose {
 			addFile('''representation.aird''','''
 			<?xml version="1.0" encoding="UTF-8"?>
 			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xmi:id="_QL4C8OyqEeiO5ZfTEpz-IQ" version="13.0.0.201804031646">
-			  <semanticResources>model/«appName».tdl</semanticResources>
+			  <semanticResources>deploymentModel.tdl</semanticResources>
 			</viewpoint:DAnalysis>
 			''')
 		])
@@ -103,8 +103,7 @@ final class Kubernetes {
 			var data = info.data;
 			projectNatures += #["org.eclipse.sirius.nature.modelingproject", XtextProjectHelper.NATURE_ID]
 			builderIds += #[XtextProjectHelper.BUILDER_ID]
-			folders += "model"
-			addFile('''model/«appName».tdl''', '''
+			addFile('''deploymentModel.tdl''', '''
 				platformtype default //TODO (e.g. AWS)
 				containertype Kubernetes
 				«FOR key : data.keySet»
@@ -117,7 +116,7 @@ final class Kubernetes {
 							«FOR key : data.keySet»
 								container «data.get(key).name» : Kubernetes {
 									dbType : «data.get(key).type»
-									image = «data.get(key).dbms.toLowerCase»:latest // TODO
+									image = «data.get(key).dbms.toLowerCase»:latest; // TODO
 									// TODO: evironment, volumes, networks, ports etc.
 								}
 							«ENDFOR»	
@@ -128,7 +127,7 @@ final class Kubernetes {
 			addFile('''representation.aird''','''
 			<?xml version="1.0" encoding="UTF-8"?>
 			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xmi:id="_QL4C8OyqEeiO5ZfTEpz-IQ" version="13.0.0.201804031646">
-			  <semanticResources>model/«appName».tdl</semanticResources>
+			  <semanticResources>deploymentModel.tdl</semanticResources>
 			</viewpoint:DAnalysis>
 			''')
 		])

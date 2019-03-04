@@ -39,12 +39,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 				if (containerType.name.equalsIgnoreCase("docker")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+					fsa.generateFile("scripts/Start_" + app.name + ".java", app.dockerScript)
 					fsa.generateFile("scripts/pom.xml", app.dockerPom)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
+					fsa.generateFile("scripts/Start_" + app.name + ".java", app.kubernetesScript)
 					yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
 				}
@@ -53,6 +53,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 		}
 	}
 	
+	// TODO: maybe read in compose file reference https://docs.docker.com/compose/compose-file/#labels 
 	def ContainerObject createContainerObjects(Container container) {
 		val containerObject = new ContainerObject => [
 			name = container.name
@@ -113,8 +114,6 @@ class TyphonDLGenerator extends AbstractGenerator {
 	</dependency>
 	'''
 	
-	// 1. go to src-gen/app.name
-	// 2. docker-compose up
 	def dockerScript(Application app)'''
 	public class Start«app.name»{
 		
@@ -148,10 +147,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 	 
 	dockerClient.killContainerCmd(container.getId()).exec();
 	'''
-	// 1. go to src-gen/app.name
-	// 2. start kompose in a container?
-	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
-	// 4. run kubectl create -f [all kubernetes yaml files]
+
 	def kubernetesScript(Application app)'''
 	/*
 	Copyright 2018 The Kubernetes Authors.
