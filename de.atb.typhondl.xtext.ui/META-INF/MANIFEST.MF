@@ -24,7 +24,6 @@ Require-Bundle: de.atb.typhondl.xtext,
  org.eclipse.pde.core,
  org.eclipse.ui.forms
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: de.atb.typhondl.xtext.ui.contentassist,
  de.atb.typhondl.xtext.ui.quickfix,
  de.atb.typhondl.xtext.ui.internal,
