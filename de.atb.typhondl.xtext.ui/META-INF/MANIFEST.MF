@@ -27,6 +27,5 @@ Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: de.atb.typhondl.xtext.ui.contentassist,
  de.atb.typhondl.xtext.ui.quickfix,
- de.atb.typhondl.xtext.ui.internal,
- de.atb.typhondl.xtext.ui.wizard
+ de.atb.typhondl.xtext.ui.internal
 Bundle-Activator: de.atb.typhondl.xtext.ui.internal.XtextActivator
