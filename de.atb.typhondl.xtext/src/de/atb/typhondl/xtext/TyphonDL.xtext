@@ -9,11 +9,30 @@ DeploymentModel:
 ;
 
 Element: 
-	Deployment | Type
+	Deployment | Type | DB
 ;
    
 Type:
-    PlatformType | ContainerType | DBType 
+    PlatformType | ContainerType | DBType
+;
+
+enum SupportedDBMS:
+	MariaDB |
+	Mongo
+;
+
+MariaDB:
+	'mariaDB' name=ID '{'
+	(env+=EnvironmenVars? | mandatory+=MandatoryVars)*
+	'}'
+;
+
+MandatoryVars:
+	name=ID '=' value=Value ';'
+;
+
+EnvironmenVars:
+	name=ID ':' value=Value ';'
 ;
 
 PlatformType:
@@ -28,6 +47,11 @@ DBType:
 	'dbtype' name=ID
 ;
 
+DB:
+	'databases {'
+	(dbs+=SupportedDBMS)+
+	'}'
+;
 
 Deployment :
 	{Deployment}
