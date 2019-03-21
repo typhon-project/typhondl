@@ -9,7 +9,6 @@ import org.eclipse.xtext.ui.wizard.template.IFileTemplateProvider;
 public class MyFileTemplateProvider  implements IFileTemplateProvider {
 	  @Override
 	  public AbstractFileTemplate[] getFileTemplates() {
-		System.out.println("MyFileTemplateProvider");
 	    HelloWorldFile _helloWorldFile = new HelloWorldFile();
 	    DockerComposeFile _dockerComposeFile = new DockerComposeFile();
 	    //KubernetesFile _kubernetesFile = new KubernetesFile();
@@ -17,7 +16,6 @@ public class MyFileTemplateProvider  implements IFileTemplateProvider {
 	  }
 
 	public AbstractFileTemplate[] getFileTemplates(URI modelPath) {
-		System.out.println("MyFileTemplateProvider WITH URI");
 	    HelloWorldFile _helloWorldFile = new HelloWorldFile();
 	    DockerComposeFile _dockerComposeFile = new DockerComposeFile(modelPath);
 	    //KubernetesFile _kubernetesFile = new KubernetesFile();

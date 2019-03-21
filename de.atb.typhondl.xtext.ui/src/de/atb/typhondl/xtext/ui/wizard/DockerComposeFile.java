@@ -54,7 +54,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 
 	@Override
 	protected void updateVariables() {
-		System.out.println("This happens now");
 		for (Database database : data.keySet()) {
 			database.setDbms(data.get(database).getValue());
 		}

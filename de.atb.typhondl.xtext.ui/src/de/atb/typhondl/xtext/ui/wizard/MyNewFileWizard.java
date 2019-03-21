@@ -53,7 +53,6 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 	
 	@Override
 	protected MyMainPage createMainPage(String pageName) {
-		System.out.println("MyMainPage is created");
 		mainPage = new MyMainPage(pageName, loadTemplatesFromExtensionPoint(), selection, labelProvider, modelPath);
 		super.mainPage = mainPage;
 		return mainPage;
@@ -63,11 +62,8 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 	public IWizardPage getNextPage(IWizardPage page) { // TODO
 
 		if (page instanceof MyMainPage) {
-			System.out.println("in MyNewFileWizard: getNextPage");
 			IWizardPage nextPage = super.getNextPage(page);
-			System.out.println("nextPage == null? " + (nextPage == null));
 			if (nextPage instanceof TemplateParameterPage) {
-				System.out.println("templateParameterPage!");
 				templateParameterPage = (TemplateParameterPage) nextPage;
 			}
 			return nextPage;
@@ -98,7 +94,6 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 				}
 			}
 		}
-		System.out.println("loadTemplates: " + result.size());
 		return result.toArray(new AbstractFileTemplate[0]);
 	}
 	
