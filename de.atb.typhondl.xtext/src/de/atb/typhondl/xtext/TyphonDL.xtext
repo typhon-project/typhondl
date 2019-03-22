@@ -16,23 +16,48 @@ Type:
     PlatformType | ContainerType | DBType
 ;
 
-enum SupportedDBMS:
-	MariaDB |
-	Mongo
+SupportedDBMS:
+	MariaDB | Mongo
+;
+
+Mongo:
+	'mongo' name=ID '{'
+	(userName=MONGO_INITDB_ROOT_USERNAME)
+	(password=MONGO_INITDB_ROOT_PASSWORD)
+	'}'
+;
+
+MONGO_INITDB_ROOT_PASSWORD:
+	'MONGO_INITDB_ROOT_PASSWORD' '=' value=Value ';'
+;
+
+MONGO_INITDB_ROOT_USERNAME:
+	'MONGO_INITDB_ROOT_USERNAME' '=' value=Value ';'
 ;
 
 MariaDB:
 	'mariaDB' name=ID '{'
-	(env+=EnvironmenVars? | mandatory+=MandatoryVars)*
+	(userName=MYSQL_USER)
+	(password=MYSQL_PASSWORD)
+	(rootPassword=MYSQL_ROOT_PASSWORD)
+	(DBname=MYSQL_DATABASE)
 	'}'
 ;
 
-MandatoryVars:
-	name=ID '=' value=Value ';'
+MYSQL_USER:
+	'MYSQL_USER' '=' value=Value ';'
 ;
 
-EnvironmenVars:
-	name=ID ':' value=Value ';'
+MYSQL_DATABASE:
+	'MYSQL_DATABASE' '=' value=Value ';'
+;
+
+MYSQL_PASSWORD:
+	'MYSQL_PASSWORD' '=' value=Value ';'
+;
+
+MYSQL_ROOT_PASSWORD:
+	'MYSQL_ROOT_PASSWORD' '=' value=Value ';'
 ;
 
 PlatformType:
@@ -77,6 +102,7 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
+		'database' ':' (database=[SupportedDBMS])
 		(properties+=Property | features+=Feature)*
 	'}'
 ;

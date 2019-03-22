@@ -2,23 +2,32 @@ platformtype AWS
 containertype Docker
 dbtype relationalDB
 
+databases {
+	mariaDB userdb {
+		MYSQL_USER = locman;
+		MYSQL_PASSWORD = geheim;
+		MYSQL_ROOT_PASSWORD = geheim;
+		MYSQL_DATABASE = locman;
+	}
+	mongo orderdb {
+		MONGO_INITDB_ROOT_USERNAME = locman;
+		MONGO_INITDB_ROOT_PASSWORD = geheim;
+	}
+}
+
 platform myAWSPlatform : AWS {	
 	cluster myAWSCluster {		
 		application myApplication {
 			container mariadb : Docker {
+				database : orderdb
 				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8;
-    			environment {
-      				"MYSQL_ROOT_PASSWORD=geheim"
-      				"MYSQL_DATABASE=locman"
-      				"MYSQL_USER=locman"
-      				"MYSQL_PASSWORD=geheim"
-      			}
     			volumes = /opt/locman-staging/db:/var/lib;
     			networks = locman;
     		}
 	
 			container locman : Docker {
+				database : orderdb
 				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT;
 			    entrypoint [
       				'/maven/wait-for.sh',

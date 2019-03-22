@@ -476,5 +476,14 @@
           id="de.atb.typhondl.xtext.ui.wizard.OpenWizard"
           name="Open Wizard">
     </command>
- </extension>>
+ </extension>
+ <extension
+       point="org.eclipse.ui.propertyPages">
+    <page
+          class="de.atb.typhondl.xtext.ui.editor.WorkbenchPropertyPage1"
+          icon="icons/typhon_icon.png"
+          id="de.atb.typhondl.xtext.ui.editor.page1"
+          name="Database Info">
+    </page>
+ </extension>
 </plugin>
