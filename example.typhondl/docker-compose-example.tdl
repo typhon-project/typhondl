@@ -2,11 +2,18 @@ platformtype AWS
 containertype Docker
 dbtype relationalDB
 
-mongo orderdb {
+mongo reviewsdb {
 	userName = locman;
 	password = geheim;
 	ports = 8080:8080;
+	dbname = meineDB;
+}
+
+mariaDB orderdb {
+	userName = locman;
+	password = geheim;
 	rootPassword = geheim;
+	volumes = var/bin/maria/data;
 }
 
 platform myAWSPlatform : AWS {	
@@ -14,31 +21,11 @@ platform myAWSPlatform : AWS {
 		application myApplication {
 			container mariadb : Docker {
 				database : orderdb
-				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8;
     		}
 	
 			container locman : Docker {
-				database : orderdb
-				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT;
-			    entrypoint [
-      				'/maven/wait-for.sh',
-      				'mariadb:3306',
-      				'-t',
-      				'60',
-      				'--',
-      				'java',
-      				'-Djava.security.egd=file:/dev/./urandom',
-      				'-jar',
-      				'/maven/location-mgmt-datastore-0.2.0-SNAPSHOT.jar',
-      				'--spring.profiles.active=default,staging'
-			    ] 				
-    			environment {
-      				"MARIADB_HOST=mariadb"
-      				"MARIADB_PORT=someportnumer"
-      				"MARIADB_USER=locman"  
-      				"MARIADB_PASSWORD=geheim"
-      			}  
+				database : reviewsdb
 			}				
 		}
 	}

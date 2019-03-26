@@ -37,6 +37,8 @@ import com.google.inject.Injector;
 
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Database;
+import de.atb.typhondl.xtext.typhonDL.MariaDB;
 
 @SuppressWarnings("restriction")
 public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPropertyPage {
@@ -65,7 +67,9 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 
 		this.resource = getResource();
 
-		createDatabaseArea(main, gridData);
+		Iterable<Database> _filter = Iterables
+				.<Database>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), Database.class);
+		_filter.iterator().forEachRemaining(db -> createDatabaseArea(main, gridData, db));
 
 		Label folderLabel = new Label(main, SWT.NONE);
 		folderLabel.setText("Test1");
@@ -89,26 +93,51 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 		return resource = resourceSet.getResource(URI.createURI(path), true);
 	}
 
-	private void createDatabaseArea(Composite main, GridData gridData) {
+	private void createDatabaseArea(Composite main, GridData gridData, Database db) {
 
-//		Iterable<DB> _filter = Iterables.<DB>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()),
-//				DB.class);
-//		List<SupportedDBMS> dbs = new ArrayList<SupportedDBMS>();
-//		_filter.iterator().forEachRemaining(db -> dbs.addAll(db.getDbs()));
-//		
-//		for (SupportedDBMS db : dbs) {
-//			new Label(main, SWT.NONE).setText("Name: ");
-//			new Label(main, SWT.NONE).setText(db.getName());
-//			
-//		}
-		
-//		Label folderText = new Label(main, SWT.NONE);
-//		folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
-//
-//		Label fileLabel = new Label(main, SWT.NONE);
-//		fileLabel.setText("Test2");
-//		Text fileText = new Text(main, SWT.BORDER);
-//		fileText.setLayoutData(gridData);
+		new Label(main, SWT.NONE).setText("________________________");
+		new Label(main, SWT.NONE).setText("1");
+		new Label(main, SWT.NONE).setText("Name: ");
+		new Label(main, SWT.NONE).setText(db.getName());
+		new Label(main, SWT.NONE).setText("DBMS: ");
+		new Label(main, SWT.NONE).setText(db.eClass().getInstanceClass().getSimpleName());
+		if (db.eClass().getInstanceClass().equals(MariaDB.class)) {
+			MariaDB thisdb = (MariaDB) db;
+			new Label(main, SWT.NONE).setText("________________________");
+			new Label(main, SWT.NONE).setText("1.1");
+			thisdb.getMandatoryEntry().eContents().forEach(content -> {
+				new Label(main, SWT.NONE).setText(content.eClass().getInstanceClass().getSimpleName());
+				new Label(main, SWT.NONE).setText("don't know");
+			});
+			new Label(main, SWT.NONE).setText("________________________");
+			new Label(main, SWT.NONE).setText("1.2");
+			thisdb.getOptionalEntries().iterator().forEachRemaining(entry -> {
+				new Label(main, SWT.NONE).setText(entry.eClass().getInstanceClass().getSimpleName());
+				var newEntry = entry.eClass().getInstanceClass().cast(entry);
+				new Label(main, SWT.NONE).setText(newEntry.getClass().getSimpleName() + newEntry.toString());
+			});
+			new Label(main, SWT.NONE).setText("________________________");
+			new Label(main, SWT.NONE).setText("1.3");
+			thisdb.eAllContents().forEachRemaining(content -> {
+				new Label(main, SWT.NONE).setText(content.eClass().getName());
+				new Label(main, SWT.NONE).setText(content.eContainer().eClass().getName());
+			});
+		}
+		new Label(main, SWT.NONE).setText("________________________");
+		new Label(main, SWT.NONE).setText("2");
+		db.eAllContents().forEachRemaining(content -> {
+			new Label(main, SWT.NONE).setText(content.eClass().getInstanceClass().getSimpleName() + " = ");
+			new Label(main, SWT.NONE).setText("");
+		});
+
+		// Label folderText = new Label(main, SWT.NONE);
+		// folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true,
+		// false));
+		//
+		// Label fileLabel = new Label(main, SWT.NONE);
+		// fileLabel.setText("Test2");
+		// Text fileText = new Text(main, SWT.BORDER);
+		// fileText.setLayoutData(gridData);
 	}
 
 }

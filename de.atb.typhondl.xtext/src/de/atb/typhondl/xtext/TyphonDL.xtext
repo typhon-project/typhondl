@@ -22,55 +22,60 @@ Database:
 
 Mongo:
 	'mongo' name=ID '{'
-	'userName' '=' (userName=Value) ';'
-	'password' '=' (password=Value) ';'
+	(mandatoryEntry=MongoMandatoryEntry)
 	(optionalEntries+=MongoOptional)*
 	'}'
 ;
 
-MongoOptional:
-	Ports | Volumes | RootPassword | DBName
-;
-
-DBName:
-	'dbname' '=' value=Value ';'
-;
-
-RootPassword:
-	'rootPassword' '=' value=Value ';'
-;
-
-Volumes:
-	'volumes' '=' value=Value ';'
-;
-
-Ports:
-	'ports' '=' value=Value ';'
-;
-
 MariaDB:
 	'mariaDB' name=ID '{'
-	(userName=MYSQL_USER)
-	(password=MYSQL_PASSWORD)
-	(rootPassword=MYSQL_ROOT_PASSWORD)
-	(DBname=MYSQL_DATABASE)
+	(mandatoryEntry=MariaDBMandatoryEntry)
+	(optionalEntries+=MariaDBOptional)*
 	'}'
 ;
 
-MYSQL_USER:
-	'MYSQL_USER' '=' value=Value ';'
+MongoMandatoryEntry:
+	'userName' '=' userName=Value ';'
+	'password' '=' password=Value ';'
 ;
 
-MYSQL_DATABASE:
-	'MYSQL_DATABASE' '=' value=Value ';'
+MongoOptional:
+	Ports | Volumes | RootPassword | DBName | Key_Value
 ;
 
-MYSQL_PASSWORD:
-	'MYSQL_PASSWORD' '=' value=Value ';'
+
+MariaDBMandatoryEntry:
+	'userName' '=' userName=Value ';'
+	'password' '=' password=Value ';'
+	'rootPassword' '=' rootPassword=Value ';'
 ;
 
-MYSQL_ROOT_PASSWORD:
-	'MYSQL_ROOT_PASSWORD' '=' value=Value ';'
+MariaDBOptional:
+	Ports | Volumes | DBName | Key_Value
+;
+
+UserName:
+	'userName' '=' userName=Value ';'
+;
+
+Password:
+	'password' '=' password=Value ';'
+;
+
+DBName:
+	'dbname' '=' dbname=Value ';'
+;
+
+RootPassword:
+	'rootPassword' '=' rootPassword=Value ';'
+;
+
+Volumes:
+	'volumes' '=' volumes=Value ';'
+;
+
+Ports:
+	'ports' '=' ports=Value ';'
 ;
 
 PlatformType:
