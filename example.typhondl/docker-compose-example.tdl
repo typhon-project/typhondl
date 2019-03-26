@@ -2,17 +2,11 @@ platformtype AWS
 containertype Docker
 dbtype relationalDB
 
-databases {
-	mariaDB userdb {
-		MYSQL_USER = locman;
-		MYSQL_PASSWORD = geheim;
-		MYSQL_ROOT_PASSWORD = geheim;
-		MYSQL_DATABASE = locman;
-	}
-	mongo orderdb {
-		MONGO_INITDB_ROOT_USERNAME = locman;
-		MONGO_INITDB_ROOT_PASSWORD = geheim;
-	}
+mongo orderdb {
+	userName = locman;
+	password = geheim;
+	ports = 8080:8080;
+	rootPassword = geheim;
 }
 
 platform myAWSPlatform : AWS {	
@@ -22,8 +16,6 @@ platform myAWSPlatform : AWS {
 				database : orderdb
 				myDB : relationalDB
 				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8;
-    			volumes = /opt/locman-staging/db:/var/lib;
-    			networks = locman;
     		}
 	
 			container locman : Docker {
@@ -47,8 +39,6 @@ platform myAWSPlatform : AWS {
       				"MARIADB_USER=locman"  
       				"MARIADB_PASSWORD=geheim"
       			}  
-    			ports = 8086:8086;
-    			networks = locman;
 			}				
 		}
 	}

@@ -24,7 +24,7 @@ Mongo:
 	'mongo' name=ID '{'
 	'userName' '=' (userName=Value) ';'
 	'password' '=' (password=Value) ';'
-	(optionalEntries+=[MongoOptional])*
+	(optionalEntries+=MongoOptional)*
 	'}'
 ;
 
