@@ -44,6 +44,7 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 			FileOpener fileOpener) {
 		super();
 		this.modelPath = path.toFile().toURI();
+		System.out.println(modelPath);
 		setNeedsProgressMonitor(true);
 		setWindowTitle(Messages.MyNewFileWizard_title);
 		this.grammarAccess = grammarAccess;

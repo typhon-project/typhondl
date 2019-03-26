@@ -9,30 +9,43 @@ DeploymentModel:
 ;
 
 Element: 
-	Deployment | Type | DB
+	Deployment | Type | Database
 ;
    
 Type:
     PlatformType | ContainerType | DBType
 ;
 
-SupportedDBMS:
-	MariaDB | Mongo
+Database:
+	Mongo | MariaDB
 ;
 
 Mongo:
 	'mongo' name=ID '{'
-	(userName=MONGO_INITDB_ROOT_USERNAME)
-	(password=MONGO_INITDB_ROOT_PASSWORD)
+	'userName' '=' (userName=Value) ';'
+	'password' '=' (password=Value) ';'
+	(optionalEntries+=[MongoOptional])*
 	'}'
 ;
 
-MONGO_INITDB_ROOT_PASSWORD:
-	'MONGO_INITDB_ROOT_PASSWORD' '=' value=Value ';'
+MongoOptional:
+	Ports | Volumes | RootPassword | DBName
 ;
 
-MONGO_INITDB_ROOT_USERNAME:
-	'MONGO_INITDB_ROOT_USERNAME' '=' value=Value ';'
+DBName:
+	'dbname' '=' value=Value ';'
+;
+
+RootPassword:
+	'rootPassword' '=' value=Value ';'
+;
+
+Volumes:
+	'volumes' '=' value=Value ';'
+;
+
+Ports:
+	'ports' '=' value=Value ';'
 ;
 
 MariaDB:
@@ -72,12 +85,6 @@ DBType:
 	'dbtype' name=ID
 ;
 
-DB:
-	'databases {'
-	(dbs+=SupportedDBMS)+
-	'}'
-;
-
 Deployment :
 	{Deployment}
 	'platform' name=ID ':' type=[PlatformType] '{'
@@ -102,7 +109,7 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		'database' ':' (database=[SupportedDBMS])
+		'database' ':' (database=[Database])
 		(properties+=Property | features+=Feature)*
 	'}'
 ;

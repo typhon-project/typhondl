@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -21,19 +24,22 @@ import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
+import org.eclipse.xtext.generator.trace.node.GeneratorNodeExtensions;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.util.FileOpener;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 
+import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.Application;
-import de.atb.typhondl.xtext.typhonDL.DB;
 
 @SuppressWarnings("restriction")
 public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPropertyPage {
-
 
 	@Inject
 	private TemplateLabelProvider labelProvider;
@@ -41,21 +47,24 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 	private FileOpener fileOpener;
 	@Inject
 	private IGrammarAccess grammarAccess;
-	
+
+	private Resource resource;
+
 	public WorkbenchPropertyPage1() {
 		super();
 	}
 
 	@Override
 	protected Control createContents(Composite parent) {
-		
-		
+
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(2, false));
-		
+
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-		
+
+		this.resource = getResource();
+
 		createDatabaseArea(main, gridData);
 
 		Label folderLabel = new Label(main, SWT.NONE);
@@ -67,35 +76,39 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 		fileLabel.setText("Test2");
 		Text fileText = new Text(main, SWT.BORDER);
 		fileText.setLayoutData(gridData);
-		
-		
-		return null; 
+
+		return null;
+	}
+
+	private Resource getResource() {
+		String path = "file:/C:/Users/flug/eclipse-workspace-current/typhondl/example.typhondl/docker-compose-example.tdl"; // TODO
+		// getSelection()
+		Injector injector = new TyphonDLStandaloneSetup().createInjectorAndDoEMFRegistration();
+		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		return resource = resourceSet.getResource(URI.createURI(path), true);
 	}
 
 	private void createDatabaseArea(Composite main, GridData gridData) {
+
+//		Iterable<DB> _filter = Iterables.<DB>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()),
+//				DB.class);
+//		List<SupportedDBMS> dbs = new ArrayList<SupportedDBMS>();
+//		_filter.iterator().forEachRemaining(db -> dbs.addAll(db.getDbs()));
+//		
+//		for (SupportedDBMS db : dbs) {
+//			new Label(main, SWT.NONE).setText("Name: ");
+//			new Label(main, SWT.NONE).setText(db.getName());
+//			
+//		}
 		
-		EList<AbstractRule> rules = grammarAccess.getGrammar().getRules();
-		//rules.iterator().forEachRemaining(rule -> new Label(main, SWT.NONE).setText(rule.getName()));
-		ParserRule dbRule = null;
-		for (AbstractRule rule : rules) {
-			System.out.println("Rule: " + rule.getName());
-			if (rule.getName().equals("DB")) {
-				System.out.println("Yaaay");
-				dbRule = (ParserRule) rule;
-			}
-		}
-		System.out.println("dbRule: " + dbRule.getName());
-		EList<Parameter> objects = dbRule.getParameters();
-		System.out.println("------------------------ Objects ------------------------");
-		objects.iterator().forEachRemaining(object -> System.out.println(object.getName()));
-		System.out.println("------------------------- Calls -------------------------");
-		List<RuleCall> dbCalls = grammarAccess.findRuleCalls(dbRule);
-		dbCalls.iterator().forEachRemaining(call -> System.out.println(call.toString()));
-		
-		Resource resource = grammarAccess.getGrammar().eResource();
-		Iterable<DB> _filter = Iterables.<DB>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), DB.class);
-		
-		
+//		Label folderText = new Label(main, SWT.NONE);
+//		folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
+//
+//		Label fileLabel = new Label(main, SWT.NONE);
+//		fileLabel.setText("Test2");
+//		Text fileText = new Text(main, SWT.BORDER);
+//		fileText.setLayoutData(gridData);
 	}
 
 }
