@@ -39,6 +39,7 @@ import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Database;
 import de.atb.typhondl.xtext.typhonDL.MariaDB;
+import de.atb.typhondl.xtext.typhonDL.OptionalEntries;
 
 @SuppressWarnings("restriction")
 public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPropertyPage {
@@ -111,6 +112,9 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 			});
 			new Label(main, SWT.NONE).setText("________________________");
 			new Label(main, SWT.NONE).setText("1.2");
+			for (OptionalEntries optEntry : thisdb.getOptionalEntries()) {
+				optEntry.getValue();
+			}
 			thisdb.getOptionalEntries().iterator().forEachRemaining(entry -> {
 				new Label(main, SWT.NONE).setText(entry.eClass().getInstanceClass().getSimpleName());
 				var newEntry = entry.eClass().getInstanceClass().cast(entry);

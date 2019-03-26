@@ -23,14 +23,14 @@ Database:
 Mongo:
 	'mongo' name=ID '{'
 	(mandatoryEntry=MongoMandatoryEntry)
-	(optionalEntries+=MongoOptional)*
+	(optionalEntries+=OptionalEntries)*
 	'}'
 ;
 
 MariaDB:
 	'mariaDB' name=ID '{'
 	(mandatoryEntry=MariaDBMandatoryEntry)
-	(optionalEntries+=MariaDBOptional)*
+	(optionalEntries+=OptionalEntries)*
 	'}'
 ;
 
@@ -39,7 +39,7 @@ MongoMandatoryEntry:
 	'password' '=' password=Value ';'
 ;
 
-MongoOptional:
+OptionalEntries:
 	Ports | Volumes | RootPassword | DBName | Key_Value
 ;
 
@@ -50,32 +50,20 @@ MariaDBMandatoryEntry:
 	'rootPassword' '=' rootPassword=Value ';'
 ;
 
-MariaDBOptional:
-	Ports | Volumes | DBName | Key_Value
-;
-
-UserName:
-	'userName' '=' userName=Value ';'
-;
-
-Password:
-	'password' '=' password=Value ';'
-;
-
 DBName:
-	'dbname' '=' dbname=Value ';'
+	'dbname' '=' value=Value ';'
 ;
 
 RootPassword:
-	'rootPassword' '=' rootPassword=Value ';'
+	'rootPassword' '=' value=Value ';'
 ;
 
 Volumes:
-	'volumes' '=' volumes=Value ';'
+	'volumes' '=' value=Value ';'
 ;
 
 Ports:
-	'ports' '=' ports=Value ';'
+	'ports' '=' value=Value ';'
 ;
 
 PlatformType:
