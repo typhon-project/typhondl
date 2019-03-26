@@ -1,10 +1,5 @@
 package de.atb.typhondl.xtext.ui.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -12,7 +7,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -21,10 +15,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.IGrammarAccess;
-import org.eclipse.xtext.Parameter;
-import org.eclipse.xtext.ParserRule;
-import org.eclipse.xtext.RuleCall;
-import org.eclipse.xtext.generator.trace.node.GeneratorNodeExtensions;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.util.FileOpener;
@@ -36,9 +26,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
-import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Database;
 import de.atb.typhondl.xtext.typhonDL.MariaDB;
+import de.atb.typhondl.xtext.typhonDL.Mongo;
 import de.atb.typhondl.xtext.typhonDL.OptionalEntries;
 
 @SuppressWarnings("restriction")
@@ -70,7 +60,7 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 
 		Iterable<Database> _filter = Iterables
 				.<Database>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), Database.class);
-		_filter.iterator().forEachRemaining(db -> createDatabaseArea(main, gridData, db));
+		_filter.forEach(db -> createDatabaseArea(main, gridData, db));
 
 		Label folderLabel = new Label(main, SWT.NONE);
 		folderLabel.setText("Test1");
@@ -102,38 +92,21 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 		new Label(main, SWT.NONE).setText(db.getName());
 		new Label(main, SWT.NONE).setText("DBMS: ");
 		new Label(main, SWT.NONE).setText(db.eClass().getInstanceClass().getSimpleName());
-		if (db.eClass().getInstanceClass().equals(MariaDB.class)) {
-			MariaDB thisdb = (MariaDB) db;
-			new Label(main, SWT.NONE).setText("________________________");
-			new Label(main, SWT.NONE).setText("1.1");
-			thisdb.getMandatoryEntry().eContents().forEach(content -> {
-				new Label(main, SWT.NONE).setText(content.eClass().getInstanceClass().getSimpleName());
-				new Label(main, SWT.NONE).setText("don't know");
-			});
-			new Label(main, SWT.NONE).setText("________________________");
-			new Label(main, SWT.NONE).setText("1.2");
-			for (OptionalEntries optEntry : thisdb.getOptionalEntries()) {
-				optEntry.getValue();
-			}
-			thisdb.getOptionalEntries().iterator().forEachRemaining(entry -> {
-				new Label(main, SWT.NONE).setText(entry.eClass().getInstanceClass().getSimpleName());
-				var newEntry = entry.eClass().getInstanceClass().cast(entry);
-				new Label(main, SWT.NONE).setText(newEntry.getClass().getSimpleName() + newEntry.toString());
-			});
-			new Label(main, SWT.NONE).setText("________________________");
-			new Label(main, SWT.NONE).setText("1.3");
-			thisdb.eAllContents().forEachRemaining(content -> {
-				new Label(main, SWT.NONE).setText(content.eClass().getName());
-				new Label(main, SWT.NONE).setText(content.eContainer().eClass().getName());
-			});
+		EList<AbstractRule> rules = grammarAccess.getGrammar().getRules();
+		
+		for (OptionalEntries optEntry : db.getOptionalEntries()) {
+			new Label(main, SWT.NONE).setText(optEntry.eClass().getInstanceClass().getSimpleName());
+			new Label(main, SWT.NONE).setText(optEntry.getValue());
 		}
-		new Label(main, SWT.NONE).setText("________________________");
-		new Label(main, SWT.NONE).setText("2");
-		db.eAllContents().forEachRemaining(content -> {
-			new Label(main, SWT.NONE).setText(content.eClass().getInstanceClass().getSimpleName() + " = ");
-			new Label(main, SWT.NONE).setText("");
-		});
 
+		Database thisdb = db;
+		if (db.eClass().getInstanceClass().equals(MariaDB.class)) {
+			thisdb = (MariaDB) db;
+		}
+		if (db.eClass().getInstanceClass().equals(Mongo.class)) {
+			thisdb = (Mongo) db;
+		}
+		
 		// Label folderText = new Label(main, SWT.NONE);
 		// folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true,
 		// false));
