@@ -23,11 +23,18 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType
 class TyphonDLGenerator extends AbstractGenerator {
 
 	val yamlList = new ArrayList<String>
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	ArrayList<ContainerObject> containerList
 	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
 		containerList = new ArrayList<ContainerObject>
+=======
+	val containerList = new ArrayList<ContainerObject>
+	
+	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		// TODO different compile for each technology
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 		for (app : resource.allContents.toIterable.filter(Application)) {
 			val typeList = new ArrayList<ContainerType>()
 			for (container : app.containers){
@@ -40,12 +47,20 @@ class TyphonDLGenerator extends AbstractGenerator {
 				if (containerType.name.equalsIgnoreCase("docker")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					yamlList.add(app.name + "/docker-compose.yaml")
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 					fsa.generateFile("scripts/Start_" + app.name + ".java", app.dockerScript)
+=======
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 					fsa.generateFile("scripts/pom.xml", app.dockerPom)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 					fsa.generateFile("scripts/Start_" + app.name + ".java", app.kubernetesScript)
+=======
+					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 					yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
 				}
@@ -54,7 +69,10 @@ class TyphonDLGenerator extends AbstractGenerator {
 		}
 	}
 	
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	// TODO: maybe read in compose file reference https://docs.docker.com/compose/compose-file/#labels 
+=======
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	def ContainerObject createContainerObjects(Container container) {
 		val containerObject = new ContainerObject => [
 			name = container.name
@@ -99,12 +117,15 @@ class TyphonDLGenerator extends AbstractGenerator {
 	'''
 	
 	def dockerPom(Application app)'''
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	<resource>
 		<includes>
 			<include>**/docker-compose-*.yml</include>
 		</includes>
 	</resource>
 	
+=======
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	<dependency>
 	    <groupId>com.github.docker-java</groupId>
 	    <artifactId>docker-java</artifactId>
@@ -121,6 +142,11 @@ class TyphonDLGenerator extends AbstractGenerator {
 	</dependency>
 	'''
 	
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
+=======
+	// 1. go to src-gen/app.name
+	// 2. docker-compose up
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	def dockerScript(Application app)'''
 	public class Start«app.name»{
 		
@@ -154,7 +180,14 @@ class TyphonDLGenerator extends AbstractGenerator {
 	 
 	dockerClient.killContainerCmd(container.getId()).exec();
 	'''
+<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 
+=======
+	// 1. go to src-gen/app.name
+	// 2. start kompose in a container?
+	// 3. convert docker-compose.yaml to kubernetes service and deployment yamls: kompose convert
+	// 4. run kubectl create -f [all kubernetes yaml files]
+>>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
 	def kubernetesScript(Application app)'''
 	/*
 	Copyright 2018 The Kubernetes Authors.
