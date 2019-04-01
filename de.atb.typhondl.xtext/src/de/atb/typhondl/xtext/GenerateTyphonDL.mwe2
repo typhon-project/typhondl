@@ -36,10 +36,10 @@ Workflow {
 			serializer = {
 				generateStub = false
 			}
-			projectWizard = {
+			
+			fileWizard = {
 				generate = true
-				//pluginProject = true
-    		}
+			}
 			
 			validator = {
 				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"

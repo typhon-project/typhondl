@@ -7,19 +7,19 @@ platform myAWSPlatform : AWS {
 		application myApplication {
 			container mariadb : Docker {
 				myDB : relationalDB
-				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8
+				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8;
     			environment {
       				"MYSQL_ROOT_PASSWORD=geheim"
       				"MYSQL_DATABASE=locman"
       				"MYSQL_USER=locman"
       				"MYSQL_PASSWORD=geheim"
       			}
-    			volumes = /opt/locman-staging/db:/var/lib
-    			networks = locman
+    			volumes = /opt/locman-staging/db:/var/lib;
+    			networks = locman;
     		}
 	
 			container locman : Docker {
-				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT
+				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT;
 			    entrypoint [
       				'/maven/wait-for.sh',
       				'mariadb:3306',
@@ -38,8 +38,8 @@ platform myAWSPlatform : AWS {
       				"MARIADB_USER=locman"  
       				"MARIADB_PASSWORD=geheim"
       			}  
-    			ports = 8086:8086
-    			networks = locman	
+    			ports = 8086:8086;
+    			networks = locman;
 			}				
 		}
 	}
