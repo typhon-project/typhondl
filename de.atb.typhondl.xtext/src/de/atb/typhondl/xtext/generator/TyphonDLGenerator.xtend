@@ -42,6 +42,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 					yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
 					fsa.generateFile("scripts/pom.xml", app.dockerPom)
+					fsa.generateFile("src/dockertest.java", app.dockerjava)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
@@ -52,6 +53,10 @@ class TyphonDLGenerator extends AbstractGenerator {
 			}
 			
 		}
+	}
+	
+	def CharSequence dockerjava(Application app) {
+		//TODO
 	}
 
 	// TODO: maybe read in compose file reference https://docs.docker.com/compose/compose-file/#labels 

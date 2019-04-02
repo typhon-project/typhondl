@@ -1,0 +1,48 @@
+platformtype default //TODO (e.g. AWS)
+containertype Docker
+dbtype relationaldb
+dbtype documentdb
+
+databases {
+	mariaDB userdb {
+		image = "mariadb:latest";
+		MYSQL_USER = locman;
+		MYSQL_PASSWORD = geheim;
+		MYSQL_ROOT_PASSWORD = geheim;
+		MYSQL_DATABASE = locman;
+	}
+	mongo orderdb {
+		image = "mongo:latest";
+		MONGO_INITDB_ROOT_USERNAME = locman;
+		MONGO_INITDB_ROOT_PASSWORD = geheim;
+	}
+	mariaDB productdb {
+		image = "mariadb:latest";
+		MYSQL_USER = locman;
+		MYSQL_PASSWORD = geheim;
+		MYSQL_ROOT_PASSWORD = geheim;
+		MYSQL_DATABASE = locman;
+	}
+}
+
+platform platformname : default { //TODO
+	cluster clustername { //TODO
+		application name {
+			container userdb : Docker {
+				database : userdb
+				dbType : relationaldb
+				// TODO: evironment, volumes, networks, ports etc.
+			}
+			container orderdb : Docker {
+				database : orderdb
+				dbType : documentdb
+				// TODO: evironment, volumes, networks, ports etc.
+			}
+			container productdb : Docker {
+				database : productdb
+				dbType : relationaldb
+				// TODO: evironment, volumes, networks, ports etc.
+			}
+		}
+	}
+}					
