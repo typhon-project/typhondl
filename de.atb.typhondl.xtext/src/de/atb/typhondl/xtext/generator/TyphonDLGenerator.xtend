@@ -64,11 +64,11 @@ class TyphonDLGenerator extends AbstractGenerator {
 	
 	def dispatch saveDBs(MariaDB db)'''
 	name = «db.name»
-	dbName = «db.DBname.value»
+	«db.DBname.eClass.instanceClass.simpleName» = «db.DBname.value»
 	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
 	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
-	«db.password.class.simpleName» = «db.password.value»
-	«db.rootPassword.class.simpleName» = «db.rootPassword.value»
+	«db.password.eClass.instanceClass.simpleName» = «db.password.value»
+	«db.rootPassword.eClass.instanceClass.simpleName» = «db.rootPassword.value»
 	'''
 		
 	
@@ -77,14 +77,47 @@ class TyphonDLGenerator extends AbstractGenerator {
 	name = «db.name»
 	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
 	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
-	«db.password.class.simpleName» = «db.password.value»
+	«db.password.eClass.instanceClass.simpleName» = «db.password.value»
 	'''
 		
 	
 	
-	def CharSequence dockerjava(Application app) {
-		//TODO
+	def dockerjava(Application app) '''
+	import java.util.List;
+	import java.util.concurrent.TimeUnit;
+	
+	import com.github.dockerjava.api.DockerClient;
+	import com.github.dockerjava.api.command.CreateContainerResponse;
+	import com.github.dockerjava.api.model.Info;
+	import com.github.dockerjava.api.model.SearchItem;
+	import com.github.dockerjava.core.DockerClientBuilder;
+	import com.github.dockerjava.core.command.PullImageResultCallback;
+	
+	/**
+	 * Generated Java-code
+	 * @author Flug
+	 */
+	public class DockerContainerTest {
+		public static void main(String[] args) {
+			DockerClient dockerClient = DockerClientBuilder.getInstance("tcp://localhost:2375").build();
+			«FOR container:app.containers»
+			«container.createJava»
+			«ENDFOR»
+	'''
+	
+	def createJava(Container container)'''
+	String image = «container.database.image.value»
+	try {
+		System.out.println("Trying to pull " + image);
+		dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitCompletion(60, TimeUnit.SECONDS);
+		System.out.println("done pulling");
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
 	}
+	CreateContainerResponse «container.name» = dockerClient.createContainerCmd(image).exec();
+	dockerClient.startContainerCmd(«container.name».getId()).exec();
+	'''
 
 	// TODO: maybe read in compose file reference https://docs.docker.com/compose/compose-file/#labels 
 	def ContainerObject createContainerObjects(Container container) {
