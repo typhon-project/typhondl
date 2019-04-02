@@ -41,7 +41,7 @@ MONGO_INITDB_ROOT_USERNAME:
 ;
 
 MariaDB:
-	'mariaDB' name=ID '{'
+	'mariadb' name=ID '{'
 	(image=IMAGE)
 	(userName=MYSQL_USER)
 	(password=MYSQL_PASSWORD)

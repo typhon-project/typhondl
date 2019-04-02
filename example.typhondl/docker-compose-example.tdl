@@ -3,13 +3,15 @@ containertype Docker
 dbtype relationalDB
 
 databases {
-	mariaDB userdb {
+	mariaDB locmandb {
+		image = "gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8";
 		MYSQL_USER = locman;
 		MYSQL_PASSWORD = geheim;
 		MYSQL_ROOT_PASSWORD = geheim;
 		MYSQL_DATABASE = locman;
 	}
 	mongo orderdb {
+		image = "mongo:latest";
 		MONGO_INITDB_ROOT_USERNAME = locman;
 		MONGO_INITDB_ROOT_PASSWORD = geheim;
 	}
@@ -19,35 +21,14 @@ platform myAWSPlatform : AWS {
 	cluster myAWSCluster {		
 		application myApplication {
 			container mariadb : Docker {
-				database : orderdb
+				database : locmandb
 				myDB : relationalDB
-				image = gitlab.atb-bremen.de:5555/atb/docker-base-images/mariadb:10.3.7-utf8;
     			volumes = /opt/locman-staging/db:/var/lib;
     			networks = locman;
-    		}
-	
+    		}	
 			container locman : Docker {
 				database : orderdb
-				image = gitlab.atb-bremen.de:5555/europool/locman/location-mgmt-datastore:0.2.0-SNAPSHOT;
-			    entrypoint [
-      				'/maven/wait-for.sh',
-      				'mariadb:3306',
-      				'-t',
-      				'60',
-      				'--',
-      				'java',
-      				'-Djava.security.egd=file:/dev/./urandom',
-      				'-jar',
-      				'/maven/location-mgmt-datastore-0.2.0-SNAPSHOT.jar',
-      				'--spring.profiles.active=default,staging'
-			    ] 				
-    			environment {
-      				"MARIADB_HOST=mariadb"
-      				"MARIADB_PORT=someportnumer"
-      				"MARIADB_USER=locman"  
-      				"MARIADB_PASSWORD=geheim"
-      			}  
-    			ports = 8086:8086;
+				ports = 8086:8086;
     			networks = locman;
 			}				
 		}
