@@ -27,10 +27,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 
 	val yamlList = new ArrayList<String>
 	ArrayList<ContainerObject> containerList
+	Resource resource;
 	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
 		containerList = new ArrayList<ContainerObject>
+		this.resource = resource
 		
 		for (db : resource.allContents.toIterable.filter(SupportedDBMS)) {
 			fsa.generateFile("databases/" + db.name, db.saveDBs)
@@ -47,9 +49,9 @@ class TyphonDLGenerator extends AbstractGenerator {
 				if (containerType.name.equalsIgnoreCase("docker")){
 					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					//yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
-					fsa.generateFile("scripts/pom.xml", app.dockerPom)
-					fsa.generateFile("src/dockertest.java", app.dockerjava)
+					//fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+					fsa.generateFile("pom.xml", app.dockerPom)
+					fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
 					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
@@ -103,10 +105,12 @@ class TyphonDLGenerator extends AbstractGenerator {
 			«FOR container:app.containers»
 			«container.createJava»
 			«ENDFOR»
+		}
+	}
 	'''
 	
 	def createJava(Container container)'''
-	String image = «container.database.image.value»
+	String image = «container.database.image.value»;
 	try {
 		System.out.println("Trying to pull " + image);
 		dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitCompletion(60, TimeUnit.SECONDS);
@@ -164,18 +168,82 @@ class TyphonDLGenerator extends AbstractGenerator {
 //	'''
 	
 	def dockerPom(Application app)'''
+<?xml version="1.0" encoding="UTF-8"?>
 
-	<resource>
-		<includes>
-			<include>**/docker-compose-*.yml</include>
-		</includes>
-	</resource>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<dependency>
-	    <groupId>com.github.docker-java</groupId>
-	    <artifactId>docker-java</artifactId>
-	    <version>3.1.1</version>
-	</dependency>
+  <groupId>de.atb</groupId>
+  <artifactId>typhondl.docker</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+    <groupId>com.github.docker-java</groupId>
+    <artifactId>docker-java</artifactId>
+    <version>3.1.2</version>
+</dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+      <plugins>
+        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
 	'''
 	
 	def kubernetesPom(Application app)'''

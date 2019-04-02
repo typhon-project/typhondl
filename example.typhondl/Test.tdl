@@ -2,6 +2,7 @@ platformtype default //TODO (e.g. AWS)
 containertype Docker
 dbtype relationaldb
 dbtype documentdb
+
 databases {
 	mariadb productdb {
 		image = "mariadb:latest";
@@ -26,6 +27,7 @@ databases {
 		// TODO: evironment etc.
 	}
 }
+
 platform platformname : default { //TODO
 	cluster clustername { //TODO
 		application name {
