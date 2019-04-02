@@ -14,6 +14,9 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
 import de.atb.typhondl.xtext.typhonDL.Key_ValueList
 import java.util.ArrayList
 import de.atb.typhondl.xtext.typhonDL.ContainerType
+import de.atb.typhondl.xtext.typhonDL.SupportedDBMS
+import de.atb.typhondl.xtext.typhonDL.MariaDB
+import de.atb.typhondl.xtext.typhonDL.Mongo
 
 /**
  * Generates code from your model files on save.
@@ -28,6 +31,10 @@ class TyphonDLGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
 		containerList = new ArrayList<ContainerObject>
+		
+		for (db : resource.allContents.toIterable.filter(SupportedDBMS)) {
+			fsa.generateFile("databases/" + db.name, db.saveDBs)
+		}
 		for (app : resource.allContents.toIterable.filter(Application)) {
 			val typeList = new ArrayList<ContainerType>()
 			for (container : app.containers){
@@ -38,22 +45,42 @@ class TyphonDLGenerator extends AbstractGenerator {
 			}
 			for (containerType : typeList){
 				if (containerType.name.equalsIgnoreCase("docker")){
-					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					yamlList.add(app.name + "/docker-compose.yaml")
+					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					//yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
 					fsa.generateFile("scripts/pom.xml", app.dockerPom)
 					fsa.generateFile("src/dockertest.java", app.dockerjava)
 				}
 				if (containerType.name.equalsIgnoreCase("kubernetes")){
-					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
 					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
-					yamlList.add(app.name + "/docker-compose.yaml")
+					//yamlList.add(app.name + "/docker-compose.yaml")
 					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
 				}
 			}
 			
 		}
 	}
+	
+	def dispatch saveDBs(MariaDB db)'''
+	name = «db.name»
+	dbName = «db.DBname.value»
+	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
+	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
+	«db.password.class.simpleName» = «db.password.value»
+	«db.rootPassword.class.simpleName» = «db.rootPassword.value»
+	'''
+		
+	
+	
+	def dispatch saveDBs(Mongo db)'''
+	name = «db.name»
+	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
+	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
+	«db.password.class.simpleName» = «db.password.value»
+	'''
+		
+	
 	
 	def CharSequence dockerjava(Application app) {
 		//TODO
@@ -95,24 +122,22 @@ class TyphonDLGenerator extends AbstractGenerator {
 	}
 	
 	
-	def compose(Application app)'''
-		version: '3.7'«»
-		
-		services: «FOR container:app.containers»
-				  tab«container.compile»
-				  «ENDFOR»
-	'''
+//	def compose(Application app)'''
+//		version: '3.7'«»
+//		
+//		services: «FOR container:app.containers»
+//				  tab«container.compile»
+//				  «ENDFOR»
+//	'''
 	
 	def dockerPom(Application app)'''
-<<<<<<< de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
+
 	<resource>
 		<includes>
 			<include>**/docker-compose-*.yml</include>
 		</includes>
 	</resource>
-	
-=======
->>>>>>> de.atb.typhondl.xtext/src/de/atb/typhondl/xtext/generator/TyphonDLGenerator.xtend
+
 	<dependency>
 	    <groupId>com.github.docker-java</groupId>
 	    <artifactId>docker-java</artifactId>
@@ -236,30 +261,30 @@ class TyphonDLGenerator extends AbstractGenerator {
 	  }
 	}
 	'''
-	
-	def compile(Container container)'''
-	«container.name»:
-	«FOR property:container.properties»
-	tabtab«property.compileProp»
-	«ENDFOR»
-	'''
-	
-	def dispatch compileProp(Key_Value key_value)'''
-	«key_value.name»: «key_value.value»
-	'''
-	
-	def dispatch compileProp(Key_ValueArray array)'''
-	«array.name»: [
-	tabtabtab«array.value»«FOR value:array.values»,
-	tabtabtab«value»«ENDFOR»
-	tabtab]
-	'''
-	
-	def dispatch compileProp(Key_ValueList list)'''
-	«list.name»:
-	«FOR string:list.environmentVars»
-	tabtabtab- «string.substring(1,string.length-1)» 
-	«ENDFOR»
-	'''
+//	
+//	def compile(Container container)'''
+//	«container.name»:
+//	«FOR property:container.properties»
+//	tabtab«property.compileProp»
+//	«ENDFOR»
+//	'''
+//	
+//	def dispatch compileProp(Key_Value key_value)'''
+//	«key_value.name»: «key_value.value»
+//	'''
+//	
+//	def dispatch compileProp(Key_ValueArray array)'''
+//	«array.name»: [
+//	tabtabtab«array.value»«FOR value:array.values»,
+//	tabtabtab«value»«ENDFOR»
+//	tabtab]
+//	'''
+//	
+//	def dispatch compileProp(Key_ValueList list)'''
+//	«list.name»:
+//	«FOR string:list.environmentVars»
+//	tabtabtab- «string.substring(1,string.length-1)» 
+//	«ENDFOR»
+//	'''
 
 }
