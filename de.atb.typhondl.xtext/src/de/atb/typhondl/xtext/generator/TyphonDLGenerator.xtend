@@ -5,18 +5,18 @@ package de.atb.typhondl.xtext.generator
 
 import de.atb.typhondl.xtext.typhonDL.Application
 import de.atb.typhondl.xtext.typhonDL.Container
+import de.atb.typhondl.xtext.typhonDL.ContainerType
+import de.atb.typhondl.xtext.typhonDL.Key_Value
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
+import de.atb.typhondl.xtext.typhonDL.Key_ValueList
+import de.atb.typhondl.xtext.typhonDL.MariaDB
+import de.atb.typhondl.xtext.typhonDL.Mongo
+import de.atb.typhondl.xtext.typhonDL.SupportedDBMS
+import java.util.ArrayList
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import de.atb.typhondl.xtext.typhonDL.Key_Value
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
-import de.atb.typhondl.xtext.typhonDL.Key_ValueList
-import java.util.ArrayList
-import de.atb.typhondl.xtext.typhonDL.ContainerType
-import de.atb.typhondl.xtext.typhonDL.SupportedDBMS
-import de.atb.typhondl.xtext.typhonDL.MariaDB
-import de.atb.typhondl.xtext.typhonDL.Mongo
 
 /**
  * Generates code from your model files on save.
@@ -45,23 +45,65 @@ class TyphonDLGenerator extends AbstractGenerator {
 				}
 				containerList.add(createContainerObjects(container))
 			}
-			for (containerType : typeList){
-				if (containerType.name.equalsIgnoreCase("docker")){
-					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					//yamlList.add(app.name + "/docker-compose.yaml")
-					//fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
-					fsa.generateFile("pom.xml", app.dockerPom)
-					fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
-				}
-				if (containerType.name.equalsIgnoreCase("kubernetes")){
-					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
-					//yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
-				}
-			}
+			
+			fsa.generateFile("pom.xml", app.dockerPom)
+			fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
+			fsa.generateFile(".project", app.projectNatures)
+//			for (containerType : typeList){
+//				if (containerType.name.equalsIgnoreCase("docker")){
+//					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+//					//yamlList.add(app.name + "/docker-compose.yaml")
+//					//fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+//					fsa.generateFile("pom.xml", app.dockerPom)
+//					fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
+//				}
+//				if (containerType.name.equalsIgnoreCase("kubernetes")){
+//					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+//					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
+//					//yamlList.add(app.name + "/docker-compose.yaml")
+//					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
+//				}
+//			}
 			
 		}
+	}
+	
+	def projectNatures(Application application)'''
+	<?xml version="1.0" encoding="UTF-8"?>
+	<projectDescription>
+		<name>«getProjectName()»</name>
+		<comment></comment>
+		<projects>
+		</projects>
+		<buildSpec>
+			<buildCommand>
+				<name>org.eclipse.jdt.core.javabuilder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+			<buildCommand>
+				<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+			<buildCommand>
+				<name>org.eclipse.m2e.core.maven2Builder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+		</buildSpec>
+		<natures>
+			<nature>org.eclipse.m2e.core.maven2Nature</nature>
+			<nature>org.eclipse.sirius.nature.modelingproject</nature>
+			<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+			<nature>org.eclipse.jdt.core.javanature</nature>
+		</natures>
+	</projectDescription>
+	'''
+	
+	def CharSequence getProjectName() {
+		val uri = resource.URI
+		return uri.segment(uri.segmentCount-2)
 	}
 	
 	def dispatch saveDBs(MariaDB db)'''
@@ -102,6 +144,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 	public class DockerContainerTest {
 		public static void main(String[] args) {
 			DockerClient dockerClient = DockerClientBuilder.getInstance("tcp://localhost:2375").build();
+			String image;
 			«FOR container:app.containers»
 			«container.createJava»
 			«ENDFOR»
@@ -110,7 +153,7 @@ class TyphonDLGenerator extends AbstractGenerator {
 	'''
 	
 	def createJava(Container container)'''
-	String image = «container.database.image.value»;
+	image = «container.database.image.value»;
 	try {
 		System.out.println("Trying to pull " + image);
 		dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitCompletion(60, TimeUnit.SECONDS);

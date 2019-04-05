@@ -9,21 +9,21 @@ databases {
 		MYSQL_USER = me;
 		MYSQL_PASSWORD = safe;
 		MYSQL_ROOT_PASSWORD = evenSafer;
-		MYSQL_DATABASE = myMariaDB;
-		// TODO: evironment etc.
-	}
-	mariadb userdb {
-		image = "mariadb:latest";
-		MYSQL_USER = me;
-		MYSQL_PASSWORD = verySafe;
-		MYSQL_ROOT_PASSWORD = superSafe;
-		MYSQL_DATABASE = MySecondMariaDB;
+		MYSQL_DATABASE = wow;
 		// TODO: evironment etc.
 	}
 	mongo orderdb {
 		image = "mongo:latest";
 		MONGO_INITDB_ROOT_USERNAME = me;
 		MONGO_INITDB_ROOT_PASSWORD = safe;
+		// TODO: evironment etc.
+	}
+	mariadb userdb {
+		image = "mariadb:latest";
+		MYSQL_USER = me;
+		MYSQL_PASSWORD = safe;
+		MYSQL_ROOT_PASSWORD = evenSafer;
+		MYSQL_DATABASE = wow;
 		// TODO: evironment etc.
 	}
 }
@@ -36,14 +36,14 @@ platform platformname : default { //TODO
 				dbType : relationaldb
 				// TODO: volumes, networks, ports etc.
 			}
-			container userdb : Docker {
-				database : userdb
-				dbType : relationaldb
-				// TODO: volumes, networks, ports etc.
-			}
 			container orderdb : Docker {
 				database : orderdb
 				dbType : documentdb
+				// TODO: volumes, networks, ports etc.
+			}
+			container userdb : Docker {
+				database : userdb
+				dbType : relationaldb
 				// TODO: volumes, networks, ports etc.
 			}
 		}

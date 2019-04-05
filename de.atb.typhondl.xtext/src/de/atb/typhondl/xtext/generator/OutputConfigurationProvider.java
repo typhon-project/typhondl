@@ -16,7 +16,7 @@ public class OutputConfigurationProvider implements IOutputConfigurationProvider
 	@Override
 	public Set<OutputConfiguration> getOutputConfigurations() {
 		OutputConfiguration defaultOutput = new OutputConfiguration(IFileSystemAccess.DEFAULT_OUTPUT);
-		defaultOutput.setDescription("My Output Folder");
+		defaultOutput.setDescription("Output Folder");
 		defaultOutput.setOutputDirectory("./");
 		defaultOutput.setOverrideExistingResources(true);
 		defaultOutput.setCreateOutputDirectory(true);
