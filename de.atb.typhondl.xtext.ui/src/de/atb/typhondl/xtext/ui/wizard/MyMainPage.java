@@ -103,10 +103,11 @@ public class MyMainPage extends NewFileWizardPrimaryPage {
 			setStatus(new Status(IStatus.ERROR, "NewFileWizard", Messages.NewFileWizardPrimaryPage_empty_name)); //$NON-NLS-1$
 			return;
 		}
-		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(getFolder() + "/" + getFileName()));
+		IFile file = ResourcesPlugin.getWorkspace().getRoot()
+				.getFile(new Path(getFolder() + "/" + getFileName() + ".tdl"));
 		if (file.exists()) {
 			setStatus(new Status(IStatus.ERROR, "NewFileWizard", //$NON-NLS-1$
-					Messages.NewFileWizardPrimaryPage_file_already_exist_pre + getFileName()
+					Messages.NewFileWizardPrimaryPage_file_already_exist_pre + getFileName() + ".tdl"
 							+ Messages.NewFileWizardPrimaryPage_file_already_exist_post));
 			return;
 		}
@@ -121,9 +122,10 @@ public class MyMainPage extends NewFileWizardPrimaryPage {
 	public String getFileName() {
 		return fileText.getText();
 	}
-	
+
 	/**
-	 * copied from superclass because it uses templateCombo (which is not set in super)
+	 * copied from superclass because it uses templateCombo (which is not set in
+	 * super)
 	 */
 	public AbstractFileTemplate getSelectedTemplate() {
 		if (templates.length == 1) {
@@ -135,7 +137,7 @@ public class MyMainPage extends NewFileWizardPrimaryPage {
 		}
 		return null;
 	}
-	
+
 	public TemplateFileInfo getFileInfo() {
 		return new TemplateFileInfo(getFolder(), getFileName(), getSelectedTemplate());
 	}

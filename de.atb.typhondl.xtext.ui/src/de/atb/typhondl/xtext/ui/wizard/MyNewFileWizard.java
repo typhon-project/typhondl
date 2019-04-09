@@ -35,6 +35,7 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 	
 	@Inject
 	private TemplateLabelProvider labelProvider;
+	@SuppressWarnings("unused")
 	@Inject
 	private FileOpener fileOpener;
 	@Inject
