@@ -16,9 +16,9 @@ public class MyFileTemplateProvider  implements IFileTemplateProvider {
 	  }
 
 	public AbstractFileTemplate[] getFileTemplates(URI modelPath) {
-	    HelloWorldFile _helloWorldFile = new HelloWorldFile();
+		HelloWorldFile _helloWorldFile = new HelloWorldFile();
 	    DockerComposeFile _dockerComposeFile = new DockerComposeFile(modelPath);
 	    //KubernetesFile _kubernetesFile = new KubernetesFile();
-	    return new AbstractFileTemplate[] { _helloWorldFile, _dockerComposeFile};
+	    return new AbstractFileTemplate[] {_dockerComposeFile, _helloWorldFile};
 	}
 }
