@@ -32,7 +32,7 @@ public class MyMainPage extends NewFileWizardPrimaryPage {
 	private ComboViewer templateCombo;
 	private Text fileText;
 
-	protected MyMainPage(String pageName, AbstractFileTemplate[] templates, IStructuredSelection selection,
+	public MyMainPage(String pageName, AbstractFileTemplate[] templates, IStructuredSelection selection,
 			TemplateLabelProvider labelProvider, URI modelPath) {
 		super(pageName, templates, selection, labelProvider);
 		this.modelPath = modelPath;
