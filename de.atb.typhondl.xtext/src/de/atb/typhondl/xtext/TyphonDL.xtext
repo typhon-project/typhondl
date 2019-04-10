@@ -22,9 +22,14 @@ SupportedDBMS:
 
 Mongo:
 	'mongo' name=ID '{'
+	(image=IMAGE)
 	(userName=MONGO_INITDB_ROOT_USERNAME)
 	(password=MONGO_INITDB_ROOT_PASSWORD)
 	'}'
+;
+
+IMAGE:
+	'image' '=' value=Value ';'
 ;
 
 MONGO_INITDB_ROOT_PASSWORD:
@@ -36,7 +41,8 @@ MONGO_INITDB_ROOT_USERNAME:
 ;
 
 MariaDB:
-	'mariaDB' name=ID '{'
+	'mariadb' name=ID '{'
+	(image=IMAGE)
 	(userName=MYSQL_USER)
 	(password=MYSQL_PASSWORD)
 	(rootPassword=MYSQL_ROOT_PASSWORD)
@@ -73,7 +79,7 @@ DBType:
 ;
 
 DB:
-	'databases {'
+	'databases' '{'
 	(dbs+=SupportedDBMS)+
 	'}'
 ;
