@@ -55,7 +55,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	@Override
 	protected void updateVariables() {
 		for (Database database : data.keySet()) {
-			database.setDbms(data.get(database).getValue());
+			database.setDbms(data.get(database).getValue().toLowerCase());
 		}
 	}
 
@@ -106,6 +106,34 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			}
 		}
 		_builder_1.newLine();
+		_builder_1.append("databases {");
+		_builder_1.newLine();
+		{
+			for (final Database db : this.data.keySet()) {
+				String dbms = db.getDbms();
+				String name = db.getName();
+				_builder_1.append("\t");
+				_builder_1.append(dbms);
+				_builder_1.append(" ");
+				_builder_1.append(name);
+				_builder_1.append(" {");
+				_builder_1.newLine();
+				_builder_1.append("\t\t");
+				_builder_1.append("image = \"");
+				_builder_1.append(dbms);
+				_builder_1.append(":latest\";");				
+				_builder_1.newLine();
+				_builder_1.append("\t\t");
+				_builder_1.append("// TODO: evironment etc.");
+				_builder_1.newLine();
+				_builder_1.append("\t");
+				_builder_1.append("}");
+				_builder_1.newLine();
+			}
+		}
+		_builder_1.append("}");
+		_builder_1.newLine();
+		_builder_1.newLine();
 		_builder_1.append("platform platformname : default { //TODO");
 		_builder_1.newLine();
 		_builder_1.append("\t");
@@ -119,29 +147,26 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				_builder_1.append("\t\t\t");
 				_builder_1.append("container ");
 				String _name_1 = db.getName();
-				_builder_1.append(_name_1, "\t\t\t");
+				_builder_1.append(_name_1);
 				_builder_1.append(" : Docker {");
 				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t");
-				_builder_1.append("\t");
+				_builder_1.append("\t\t\t\t");
+				_builder_1.append("database : ");
+				String name = db.getName();
+				_builder_1.append(name);
+				_builder_1.newLineIfNotEmpty();
+				_builder_1.append("\t\t\t\t");
 				_builder_1.append("dbType : ");
 				DBType _type = db.getType();
-				_builder_1.append(_type, "\t\t\t\t");
+				_builder_1.append(_type);
 				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t");
-				_builder_1.append("\t");
-				_builder_1.append("image = ");
-				String _lowerCase = db.getDbms().toLowerCase();
-				_builder_1.append(_lowerCase, "\t\t\t\t");
-				_builder_1.append(":latest; // TODO");
-				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t");
-				_builder_1.append("\t");
-				_builder_1.append("// TODO: evironment, volumes, networks, ports etc.");
+				_builder_1.append("\t\t\t\t");
+				_builder_1.append("// TODO: volumes, networks, ports etc.");
 				_builder_1.newLine();
 				_builder_1.append("\t\t\t");
 				_builder_1.append("}");
 				_builder_1.newLine();
+				
 			}
 		}
 		_builder_1.append("\t\t");
@@ -150,7 +175,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		_builder_1.append("\t");
 		_builder_1.append("}");
 		_builder_1.newLine();
-		_builder_1.append("}\t\t\t\t\t");
+		_builder_1.append("}");
 		_builder_1.newLine();
 		generator.generate(_builder, _builder_1);
 	}

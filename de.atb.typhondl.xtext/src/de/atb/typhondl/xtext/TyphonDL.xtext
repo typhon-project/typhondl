@@ -9,61 +9,61 @@ DeploymentModel:
 ;
 
 Element: 
-	Deployment | Type | Database
+	Deployment | Type | DB
 ;
    
 Type:
     PlatformType | ContainerType | DBType
 ;
 
-Database:
-	Mongo | MariaDB
+SupportedDBMS:
+	MariaDB | Mongo
 ;
 
 Mongo:
 	'mongo' name=ID '{'
-	(mandatoryEntry=MongoMandatoryEntry)
-	(optionalEntries+=OptionalEntries)*
+	(image=IMAGE)
+	(userName=MONGO_INITDB_ROOT_USERNAME)
+	(password=MONGO_INITDB_ROOT_PASSWORD)
 	'}'
+;
+
+IMAGE:
+	'image' '=' value=Value ';'
+;
+
+MONGO_INITDB_ROOT_PASSWORD:
+	'MONGO_INITDB_ROOT_PASSWORD' '=' value=Value ';'
+;
+
+MONGO_INITDB_ROOT_USERNAME:
+	'MONGO_INITDB_ROOT_USERNAME' '=' value=Value ';'
 ;
 
 MariaDB:
-	'mariaDB' name=ID '{'
-	(mandatoryEntry=MariaDBMandatoryEntry)
-	(optionalEntries+=OptionalEntries)*
+	'mariadb' name=ID '{'
+	(image=IMAGE)
+	(userName=MYSQL_USER)
+	(password=MYSQL_PASSWORD)
+	(rootPassword=MYSQL_ROOT_PASSWORD)
+	(DBname=MYSQL_DATABASE)
 	'}'
 ;
 
-MongoMandatoryEntry:
-	'userName' '=' userName=Value ';'
-	'password' '=' password=Value ';'
+MYSQL_USER:
+	'MYSQL_USER' '=' value=Value ';'
 ;
 
-OptionalEntries:
-	Ports | Volumes | RootPassword | DBName | Key_Value
+MYSQL_DATABASE:
+	'MYSQL_DATABASE' '=' value=Value ';'
 ;
 
-
-MariaDBMandatoryEntry:
-	'userName' '=' userName=Value ';'
-	'password' '=' password=Value ';'
-	'rootPassword' '=' rootPassword=Value ';'
+MYSQL_PASSWORD:
+	'MYSQL_PASSWORD' '=' value=Value ';'
 ;
 
-DBName:
-	'dbname' '=' value=Value ';'
-;
-
-RootPassword:
-	'rootPassword' '=' value=Value ';'
-;
-
-Volumes:
-	'volumes' '=' value=Value ';'
-;
-
-Ports:
-	'ports' '=' value=Value ';'
+MYSQL_ROOT_PASSWORD:
+	'MYSQL_ROOT_PASSWORD' '=' value=Value ';'
 ;
 
 PlatformType:
@@ -76,6 +76,12 @@ ContainerType:
 	
 DBType:
 	'dbtype' name=ID
+;
+
+DB:
+	'databases' '{'
+	(dbs+=SupportedDBMS)+
+	'}'
 ;
 
 Deployment :
@@ -102,7 +108,7 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		'database' ':' (database=[Database])
+		'database' ':' (database=[SupportedDBMS])
 		(properties+=Property | features+=Feature)*
 	'}'
 ;

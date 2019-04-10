@@ -5,15 +5,18 @@ package de.atb.typhondl.xtext.generator
 
 import de.atb.typhondl.xtext.typhonDL.Application
 import de.atb.typhondl.xtext.typhonDL.Container
+import de.atb.typhondl.xtext.typhonDL.ContainerType
+import de.atb.typhondl.xtext.typhonDL.Key_Value
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
+import de.atb.typhondl.xtext.typhonDL.Key_ValueList
+import de.atb.typhondl.xtext.typhonDL.MariaDB
+import de.atb.typhondl.xtext.typhonDL.Mongo
+import de.atb.typhondl.xtext.typhonDL.SupportedDBMS
+import java.util.ArrayList
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import de.atb.typhondl.xtext.typhonDL.Key_Value
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
-import de.atb.typhondl.xtext.typhonDL.Key_ValueList
-import java.util.ArrayList
-import de.atb.typhondl.xtext.typhonDL.ContainerType
 
 /**
  * Generates code from your model files on save.
@@ -24,10 +27,16 @@ class TyphonDLGenerator extends AbstractGenerator {
 
 	val yamlList = new ArrayList<String>
 	ArrayList<ContainerObject> containerList
+	Resource resource;
 	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		// TODO different compile for each technology
 		containerList = new ArrayList<ContainerObject>
+		this.resource = resource
+		
+		for (db : resource.allContents.toIterable.filter(SupportedDBMS)) {
+			fsa.generateFile("databases/" + db.name, db.saveDBs)
+		}
 		for (app : resource.allContents.toIterable.filter(Application)) {
 			val typeList = new ArrayList<ContainerType>()
 			for (container : app.containers){
@@ -36,24 +45,127 @@ class TyphonDLGenerator extends AbstractGenerator {
 				}
 				containerList.add(createContainerObjects(container))
 			}
-			for (containerType : typeList){
-				if (containerType.name.equalsIgnoreCase("docker")){
-					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/Start_" + app.name + ".java", app.dockerScript)
-					fsa.generateFile("scripts/pom.xml", app.dockerPom)
-				}
-				if (containerType.name.equalsIgnoreCase("kubernetes")){
-					fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
-					fsa.generateFile("scripts/Start_" + app.name + ".java", app.kubernetesScript)
-					yamlList.add(app.name + "/docker-compose.yaml")
-					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
-				}
-			}
+			
+			fsa.generateFile("pom.xml", app.dockerPom)
+			fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
+			fsa.generateFile(".project", app.projectNatures)
+//			for (containerType : typeList){
+//				if (containerType.name.equalsIgnoreCase("docker")){
+//					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+//					//yamlList.add(app.name + "/docker-compose.yaml")
+//					//fsa.generateFile("scripts/Start" + app.name + ".java", app.dockerScript)
+//					fsa.generateFile("pom.xml", app.dockerPom)
+//					fsa.generateFile("src/main/java/de/atb/typhondl/docker/DockerContainerTest.java", app.dockerjava)
+//				}
+//				if (containerType.name.equalsIgnoreCase("kubernetes")){
+//					//fsa.generateFile(app.name + "/docker-compose.yaml", app.compose)
+//					fsa.generateFile("scripts/Start" + app.name + ".java", app.kubernetesScript)
+//					//yamlList.add(app.name + "/docker-compose.yaml")
+//					fsa.generateFile("scripts/pom.xml", app.kubernetesPom)
+//				}
+//			}
 			
 		}
 	}
 	
+	def projectNatures(Application application)'''
+	<?xml version="1.0" encoding="UTF-8"?>
+	<projectDescription>
+		<name>«getProjectName()»</name>
+		<comment></comment>
+		<projects>
+		</projects>
+		<buildSpec>
+			<buildCommand>
+				<name>org.eclipse.jdt.core.javabuilder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+			<buildCommand>
+				<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+			<buildCommand>
+				<name>org.eclipse.m2e.core.maven2Builder</name>
+				<arguments>
+				</arguments>
+			</buildCommand>
+		</buildSpec>
+		<natures>
+			<nature>org.eclipse.m2e.core.maven2Nature</nature>
+			<nature>org.eclipse.sirius.nature.modelingproject</nature>
+			<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+			<nature>org.eclipse.jdt.core.javanature</nature>
+		</natures>
+	</projectDescription>
+	'''
+	
+	def CharSequence getProjectName() {
+		val uri = resource.URI
+		return uri.segment(uri.segmentCount-2)
+	}
+	
+	def dispatch saveDBs(MariaDB db)'''
+	name = «db.name»
+	«db.DBname.eClass.instanceClass.simpleName» = «db.DBname.value»
+	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
+	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
+	«db.password.eClass.instanceClass.simpleName» = «db.password.value»
+	«db.rootPassword.eClass.instanceClass.simpleName» = «db.rootPassword.value»
+	'''
+		
+	
+	
+	def dispatch saveDBs(Mongo db)'''
+	name = «db.name»
+	«db.image.eClass.instanceClass.simpleName» = «db.image.value»
+	«db.userName.eClass.instanceClass.simpleName» = «db.userName.value»
+	«db.password.eClass.instanceClass.simpleName» = «db.password.value»
+	'''
+		
+	
+	
+	def dockerjava(Application app) '''
+	import java.util.List;
+	import java.util.concurrent.TimeUnit;
+	
+	import com.github.dockerjava.api.DockerClient;
+	import com.github.dockerjava.api.command.CreateContainerResponse;
+	import com.github.dockerjava.api.model.Info;
+	import com.github.dockerjava.api.model.SearchItem;
+	import com.github.dockerjava.core.DockerClientBuilder;
+	import com.github.dockerjava.core.command.PullImageResultCallback;
+	
+	/**
+	 * Generated Java-code
+	 * @author Flug
+	 */
+	public class DockerContainerTest {
+		public static void main(String[] args) {
+			DockerClient dockerClient = DockerClientBuilder.getInstance("tcp://localhost:2375").build();
+			String image;
+			«FOR container:app.containers»
+			«container.createJava»
+			«ENDFOR»
+		}
+	}
+	'''
+	
+	def createJava(Container container)'''
+	image = «container.database.image.value»;
+	try {
+		System.out.println("Trying to pull " + image);
+		dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitCompletion(60, TimeUnit.SECONDS);
+		System.out.println("done pulling");
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	CreateContainerResponse «container.name» = dockerClient.createContainerCmd(image).exec();
+	dockerClient.startContainerCmd(«container.name».getId()).exec();
+	'''
+
 	// TODO: maybe read in compose file reference https://docs.docker.com/compose/compose-file/#labels 
 	def ContainerObject createContainerObjects(Container container) {
 		val containerObject = new ContainerObject => [
@@ -90,26 +202,91 @@ class TyphonDLGenerator extends AbstractGenerator {
 	}
 	
 	
-	def compose(Application app)'''
-		version: '3.7'«»
-		
-		services: «FOR container:app.containers»
-				  tab«container.compile»
-				  «ENDFOR»
-	'''
+//	def compose(Application app)'''
+//		version: '3.7'«»
+//		
+//		services: «FOR container:app.containers»
+//				  tab«container.compile»
+//				  «ENDFOR»
+//	'''
 	
 	def dockerPom(Application app)'''
-	<resource>
-		<includes>
-			<include>**/docker-compose-*.yml</include>
-		</includes>
-	</resource>
-	
-	<dependency>
-	    <groupId>com.github.docker-java</groupId>
-	    <artifactId>docker-java</artifactId>
-	    <version>3.1.1</version>
-	</dependency>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>de.atb</groupId>
+  <artifactId>typhondl.docker</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+    <groupId>com.github.docker-java</groupId>
+    <artifactId>docker-java</artifactId>
+    <version>3.1.2</version>
+</dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+      <plugins>
+        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
 	'''
 	
 	def kubernetesPom(Application app)'''
@@ -228,30 +405,30 @@ class TyphonDLGenerator extends AbstractGenerator {
 	  }
 	}
 	'''
-	
-	def compile(Container container)'''
-	«container.name»:
-	«FOR property:container.properties»
-	tabtab«property.compileProp»
-	«ENDFOR»
-	'''
-	
-	def dispatch compileProp(Key_Value key_value)'''
-	«key_value.name»: «key_value.value»
-	'''
-	
-	def dispatch compileProp(Key_ValueArray array)'''
-	«array.name»: [
-	tabtabtab«array.value»«FOR value:array.values»,
-	tabtabtab«value»«ENDFOR»
-	tabtab]
-	'''
-	
-	def dispatch compileProp(Key_ValueList list)'''
-	«list.name»:
-	«FOR string:list.environmentVars»
-	tabtabtab- «string.substring(1,string.length-1)» 
-	«ENDFOR»
-	'''
+//	
+//	def compile(Container container)'''
+//	«container.name»:
+//	«FOR property:container.properties»
+//	tabtab«property.compileProp»
+//	«ENDFOR»
+//	'''
+//	
+//	def dispatch compileProp(Key_Value key_value)'''
+//	«key_value.name»: «key_value.value»
+//	'''
+//	
+//	def dispatch compileProp(Key_ValueArray array)'''
+//	«array.name»: [
+//	tabtabtab«array.value»«FOR value:array.values»,
+//	tabtabtab«value»«ENDFOR»
+//	tabtab]
+//	'''
+//	
+//	def dispatch compileProp(Key_ValueList list)'''
+//	«list.name»:
+//	«FOR string:list.environmentVars»
+//	tabtabtab- «string.substring(1,string.length-1)» 
+//	«ENDFOR»
+//	'''
 
 }

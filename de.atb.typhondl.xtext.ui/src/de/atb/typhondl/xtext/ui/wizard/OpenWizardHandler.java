@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -17,10 +16,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.ui.util.FileOpener;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
-
 import com.google.inject.Inject;
-
-import de.atb.typhondl.xtext.ui.wizard.MyNewFileWizard;
 
 @SuppressWarnings("restriction")
 public class OpenWizardHandler extends AbstractHandler {
@@ -44,15 +40,14 @@ public class OpenWizardHandler extends AbstractHandler {
 			IStructuredSelection strucSelection = (IStructuredSelection) selection;
 			Object firstElement = strucSelection.getFirstElement();
 			if (firstElement instanceof IAdaptable) {
-				IFile file = (IFile) ((IAdaptable) firstElement).getAdapter(IFile.class);
+				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
 				path = file.getLocation();
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
-			//IWizard wizard = new TemplateNewFileWizard();
-			IWizard wizard = new MyNewFileWizard(path, grammarAccess, labelProvider, fileOpener);
-
-			WizardDialog dialog = new WizardDialog(activeShell, wizard);
+			MyNewFileWizard fileWizard = new MyNewFileWizard(grammarAccess, labelProvider, fileOpener);
+			fileWizard.setModelPath(path.toFile().toURI());
+			WizardDialog dialog = new WizardDialog(activeShell, fileWizard);
 
 			dialog.open();
 
