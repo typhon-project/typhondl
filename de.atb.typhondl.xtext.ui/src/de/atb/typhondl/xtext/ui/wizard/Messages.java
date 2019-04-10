@@ -28,6 +28,30 @@ public class Messages extends NLS {
 	public static String Kubernetes_Description;
 	public static String EmptyProject_Label;
 	public static String EmptyProject_Description;
+	public static String HelloWorldFile_Label;
+	public static String HelloWorldFile_Description;
+	public static String DockerComposeFile_Label;
+	public static String DockerComposeFile_Description;
+	public static String KubernetesFile_Label;
+	public static String KubernetesFile_Description;
+	public static String MyNewFileWizard_title;
+	public static String MyNewFileWizard_title_suffix;
+	public static String TemplateNewFileWizard_title;
+	public static String TemplateNewFileWizard_create_new;
+	public static String TemplateNewFileWizard_create_new_prefix;
+	public static String TemplateNewFileWizard_create_new_suffix;
+	public static String NewFileWizardPrimaryPage_folder_label;
+	public static String NewFileWizardPrimaryPage_browse_button;
+	public static String NewFileWizardPrimaryPage_name_label;
+	public static String NewFileWizardPrimaryPage_selection_description;
+	public static String NewFileWizardPrimaryPage_template_label;
+	public static String NewFileWizardPrimaryPage_unexistint_folder_pre;
+	public static String NewFileWizardPrimaryPage_unexistent_folder_post;
+	public static String NewFileWizardPrimaryPage_empty_name;
+	public static String NewFileWizardPrimaryPage_file_already_exist_pre;
+	public static String NewFileWizardPrimaryPage_file_already_exist_post;
+	public static String DockerComposeFileTest_Label;
+	public static String DockerComposeFileTest_Description;
 	
 	static {
 	// initialize resource bundle
