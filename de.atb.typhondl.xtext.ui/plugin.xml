@@ -442,39 +442,68 @@
        point="org.eclipse.ui.menus">
     <menuContribution
           allPopups="false"
-          locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-       <command
-             commandId="de.atb.typhondl.xtext.ui.wizard.OpenWizard"
+          locationURI="popup:org.eclipse.ui.popup.any">
+       <menu
              icon="icons/typhon_icon.png"
-             label="Create TyphonDL Model"
-             style="push"
-             tooltip="Opens a Wizard to create a TyphonDL File">
+             label="TyphonDL">
+          <command
+                commandId="de.atb.typhondl.xtext.ui.wizard.OpenWizard"
+                label="Create TyphonDL Model"
+                style="push"
+                tooltip="Opens a Wizard to create a TyphonDL File">
              <visibleWhen
-                 checkEnabled="false">
-              <with
-                    variable="selection">
-                 <iterate
-                       ifEmpty="false"
-                       operator="or">
-                    <adapt
-                          type="org.eclipse.core.resources.IResource">
-                          <test
-                                property="org.eclipse.core.resources.extension"
-                                value="xmi">
-                          </test>
-                    </adapt>
-                 </iterate>
-              </with>
-           </visibleWhen>
-       </command>
+                   checkEnabled="false">
+                <with
+                      variable="activeMenuSelection">
+                   <iterate
+                         ifEmpty="false">
+                      <adapt
+                            type="org.eclipse.core.resources.IResource">
+                         <test
+                               property="org.eclipse.core.resources.extension"
+                               value="xmi">
+                         </test>
+                      </adapt>
+                   </iterate>
+                </with>
+             </visibleWhen>
+          </command>
+          <command
+                commandId="de.atb.typhondl.acceleo"
+                label="Generate Deployment Scripts"
+                style="push"
+                tooltip="Use Acceleo to generate deployment scripts">
+                <visibleWhen
+                   checkEnabled="false">
+                <with
+                      variable="activeMenuSelection">
+                   <iterate
+                         ifEmpty="false">
+                      <adapt
+                            type="org.eclipse.core.resources.IResource">
+                         <test
+                               property="org.eclipse.core.resources.extension"
+                               value="tdl">
+                         </test>
+                      </adapt>
+                   </iterate>
+                </with>
+             </visibleWhen>
+          </command>
+       </menu>
     </menuContribution>
  </extension>
  <extension
        point="org.eclipse.ui.commands">
     <command
-          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.wizard.OpenWizardHandler"
+          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenWizardHandler"
           id="de.atb.typhondl.xtext.ui.wizard.OpenWizard"
           name="Open Wizard">
+    </command>
+    <command
+          defaultHandler="de.atb.typhondl.xtext.ui.handlers.GenerateScriptsHandler"
+          id="de.atb.typhondl.acceleo"
+          name="Generate Scripts">
     </command>
  </extension>
  <extension

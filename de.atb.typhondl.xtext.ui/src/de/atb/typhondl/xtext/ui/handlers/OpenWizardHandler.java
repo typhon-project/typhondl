@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.wizard;
+package de.atb.typhondl.xtext.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -17,6 +17,8 @@ import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.ui.util.FileOpener;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import com.google.inject.Inject;
+
+import de.atb.typhondl.xtext.ui.wizard.MyNewFileWizard;
 
 @SuppressWarnings("restriction")
 public class OpenWizardHandler extends AbstractHandler {
