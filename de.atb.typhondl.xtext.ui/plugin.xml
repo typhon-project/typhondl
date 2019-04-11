@@ -469,7 +469,7 @@
              </visibleWhen>
           </command>
           <command
-                commandId="de.atb.typhondl.acceleo"
+                commandId="de.atb.typhondl.acceleo.generate"
                 label="Generate Deployment Scripts"
                 style="push"
                 tooltip="Use Acceleo to generate deployment scripts">
@@ -502,7 +502,7 @@
     </command>
     <command
           defaultHandler="de.atb.typhondl.xtext.ui.handlers.GenerateScriptsHandler"
-          id="de.atb.typhondl.acceleo"
+          id="de.atb.typhondl.acceleo.generate"
           name="Generate Scripts">
     </command>
  </extension>
