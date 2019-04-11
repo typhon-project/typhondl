@@ -29,8 +29,9 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
 			String pathToXTextModel = file.getFullPath().toString();
-			File folder = new File(file.getLocation().toString().replace("." + file.getFileExtension(), "")
-					+ File.separator + "generated"); // TODO
+			String modelName = file.getName().replace("." + file.getFileExtension(), "");
+			File folder = new File(ResourcesPlugin.getWorkspace().getRoot()
+					+ File.separator + modelName); // TODO
 			Services.generateDeployment(pathToXTextModel, folder.getAbsolutePath());
 
 			for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {

@@ -19,6 +19,8 @@ public class Services {
 			try {
 				new Generate(loadXtextModel(pathToXTextModel), new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
 				System.out.println("Generated!");
+				System.out.println("pathToXTextModel=" + pathToXTextModel + ", folder=" + folder);
+				System.out.println("getNameForOutputProjects=" + getNameForOutputProjects(pathToXTextModel));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -28,5 +30,19 @@ public class Services {
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector().getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		return (DeploymentModel) resourceSet.getResource(URI.createURI(pathToXTextModel), true).getContents().get(0);
+	}
+	
+	public static String getNameForOutputProjects(String filePath) {
+		String result = "";
+		try {
+			java.net.URI uri = new java.net.URI(filePath);
+			String path = uri.getPath();
+			result = path.substring(path.lastIndexOf('/') + 1);
+			result = result.replaceFirst("[.][^.]+$", "");
+		} catch (java.net.URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 }

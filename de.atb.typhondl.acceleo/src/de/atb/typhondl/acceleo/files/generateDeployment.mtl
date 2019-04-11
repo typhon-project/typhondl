@@ -6,7 +6,7 @@
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 	
 [file ('deployment/src/main/java/org/typhon/docker/StartContainers.java', false, 'UTF-8')]
-package de.atb.docker
+package org.typhon.docker;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
