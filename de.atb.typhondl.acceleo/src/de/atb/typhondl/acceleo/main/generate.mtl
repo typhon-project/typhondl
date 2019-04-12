@@ -1,0 +1,9 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.typhon.org/dsls/xtext/TyphonDL')]
+
+[import de::atb::typhondl::acceleo::files::generateDeployment/]
+
+[template public generate(aDeploymentModel : DeploymentModel)]
+[comment @main/]
+	[generateDeployment(aDeploymentModel)/]
+[/template]
