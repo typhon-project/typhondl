@@ -19,8 +19,6 @@ public class Services {
 			try {
 				new Generate(loadXtextModel(pathToXTextModel), new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
 				System.out.println("Generated!");
-				System.out.println("pathToXTextModel=" + pathToXTextModel + ", folder=" + folder);
-				System.out.println("getNameForOutputProjects=" + getNameForOutputProjects(pathToXTextModel));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
