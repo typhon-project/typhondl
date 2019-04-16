@@ -4,124 +4,42 @@
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
+
+[for (aCluster : Cluster | aDeploymentModel.elements.eAllContents(typhonDL::Deployment).clusters)]
 	
-[file ('deployment/src/main/java/org/typhon/docker/StartContainers.java', false, 'UTF-8')]
-package org.typhon.docker;
+[for (aApplication : Application | aCluster.applications)]
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.SearchItem;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.command.PullImageResultCallback;
+services: 
+  [for (aContainer : Container | aApplication.containers)]
+  [aContainer.name/]:
+    image: [database.image.value/]
+    [database.showVars()/]
+    [for (aFeature : Feature | aContainer.features)]
+    [aFeature.name/] : [aFeature.type/]
+    [/for]
+  [/for]
 
-/**
- * Generated Java-code
- * @author Flug
- */
-public class StartContainers {
-	public static void main(String[ '[' /][ ']' /] args) {
-		DockerClient dockerClient = DockerClientBuilder.getInstance("tcp://localhost:2375").build();
-		String image;
-		[for (aDB : SupportedDBMS | getAllDatabases(aDeploymentModel))]
-		image = [aDB.image.value/];
-		try {
-			System.out.println("Trying to pull " + image);
-			dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitCompletion(60, TimeUnit.SECONDS);
-			System.out.println("done pulling");
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		CreateContainerResponse [aDB.name/] = dockerClient.createContainerCmd(image).exec();
-		dockerClient.startContainerCmd([aDB.name/].getId()).exec();
-		[/for]
-	}
-}
 [/file]
+	
+[/for]
+[/for]
+[/template]
 
-[file ('deployment/pom.xml', false, 'UTF-8')]
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+[template public showVars(aDBMS : SupportedDBMS) ]
+	[comment TODO Auto-generated template stub/]
+[/template]
 
-  <groupId>org.typhon</groupId>
-  <artifactId>docker</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+[template public showVars(aDBMS : MariaDB)]
+	[aDBMS.DBname/] : [aDBMS.DBname.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
+	[aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
+[/template]
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-    <groupId>com.github.docker-java</groupId>
-    <artifactId>docker-java</artifactId>
-    <version>3.1.2</version>
-</dependency>
-  </dependencies>
-
-  <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-      <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.1.0</version>
-        </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.19.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>2.5.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.8.2</version>
-        </plugin>
-        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.7.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
-</project>
-[/file]
-
-
-
-
+[template public showVars(aDBMS : Mongo)]
+	[aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
 [/template]
