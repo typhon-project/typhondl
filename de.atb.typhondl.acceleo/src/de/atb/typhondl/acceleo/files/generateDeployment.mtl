@@ -35,7 +35,7 @@ services:
 [template public showVars(aDBMS : MariaDB)]
 	[aDBMS.DBname/] : [aDBMS.DBname.value/]
 	[aDBMS.password/] : [aDBMS.password.value/]
-	[aDBMS.userName/] : [aDBMS.userName.value/]
+    [aDBMS.userName/] : [aDBMS.userName.value/]
 	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
 [/template]
 

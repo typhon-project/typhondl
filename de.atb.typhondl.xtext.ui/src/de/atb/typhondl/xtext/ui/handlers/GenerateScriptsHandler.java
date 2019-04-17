@@ -30,10 +30,11 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		IWorkspaceRoot root = workspace.getRoot();
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			String folder = new File(file.getFullPath() + File.separator + "output" + File.separator).getAbsolutePath();
+			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")
+					+ File.separator + "output");
+			System.out.println("folder: " + folder);
+			Services.generateDeployment(file.getFullPath().toString(), folder.getAbsolutePath());
 
-			Services.generateDeployment(file.getFullPath().toString(), folder);
-			
 			for (IProject iproject : root.getProjects()) { // TODO
 				System.out.println("projectName: " + iproject.getName());
 				try {

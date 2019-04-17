@@ -18,7 +18,6 @@ public class Services {
 			System.out.println("Generate from template...");
 			try {
 				new Generate(loadXtextModel(pathToXTextModel), new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
-				System.out.println("Generated!");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
