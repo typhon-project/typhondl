@@ -16,6 +16,7 @@ services:
   [aContainer.name/]:
     image: [database.image.value/]
     className: [database.eClass().name/]
+    [database.showVars()/]
 		[/for]
 	[/file]
 	
@@ -24,17 +25,13 @@ services:
 [/template]
 
 [template private showVars(aDBMS : SupportedDBMS) ]
-	testing
+    testing
 [/template]
 
 [template private showVars(aDBMS : MariaDB)]
-	[aDBMS.DBname/] : [aDBMS.DBname.value/]
-	[aDBMS.password/] : [aDBMS.password.value/]
-    [aDBMS.userName/] : [aDBMS.userName.value/]
-	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
+    testing(Maria)
 [/template]
 
 [template private showVars(aDBMS : Mongo)]
-	[aDBMS.userName/] : [aDBMS.userName.value/]
-	[aDBMS.password/] : [aDBMS.password.value/]
+    testing(Mongo)
 [/template]
