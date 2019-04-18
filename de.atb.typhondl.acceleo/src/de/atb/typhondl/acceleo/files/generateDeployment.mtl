@@ -6,32 +6,43 @@
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
 [for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
-	[for (aApplication : Application | aCluster.applications)]
+[for (aApplication : Application | aCluster.applications)]
 	
-	[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
 version: '3.7'
 
 services: 
-		[for (aContainer : Container | aApplication.containers)]
+[for (aContainer : Container | aApplication.containers)]
   [aContainer.name/]:
     image: [database.image.value/]
     className: [database.eClass().name/]
     [database.showVars()/]
-		[/for]
-	[/file]
+[/for]
+[/file]
 	
-	[/for]
+[/for]
 [/for]
 [/template]
 
-[template private showVars(aDBMS : SupportedDBMS) ]
+
+[comment  
+######################################################################################
+###### START - POLYMORFISM FOR DATABASE VARIABLES
+######################################################################################
+/]
+[template private showVars(database : SupportedDBMS) ]
     testing
 [/template]
 
-[template private showVars(aDBMS : MariaDB)]
+[template private showVars(database : MariaDB)]
     testing(Maria)
 [/template]
 
-[template private showVars(aDBMS : Mongo)]
+[template private showVars(database : Mongo)]
     testing(Mongo)
 [/template]
+[comment  
+######################################################################################
+###### END - POLYMORFISM FOR DATABASE VARIABLES
+######################################################################################
+/]
