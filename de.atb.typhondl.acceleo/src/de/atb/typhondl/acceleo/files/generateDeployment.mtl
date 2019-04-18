@@ -15,8 +15,7 @@ services:
 [for (aContainer : Container | aApplication.containers)]
   [aContainer.name/]:
     image: [database.image.value/]
-    className: [database.eClass().name/]
-    [database.showVars()/]
+    className: [database.showVars()/]
 [/for]
 [/file]
 	
@@ -30,17 +29,11 @@ services:
 ###### START - POLYMORFISM FOR DATABASE VARIABLES
 ######################################################################################
 /]
-[template private showVars(database : SupportedDBMS) ]
-    testing
+
+[template public showVars(database : SupportedDBMS) ]
+    testing(grrr)
 [/template]
 
-[template private showVars(database : MariaDB)]
-    testing(Maria)
-[/template]
-
-[template private showVars(database : Mongo)]
-    testing(Mongo)
-[/template]
 [comment  
 ######################################################################################
 ###### END - POLYMORFISM FOR DATABASE VARIABLES
