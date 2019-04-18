@@ -1,0 +1,45 @@
+[comment encoding = UTF-8 /]
+[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
+[template public generateDeployment(aDeploymentModel : DeploymentModel)]
+
+[for (aCluster : Cluster | aDeploymentModel.elements.eAllContents(typhonDL::Deployment).clusters)]
+	
+[for (aApplication : Application | aCluster.applications)]
+
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
+
+services: 
+  [for (aContainer : Container | aApplication.containers)]
+  [aContainer.name/]:
+    image: [database.image.value/]
+    [database.showVars()/]
+    [for (aFeature : Feature | aContainer.features)]
+    [aFeature.name/] : [aFeature.type/]
+    [/for]
+  [/for]
+
+[/file]
+	
+[/for]
+[/for]
+[/template]
+
+[template public showVars(aDBMS : SupportedDBMS) ]
+	[comment TODO Auto-generated template stub/]
+[/template]
+
+[template public showVars(aDBMS : MariaDB)]
+	[aDBMS.DBname/] : [aDBMS.DBname.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
+    [aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
+[/template]
+
+[template public showVars(aDBMS : Mongo)]
+	[aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
+[/template]

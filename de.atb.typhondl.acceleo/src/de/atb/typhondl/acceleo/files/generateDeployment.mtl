@@ -4,13 +4,19 @@
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
+
+[for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
+	[for (aApplication : Application | aCluster.applications)]
 	
-[file ('todo/docker-compose.yaml', false, 'UTF-8')]
-version: '3.7'
+	[file (aCluster.name + '/' + aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+	version: '3.7'
 
-services: 
-[/file]
-
-
-
+	services: 
+		[for (aContainer : Container | aApplication.containers)]
+	  [aContainer.name/]:
+		[/for]
+	[/file]
+	
+	[/for]
+[/for]
 [/template]

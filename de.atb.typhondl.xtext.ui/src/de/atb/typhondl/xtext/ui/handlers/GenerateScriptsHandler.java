@@ -36,7 +36,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
 			Services.generateDeployment(file.getFullPath().toString(), folder.getAbsolutePath());
 
 			for (IProject iproject : root.getProjects()) { // TODO
-				System.out.println("projectName: " + iproject.getName());
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				} catch (CoreException e) {
