@@ -15,7 +15,7 @@ services:
 		[for (aContainer : Container | aApplication.containers)]
   [aContainer.name/]:
     image: [database.image.value/]
-    [database.showVars()/]
+    className: [database.eClass().name/]
 		[/for]
 	[/file]
 	
@@ -23,18 +23,18 @@ services:
 [/for]
 [/template]
 
-[template public showVars(aDBMS : SupportedDBMS) ]
+[template private showVars(aDBMS : SupportedDBMS) ]
 	testing
 [/template]
 
-[template public showVars(aDBMS : MariaDB)]
+[template private showVars(aDBMS : MariaDB)]
 	[aDBMS.DBname/] : [aDBMS.DBname.value/]
 	[aDBMS.password/] : [aDBMS.password.value/]
     [aDBMS.userName/] : [aDBMS.userName.value/]
 	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
 [/template]
 
-[template public showVars(aDBMS : Mongo)]
+[template private showVars(aDBMS : Mongo)]
 	[aDBMS.userName/] : [aDBMS.userName.value/]
 	[aDBMS.password/] : [aDBMS.password.value/]
 [/template]
