@@ -1,4 +1,4 @@
 [comment encoding = UTF-8 /]
 [module utilityGenerator('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
-[query public getAllDatabases(aDeploymentModel : DeploymentModel) : Sequence(SupportedDBMS) = aDeploymentModel.elements->filter(typhonDL::DB).dbs /]
+[query public getAllDatabases(aDeploymentModel : DeploymentModel) : Sequence(SupportedDBMS) = aDeploymentModel.elements->filter(typhonDL::DB).dbs/]

@@ -195,12 +195,12 @@ public class Generate extends AbstractAcceleoGenerator {
          * use the code below.
          */
 
-        if (model != null && model.eResource() != null) {
-            List<org.eclipse.emf.ecore.resource.Resource.Diagnostic> errors = model.eResource().getErrors();
-            for (org.eclipse.emf.ecore.resource.Resource.Diagnostic diagnostic : errors) {
-                System.err.println(diagnostic.toString());
-            }
-        }
+        //if (model != null && model.eResource() != null) {
+        //    List<org.eclipse.emf.ecore.resource.Resource.Diagnostic> errors = model.eResource().getErrors();
+        //    for (org.eclipse.emf.ecore.resource.Resource.Diagnostic diagnostic : errors) {
+        //        System.err.println(diagnostic.toString());
+        //    }
+        //}
 
         super.doGenerate(monitor);
     }
@@ -305,6 +305,13 @@ public class Generate extends AbstractAcceleoGenerator {
          * 
          * To learn more about Properties Files, have a look at the Acceleo documentation (Help -> Help Contents).
          */
+    	
+//    	final String prefix = "platform:/plugin/";
+//        final String pluginName = "it.univaq.disim.typhon.acceleo";
+//        final String packagePath = "/src/it/univaq/disim/typhon/acceleo/properties/";
+//        final String fileName = "default.properties";
+////        propertiesFiles.add(prefix + pluginName + packagePath + fileName);
+    	propertiesFiles.add("src/it/univaq/disim/typhon/acceleo/properties/default.properties");
     	
         return propertiesFiles;
     }
