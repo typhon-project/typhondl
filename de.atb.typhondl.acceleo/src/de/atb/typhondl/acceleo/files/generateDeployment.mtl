@@ -6,17 +6,35 @@
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
 [for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
-	[for (aApplication : Application | aCluster.applications)]
+[for (aApplication : Application | aCluster.applications)]
 	
-	[file (aCluster.name + '/' + aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
-	version: '3.7'
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
 
-	services: 
-		[for (aContainer : Container | aApplication.containers)]
-	  [aContainer.name/]:
-		[/for]
-	[/file]
-	
-	[/for]
+services: 
+[for (aContainer : Container | aApplication.containers)]
+  [aContainer.name/]:
+    image: [database.image.value/]
+    [database.showVars()/]
 [/for]
+[/file]
+	
+[/for]
+[/for]
+[/template]
+
+[template public showVars(aDatabase : SupportedDBMS)]
+	[comment TODO Auto-generated template stub/]
+[/template]
+
+[template public showVars(aDBMS : MariaDB)]
+	[aDBMS.DBname/] : [aDBMS.DBname.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
+    [aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.rootPassword/] : [aDBMS.rootPassword.value/]
+[/template]
+
+[template public showVars(aDBMS : Mongo)]
+	[aDBMS.userName/] : [aDBMS.userName.value/]
+	[aDBMS.password/] : [aDBMS.password.value/]
 [/template]
