@@ -18,8 +18,6 @@ import java.util.List;
 import org.eclipse.acceleo.engine.event.IAcceleoTextGenerationListener;
 import org.eclipse.acceleo.engine.generation.strategy.IAcceleoGenerationStrategy;
 import org.eclipse.acceleo.engine.service.AbstractAcceleoGenerator;
-import org.eclipse.acceleo.engine.utils.AcceleoEngineUtils;
-import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.Monitor;
 import org.eclipse.emf.common.util.URI;
@@ -311,7 +309,7 @@ public class Generate extends AbstractAcceleoGenerator {
 //        final String packagePath = "/src/it/univaq/disim/typhon/acceleo/properties/";
 //        final String fileName = "default.properties";
 ////        propertiesFiles.add(prefix + pluginName + packagePath + fileName);
-    	propertiesFiles.add("src/it/univaq/disim/typhon/acceleo/properties/default.properties");
+    	//propertiesFiles.add("src/it/univaq/disim/typhon/acceleo/properties/default.properties");
     	
         return propertiesFiles;
     }

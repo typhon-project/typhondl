@@ -1,15 +1,51 @@
 [comment encoding = UTF-8 /]
 [module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
-[file ('test/docker-compose.yaml', false, 'UTF-8')]
-test: 
+[for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
+[for (aApplication : Application | aCluster.applications)]
+	
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
 
-['myString'.showVars()/]
-
+services: 
+[for (aContainer : Container | aApplication.containers)]
+  [aContainer.name/]:
+    image: [database.image.value/]
+    className: [database.showVars()/]
+[/for]
 [/file]
-
+	
+[/for]
+[/for]
 [/template]
 
-[query public showVars(aString : String) : String = aString + 'test' /]
+
+[comment  
+######################################################################################
+###### START - POLYMORFISM FOR DATABASE VARIABLES
+######################################################################################
+/]
+
+[template public showVars(database : SupportedDBMS) ]
+	test(1)
+[/template]
+
+[template public showVars(database : Mongo) ]
+	test(2)
+[/template]
+
+[template public showVars(database : MariaDB) ]
+	test(3)
+[/template]
+
+
+
+[comment  
+######################################################################################
+###### END - POLYMORFISM FOR DATABASE VARIABLES
+######################################################################################
+/]
