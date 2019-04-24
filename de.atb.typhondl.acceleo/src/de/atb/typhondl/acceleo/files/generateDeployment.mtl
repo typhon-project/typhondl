@@ -5,22 +5,15 @@
 
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
-[for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
-[for (aApplication : Application | aCluster.applications)]
-	
-[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+[file ('test/docker-compose.yaml', false, 'UTF-8')]
 version: '3.7'
 
 services: 
-[for (aContainer : Container | aApplication.containers)]
-  [aContainer.name/]:
-    image: [database.image.value/]
-    className: [database.showVars()/]
-[/for]
+
+['myString'.showVars()/]
+
 [/file]
-	
-[/for]
-[/for]
+
 [/template]
 
 
@@ -30,8 +23,8 @@ services:
 ######################################################################################
 /]
 
-[template public showVars(database : SupportedDBMS) ]
-    testing(grrr)
+[template public showVars(string : String) ]
+    testing(string)
 [/template]
 
 [comment  
