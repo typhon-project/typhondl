@@ -22,7 +22,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
-
 import de.atb.typhondl.acceleo.services.Services;
 
 public class GenerateScriptsHandler extends AbstractHandler {

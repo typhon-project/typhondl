@@ -1,0 +1,44 @@
+[comment encoding = UTF-8 /]
+[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator /]
+
+[template public generateDeployment(aDeploymentModel : DeploymentModel)]
+
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[for (aApplication : Application | aCluster.getAllApplications())]
+
+[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
+
+services:
+[for (aContainer : Container | aApplication.getAllContainers())]
+  [aContainer.name/]:
+    image: [aContainer.getImage()/]
+    [aContainer.database.showVars()/]
+[/for]
+
+[/file]
+
+[/for]
+[/for]
+
+[/template]
+
+[template public showVars(database : SupportedDBMS) ]
+	ups
+[/template]
+
+[template public showVars(database : Mongo) ]
+environment:
+  - [database.userName/]=[database.userName.value/]
+  - [database.password/]=[database.password.value/]
+[/template]
+
+[template public showVars(database : MariaDB) ]
+environment:
+  - [database.userName/]=[database.userName.value/]
+  - [database.password/]=[database.password.value/]
+  - [database.DBname/]=[database.DBname.value/]
+  - [database.rootPassword/]=[database.rootPassword.value/]
+[/template]
