@@ -1,14 +1,10 @@
 [comment encoding = UTF-8 /]
 [module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
-[import de::atb::typhondl::acceleo::common::utilityGenerator/]
-
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
 [file ('test/docker-compose.yaml', false, 'UTF-8')]
-version: '3.7'
-
-services: 
+test: 
 
 ['myString'.showVars()/]
 
@@ -16,19 +12,4 @@ services:
 
 [/template]
 
-
-[comment  
-######################################################################################
-###### START - POLYMORFISM FOR DATABASE VARIABLES
-######################################################################################
-/]
-
-[template public showVars(string : String) ]
-    testing(string)
-[/template]
-
-[comment  
-######################################################################################
-###### END - POLYMORFISM FOR DATABASE VARIABLES
-######################################################################################
-/]
+[query public showVars(aString : String) : String = aString + 'test' /]
