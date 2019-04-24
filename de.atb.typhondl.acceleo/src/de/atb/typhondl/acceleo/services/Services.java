@@ -29,18 +29,4 @@ public class Services {
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		return (DeploymentModel) resourceSet.getResource(URI.createURI(pathToXTextModel), true).getContents().get(0);
 	}
-	
-	public static String getNameForOutputProjects(String filePath) {
-		String result = "";
-		try {
-			java.net.URI uri = new java.net.URI(filePath);
-			String path = uri.getPath();
-			result = path.substring(path.lastIndexOf('/') + 1);
-			result = result.replaceFirst("[.][^.]+$", "");
-		} catch (java.net.URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return result;
-	}
 }
