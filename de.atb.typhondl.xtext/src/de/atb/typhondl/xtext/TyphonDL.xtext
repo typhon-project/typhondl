@@ -43,11 +43,13 @@ MONGO_INITDB_ROOT_USERNAME:
 MariaDB:
 	'mariadb' name=ID '{'
 	(image=IMAGE)
-	(userName=MYSQL_USER)
-	(password=MYSQL_PASSWORD)
-	(rootPassword=MYSQL_ROOT_PASSWORD)
-	(DBname=MYSQL_DATABASE)
+	(environment+=MARIAENV)+
+	(otherVars+=Key_Value)*
 	'}'
+;
+
+MARIAENV:
+	MYSQL_USER | MYSQL_PASSWORD | MYSQL_ROOT_PASSWORD | MYSQL_DATABASE
 ;
 
 MYSQL_USER:

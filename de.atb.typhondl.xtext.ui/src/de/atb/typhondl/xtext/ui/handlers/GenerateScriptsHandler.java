@@ -30,8 +30,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		IWorkspaceRoot root = workspace.getRoot();
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")
-					+ File.separator + "output");
+			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), ""));
 			System.out.println("folder: " + folder);
 			String pathToModel = file.getFullPath().toString();
 			String outputPath = folder.getAbsolutePath();
