@@ -303,7 +303,6 @@ public class Generate extends AbstractAcceleoGenerator {
          * 
          * To learn more about Properties Files, have a look at the Acceleo documentation (Help -> Help Contents).
          */
-    	  	
         return propertiesFiles;
     }
     

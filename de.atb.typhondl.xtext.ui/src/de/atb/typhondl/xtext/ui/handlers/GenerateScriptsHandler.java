@@ -31,11 +31,10 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
 			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), ""));
-
 			String pathToModel = file.getFullPath().toString();
 			String outputPath = folder.getAbsolutePath();
+			
 			Services.generateDeployment(pathToModel, outputPath);
-
 
 			for (IProject iproject : root.getProjects()) { 
 				try {
