@@ -8,7 +8,7 @@
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [for (aApplication : Application | aCluster.getAllApplications())]
 	
-[file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
+[file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
 
