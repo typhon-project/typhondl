@@ -37,8 +37,12 @@ environment:
 
 [template public showVars(database : MariaDB) ]
 environment:
-  - [database.userName/]=[database.userName.value/]
-  - [database.password/]=[database.password.value/]
+	[for (content : OclAny | database.eAllContents())]
+  - [content.eClass().name/]=[content.getProperty('value')/]
+	[/for]
+  - [database.userName.eClass().name/]=[database.userName.value/]
+  - [database.password.eClass().instanceClassName/]=[database.password.value/]
   - [database.DBname/]=[database.DBname.value/]
   - [database.rootPassword/]=[database.rootPassword.value/]
+	
 [/template]
