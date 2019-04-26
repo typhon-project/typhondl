@@ -33,9 +33,11 @@ public class GenerateScriptsHandler extends AbstractHandler {
 			IFile file = (IFile) object;
 			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")
 					+ File.separator + "output");
-			System.out.println("Outputfolder: " + folder);
+			System.out.println("Outputfolder: " + folder.getAbsolutePath());
 			System.out.println("inputModel: " + file.getFullPath().toString());
-			Services.generateDeployment(file.getFullPath().toString(), folder.getAbsolutePath());
+			String pathToModel = file.getFullPath().toString();
+			String outputPath = folder.getAbsolutePath();
+			Services.generateDeployment(pathToModel, outputPath);
 			System.out.println("after Generation");
 			for (IProject iproject : root.getProjects()) { // TODO
 				try {
