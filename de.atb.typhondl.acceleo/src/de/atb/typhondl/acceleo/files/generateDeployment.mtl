@@ -5,47 +5,46 @@
 
 [template public generateDeployment(aDeploymentModel : DeploymentModel)]
 
-[for (aCluster : Cluster | (aDeploymentModel.elements->filter(typhonDL::Deployment).clusters))]
-[for (aApplication : Application | aCluster.applications)]
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[for (aApplication : Application | aCluster.getAllApplications())]
 	
 [file (aApplication.name + '/docker-compose.yaml', false, 'UTF-8')]
 version: '3.7'
 
-services: 
-[for (aContainer : Container | aApplication.containers)]
+
+services:
+[for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-    image: [database.image.value/]
-    className: [database.showVars()/]
+    [aContainer.database.showVars()/]
 [/for]
+
 [/file]
 	
 [/for]
 [/for]
+
 [/template]
 
-
-[comment  
-######################################################################################
-###### START - POLYMORFISM FOR DATABASE VARIABLES
-######################################################################################
-/]
-
 [template public showVars(database : SupportedDBMS) ]
-	test(1)
+	not a supported DBMS
 [/template]
 
 [template public showVars(database : Mongo) ]
-	test(2)
+image: [database.image.value/]
+environment:
+  - [database.userName.eClass().name/]=[database.userName.value/]
+  - [database.password.eClass().name/]=[database.password.value/]
 [/template]
 
 [template public showVars(database : MariaDB) ]
-	test(3)
+image: [database.image.value/]
+environment:
+	[for (aVar : MARIAENV | database.environment)]
+  - [aVar.eClass().name/]=[aVar.value/]
+	[/for]
+[for (aVar : Key_Value | database.otherVars)]
+[aVar.name/]: [aVar.value/]
+[/for]	
 [/template]
 
 
-
-[comment  
-######################################################################################
-###### END - POLYMORFISM FOR DATABASE VARIABLES
-######################################################################################
-/]

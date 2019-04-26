@@ -1,4 +1,22 @@
 [comment encoding = UTF-8 /]
 [module utilityGenerator('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
-[query public getAllDatabases(aDeploymentModel : DeploymentModel) : Sequence(SupportedDBMS) = aDeploymentModel.elements->filter(typhonDL::DB).dbs/]
+[query public getAllDatabases(aDeploymentModel : DeploymentModel) : Sequence(SupportedDBMS) = 
+ aDeploymentModel.elements->filter(typhonDL::DB).dbs
+/]
+
+[query public getAllClusters(aDeploymentModel : DeploymentModel) : Sequence(Cluster) = 
+ aDeploymentModel.elements->filter(typhonDL::Deployment).clusters 
+/]
+
+[query public getAllApplications(aCluster : Cluster) : OrderedSet(Application) = 
+ aCluster.applications
+/]
+
+[query public getAllContainers(aApplication : Application) : OrderedSet(Container) =
+ aApplication.containers 
+/]
+
+[query public getImage(aContainer : Container) : String =
+ aContainer.database.image.value 
+/]

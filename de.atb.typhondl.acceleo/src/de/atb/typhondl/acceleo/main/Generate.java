@@ -24,7 +24,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
-
 /**
  * Entry point of the 'Generate' generation module.
  *
@@ -117,7 +116,7 @@ public class Generate extends AbstractAcceleoGenerator {
      * 
      * @param args
      *            Arguments of the generation.
-     * 
+     * @generated
      */
     public static void main(String[] args) {
         try {
@@ -266,6 +265,7 @@ public class Generate extends AbstractAcceleoGenerator {
      * 
      * @return The list of properties file we need to add to the generation context.
      * @see java.util.ResourceBundle#getBundle(String)
+     * @generated
      */
     @Override
     public List<String> getProperties() {
@@ -303,14 +303,7 @@ public class Generate extends AbstractAcceleoGenerator {
          * 
          * To learn more about Properties Files, have a look at the Acceleo documentation (Help -> Help Contents).
          */
-    	
-//    	final String prefix = "platform:/plugin/";
-//        final String pluginName = "it.univaq.disim.typhon.acceleo";
-//        final String packagePath = "/src/it/univaq/disim/typhon/acceleo/properties/";
-//        final String fileName = "default.properties";
-////        propertiesFiles.add(prefix + pluginName + packagePath + fileName);
-    	//propertiesFiles.add("src/it/univaq/disim/typhon/acceleo/properties/default.properties");
-    	
+    	  	
         return propertiesFiles;
     }
     
