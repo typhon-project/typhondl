@@ -4,14 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.eclipse.emf.common.util.BasicMonitor;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
+import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Element;
+import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 
 public class Services {
 
@@ -44,10 +49,39 @@ public class Services {
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
 				.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-		DeploymentModel model = (DeploymentModel) resourceSet.getResource(URI.createURI(pathToXTextModel), true)
-				.getContents().get(0);
+
+		URI modelURI = URI.createURI(pathToXTextModel);
+		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
+		saveDBs(model, folder, resourceSet);
 		saveModelAsXMI(model, folder, resourceSet);
+		EList<EObject> list = resourceSet.getResource(modelURI, true).getContents();
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println(i + ":" + list.get(i).eClass().toString());
+		}
 		return model;
+	}
+
+	private static void saveDBs(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
+		DB allDatabases = getDBs(model);
+		for (SupportedDBMS db : allDatabases.getDbs()) {
+			Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "databases/" + db.getName() + ".xmi"));
+			xmiResource.getContents().add(db);
+			try {
+				xmiResource.save(null);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}		
+	}
+
+	private static DB getDBs(DeploymentModel model) {
+		for (Element element : model.getElements()) {
+			// TODO not nice
+			if(element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
+				return (DB) element;
+			}
+		}
+		return null;
 	}
 
 	/*
