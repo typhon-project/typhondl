@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
@@ -19,8 +18,8 @@ public class Services {
 	public static void generateDeployment(String pathToXTextModel, String folder) {
 		System.out.println("Generate from template...");
 		try {
-			new Generate(loadXtextModel(pathToXTextModel, folder), new File(folder), new ArrayList<String>())
-					.doGenerate(new BasicMonitor());
+			DeploymentModel model = loadXtextModel(pathToXTextModel, folder);
+			new Generate(model, new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
 			System.out.println("Generated!");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -28,8 +27,10 @@ public class Services {
 	}
 
 	public static DeploymentModel loadXtextModel(String pathToXTextModel, String folder) {
-		/* TODO TYP-45
-		 * https://stackoverflow.com/questions/35839786/xtext-export-model-as-xmi-xml#35885943
+		/*
+		 * TODO TYP-45
+		 * https://stackoverflow.com/questions/35839786/xtext-export-model-as-xmi-xml#
+		 * 35885943
 		 *
 		 * Inside Eclipse IDE never use MyLanguageStandaloneSetup, the instance of an
 		 * injector MUST be accessed via an Activator of a UI plugin:
@@ -43,20 +44,22 @@ public class Services {
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
 				.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-		URI xtextModelURI = URI.createURI(pathToXTextModel);
-		saveModelAsXMI(xtextModelURI, folder, resourceSet);
-		return (DeploymentModel) resourceSet.getResource(xtextModelURI, true).getContents().get(0);
+		DeploymentModel model = (DeploymentModel) resourceSet.getResource(URI.createURI(pathToXTextModel), true)
+				.getContents().get(0);
+		saveModelAsXMI(model, folder, resourceSet);
+		return model;
 	}
-	
-	public static void saveModelAsXMI(URI xtextModelURI, String pathToTargetFolder, XtextResourceSet resourceSet) {
-		Resource xtextResource = resourceSet.getResource(xtextModelURI, true);
-		EcoreUtil.resolveAll(xtextResource);
-		Resource xmiResource = resourceSet.createResource(URI.createURI(pathToTargetFolder));
-	    xmiResource.getContents().add(xtextResource.getContents().get(0));
-	    try {
-	        xmiResource.save(null);
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
+
+	/*
+	 * TODO maybe put this in "onSave()" in Xtext package
+	 */
+	public static void saveModelAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
+		Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "/model.xmi"));
+		xmiResource.getContents().add(model);
+		try {
+			xmiResource.save(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
