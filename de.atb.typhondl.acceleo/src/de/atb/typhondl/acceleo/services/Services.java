@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -52,32 +51,33 @@ public class Services {
 
 		URI modelURI = URI.createURI(pathToXTextModel);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
-		saveDBs(model, folder, resourceSet);
 		saveModelAsXMI(model, folder, resourceSet);
-		EList<EObject> list = resourceSet.getResource(modelURI, true).getContents();
-		for (int i = 0; i < list.size(); i++) {
-			System.out.println(i + ":" + list.get(i).eClass().toString());
-		}
+		// has to be in this order because xmiResource.getContents().add(db); removes db
+		// from its original container (DB)
+		saveDBsAsXMI(model, folder, resourceSet);
 		return model;
 	}
 
-	private static void saveDBs(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
+	private static void saveDBsAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
 		DB allDatabases = getDBs(model);
-		for (SupportedDBMS db : allDatabases.getDbs()) {
-			Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "databases/" + db.getName() + ".xmi"));
+		EList<SupportedDBMS> list = allDatabases.getDbs();
+		while (!list.isEmpty()) {
+			SupportedDBMS db = list.get(0);
+			Resource xmiResource = resourceSet
+					.createResource(URI.createFileURI(pathToTargetFolder + "/databases/" + db.getName() + ".xmi"));
 			xmiResource.getContents().add(db);
 			try {
-				xmiResource.save(null);
+				xmiResource.save(Options.getXMIoptions());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}		
+		}
 	}
 
 	private static DB getDBs(DeploymentModel model) {
 		for (Element element : model.getElements()) {
 			// TODO not nice
-			if(element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
+			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
 				return (DB) element;
 			}
 		}
@@ -91,7 +91,7 @@ public class Services {
 		Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "/model.xmi"));
 		xmiResource.getContents().add(model);
 		try {
-			xmiResource.save(null);
+			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
