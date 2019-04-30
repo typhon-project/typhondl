@@ -36,4 +36,4 @@ Export-Package: de.atb.typhondl.xtext.ui.contentassist,
  de.atb.typhondl.xtext.ui.quickfix,
  de.atb.typhondl.xtext.ui.internal,
  de.atb.typhondl.xtext.ui.wizard
-Bundle-Activator: de.atb.typhondl.xtext.ui.internal.XtextActivator
+Bundle-Activator: de.atb.typhondl.xtext.ui.activator.Activator

@@ -9,7 +9,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -20,6 +23,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.xtext.AbstractRule;
+import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -62,38 +67,22 @@ public class OpenEditorHandler extends AbstractHandler {
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 			
-			
-			
 			Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
 			XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 			resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
 			URI modelURI = URI.createFileURI(path.toString());
 			DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
+			
 			PreferenceManager preferenceManager = createPages(model);
-			System.out.println("pageCreated");
-			//create an instance of the custom MyPreference class
-			//IPreferencePage page1 = new MyPreference(); 
-			//page1.setTitle("Custom Configurations");
 
-			//create a new PreferenceNode that will appear in the Preference window
-			//PreferenceNode node = new PreferenceNode("1", page1);
-			//use workbenches's preference manager
-			// PlatformUI.getWorkbench().getPreferenceManager();
-			//PreferenceManager preferenceManager = new PreferenceManager();
-			//preferenceManager.addToRoot(node); //add the node in the PreferenceManager
-			//instantiate the PreferenceDialog
 			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager); 
-			System.out.println("dialog created");
 			preferenceDialog.setPreferenceStore(Activator.getDefault().getPreferenceStore());
-			System.out.println("preferenceStore set");
 			preferenceDialog.create();
 			preferenceDialog.open();
 		}
-		// TODO Auto-generated method stub
 		return null;
-	}
-
+	}	
 	private PreferenceManager createPages(DeploymentModel model) {
 		IPreferencePage page1 = new MyPreference(model); 
 		page1.setTitle("Testing");
