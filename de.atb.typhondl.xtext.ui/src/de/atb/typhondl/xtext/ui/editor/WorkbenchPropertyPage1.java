@@ -4,6 +4,8 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,10 +28,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
-import de.atb.typhondl.xtext.typhonDL.Database;
 import de.atb.typhondl.xtext.typhonDL.MariaDB;
 import de.atb.typhondl.xtext.typhonDL.Mongo;
-import de.atb.typhondl.xtext.typhonDL.OptionalEntries;
+import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 
 @SuppressWarnings("restriction")
 public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPropertyPage {
@@ -58,8 +59,8 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 
 		this.resource = getResource();
 
-		Iterable<Database> _filter = Iterables
-				.<Database>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), Database.class);
+		Iterable<SupportedDBMS> _filter = Iterables
+				.<SupportedDBMS>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), SupportedDBMS.class);
 		_filter.forEach(db -> createDatabaseArea(main, gridData, db));
 
 		Label folderLabel = new Label(main, SWT.NONE);
@@ -84,7 +85,7 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 		return resource = resourceSet.getResource(URI.createURI(path), true);
 	}
 
-	private void createDatabaseArea(Composite main, GridData gridData, Database db) {
+	private void createDatabaseArea(Composite main, GridData gridData, SupportedDBMS db) {
 
 		new Label(main, SWT.NONE).setText("________________________");
 		new Label(main, SWT.NONE).setText("1");
@@ -94,12 +95,12 @@ public class WorkbenchPropertyPage1 extends PropertyPage implements IWorkbenchPr
 		new Label(main, SWT.NONE).setText(db.eClass().getInstanceClass().getSimpleName());
 		EList<AbstractRule> rules = grammarAccess.getGrammar().getRules();
 		
-		for (OptionalEntries optEntry : db.getOptionalEntries()) {
-			new Label(main, SWT.NONE).setText(optEntry.eClass().getInstanceClass().getSimpleName());
-			new Label(main, SWT.NONE).setText(optEntry.getValue());
-		}
+//		for (OptionalEntries optEntry : db.getOptionalEntries()) {
+//			new Label(main, SWT.NONE).setText(optEntry.eClass().getInstanceClass().getSimpleName());
+//			new Label(main, SWT.NONE).setText(optEntry.getValue());
+//		}
 
-		Database thisdb = db;
+		SupportedDBMS thisdb = db;
 		if (db.eClass().getInstanceClass().equals(MariaDB.class)) {
 			thisdb = (MariaDB) db;
 		}

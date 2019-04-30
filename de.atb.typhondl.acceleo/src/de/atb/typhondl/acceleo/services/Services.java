@@ -44,6 +44,9 @@ public class Services {
 		 * Calling of MyLanguageStandaloneSetup.createInjectorAndDoEMFRegistration will
 		 * create a new instance of an Injector that is different from used by Eclipse.
 		 * Also it can break the state of EMF registries.
+		 * 
+		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator, theres a loop
+		 * in the manifest because acceleo.service package requires xtext.ui package and vice versa
 		 */
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
 				.getInstance(XtextResourceSet.class);

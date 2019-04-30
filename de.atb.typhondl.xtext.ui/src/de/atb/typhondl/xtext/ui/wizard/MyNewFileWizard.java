@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +19,7 @@ import org.eclipse.xtext.ui.wizard.template.TemplateFileInfo;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
-import org.eclipse.xtext.ui.wizard.template.WorkspaceFileGenerator;
 
-/**
 
 @SuppressWarnings("restriction")
 public class MyNewFileWizard extends TemplateNewFileWizard {
