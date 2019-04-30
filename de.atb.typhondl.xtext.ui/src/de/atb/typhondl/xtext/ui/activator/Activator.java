@@ -1,5 +1,6 @@
 package de.atb.typhondl.xtext.ui.activator;
 
+import org.eclipse.jface.resource.ImageRegistry;
 import org.osgi.framework.BundleContext;
 
 import de.atb.typhondl.xtext.ui.internal.XtextActivator;
@@ -7,6 +8,7 @@ import de.atb.typhondl.xtext.ui.internal.XtextActivator;
 public class Activator extends XtextActivator {
 	
 	private static Activator plugin;
+	public final static String IMAGE_PATH = "icons/typhon_icon.png";
 
 	public Activator() {
 		super();
@@ -26,5 +28,10 @@ public class Activator extends XtextActivator {
 
 	public static Activator getDefault() {
 		return plugin;
+	}
+	
+	@Override
+	protected void initializeImageRegistry(final ImageRegistry reg) {
+	    reg.put(IMAGE_PATH, imageDescriptorFromPlugin(PLUGIN_ID, IMAGE_PATH));
 	}
 }

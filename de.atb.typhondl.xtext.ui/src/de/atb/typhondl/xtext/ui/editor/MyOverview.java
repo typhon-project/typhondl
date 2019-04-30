@@ -8,11 +8,11 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
 
-public class MyPreference extends FieldEditorPreferencePage implements IPreferencePage {
+public class MyOverview extends FieldEditorPreferencePage implements IPreferencePage {
 
 	private DeploymentModel model;
 
-	public MyPreference(DeploymentModel model) {
+	public MyOverview(DeploymentModel model) {
 		super();
 		this.model = model;
 	}
