@@ -1,0 +1,50 @@
+[comment encoding = UTF-8 /]
+[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
+[template public generateDeployment(aDeploymentModel : DeploymentModel)]
+
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[for (aApplication : Application | aCluster.getAllApplications())]
+	
+[file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
+version: '3.7'
+
+
+services:
+[for (aContainer : Container | aApplication.getAllContainers())]
+  [aContainer.name/]:
+    [aContainer.database.showVars()/]
+[/for]
+
+[/file]
+	
+[/for]
+[/for]
+
+[/template]
+
+[template public showVars(database : SupportedDBMS) ]
+	not a supported DBMS
+[/template]
+
+[template public showVars(database : Mongo) ]
+image: [database.image.value/]
+environment:
+  - [database.userName.eClass().name/]=[database.userName.value/]
+  - [database.password.eClass().name/]=[database.password.value/]
+[/template]
+
+[template public showVars(database : MariaDB) ]
+image: [database.image.value/]
+environment:
+	[for (aVar : MARIAENV | database.environment)]
+  - [aVar.eClass().name/]=[aVar.value/]
+	[/for]
+[for (aVar : Key_Value | database.otherVars)]
+[aVar.name/]: [aVar.value/]
+[/for]	
+[/template]
+
+
