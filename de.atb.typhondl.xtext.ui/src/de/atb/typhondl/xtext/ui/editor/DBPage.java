@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.handlers;
+package de.atb.typhondl.xtext.ui.editor;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;

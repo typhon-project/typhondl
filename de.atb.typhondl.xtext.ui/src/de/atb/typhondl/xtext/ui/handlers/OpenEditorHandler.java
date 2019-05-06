@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -32,12 +33,18 @@ import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
 import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.editor.ClusterPage;
+import de.atb.typhondl.xtext.ui.editor.DBOverview;
+import de.atb.typhondl.xtext.ui.editor.DBPage;
+import de.atb.typhondl.xtext.ui.editor.DeploymentOverview;
 import de.atb.typhondl.xtext.ui.editor.MyOverview;
 
 @SuppressWarnings("restriction")
@@ -94,6 +101,9 @@ public class OpenEditorHandler extends AbstractHandler {
 		overviewPage.setTitle("Model Overview");
 		preferenceManager.addToRoot(new PreferenceNode("overview", overviewPage));
 		
+		EObject test = getDB(model);
+		System.out.println(test.eClass().getName());
+		
 		IPreferencePage dbOverviewPage = new DBOverview(getDB(model));
 		dbOverviewPage.setTitle("Databases");
 		PreferenceNode databaseNode = new PreferenceNode("databases", dbOverviewPage);
@@ -106,9 +116,22 @@ public class OpenEditorHandler extends AbstractHandler {
 			databaseNode.add(new PreferenceNode(supportedDBMS.getName(), page));
 		}
 		
-		IPreferencePage deploymentOverviewPage = new DeploymentOverview(getDeployment(model));
-		deploymentOverviewPage.setTitle("Databases");
+		Deployment deployment = getDeployment(model);
+		IPreferencePage deploymentOverviewPage = new DeploymentOverview(deployment);
+		deploymentOverviewPage.setTitle("Deployment");
 		PreferenceNode deploymentNode = new PreferenceNode("deployment", deploymentOverviewPage);
+		
+		for (Cluster cluster : deployment.getClusters()) {
+			IPreferencePage clusterPage = new ClusterPage(cluster);
+			clusterPage.setTitle("Cluster " + cluster.getName());
+			PreferenceNode clusterNode = new PreferenceNode("cluster " + cluster.getName(), clusterPage);
+			deploymentNode.add(clusterNode);
+			for (Application application : cluster.getApplications()) {
+				
+			}
+		}
+
+		
 		preferenceManager.addToRoot(deploymentNode);
 		
 //		for (int i = 0; i < listOfPages.size(); i++) {
@@ -118,10 +141,21 @@ public class OpenEditorHandler extends AbstractHandler {
 		return preferenceManager;
 	}
 	
+	
+	private void createEditorPage() {
+		
+	}
+	
 	private Deployment getDeployment(DeploymentModel model) {
-		// TODO Auto-generated method stub
+		for (Element element : model.getElements()) {
+			// TODO not nice
+			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Deployment")) {
+				return (Deployment) element;
+			}
+		}
 		return null;
 	}
+	
 	private DB getDB(DeploymentModel model) {
 		for (Element element : model.getElements()) {
 			// TODO not nice

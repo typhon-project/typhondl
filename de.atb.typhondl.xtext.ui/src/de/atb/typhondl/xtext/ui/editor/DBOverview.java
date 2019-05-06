@@ -1,14 +1,17 @@
-package de.atb.typhondl.xtext.ui.handlers;
+package de.atb.typhondl.xtext.ui.editor;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferencePage;
 
-import de.atb.typhondl.xtext.typhonDL.Deployment;
+import de.atb.typhondl.xtext.typhonDL.DB;
 
-public class DeploymentOverview extends FieldEditorPreferencePage implements IPreferencePage {
+public class DBOverview extends FieldEditorPreferencePage implements IPreferencePage {
 
-	public DeploymentOverview(Deployment deployment) {
+	private DB db;
+	
+	public DBOverview(DB db) {
 		super();
+		this.db = db;
 	}
 
 	@Override
