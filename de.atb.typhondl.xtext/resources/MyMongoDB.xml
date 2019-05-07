@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MyMongoDB dbms="mongodb">
+	<image
+		adress="mongo"
+		tag="latest" />
+	<required 
+		environment="{MONGO_INITDB_ROOT_USERNAME; MONGO_INITDB_ROOT_PASSWORD}" />
+	<optional 
+		command="{smallfiles; wiredTigerCacheSizeGB}" />
+</MyMongoDB>

@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.editor;
+package de.atb.typhondl.xtext.ui.editor.pages;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;

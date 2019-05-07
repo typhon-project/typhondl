@@ -1,19 +1,18 @@
-package de.atb.typhondl.xtext.ui.editor;
+package de.atb.typhondl.xtext.ui.editor.pages;
 
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
+import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
-public class MyOverview extends FieldEditorPreferencePage implements IPreferencePage {
+public class MyOverview extends EditorPage {
 
 	private DeploymentModel model;
 
 	public MyOverview(DeploymentModel model) {
-		super();
+		super("Overview");
 		this.model = model;
 	}
 

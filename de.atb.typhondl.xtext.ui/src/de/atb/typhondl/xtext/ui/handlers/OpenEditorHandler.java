@@ -35,17 +35,20 @@ import com.google.inject.Injector;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
 import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.editor.ClusterPage;
-import de.atb.typhondl.xtext.ui.editor.DBOverview;
-import de.atb.typhondl.xtext.ui.editor.DBPage;
-import de.atb.typhondl.xtext.ui.editor.DeploymentOverview;
-import de.atb.typhondl.xtext.ui.editor.MyOverview;
+import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
+import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
+import de.atb.typhondl.xtext.ui.editor.pages.ClusterPage;
+import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
+import de.atb.typhondl.xtext.ui.editor.pages.DBPage;
+import de.atb.typhondl.xtext.ui.editor.pages.DeploymentOverview;
+import de.atb.typhondl.xtext.ui.editor.pages.MyOverview;
 
 @SuppressWarnings("restriction")
 public class OpenEditorHandler extends AbstractHandler {
@@ -56,16 +59,16 @@ public class OpenEditorHandler extends AbstractHandler {
 	private TemplateLabelProvider labelProvider;
 	@Inject
 	private FileOpener fileOpener;
-	
+
 	IPath path = null;
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
+
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		IWorkbenchPage page = window.getActivePage();
 		ISelection selection = page.getSelection();
-		
+
 		if (selection != null & selection instanceof IStructuredSelection) {
 			IStructuredSelection strucSelection = (IStructuredSelection) selection;
 			Object firstElement = strucSelection.getFirstElement();
@@ -74,7 +77,7 @@ public class OpenEditorHandler extends AbstractHandler {
 				path = file.getLocation();
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
-			
+
 			Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
 			XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 			resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
@@ -82,10 +85,10 @@ public class OpenEditorHandler extends AbstractHandler {
 			URI modelURI = URI.createFileURI(path.toString());
 			String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
 			DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
-			
+
 			PreferenceManager preferenceManager = createPages(model);
 			final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
-			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager); 
+			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager);
 			preferenceDialog.setPreferenceStore(Activator.getDefault().getPreferenceStore());
 			preferenceDialog.create();
 			preferenceDialog.getShell().setImage(image);
@@ -93,59 +96,50 @@ public class OpenEditorHandler extends AbstractHandler {
 			preferenceDialog.open();
 		}
 		return null;
-	}	
+	}
+
 	private PreferenceManager createPages(DeploymentModel model) {
 		PreferenceManager preferenceManager = new PreferenceManager();
-		
-		IPreferencePage overviewPage = new MyOverview(model); 
-		overviewPage.setTitle("Model Overview");
-		preferenceManager.addToRoot(new PreferenceNode("overview", overviewPage));
-		
-		EObject test = getDB(model);
-		System.out.println(test.eClass().getName());
-		
-		IPreferencePage dbOverviewPage = new DBOverview(getDB(model));
-		dbOverviewPage.setTitle("Databases");
-		PreferenceNode databaseNode = new PreferenceNode("databases", dbOverviewPage);
+
+		preferenceManager.addToRoot(PreferenceNodeFactory
+				.createPreferenceNode(EditorPageFactory.createEditorPage(model)));
+
+		PreferenceNode databaseNode = PreferenceNodeFactory
+				.createPreferenceNode(EditorPageFactory.createEditorPage(getDB(model)));
 		preferenceManager.addToRoot(databaseNode);
-		
+
 		EList<SupportedDBMS> db = getDB(model).getDbs();
 		for (SupportedDBMS supportedDBMS : db) {
-			IPreferencePage page = new DBPage(supportedDBMS);
-			page.setTitle(supportedDBMS.getName());
-			databaseNode.add(new PreferenceNode(supportedDBMS.getName(), page));
+			databaseNode.add(PreferenceNodeFactory
+					.createPreferenceNode(EditorPageFactory.createEditorPage(supportedDBMS)));
 		}
-		
-		Deployment deployment = getDeployment(model);
-		IPreferencePage deploymentOverviewPage = new DeploymentOverview(deployment);
-		deploymentOverviewPage.setTitle("Deployment");
-		PreferenceNode deploymentNode = new PreferenceNode("deployment", deploymentOverviewPage);
-		
-		for (Cluster cluster : deployment.getClusters()) {
-			IPreferencePage clusterPage = new ClusterPage(cluster);
-			clusterPage.setTitle("Cluster " + cluster.getName());
-			PreferenceNode clusterNode = new PreferenceNode("cluster " + cluster.getName(), clusterPage);
+
+		PreferenceNode deploymentNode = PreferenceNodeFactory
+				.createPreferenceNode(EditorPageFactory.createEditorPage(getDeployment(model)));
+
+		for (Cluster cluster : getClusters(model)) {
+			PreferenceNode clusterNode = PreferenceNodeFactory
+					.createPreferenceNode(EditorPageFactory.createEditorPage(cluster));
 			deploymentNode.add(clusterNode);
 			for (Application application : cluster.getApplications()) {
-				
+				PreferenceNode appNode = PreferenceNodeFactory
+						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
+				clusterNode.add(appNode);
+				for (Container container : application.getContainers()) {
+					appNode.add(PreferenceNodeFactory
+							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
+				}
 			}
 		}
 
-		
 		preferenceManager.addToRoot(deploymentNode);
-		
-//		for (int i = 0; i < listOfPages.size(); i++) {
-//			listOfNodes.add(new PreferenceNode("0"+i, listOfPages.get(i)));
-//		}
-//		return null;
 		return preferenceManager;
 	}
-	
-	
-	private void createEditorPage() {
-		
+
+	private EList<Cluster> getClusters(DeploymentModel model) {
+		return getDeployment(model).getClusters();
 	}
-	
+
 	private Deployment getDeployment(DeploymentModel model) {
 		for (Element element : model.getElements()) {
 			// TODO not nice
@@ -155,7 +149,7 @@ public class OpenEditorHandler extends AbstractHandler {
 		}
 		return null;
 	}
-	
+
 	private DB getDB(DeploymentModel model) {
 		for (Element element : model.getElements()) {
 			// TODO not nice
@@ -165,6 +159,5 @@ public class OpenEditorHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
 
 }
