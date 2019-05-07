@@ -490,6 +490,29 @@
                 </with>
              </visibleWhen>
           </command>
+          <command
+                commandId="de.atb.typhondl.xtext.ui.editor.OpenProperties"
+                helpContextId="Enter additional data in a Graphical User Interface"
+                label="Change Model"
+                style="push"
+                tooltip="Enter additional data in a Graphical User Interface">
+                <visibleWhen
+                   checkEnabled="false">
+                <with
+                      variable="activeMenuSelection">
+                   <iterate
+                         ifEmpty="false">
+                      <adapt
+                            type="org.eclipse.core.resources.IResource">
+                         <test
+                               property="org.eclipse.core.resources.extension"
+                               value="tdl">
+                         </test>
+                      </adapt>
+                   </iterate>
+                </with>
+             </visibleWhen>
+          </command>
        </menu>
     </menuContribution>
  </extension>
@@ -505,14 +528,10 @@
           id="de.atb.typhondl.acceleo.generate"
           name="Generate Scripts">
     </command>
- </extension>
- <extension
-       point="org.eclipse.ui.propertyPages">
-    <page
-          class="de.atb.typhondl.xtext.ui.editor.WorkbenchPropertyPage1"
-          icon="icons/typhon_icon.png"
-          id="de.atb.typhondl.xtext.ui.editor.page1"
-          name="Database Info">
-    </page>
+    <command
+          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenEditorHandler"
+          id="de.atb.typhondl.xtext.ui.editor.OpenProperties"
+          name="Open Editor">
+    </command>
  </extension>
 </plugin>

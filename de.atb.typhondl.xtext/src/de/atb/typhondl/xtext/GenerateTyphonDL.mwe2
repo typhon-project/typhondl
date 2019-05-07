@@ -13,7 +13,7 @@ Workflow {
 				baseName = "de.atb.typhondl.xtext"
 				rootPath = rootPath
 				runtimeTest = {
-					enabled = true
+					enabled = false
 				}
 				eclipsePlugin = {
 					enabled = true

@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,29 +19,21 @@ import org.eclipse.xtext.ui.wizard.template.TemplateFileInfo;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard;
 import org.eclipse.xtext.ui.wizard.template.TemplateParameterPage;
-import org.eclipse.xtext.ui.wizard.template.WorkspaceFileGenerator;
 
-/**
- * This class <strong>MUST</strong> be in this package!!!
- * 
- * DO NOT TOUCH
- * 
- * @author flug
- *
- */
+
 @SuppressWarnings("restriction")
 public class MyNewFileWizard extends TemplateNewFileWizard {
-
+	
 	private static final String FILE_TEMPLATE_PROVIDER_EXTENSION_POINT_ID = "org.eclipse.xtext.ui.fileTemplate"; //$NON-NLS-1$
 	private static final String FILE_TEMPLATE_PROVIDER_ID = "fileTemplateProvider"; //$NON-NLS-1$
 	private static final String FILE_TEMPLATE_PROVIDER_GRAMMAR_NAME_ATTRIBUTE = "grammarName"; //$NON-NLS-1$
 	private static final String FILE_TEMPLATE_PROVIDER_GRAMMAR_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
 	private static final Logger logger = Logger.getLogger(TemplateNewFileWizard.class);
-
+	
 	private IGrammarAccess grammarAccess;
 	private TemplateLabelProvider labelProvider;
 	private FileOpener fileOpener;
-
+	
 	public MyNewFileWizard(IGrammarAccess grammarAccess, TemplateLabelProvider labelProvider, FileOpener fileOpener) {
 		super();
 		setWindowTitle(Messages.MyNewFileWizard_title);
@@ -50,7 +41,7 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 		this.labelProvider = labelProvider;
 		this.fileOpener = fileOpener;
 	}
-
+	
 	protected URI modelPath;
 	protected MyMainPage mainPage;
 
@@ -80,9 +71,9 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 			return nextPage;
 		} else {
 			return null;
-		}
+		}		
 	}
-
+	
 	/**
 	 * Has to be overridden because the fileOpener is not injected to superclass.
 	 * TODO file is not opened. Will be possible when
@@ -115,16 +106,16 @@ public class MyNewFileWizard extends TemplateNewFileWizard {
 					result.addAll(Arrays.asList(myProvider.getFileTemplates(modelPath)));
 				} catch (CoreException e) {
 					logger.error("Can not instantiate '" //$NON-NLS-1$
-							+ element.getAttribute(FILE_TEMPLATE_PROVIDER_GRAMMAR_CLASS_ATTRIBUTE) + "'", //$NON-NLS-1$
+									+ element.getAttribute(FILE_TEMPLATE_PROVIDER_GRAMMAR_CLASS_ATTRIBUTE) + "'", //$NON-NLS-1$
 							e);
 				}
 			}
 		}
 		return result.toArray(new AbstractFileTemplate[0]);
 	}
-
+	
 	/**
-	 * super class can't access the NOT injected grammarAccess
+	 * super class can't access the injected grammarAccess
 	 */
 	protected String getGrammarName() {
 		return grammarAccess.getGrammar().getName();
