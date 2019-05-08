@@ -1,8 +1,5 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -11,14 +8,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -44,11 +38,6 @@ import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
 import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
-import de.atb.typhondl.xtext.ui.editor.pages.ClusterPage;
-import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
-import de.atb.typhondl.xtext.ui.editor.pages.DBPage;
-import de.atb.typhondl.xtext.ui.editor.pages.DeploymentOverview;
-import de.atb.typhondl.xtext.ui.editor.pages.MyOverview;
 
 @SuppressWarnings("restriction")
 public class OpenEditorHandler extends AbstractHandler {
@@ -99,6 +88,7 @@ public class OpenEditorHandler extends AbstractHandler {
 	}
 
 	private PreferenceManager createPages(DeploymentModel model) {
+		
 		PreferenceManager preferenceManager = new PreferenceManager();
 
 		preferenceManager.addToRoot(PreferenceNodeFactory
