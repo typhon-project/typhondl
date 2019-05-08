@@ -26,7 +26,7 @@ public class ModelReader {
 	               Element eElement = (Element) node;
 	               String name = eElement.getAttribute("name");
 	               String dbType = eElement.getAttribute("xsi:type").split(":")[1].toLowerCase();
-	               dbsMap.add(new Database(name, convertStringToDBType(dbType), ""));
+	               dbsMap.add(new Database(name, convertStringToDBType(dbType)));
 			}
 		}
 		return dbsMap;

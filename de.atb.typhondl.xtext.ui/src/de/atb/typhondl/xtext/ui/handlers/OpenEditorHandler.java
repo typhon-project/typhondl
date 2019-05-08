@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -34,7 +36,6 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
-import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
 import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
@@ -93,15 +94,17 @@ public class OpenEditorHandler extends AbstractHandler {
 
 		preferenceManager.addToRoot(PreferenceNodeFactory
 				.createPreferenceNode(EditorPageFactory.createEditorPage(model)));
-
+		
+		ArrayList<DB> dbs = getDBs(model);
+		
 		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(getDB(model)));
+				.createPreferenceNode(EditorPageFactory.createEditorPage(null)); //TODO
 		preferenceManager.addToRoot(databaseNode);
 
-		EList<SupportedDBMS> db = getDB(model).getDbs();
-		for (SupportedDBMS supportedDBMS : db) {
+
+		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory
-					.createPreferenceNode(EditorPageFactory.createEditorPage(supportedDBMS)));
+					.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
 		}
 
 		PreferenceNode deploymentNode = PreferenceNodeFactory
@@ -140,14 +143,15 @@ public class OpenEditorHandler extends AbstractHandler {
 		return null;
 	}
 
-	private DB getDB(DeploymentModel model) {
+	private ArrayList<DB> getDBs(DeploymentModel model) {
+		ArrayList<DB> dbs = new ArrayList<DB>();
 		for (Element element : model.getElements()) {
 			// TODO not nice
 			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				return (DB) element;
+				dbs.add((DB) element);
 			}
 		}
-		return null;
+		return dbs;
 	}
 
 }

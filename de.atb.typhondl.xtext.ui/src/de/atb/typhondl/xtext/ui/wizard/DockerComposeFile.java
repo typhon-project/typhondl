@@ -26,17 +26,19 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 
 	private ArrayList<DBType> dbTypes;
 	private final GroupTemplateVariable dbmsGroup = this.group("Choose DBMS");
-	
+
+	private final GroupTemplateVariable imageGroup = this.group("Select Image configuration");
+
 	private final GroupTemplateVariable containerGroup = this.group("Containers will be created for:");
 	private final BooleanTemplateVariable isQL = this.check("QL", false, containerGroup);
 	private final BooleanTemplateVariable isTextSearch = this.check("Text Search", false, containerGroup);
 	private final BooleanTemplateVariable isDataAnalytics = this.check("Data Analytics", false, containerGroup);
 
 	// ParameterList:
-	private HashMap<Database, StringSelectionTemplateVariable> data;
+	private HashMap<Database, Tuple> data;
 
 	public DockerComposeFile(URI modelPath) {
-		this.data = new HashMap<Database, StringSelectionTemplateVariable>();
+		this.data = new HashMap<Database, Tuple>();
 		readModel(modelPath).forEach(db -> this.data.put(db, null));
 		this.dbTypes = getTypes();
 		createParameter();
@@ -45,17 +47,21 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	private void createParameter() {
 		for (Database database : data.keySet()) {
 			data.put(database,
-					this.combo("DBMS for " + database.getName() + " : ", database.getType().getPossibleDBMSs(),
-							"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name(),
-							dbmsGroup));
+					new Tuple(
+							this.combo("DBMS for " + database.getName() + " : ", database.getType().getPossibleDBMSs(),
+									"Choose specific DBMS for " + database.getName() + " of type "
+											+ database.getType().name(),
+									dbmsGroup),
+							this.text("Image for " + database.getName() + " : ", "path to config file",
+									"Give the path to your image configuration file", imageGroup)));
 		}
-
 	}
 
 	@Override
 	protected void updateVariables() {
 		for (Database database : data.keySet()) {
-			database.setDbms(data.get(database).getValue().toLowerCase());
+			database.setDbms(data.get(database).dbms.getValue().toLowerCase());
+			database.setPathToImage(data.get(database).image.getValue());
 		}
 	}
 
@@ -70,6 +76,11 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	//TODO
+	private String readImageConfig(String imagePath) {
+		return "testImage: " + imagePath;
 	}
 
 	public ArrayList<DBType> getTypes() {
@@ -93,90 +104,101 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		String _name = this.getName();
 		_builder.append(_name);
 		_builder.append(".tdl");
+		StringConcatenation _builderdb = new StringConcatenation();
+		_builderdb.append(_folder);
+		_builderdb.append("/");
+		_builder.append("databases");
+		_builder.append(".tdl");
 		StringConcatenation _builder_1 = new StringConcatenation();
-		_builder_1.append("platformtype default //TODO (e.g. AWS)");
-		_builder_1.newLine();
-		_builder_1.append("containertype Docker");
-		_builder_1.newLine();
-		{
-			for (final DBType type : this.dbTypes) {
-				_builder_1.append("dbtype ");
-				_builder_1.append(type);
-				_builder_1.newLineIfNotEmpty();
-			}
-		}
-		_builder_1.newLine();
-		_builder_1.append("databases {");
-		_builder_1.newLine();
+		// DB:
+		// 'database' name=ID ':' type=[DBType] '{'
+		// (image+=IMAGE)+
+		// (parameters+=Key_Value)*
+		// '}'
+		// ;
 		{
 			for (final Database db : this.data.keySet()) {
 				String dbms = db.getDbms();
 				String name = db.getName();
-				_builder_1.append("\t");
-				_builder_1.append(dbms);
-				_builder_1.append(" ");
+				String image = readImageConfig(db.getPathToImage());
+				_builder_1.append("database ");
 				_builder_1.append(name);
+				_builder_1.append(" : ");
+				_builder_1.append(dbms);
 				_builder_1.append(" {");
 				_builder_1.newLine();
-				_builder_1.append("\t\t");
+				_builder_1.append("\t");
 				_builder_1.append("image = \"");
-				_builder_1.append(dbms);
-				_builder_1.append(":latest\";");				
-				_builder_1.newLine();
-				_builder_1.append("\t\t");
-				_builder_1.append("// TODO: evironment etc.");
+				_builder_1.append(image);
+				//_builder_1.append(tag);
 				_builder_1.newLine();
 				_builder_1.append("\t");
+				_builder_1.append("// TODO: evironment etc.");
+				_builder_1.newLine();
 				_builder_1.append("}");
 				_builder_1.newLine();
 			}
 		}
-		_builder_1.append("}");
-		_builder_1.newLine();
-		_builder_1.newLine();
-		_builder_1.append("platform platformname : default { //TODO");
-		_builder_1.newLine();
-		_builder_1.append("\t");
-		_builder_1.append("cluster clustername { //TODO");
-		_builder_1.newLine();
-		_builder_1.append("\t\t");
-		_builder_1.append("application name {");
-		_builder_1.newLine();
+		StringConcatenation _builder_2 = new StringConcatenation();
+		_builder_2.append("platformtype default //TODO (e.g. AWS)");
+		_builder_2.newLine();
+		_builder_2.append("containertype Docker");
+		_builder_2.newLine();
+		{
+			for (final DBType type : this.dbTypes) {
+				_builder_2.append("dbtype ");
+				_builder_2.append(type);
+				_builder_2.newLineIfNotEmpty();
+			}
+		}
+		_builder_2.newLine();
+		_builder_2.append("}");
+		_builder_2.newLine();
+		_builder_2.newLine();
+		_builder_2.append("platform platformname : default { //TODO");
+		_builder_2.newLine();
+		_builder_2.append("\t");
+		_builder_2.append("cluster clustername { //TODO");
+		_builder_2.newLine();
+		_builder_2.append("\t\t");
+		_builder_2.append("application name {");
+		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
-				_builder_1.append("\t\t\t");
-				_builder_1.append("container ");
+				_builder_2.append("\t\t\t");
+				_builder_2.append("container ");
 				String _name_1 = db.getName();
-				_builder_1.append(_name_1);
-				_builder_1.append(" : Docker {");
-				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t\t");
-				_builder_1.append("database : ");
+				_builder_2.append(_name_1);
+				_builder_2.append(" : Docker {");
+				_builder_2.newLineIfNotEmpty();
+				_builder_2.append("\t\t\t\t");
+				_builder_2.append("database : ");
 				String name = db.getName();
-				_builder_1.append(name);
-				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t\t");
-				_builder_1.append("dbType : ");
+				_builder_2.append(name);
+				_builder_2.newLineIfNotEmpty();
+				_builder_2.append("\t\t\t\t");
+				_builder_2.append("dbType : ");
 				DBType _type = db.getType();
-				_builder_1.append(_type);
-				_builder_1.newLineIfNotEmpty();
-				_builder_1.append("\t\t\t\t");
-				_builder_1.append("// TODO: volumes, networks, ports etc.");
-				_builder_1.newLine();
-				_builder_1.append("\t\t\t");
-				_builder_1.append("}");
-				_builder_1.newLine();
-				
+				_builder_2.append(_type);
+				_builder_2.newLineIfNotEmpty();
+				_builder_2.append("\t\t\t\t");
+				_builder_2.append("// TODO: volumes, networks, ports etc.");
+				_builder_2.newLine();
+				_builder_2.append("\t\t\t");
+				_builder_2.append("}");
+				_builder_2.newLine();
+
 			}
 		}
-		_builder_1.append("\t\t");
-		_builder_1.append("}");
-		_builder_1.newLine();
-		_builder_1.append("\t");
-		_builder_1.append("}");
-		_builder_1.newLine();
-		_builder_1.append("}");
-		_builder_1.newLine();
-		generator.generate(_builder, _builder_1);
+		_builder_2.append("\t\t");
+		_builder_2.append("}");
+		_builder_2.newLine();
+		_builder_2.append("\t");
+		_builder_2.append("}");
+		_builder_2.newLine();
+		_builder_2.append("}");
+		_builder_2.newLine();
+		generator.generate(_builder, _builder_2);
+		generator.generate(_builderdb, _builder_1);
 	}
 }

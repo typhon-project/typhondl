@@ -1,15 +1,15 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
-import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
+import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
 public class DBPage extends EditorPage {
 	
-	private SupportedDBMS supportedDBMS;
+	private DB db;
 
-	public DBPage(SupportedDBMS supportedDBMS) {
-		super(supportedDBMS.getName());
-		this.supportedDBMS = supportedDBMS;
+	public DBPage(DB db) {
+		super(db.getName());
+		this.db = db;
 	}
 
 	@Override

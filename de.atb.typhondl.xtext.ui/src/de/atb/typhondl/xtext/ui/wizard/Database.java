@@ -5,11 +5,11 @@ public class Database {
 	private String name;
 	private DBType type;
 	private String dbms;
-	
-	public Database(String name, DBType type, String dbms) {
+	private String pathToImage;
+
+	public Database(String name, DBType type) {
 		this.name = name;
 		this.type = type;
-		this.dbms = dbms;
 	}
 
 	public String getDbms() {
@@ -26,5 +26,13 @@ public class Database {
 
 	public DBType getType() {
 		return type;
+	}
+	
+	public String getPathToImage() {
+		return pathToImage;
+	}
+
+	public void setPathToImage(String pathToImage) {
+		this.pathToImage = pathToImage;
 	}
 }

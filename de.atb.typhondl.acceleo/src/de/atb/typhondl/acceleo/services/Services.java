@@ -15,7 +15,6 @@ import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
-import de.atb.typhondl.xtext.typhonDL.SupportedDBMS;
 
 public class Services {
 
@@ -62,10 +61,9 @@ public class Services {
 	}
 
 	private static void saveDBsAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
-		DB allDatabases = getDBs(model);
-		EList<SupportedDBMS> list = allDatabases.getDbs();
+		ArrayList<DB> list = getDBs(model);
 		while (!list.isEmpty()) {
-			SupportedDBMS db = list.get(0);
+			DB db = list.get(0);
 			Resource xmiResource = resourceSet
 					.createResource(URI.createFileURI(pathToTargetFolder + "/databases/" + db.getName() + ".xmi"));
 			xmiResource.getContents().add(db);
@@ -77,14 +75,15 @@ public class Services {
 		}
 	}
 
-	private static DB getDBs(DeploymentModel model) {
+	private static ArrayList<DB> getDBs(DeploymentModel model) {
+		ArrayList<DB> dbs = new ArrayList<DB>();
 		for (Element element : model.getElements()) {
 			// TODO not nice
 			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				return (DB) element;
+				dbs.add((DB) element);
 			}
 		}
-		return null;
+		return dbs;
 	}
 
 	/*

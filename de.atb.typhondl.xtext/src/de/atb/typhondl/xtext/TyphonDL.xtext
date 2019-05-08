@@ -16,56 +16,15 @@ Type:
     PlatformType | ContainerType | DBType
 ;
 
-SupportedDBMS:
-	MariaDB | Mongo
-;
-
-Mongo:
-	'mongo' name=ID '{'
-	(image=IMAGE)
-	(userName=MONGO_INITDB_ROOT_USERNAME)
-	(password=MONGO_INITDB_ROOT_PASSWORD)
+DB:
+	'database' name=ID ':' type=[DBType] '{'
+	(image+=IMAGE)+
+	(parameters+=Key_Value)*
 	'}'
 ;
 
 IMAGE:
 	'image' '=' value=Value ';'
-;
-
-MONGO_INITDB_ROOT_PASSWORD:
-	'MONGO_INITDB_ROOT_PASSWORD' '=' value=Value ';'
-;
-
-MONGO_INITDB_ROOT_USERNAME:
-	'MONGO_INITDB_ROOT_USERNAME' '=' value=Value ';'
-;
-
-MariaDB:
-	'mariadb' name=ID '{'
-	(image=IMAGE)
-	(environment+=MARIAENV)+
-	(otherVars+=Key_Value)*
-	'}'
-;
-
-MARIAENV:
-	MYSQL_USER | MYSQL_PASSWORD | MYSQL_ROOT_PASSWORD | MYSQL_DATABASE
-;
-
-MYSQL_USER:
-	'MYSQL_USER' '=' value=Value ';'
-;
-
-MYSQL_DATABASE:
-	'MYSQL_DATABASE' '=' value=Value ';'
-;
-
-MYSQL_PASSWORD:
-	'MYSQL_PASSWORD' '=' value=Value ';'
-;
-
-MYSQL_ROOT_PASSWORD:
-	'MYSQL_ROOT_PASSWORD' '=' value=Value ';'
 ;
 
 PlatformType:
@@ -78,12 +37,6 @@ ContainerType:
 	
 DBType:
 	'dbtype' name=ID
-;
-
-DB:
-	'databases' '{'
-	(dbs+=SupportedDBMS)+
-	'}'
 ;
 
 Deployment :
@@ -110,7 +63,6 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		'database' ':' (database=[SupportedDBMS])
 		(properties+=Property | features+=Feature)*
 	'}'
 ;

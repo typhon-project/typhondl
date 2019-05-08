@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.preference.IntegerFieldEditor;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -74,23 +76,26 @@ public class MyOverview extends EditorPage {
 
 	@Override
 	protected void createFieldEditors() {
-		DB allDatabases = getDB();
+		ArrayList<DB> allDatabases = getDBs();
 
-		IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", allDatabases.getDbs().get(0).getName(),
-				getFieldEditorParent());
-		indentSpaces.setValidRange(0, 10);
-		addField(indentSpaces);
+		for (DB db : allDatabases) {
+			IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField",
+					db.getName(), getFieldEditorParent());
+			indentSpaces.setValidRange(0, 10);
+			addField(indentSpaces);
+		}
 
 	}
 
-	private DB getDB() {
+	private ArrayList<DB> getDBs() {
+		ArrayList<DB> dbs = new ArrayList<DB>();
 		for (Element element : model.getElements()) {
 			// TODO not nice
 			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				return (DB) element;
+				dbs.add((DB) element);
 			}
 		}
-		return null;
+		return dbs;
 	}
 
 }
