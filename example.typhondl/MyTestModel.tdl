@@ -1,0 +1,29 @@
+platformtype default //TODO (e.g. AWS)
+containertype Docker
+dbtype mariadb
+dbtype mongo
+
+platform platformname : default { //TODO
+	cluster clustername { //TODO
+		application MyApplication {
+			container productdb : Docker {
+				use : productdb
+				dbType : mariadb
+				ports = 8080:8080;
+				// TODO: volumes, networks, ports etc.
+			}
+			container orderdb : Docker {
+				use : orderdb
+				dbType : mongo
+				ports = 8080:2939;
+				// TODO: volumes, networks, ports etc.
+			}
+			container userdb : Docker {
+				use : userdb
+				dbType : mariadb
+				ports = 8080:0980398;
+				// TODO: volumes, networks, ports etc.
+			}
+		}
+	}
+}
