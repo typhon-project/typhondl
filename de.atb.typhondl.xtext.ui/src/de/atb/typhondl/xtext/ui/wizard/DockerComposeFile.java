@@ -99,6 +99,14 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 
 	// TODO
 	private String readImageConfig(String imagePath) {
+		String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/')+1);
+		String path = pathWithFolder + imagePath;
+		try {
+			ImageReader.readImageConfigFromXML(URI.create(path));
+		} catch (ParserConfigurationException | IOException | SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return imagePath;
 	}
 
