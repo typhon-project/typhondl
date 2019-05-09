@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.eclipse.emf.common.util.BasicMonitor;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResource;
@@ -44,8 +43,9 @@ public class Services {
 		 * create a new instance of an Injector that is different from used by Eclipse.
 		 * Also it can break the state of EMF registries.
 		 * 
-		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator, theres a loop
-		 * in the manifest because acceleo.service package requires xtext.ui package and vice versa
+		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator, theres
+		 * a loop in the manifest because acceleo.service package requires xtext.ui
+		 * package and vice versa
 		 */
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
 				.getInstance(XtextResourceSet.class);
@@ -53,26 +53,14 @@ public class Services {
 
 		URI modelURI = URI.createURI(pathToXTextModel);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
+		System.out.println("getDBS: " + getDBs(model).size());
 		saveModelAsXMI(model, folder, resourceSet);
 		// has to be in this order because xmiResource.getContents().add(db); removes db
-		// from its original container (DB)
-		saveDBsAsXMI(model, folder, resourceSet);
+		// from its original container (DB). So in code generation the DBs are also
+		// missing //TODO
+		// saveDBsAsXMI(model, folder, resourceSet);
+		System.out.println("getDBS(2): " + getDBs(model).size());
 		return model;
-	}
-
-	private static void saveDBsAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
-		ArrayList<DB> list = getDBs(model);
-		while (!list.isEmpty()) {
-			DB db = list.get(0);
-			Resource xmiResource = resourceSet
-					.createResource(URI.createFileURI(pathToTargetFolder + "/databases/" + db.getName() + ".xmi"));
-			xmiResource.getContents().add(db);
-			try {
-				xmiResource.save(Options.getXMIoptions());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	private static ArrayList<DB> getDBs(DeploymentModel model) {
@@ -96,6 +84,23 @@ public class Services {
 			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * TODO maybe put this in "onSave()" in Xtext package
+	 */
+	private static void saveDBsAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
+		ArrayList<DB> list = getDBs(model);
+		for (DB db : list) {
+			Resource xmiResource = resourceSet
+					.createResource(URI.createFileURI(pathToTargetFolder + "/databases/" + db.getName() + ".xmi"));
+			xmiResource.getContents().add(db); // this deletes the db in the model!! stupid
+			try {
+				xmiResource.save(Options.getXMIoptions());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

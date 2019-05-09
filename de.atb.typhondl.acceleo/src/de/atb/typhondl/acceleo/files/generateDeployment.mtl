@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
+[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
@@ -11,40 +11,52 @@
 [file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
-
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-    [aContainer.database.showVars()/]
+[for (aFeature : Feature | aContainer.features)]
+    [aFeature.type.printFeature()/]
 [/for]
-
+[for (aProperty : Property | aContainer.properties)]
+    [aProperty.printProperties()/]
+[/for]
+[/for]
 [/file]
-	
 [/for]
 [/for]
 
 [/template]
 
-[template public showVars(database : SupportedDBMS) ]
-	not a supported DBMS
+[template public printProperties(aProperty : Property) ]
+	[comment TODO Auto-generated template stub/]
 [/template]
 
-[template public showVars(database : Mongo) ]
-image: [database.image.value/]
-environment:
-  - [database.userName.eClass().name/]=[database.userName.value/]
-  - [database.password.eClass().name/]=[database.password.value/]
+[template public printProperties(aProperty : Key_Value) ]
+[aProperty.name/]: [aProperty.value/]
 [/template]
 
-[template public showVars(database : MariaDB) ]
-image: [database.image.value/]
-environment:
-	[for (aVar : MARIAENV | database.environment)]
-  - [aVar.eClass().name/]=[aVar.value/]
-	[/for]
-[for (aVar : Key_Value | database.otherVars)]
-[aVar.name/]: [aVar.value/]
-[/for]	
+[template public printProperties(aProperty : Key_ValueList) ]
+[aProperty.name/]:
+[for (aVar : EString | aProperty.environmentVars)]
+  - [aVar/]
+[/for]
+[/template]
+
+[template public printProperties(aProperty : Key_ValueArray) ]
+[aProperty.name/]: [ '[' /]
+[comment TODO this is still empty in grammar /]
+[ ']' /]
+[/template]
+
+[template public printFeature(db : Element) ]
+	[comment TODO Auto-generated template stub/]
+[/template]
+
+[template public printFeature(db : DB) ]
+image: [db.image.value/]
+[for (keyValue : Key_Value | db.parameters)]
+[keyValue.printProperties()/]
+[/for]
 [/template]
 
 
