@@ -57,14 +57,19 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	}
 
 	private void createParameter() {
+
 		for (Database database : data.keySet()) {
 			StringSelectionTemplateVariable combo = this.combo("DBMS for " + database.getName() + " : ",
 					database.getType().getPossibleDBMSs(),
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name(),
 					dbmsGroup);
+			BooleanTemplateVariable bool = this.check("Use template for " + database.getName(), false,
+					"If you already have a database.tdl template for " + database.getName()
+							+ " enter relative path here",
+					imageGroup);
 			StringTemplateVariable text = this.text("Image for " + database.getName() + " : ", "default",
 					"Give the path to your image configuration file", imageGroup);
-			data.put(database, new Tuple(combo, text));
+			data.put(database, new Tuple(combo, text, bool));
 
 		}
 	}
@@ -72,13 +77,17 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	@Override
 	protected void updateVariables() {
 		for (Database database : data.keySet()) {
-			String dbms = data.get(database).dbms.getValue().toLowerCase();
+			Tuple fields = data.get(database);
+			// read chosen dbms and add info to database-object
+			String dbms = fields.dbms.getValue().toLowerCase();
 			database.setDbms(dbms);
-			String image = data.get(database).image.getValue();
-			if (image.equals("default")) {
-				database.setPathToImage(dbms + ":latest");
-			} else {
+			// enable textfields to enter path to database.tdl
+			fields.image.setEnabled(fields.useTemplateImage.getValue());
+			if (fields.useTemplateImage.getValue()) {
+				String image = fields.image.getValue();
 				database.setPathToImage(image);
+			} else {
+				database.setPathToImage("");
 			}
 		}
 		this.dbTypes = getTypes();
@@ -95,19 +104,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	// TODO
-	private String readImageConfig(String imagePath) {
-		String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/')+1);
-		String path = pathWithFolder + imagePath;
-		try {
-			ImageReader.readImageConfigFromXML(URI.create(path));
-		} catch (ParserConfigurationException | IOException | SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return imagePath;
 	}
 
 	// dbtype is the dbms and not {relational, document etc}
@@ -132,41 +128,35 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		String _name = this.getName();
 		_builder.append(_name);
 		_builder.append(".tdl");
-		StringConcatenation _builderdb = new StringConcatenation();
-		_builderdb.append(_folder);
-		_builderdb.append("/");
-		_builderdb.append("databases");
-		_builderdb.append(".tdl");
-		System.out.println(_builder + ", " + _builderdb);
-		StringConcatenation _builder_1 = new StringConcatenation();
-		// DB:
-		// 'database' name=ID ':' type=[DBType] '{'
-		// (image+=IMAGE)+
-		// (parameters+=Key_Value)*
-		// '}'
-		// ;
 		{
 			for (final Database db : this.data.keySet()) {
-				String dbms = db.getDbms();
-				String name = db.getName();
-				String image = readImageConfig(db.getPathToImage());
-				_builder_1.append("database ");
-				_builder_1.append(name);
-				_builder_1.append(" : ");
-				_builder_1.append(dbms);
-				_builder_1.append(" {");
-				_builder_1.newLine();
-				_builder_1.append("\t");
-				_builder_1.append("image = \"");
-				_builder_1.append(image);
-				_builder_1.append("\";");
-				// _builder_1.append(tag);
-				_builder_1.newLine();
-				_builder_1.append("\t");
-				_builder_1.append("// TODO: evironment etc.");
-				_builder_1.newLine();
-				_builder_1.append("}");
-				_builder_1.newLine();
+				if (db.getPathToImage().isEmpty()) {
+					String dbms = db.getDbms();
+					String name = db.getName();
+					StringConcatenation _builderdb = new StringConcatenation();
+					_builderdb.append(_folder);
+					_builderdb.append("/");
+					_builderdb.append(name);
+					_builderdb.append(".tdl");
+					StringConcatenation _builder_1 = new StringConcatenation();
+					_builder_1.append("database ");
+					_builder_1.append(name);
+					_builder_1.append(" : ");
+					_builder_1.append(dbms);
+					_builder_1.append(" {");
+					_builder_1.newLine();
+					_builder_1.append("\t");
+					_builder_1.append("image = //TODO");
+					// _builder_1.append(tag);
+					_builder_1.newLine();
+					_builder_1.append("\t");
+					_builder_1.append("// TODO: evironment etc.");
+					_builder_1.newLine();
+					_builder_1.append("}");
+					_builder_1.newLine();
+					deleteExistingDatabaseFile(_builderdb.toString());
+					generator.generate(_builderdb, _builder_1);
+				}
 			}
 		}
 		StringConcatenation _builder_2 = new StringConcatenation();
@@ -224,22 +214,20 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		_builder_2.newLine();
 		_builder_2.append("}");
 		_builder_2.newLine();
-		deleteExistingDatabaseFile(_builderdb.toString());
 		generator.generate(_builder, _builder_2);
-		generator.generate(_builderdb, _builder_1);
 	}
 
 	private void deleteExistingDatabaseFile(String _builderdb) {
 		// TODO Auto-generated method stub
 		String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/'));
-		String pathWithoutFolder = pathWithFolder.substring(0, pathWithFolder.lastIndexOf('/')+1);
-		String path = pathWithoutFolder +_builderdb;
+		String pathWithoutFolder = pathWithFolder.substring(0, pathWithFolder.lastIndexOf('/') + 1);
+		String path = pathWithoutFolder + _builderdb;
 		File file = new File(URI.create(path));
 		System.out.println(file.getAbsolutePath().toString() + ", exists:" + file.exists());
 		if (file.exists()) {
 			System.out.println("Try to delete file");
 			file.delete();
-			for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) { 
+			for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				} catch (CoreException e) {
