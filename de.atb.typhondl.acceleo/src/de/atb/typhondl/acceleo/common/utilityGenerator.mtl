@@ -2,7 +2,7 @@
 [module utilityGenerator('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
 [query public getAllDatabases(aDeploymentModel : DeploymentModel) : OrderedSet(DB) = 
- aDeploymentModel.elements->filter(typhonDL::DB)->sortedBy(x | x.name)
+ aDeploymentModel.elements->filter(typhonDL::DB)
 /]
 
 [query public getAllClusters(aDeploymentModel : DeploymentModel) : Sequence(Cluster) = 

@@ -17,6 +17,7 @@ import de.atb.typhondl.xtext.ui.editor.pages.MyOverview;
 
 public class EditorPageFactory {
     public static EditorPage createEditorPage(EObject modelObject) {
+    	if (modelObject == null) return new EditorPage("Error");
     	switch (modelObject.eClass().getName()) {
 		case "Cluster":
 			return new ClusterPage((Cluster) modelObject);

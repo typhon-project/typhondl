@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
+import org.eclipse.jface.preference.StringFieldEditor;
+
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
@@ -14,7 +16,12 @@ public class DBPage extends EditorPage {
 
 	@Override
 	protected void createFieldEditors() {
-		// TODO Auto-generated method stub
+		StringFieldEditor field1 = new StringFieldEditor("name", "Name", getFieldEditorParent());
+		field1.setStringValue(db.getName());
+		//field1.setPreferenceStore(MyPreferenceStore.getStore());
+		System.out.println(field1.getPreferenceStore()==null);
+		
+		StringFieldEditor field2 = new StringFieldEditor("image", "Image", getFieldEditorParent());
 		
 	}
 }

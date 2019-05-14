@@ -53,13 +53,11 @@ public class Services {
 
 		URI modelURI = URI.createURI(pathToXTextModel);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
-		System.out.println("getDBS: " + getDBs(model).size());
 		saveModelAsXMI(model, folder, resourceSet);
 		// has to be in this order because xmiResource.getContents().add(db); removes db
 		// from its original container (DB). So in code generation the DBs are also
 		// missing //TODO
 		// saveDBsAsXMI(model, folder, resourceSet);
-		System.out.println("getDBS(2): " + getDBs(model).size());
 		return model;
 	}
 

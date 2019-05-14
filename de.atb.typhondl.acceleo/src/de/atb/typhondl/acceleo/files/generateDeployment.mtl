@@ -16,7 +16,7 @@ services:
   [aContainer.name/]:
 [for (aFeature : Feature | aContainer.features)]
     [aFeature.type.printFeature()/]
-[/for]
+[/for] 
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
@@ -24,11 +24,10 @@ services:
 [/file]
 [/for]
 [/for]
-
 [/template]
 
 [template public printProperties(aProperty : Property) ]
-	[comment TODO Auto-generated template stub/]
+	test1
 [/template]
 
 [template public printProperties(aProperty : Key_Value) ]
@@ -38,24 +37,25 @@ services:
 [template public printProperties(aProperty : Key_ValueList) ]
 [aProperty.name/]:
 [for (aVar : EString | aProperty.environmentVars)]
-  - [aVar/]
-[/for]
-[/template]
+  - [aVar.replaceAll('"', '')/]
+[/for][/template]
 
 [template public printProperties(aProperty : Key_ValueArray) ]
 [aProperty.name/]: [ '[' /]
-[comment TODO this is still empty in grammar /]
+  '[aProperty.value/]'[for (aValue : EString | aProperty.values)],
+  '[aValue/]'
+[/for]
 [ ']' /]
 [/template]
 
 [template public printFeature(db : Element) ]
-	[comment TODO Auto-generated template stub/]
+	test2
 [/template]
 
 [template public printFeature(db : DB) ]
 image: [db.image.value/]
-[for (keyValue : Key_Value | db.parameters)]
-[keyValue.printProperties()/]
+[for (aProperty : Property | db.parameters)]
+[aProperty.printProperties()/]
 [/for]
 [/template]
 

@@ -11,15 +11,20 @@ DeploymentModel:
 Element: 
 	Deployment | Type | DB
 ;
+
    
 Type:
-    PlatformType | ContainerType | DBType
+    PlatformType | ContainerType | DBType | ImportDB
+;
+
+ImportDB:
+	'importDB' name=ID ':' type=[DB]
 ;
 
 DB:
 	'database' name=ID ':' type=[DBType] '{'
 	(image+=IMAGE)+
-	(parameters+=Key_Value)*
+	(parameters+=Property)*
 	'}'
 ;
 

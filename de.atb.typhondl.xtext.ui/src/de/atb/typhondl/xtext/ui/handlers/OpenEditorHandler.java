@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
@@ -25,17 +27,15 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.util.FileOpener;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
-
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
-import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
+import de.atb.typhondl.xtext.typhonDL.ImportDB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
 import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
@@ -54,11 +54,9 @@ public class OpenEditorHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		IWorkbenchPage page = window.getActivePage();
 		ISelection selection = page.getSelection();
-
 		if (selection != null & selection instanceof IStructuredSelection) {
 			IStructuredSelection strucSelection = (IStructuredSelection) selection;
 			Object firstElement = strucSelection.getFirstElement();
@@ -74,9 +72,9 @@ public class OpenEditorHandler extends AbstractHandler {
 
 			URI modelURI = URI.createFileURI(path.toString());
 			String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
-			DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
-
-			PreferenceManager preferenceManager = createPages(model);
+			Resource resource = resourceSet.getResource(modelURI, true);
+			DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
+			PreferenceManager preferenceManager = createPages(model, resource);
 			final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
 			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager);
 			preferenceDialog.setPreferenceStore(Activator.getDefault().getPreferenceStore());
@@ -88,44 +86,40 @@ public class OpenEditorHandler extends AbstractHandler {
 		return null;
 	}
 
-	private PreferenceManager createPages(DeploymentModel model) {
-		
+	private PreferenceManager createPages(DeploymentModel model, Resource resource) {
+
 		PreferenceManager preferenceManager = new PreferenceManager();
 
-		preferenceManager.addToRoot(PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(model)));
-		
-		ArrayList<DB> dbs = getDBs(model);
-		
+		preferenceManager
+				.addToRoot(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(model)));
+		ArrayList<DB> dbs = getDBs(model, resource);
 		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(null)); //TODO
+				.createPreferenceNode(EditorPageFactory.createEditorPage(model)); // TODO
 		preferenceManager.addToRoot(databaseNode);
-
-
 		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory
 					.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
 		}
-
-		PreferenceNode deploymentNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(getDeployment(model)));
-
-		for (Cluster cluster : getClusters(model)) {
-			PreferenceNode clusterNode = PreferenceNodeFactory
-					.createPreferenceNode(EditorPageFactory.createEditorPage(cluster));
-			deploymentNode.add(clusterNode);
-			for (Application application : cluster.getApplications()) {
-				PreferenceNode appNode = PreferenceNodeFactory
-						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
-				clusterNode.add(appNode);
-				for (Container container : application.getContainers()) {
-					appNode.add(PreferenceNodeFactory
-							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
-				}
-			}
-		}
-
-		preferenceManager.addToRoot(deploymentNode);
+//
+//		PreferenceNode deploymentNode = PreferenceNodeFactory
+//				.createPreferenceNode(EditorPageFactory.createEditorPage(getDeployment(model)));
+//
+//		for (Cluster cluster : getClusters(model)) {
+//			PreferenceNode clusterNode = PreferenceNodeFactory
+//					.createPreferenceNode(EditorPageFactory.createEditorPage(cluster));
+//			deploymentNode.add(clusterNode);
+//			for (Application application : cluster.getApplications()) {
+//				PreferenceNode appNode = PreferenceNodeFactory
+//						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
+//				clusterNode.add(appNode);
+//				for (Container container : application.getContainers()) {
+//					appNode.add(PreferenceNodeFactory
+//							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
+//				}
+//			}
+//		}
+//
+//		preferenceManager.addToRoot(deploymentNode);
 		return preferenceManager;
 	}
 
@@ -143,15 +137,58 @@ public class OpenEditorHandler extends AbstractHandler {
 		return null;
 	}
 
-	private ArrayList<DB> getDBs(DeploymentModel model) {
+	private ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		for (Element element : model.getElements()) {
 			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				dbs.add((DB) element);
+			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.ImportDB")) {
+				ImportDB usedDB = (ImportDB) element;
+				Resource dbResource = openImport(resource, usedDB.getName() + ".tdl"); //otherwise DB is null
+				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
+				for (Element element2 : model2.getElements()) {
+					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
+						DB db = (DB) element2;
+						dbs.add(db);
+					}
+				}
+				
 			}
 		}
 		return dbs;
 	}
 
+	/**
+	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf
+	 * @param currentResource
+	 * @param importedURIAsString
+	 * @return
+	 */
+	public static Resource openImport(final Resource currentResource, final String importedURIAsString) {
+		URI _uRI = null;
+		if (currentResource != null) {
+			_uRI = currentResource.getURI();
+		}
+		final URI currentURI = _uRI;
+		URI _createURI = null;
+		if (URI.class != null) {
+			_createURI = URI.createURI(importedURIAsString);
+		}
+		final URI importedURI = _createURI;
+		URI _resolve = null;
+		if (importedURI != null) {
+			_resolve = importedURI.resolve(currentURI);
+		}
+		final URI resolvedURI = _resolve;
+		ResourceSet _resourceSet = null;
+		if (currentResource != null) {
+			_resourceSet = currentResource.getResourceSet();
+		}
+		final ResourceSet currentResourceSet = _resourceSet;
+		Resource _resource = null;
+		if (currentResourceSet != null) {
+			_resource = currentResourceSet.getResource(resolvedURI, true);
+		}
+		final Resource resource = _resource;
+		return resource;
+	}
 }

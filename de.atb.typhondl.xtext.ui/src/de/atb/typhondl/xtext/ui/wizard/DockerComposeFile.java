@@ -67,8 +67,8 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 					"If you already have a database.tdl template for " + database.getName()
 							+ " enter relative path here",
 					imageGroup);
-			StringTemplateVariable text = this.text("Image for " + database.getName() + " : ", "default",
-					"Give the path to your image configuration file", imageGroup);
+			StringTemplateVariable text = this.text("Image for " + database.getName() + " : ",
+					database.getName() + ".tdl", "Give the path to your image configuration file", imageGroup);
 			data.put(database, new Tuple(combo, text, bool));
 
 		}

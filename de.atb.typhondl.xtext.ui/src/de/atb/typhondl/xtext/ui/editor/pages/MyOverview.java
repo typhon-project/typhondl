@@ -76,26 +76,10 @@ public class MyOverview extends EditorPage {
 
 	@Override
 	protected void createFieldEditors() {
-		ArrayList<DB> allDatabases = getDBs();
 
-		for (DB db : allDatabases) {
-			IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField",
-					db.getName(), getFieldEditorParent());
-			indentSpaces.setValidRange(0, 10);
-			addField(indentSpaces);
-		}
-
-	}
-
-	private ArrayList<DB> getDBs() {
-		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (Element element : model.getElements()) {
-			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				dbs.add((DB) element);
-			}
-		}
-		return dbs;
+		IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", "deployment", getFieldEditorParent());
+		indentSpaces.setValidRange(0, 10);
+		addField(indentSpaces);
 	}
 
 }
