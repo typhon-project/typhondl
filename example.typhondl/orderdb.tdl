@@ -1,0 +1,11 @@
+database orderdb : mongo {
+	image = mongo:latest;
+	restart = always;
+    environment {
+      "MONGO_INITDB_ROOT_USERNAME=root"
+      "MONGO_INITDB_ROOT_PASSWORD=example"
+    }
+    entrypoint [
+    	--smallfiles, --wiredTigerCacheSizeGB 1.5
+    ]
+}
