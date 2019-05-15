@@ -23,7 +23,7 @@ ImportDB:
 
 DB:
 	'database' name=ID ':' type=[DBType] '{'
-	(image+=IMAGE)+
+	(image=IMAGE)
 	(parameters+=Property)*
 	'}'
 ;

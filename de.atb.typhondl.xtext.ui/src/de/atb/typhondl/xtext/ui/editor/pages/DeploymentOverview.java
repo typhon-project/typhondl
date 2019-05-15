@@ -9,10 +9,5 @@ public class DeploymentOverview extends EditorPage {
 		super("Deployment Overview");
 	}
 
-	@Override
-	protected void createFieldEditors() {
-		// TODO Auto-generated method stub
-
-	}
 
 }

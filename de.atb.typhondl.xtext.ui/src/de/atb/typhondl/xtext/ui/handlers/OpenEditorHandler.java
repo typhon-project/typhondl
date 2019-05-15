@@ -15,6 +15,8 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
@@ -71,19 +73,33 @@ public class OpenEditorHandler extends AbstractHandler {
 			resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
 			URI modelURI = URI.createFileURI(path.toString());
-			String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
+
 			Resource resource = resourceSet.getResource(modelURI, true);
 			DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 			PreferenceManager preferenceManager = createPages(model, resource);
-			final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
 			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager);
 			preferenceDialog.setPreferenceStore(Activator.getDefault().getPreferenceStore());
+			addListenerToStore();
 			preferenceDialog.create();
+			final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
 			preferenceDialog.getShell().setImage(image);
+			String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
 			preferenceDialog.getShell().setText("Change TyphonDL Model \"" + modelName + "\"");
 			preferenceDialog.open();
 		}
 		return null;
+	}
+
+	private void addListenerToStore() {
+		
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				System.out.println(event.getProperty() + ": " + event.getNewValue().toString());				
+			}
+		});
+		
 	}
 
 	private PreferenceManager createPages(DeploymentModel model, Resource resource) {
