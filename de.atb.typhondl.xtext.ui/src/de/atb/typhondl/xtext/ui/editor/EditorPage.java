@@ -11,6 +11,7 @@ public class EditorPage extends PreferencePage implements IPreferencePage{
 
 	public EditorPage(String title) {
 		super(title);
+		super.noDefaultButton();
 	}
 	
 	@Override

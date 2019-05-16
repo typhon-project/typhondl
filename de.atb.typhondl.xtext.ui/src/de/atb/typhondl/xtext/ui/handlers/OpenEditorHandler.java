@@ -32,12 +32,14 @@ import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Element;
-import de.atb.typhondl.xtext.typhonDL.ImportDB;
+import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
 import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
@@ -106,8 +108,6 @@ public class OpenEditorHandler extends AbstractHandler {
 
 		PreferenceManager preferenceManager = new PreferenceManager();
 
-		preferenceManager
-				.addToRoot(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(model)));
 		ArrayList<DB> dbs = getDBs(model, resource);
 		PreferenceNode databaseNode = PreferenceNodeFactory
 				.createPreferenceNode(EditorPageFactory.createEditorPage(model)); // TODO
@@ -116,26 +116,26 @@ public class OpenEditorHandler extends AbstractHandler {
 			databaseNode.add(PreferenceNodeFactory
 					.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
 		}
-//
-//		PreferenceNode deploymentNode = PreferenceNodeFactory
-//				.createPreferenceNode(EditorPageFactory.createEditorPage(getDeployment(model)));
-//
-//		for (Cluster cluster : getClusters(model)) {
-//			PreferenceNode clusterNode = PreferenceNodeFactory
-//					.createPreferenceNode(EditorPageFactory.createEditorPage(cluster));
-//			deploymentNode.add(clusterNode);
-//			for (Application application : cluster.getApplications()) {
-//				PreferenceNode appNode = PreferenceNodeFactory
-//						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
-//				clusterNode.add(appNode);
-//				for (Container container : application.getContainers()) {
-//					appNode.add(PreferenceNodeFactory
-//							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
-//				}
-//			}
-//		}
-//
-//		preferenceManager.addToRoot(deploymentNode);
+
+		PreferenceNode deploymentNode = PreferenceNodeFactory
+				.createPreferenceNode(EditorPageFactory.createEditorPage(getDeployment(model)));
+
+		for (Cluster cluster : getClusters(model)) {
+			PreferenceNode clusterNode = PreferenceNodeFactory
+					.createPreferenceNode(EditorPageFactory.createEditorPage(cluster));
+			deploymentNode.add(clusterNode);
+			for (Application application : cluster.getApplications()) {
+				PreferenceNode appNode = PreferenceNodeFactory
+						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
+				clusterNode.add(appNode);
+				for (Container container : application.getContainers()) {
+					appNode.add(PreferenceNodeFactory
+							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
+				}
+			}
+		}
+
+		preferenceManager.addToRoot(deploymentNode);
 		return preferenceManager;
 	}
 
@@ -157,9 +157,9 @@ public class OpenEditorHandler extends AbstractHandler {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		for (Element element : model.getElements()) {
 			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.ImportDB")) {
-				ImportDB usedDB = (ImportDB) element;
-				Resource dbResource = openImport(resource, usedDB.getName() + ".tdl"); //otherwise DB is null
+			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
+				Import importedDB = (Import) element;
+				Resource dbResource = openImport(resource, importedDB.getName() + ".tdl"); //otherwise DB is null
 				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
 				for (Element element2 : model2.getElements()) {
 					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {

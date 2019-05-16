@@ -16,7 +16,7 @@ public class MyOverview extends EditorPage {
 	private DeploymentModel model;
 
 	public MyOverview(DeploymentModel model) {
-		super("Overview");
+		super("Databases");
 		this.model = model;
 	}
 
