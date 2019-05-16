@@ -1,6 +1,6 @@
-import orderdb.tdl as orderdb
-import productdb.tdl as productdb
-import userdb.tdl as userdb
+import orderdb.tdl
+import productdb.tdl
+import userdb.tdl
 
 platformtype default //TODO (e.g. AWS)
 containertype Docker
@@ -11,12 +11,12 @@ platform platformname : default { //TODO
 	cluster MyCluster { //TODO
 		application MyApplication {
 			container container1 : Docker {
-				productdb
+				deploys productdb
 				ports = 8080:8080;
 				// TODO: volumes, networks, ports etc.
 			}
 			container container2 : Docker {
-				orderdb
+				deploys orderdb
 				ports = 8080:2939;
 				testProp1 = value1;
 				testProp2 = value2;
@@ -24,7 +24,7 @@ platform platformname : default { //TODO
 				// TODO: volumes, networks, ports etc.
 			}
 			container container3 : Docker {
-				userdb
+				deploys userdb
 				ports = 8080:0980398;
 				// TODO: volumes, networks, ports etc.
 			}
