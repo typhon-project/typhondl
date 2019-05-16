@@ -14,8 +14,8 @@ version: '3.7'
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-[for (aFeature : Feature | aContainer.features)]
-    [aFeature.type.printFeature()/]
+[for (aSoftware : Software | aContainer.references)]
+    [aSoftware.printFeature()/]
 [/for] 
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
@@ -48,8 +48,12 @@ services:
 [ ']' /]
 [/template]
 
-[template public printFeature(db : Element) ]
+[template public printFeature(software : Software) ]
 	test2
+[/template]
+
+[template public printFeature(software : NonDB) ]
+	test3
 [/template]
 
 [template public printFeature(db : DB) ]

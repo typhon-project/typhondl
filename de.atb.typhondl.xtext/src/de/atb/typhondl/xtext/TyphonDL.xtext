@@ -78,7 +78,7 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		(references+=[Import])*
+		(references+=[Software])*
 		(properties+=Property)*
 	'}'
 ;

@@ -128,6 +128,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		String _name = this.getName();
 		_builder.append(_name);
 		_builder.append(".tdl");
+		StringConcatenation _builder_2 = new StringConcatenation();
 		{
 			for (final Database db : this.data.keySet()) {
 				if (db.getPathToImage().isEmpty()) {
@@ -159,7 +160,15 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				}
 			}
 		}
-		StringConcatenation _builder_2 = new StringConcatenation();
+		{
+			for (final Database db : this.data.keySet()) {
+				_builder_2.append("import ");
+				_builder_2.append(db.getPathToImage());
+				_builder_2.append(" as ");
+				_builder_2.append(db.getName());
+				_builder_2.newLine();
+			}
+		}
 		_builder_2.append("platformtype default //TODO (e.g. AWS)");
 		_builder_2.newLine();
 		_builder_2.append("containertype Docker");
@@ -189,13 +198,8 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				_builder_2.append(" : Docker {");
 				_builder_2.newLineIfNotEmpty();
 				_builder_2.append("\t\t\t\t");
-				_builder_2.append("use : ");
 				String name = db.getName();
 				_builder_2.append(name);
-				_builder_2.newLineIfNotEmpty();
-				_builder_2.append("\t\t\t\t");
-				_builder_2.append("dbType : ");
-				_builder_2.append(db.getDbms());
 				_builder_2.newLineIfNotEmpty();
 				_builder_2.append("\t\t\t\t");
 				_builder_2.append("// TODO: volumes, networks, ports etc.");
