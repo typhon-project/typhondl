@@ -14,7 +14,7 @@ Element:
 ;
 
 Import:
-	'import' relativePath=Value 'as' name=[Software]
+	'import' relativePath=Value 'as' name=ID
 ;
 
 Software:
@@ -78,7 +78,7 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		reference=[Import]
+		(references+=[Import])*
 		(properties+=Property)*
 	'}'
 ;

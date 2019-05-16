@@ -93,15 +93,15 @@ public class OpenEditorHandler extends AbstractHandler {
 	}
 
 	private void addListenerToStore() {
-		
+
 		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-			
+
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
-				System.out.println(event.getProperty() + ": " + event.getNewValue().toString());				
+				System.out.println(event.getProperty() + ": " + event.getNewValue().toString());
 			}
 		});
-		
+
 	}
 
 	private PreferenceManager createPages(DeploymentModel model, Resource resource) {
@@ -113,8 +113,7 @@ public class OpenEditorHandler extends AbstractHandler {
 				.createPreferenceNode(EditorPageFactory.createEditorPage(model)); // TODO
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
-			databaseNode.add(PreferenceNodeFactory
-					.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
+			databaseNode.add(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
 		}
 
 		PreferenceNode deploymentNode = PreferenceNodeFactory
@@ -129,8 +128,8 @@ public class OpenEditorHandler extends AbstractHandler {
 						.createPreferenceNode(EditorPageFactory.createEditorPage(application));
 				clusterNode.add(appNode);
 				for (Container container : application.getContainers()) {
-					appNode.add(PreferenceNodeFactory
-							.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
+					appNode.add(
+							PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(container)));
 				}
 			}
 		}
@@ -155,26 +154,24 @@ public class OpenEditorHandler extends AbstractHandler {
 
 	private ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (Element element : model.getElements()) {
+		for (Import importedInfo : model.getGuiMetaInformation()) {
 			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
-				Import importedDB = (Import) element;
-				Resource dbResource = openImport(resource, importedDB.getName() + ".tdl"); //otherwise DB is null
-				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
-				for (Element element2 : model2.getElements()) {
-					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-						DB db = (DB) element2;
-						dbs.add(db);
-					}
+			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
+			DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
+			for (Element element2 : model2.getElements()) {
+				if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
+					DB db = (DB) element2;
+					dbs.add(db);
 				}
-				
 			}
+
 		}
 		return dbs;
 	}
 
 	/**
 	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf
+	 * 
 	 * @param currentResource
 	 * @param importedURIAsString
 	 * @return

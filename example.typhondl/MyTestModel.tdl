@@ -1,29 +1,30 @@
+import orderdb.tdl as orderdb
+import productdb.tdl as productdb
+import userdb.tdl as userdb
+
 platformtype default //TODO (e.g. AWS)
 containertype Docker
 dbtype mariadb
 dbtype mongo
-importDB orderdb : orderdb
-importDB productdb : productdb
-importDB userdb : userdb
 
 platform platformname : default { //TODO
-	cluster clustername { //TODO
+	cluster MyCluster { //TODO
 		application MyApplication {
-			container productdb : Docker {
-				use : productdb
+			container container1 : Docker {
+				productdb
 				ports = 8080:8080;
 				// TODO: volumes, networks, ports etc.
 			}
-			container orderdb : Docker {
-				use : orderdb
+			container container2 : Docker {
+				orderdb
 				ports = 8080:2939;
-				testProp = bla;
-				test2 = bla3;
-				test5 = test;
+				testProp1 = value1;
+				testProp2 = value2;
+				testProp3 = value3;
 				// TODO: volumes, networks, ports etc.
 			}
-			container userdb : Docker {
-				use : userdb
+			container container3 : Docker {
+				userdb
 				ports = 8080:0980398;
 				// TODO: volumes, networks, ports etc.
 			}
