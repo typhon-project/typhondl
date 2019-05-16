@@ -14,8 +14,8 @@ version: '3.7'
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-[for (aSoftware : Software | aContainer.references)]
-    [aSoftware.printFeature()/]
+[for (aReference : Reference | aContainer.deploys)]
+    [aReference.reference.printFeature()/]
 [/for] 
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]

@@ -5,16 +5,20 @@ grammar de.atb.typhondl.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
 generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
 
 DeploymentModel:
-	(guiMetaInformation+=Import)*
-    (elements+=Element)*
+	(guiMetaInformation+=MetaSpecification)*
+    (elements+=Specification)*
 ;
 
-Element: 
+MetaSpecification:
+	Import
+;
+
+Specification: 
 	Deployment | Type | Software
 ;
 
 Import:
-	'import' relativePath=Value 'as' name=ID
+	'import' relativePath=Value
 ;
 
 Software:
@@ -78,9 +82,13 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		(references+=[Software])*
+		(deploys+=Reference)*
 		(properties+=Property)*
 	'}'
+;
+
+Reference:
+	'deploys' reference=[Software]
 ;
 
 Property :

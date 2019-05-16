@@ -38,8 +38,9 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Element;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.typhonDL.MetaSpecification;
+import de.atb.typhondl.xtext.typhonDL.Specification;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.EditorPageFactory;
 import de.atb.typhondl.xtext.ui.editor.PreferenceNodeFactory;
@@ -143,7 +144,7 @@ public class OpenEditorHandler extends AbstractHandler {
 	}
 
 	private Deployment getDeployment(DeploymentModel model) {
-		for (Element element : model.getElements()) {
+		for (Specification element : model.getElements()) {
 			// TODO not nice
 			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Deployment")) {
 				return (Deployment) element;
@@ -154,20 +155,28 @@ public class OpenEditorHandler extends AbstractHandler {
 
 	private ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (Import importedInfo : model.getGuiMetaInformation()) {
+		for (MetaSpecification metaSpec : model.getGuiMetaInformation()) {
 			// TODO not nice
-			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
-			DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
-			for (Element element2 : model2.getElements()) {
-				if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-					DB db = (DB) element2;
-					dbs.add(db);
+			if (metaSpec.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
+				Import importedInfo = (Import) metaSpec;
+				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
+				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
+				for (Specification element2 : model2.getElements()) {
+					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
+						DB db = (DB) element2;
+						dbs.add(db);
+					}
 				}
 			}
 
 		}
 		return dbs;
 	}
+
+	// private ArrayList<DB> getDBsWithoutImport(DeploymentModel model, Resource
+	// resource){
+	//
+	// }
 
 	/**
 	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf

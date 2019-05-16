@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Control;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Element;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
 public class MyOverview extends EditorPage {
