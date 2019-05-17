@@ -78,6 +78,13 @@ public class OpenEditorHandler extends AbstractHandler {
 			URI modelURI = URI.createFileURI(path.toString());
 
 			Resource resource = resourceSet.getResource(modelURI, true);
+			/**
+			 * public static void typhonMLPackageRegistering() {
+			 * Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new
+			 * XMIResourceFactoryImpl());
+			 * resourceSet.getPackageRegistry().put(TyphonmlPackage.eINSTANCE.getNsURI(),
+			 * TyphonmlPackage.eINSTANCE); }
+			 */
 			DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 			PreferenceManager preferenceManager = createPages(model, resource);
 			PreferenceDialog preferenceDialog = new PreferenceDialog(activeShell, preferenceManager);
