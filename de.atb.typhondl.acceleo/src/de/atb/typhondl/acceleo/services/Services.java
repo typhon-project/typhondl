@@ -8,6 +8,7 @@ import java.util.Map;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -17,6 +18,7 @@ import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Specification;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage;
 
 public class Services {
 
@@ -55,6 +57,8 @@ public class Services {
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
 		URI modelURI = URI.createURI(pathToXTextModel);
+		Resource xtextResource = resourceSet.getResource(modelURI, true);
+		EcoreUtil.resolveAll(xtextResource);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
 		saveModelAsXMI(model, folder, resourceSet);
 		// has to be in this order because xmiResource.getContents().add(db); removes db
@@ -79,9 +83,6 @@ public class Services {
 	 * TODO maybe put this in "onSave()" in Xtext package
 	 */
 	public static void saveModelAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
-		Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
-		Map<String, Object> m = reg.getExtensionToFactoryMap();
-		m.put("xmi",  new XMIResourceFactoryImpl());
 		Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "/model.xmi"));
 		xmiResource.getContents().add(model);
 		try {
