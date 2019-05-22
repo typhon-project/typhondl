@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL')]
+[module generateDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
@@ -11,40 +11,56 @@
 [file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
-
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-    [aContainer.database.showVars()/]
+[for (aReference : Reference | aContainer.deploys)]
+    [aReference.reference.printFeature()/]
+[/for] 
+[for (aProperty : Property | aContainer.properties)]
+    [aProperty.printProperties()/]
 [/for]
-
+[/for]
 [/file]
-	
 [/for]
 [/for]
-
 [/template]
 
-[template public showVars(database : SupportedDBMS) ]
-	not a supported DBMS
+[template public printProperties(aProperty : Property) ]
+	test1
 [/template]
 
-[template public showVars(database : Mongo) ]
-image: [database.image.value/]
-environment:
-  - [database.userName.eClass().name/]=[database.userName.value/]
-  - [database.password.eClass().name/]=[database.password.value/]
+[template public printProperties(aProperty : Key_Value) ]
+[aProperty.name/]: [aProperty.value/]
 [/template]
 
-[template public showVars(database : MariaDB) ]
-image: [database.image.value/]
-environment:
-	[for (aVar : MARIAENV | database.environment)]
-  - [aVar.eClass().name/]=[aVar.value/]
-	[/for]
-[for (aVar : Key_Value | database.otherVars)]
-[aVar.name/]: [aVar.value/]
-[/for]	
+[template public printProperties(aProperty : Key_ValueList) ]
+[aProperty.name/]:
+[for (aVar : EString | aProperty.environmentVars)]
+  - [aVar.replaceAll('"', '')/]
+[/for][/template]
+
+[template public printProperties(aProperty : Key_ValueArray) ]
+[aProperty.name/]: [ '[' /]
+  '[aProperty.value/]'[for (aValue : EString | aProperty.values)],
+  '[aValue/]'
+[/for]
+[ ']' /]
+[/template]
+
+[template public printFeature(software : Software) ]
+	test2
+[/template]
+
+[template public printFeature(software : NonDB) ]
+	test3
+[/template]
+
+[template public printFeature(db : DB) ]
+image: [db.image.value/]
+[for (aProperty : Property | db.parameters)]
+[aProperty.printProperties()/]
+[/for]
 [/template]
 
 

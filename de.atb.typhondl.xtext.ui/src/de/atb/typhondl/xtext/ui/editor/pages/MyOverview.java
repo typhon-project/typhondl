@@ -1,10 +1,13 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Element;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
 public class MyOverview extends EditorPage {
@@ -12,7 +15,7 @@ public class MyOverview extends EditorPage {
 	private DeploymentModel model;
 
 	public MyOverview(DeploymentModel model) {
-		super("Overview");
+		super("Databases");
 		this.model = model;
 	}
 
@@ -73,24 +76,11 @@ public class MyOverview extends EditorPage {
 	 */
 
 	@Override
-	protected void createFieldEditors() {
-		DB allDatabases = getDB();
+	protected Control createContents(Composite parent) {
 
-		IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", allDatabases.getDbs().get(0).getName(),
-				getFieldEditorParent());
+		IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", "deployment", parent);
 		indentSpaces.setValidRange(0, 10);
-		addField(indentSpaces);
-
-	}
-
-	private DB getDB() {
-		for (Element element : model.getElements()) {
-			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				return (DB) element;
-			}
-		}
-		return null;
+		return parent;
 	}
 
 }

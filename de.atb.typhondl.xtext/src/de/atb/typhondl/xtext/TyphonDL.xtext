@@ -5,67 +5,46 @@ grammar de.atb.typhondl.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
 generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
 
 DeploymentModel:
-    (elements+=Element)*
+    (guiMetaInformation+=MetaModel)*
+    (elements+=Model)*
 ;
 
-Element: 
-	Deployment | Type | DB
+MetaModel:
+    Import
+;
+
+Model: 
+    Deployment | Type | Software
+;
+
+Import:
+    'import' relativePath=Value
+;
+
+
+Software:
+	DB | NonDB
+;
+
+NonDB:
+	'software' name=ID '{'
+	reference=QSTRING
+	'}'
 ;
    
 Type:
     PlatformType | ContainerType | DBType
 ;
 
-SupportedDBMS:
-	MariaDB | Mongo
-;
-
-Mongo:
-	'mongo' name=ID '{'
+DB:
+	'database' name=ID ':' type=[DBType] '{'
 	(image=IMAGE)
-	(userName=MONGO_INITDB_ROOT_USERNAME)
-	(password=MONGO_INITDB_ROOT_PASSWORD)
+	(parameters+=Property)*
 	'}'
 ;
 
 IMAGE:
 	'image' '=' value=Value ';'
-;
-
-MONGO_INITDB_ROOT_PASSWORD:
-	'MONGO_INITDB_ROOT_PASSWORD' '=' value=Value ';'
-;
-
-MONGO_INITDB_ROOT_USERNAME:
-	'MONGO_INITDB_ROOT_USERNAME' '=' value=Value ';'
-;
-
-MariaDB:
-	'mariadb' name=ID '{'
-	(image=IMAGE)
-	(environment+=MARIAENV)+
-	(otherVars+=Key_Value)*
-	'}'
-;
-
-MARIAENV:
-	MYSQL_USER | MYSQL_PASSWORD | MYSQL_ROOT_PASSWORD | MYSQL_DATABASE
-;
-
-MYSQL_USER:
-	'MYSQL_USER' '=' value=Value ';'
-;
-
-MYSQL_DATABASE:
-	'MYSQL_DATABASE' '=' value=Value ';'
-;
-
-MYSQL_PASSWORD:
-	'MYSQL_PASSWORD' '=' value=Value ';'
-;
-
-MYSQL_ROOT_PASSWORD:
-	'MYSQL_ROOT_PASSWORD' '=' value=Value ';'
 ;
 
 PlatformType:
@@ -78,12 +57,6 @@ ContainerType:
 	
 DBType:
 	'dbtype' name=ID
-;
-
-DB:
-	'databases' '{'
-	(dbs+=SupportedDBMS)+
-	'}'
 ;
 
 Deployment :
@@ -110,9 +83,13 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		'database' ':' (database=[SupportedDBMS])
-		(properties+=Property | features+=Feature)*
+		(deploys+=Reference)*
+		(properties+=Property)*
 	'}'
+;
+
+Reference:
+	'deploys' reference=[Software]
 ;
 
 Property :
@@ -135,10 +112,6 @@ Key_ValueArray :
 
 Value : 
 	(STRING|ID|INT|'/'|':'|'-'|'.'|'=')+
-;
-
-Feature:
-    name=ID ':' type=[Element]
 ;
 
 terminal QSTRING:

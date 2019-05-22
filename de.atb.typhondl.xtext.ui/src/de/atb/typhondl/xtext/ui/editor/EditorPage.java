@@ -2,20 +2,23 @@ package de.atb.typhondl.xtext.ui.editor;
 
 import java.awt.Label;
 
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferencePage;
+import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
-public class EditorPage extends FieldEditorPreferencePage implements IPreferencePage{
+public class EditorPage extends PreferencePage implements IPreferencePage{
 
 	public EditorPage(String title) {
-		super();
-		this.setTitle(title);
+		super(title);
+		super.noDefaultButton();
 	}
 	
 	@Override
-	protected void createFieldEditors() {
+	protected Control createContents(Composite parent) {
 		Label label = new Label("Please create subclass of this Page");
 		label.setVisible(true);
+		return parent;
 	}
 
 }

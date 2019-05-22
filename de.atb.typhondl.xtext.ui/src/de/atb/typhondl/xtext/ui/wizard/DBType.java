@@ -3,7 +3,7 @@ package de.atb.typhondl.xtext.ui.wizard;
 public enum DBType {
 	relationaldb(){
 		@Override String[] getPossibleDBMSs(){
-			return new String[] {"MySQL", "MariaDB"};
+			return new String[] {"MariaDB", "MySQL"};
 		}
 	},
 	graphdb(){
