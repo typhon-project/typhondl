@@ -26,6 +26,7 @@ public class DBPage extends EditorPage {
 
 	private DB db;
 	private List<TyphonFieldEditor> fieldEditorList = new ArrayList<TyphonFieldEditor>();
+	private IPreferenceStore preferenceStore;
 
 	public DBPage(DB db) {
 		super(db.getName());
@@ -34,7 +35,7 @@ public class DBPage extends EditorPage {
 
 	@Override
 	protected Control createContents(Composite parent) {
-		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		this.preferenceStore = Activator.getDefault().getPreferenceStore();
 		TyphonFieldEditor field3 = new TyphonFieldEditor(db.getName() + ".image", "image", parent);
 		field3.setStringValue(db.getImage().getValue());
 		field3.setPreferenceStore(preferenceStore);
@@ -52,6 +53,7 @@ public class DBPage extends EditorPage {
 			TyphonFieldEditor field = new TyphonFieldEditor(db.getName() + "." + keyValue.getName(), keyValue.getName(),
 					parent);
 			field.setStringValue(keyValue.getValue());
+			field.setPreferenceStore(preferenceStore);
 			fieldEditorList.add(field);
 			break;
 		case "de.atb.typhondl.xtext.typhonDL.Key_ValueArray":
@@ -63,6 +65,7 @@ public class DBPage extends EditorPage {
 				string += ", " + value;
 			}
 			field1.setStringValue(string);
+			field1.setPreferenceStore(preferenceStore);
 			fieldEditorList.add(field1);
 			break;
 		case "de.atb.typhondl.xtext.typhonDL.Key_ValueList":
@@ -85,6 +88,7 @@ public class DBPage extends EditorPage {
 				TyphonFieldEditor field2 = new TyphonFieldEditor(db.getName() + "." + property.getName() + "." + key,
 						key, group);
 				field2.setStringValue(value);
+				field2.setPreferenceStore(preferenceStore);
 				fieldEditorList.add(field2);
 			}
 			break;
@@ -104,7 +108,6 @@ public class DBPage extends EditorPage {
 
 	private void changeResource() {
 		Resource resource = db.eResource();
-		System.out.println(resource.getURI().toString());
-
+		System.out.println("Resource to change: " + resource.getURI().toString());
 	}
 }

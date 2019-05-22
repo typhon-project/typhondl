@@ -11,6 +11,9 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -29,9 +32,12 @@ import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class TyphonEditorDialog extends PreferenceDialog {
-	
+
+	private IPath path;
+
 	public TyphonEditorDialog(Shell parentShell, IPath path) {
 		this(parentShell, createManager(parentShell, path));
+		this.path = path;
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
@@ -44,7 +50,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 		Resource dbresource = resourceSet.getResource(dbURI, true);
 		Resource resource = resourceSet.getResource(modelURI, true);
-		
+
 		EcoreUtil.resolveAll(resource); // doesn't change anything
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 		PreferenceManager preferenceManager = createPages(model, resource);
@@ -54,7 +60,6 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	public TyphonEditorDialog(Shell parentShell, PreferenceManager manager) {
 		super(parentShell, manager);
 	}
-
 
 	private static PreferenceManager createPages(DeploymentModel model, Resource resource) {
 
@@ -158,5 +163,15 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		}
 		final Resource resource = _resource;
 		return resource;
+	}
+
+	public void start() {
+		this.setPreferenceStore(Activator.getDefault().getPreferenceStore());
+		this.create();
+		final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
+		this.getShell().setImage(image);
+		String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
+		this.getShell().setText("Change TyphonDL Model \"" + modelName + "\"");
+		this.open();
 	}
 }

@@ -1,5 +1,6 @@
 package de.atb.typhondl.xtext.ui.editor;
 
+import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -49,9 +50,12 @@ public class TyphonFieldEditor extends StringFieldEditor {
 	public TyphonFieldEditor(String name, String labelText, Composite parent) {
 		this(name, labelText, UNLIMITED, parent);
 	}
-	
+
 	@Override
 	protected void doStore() {
-		super.doStore();
+		System.out.println(this.getPreferenceStore().getString(getPreferenceName()) + ", " + getTextControl().getText());
+		if (!this.getPreferenceStore().getString(getPreferenceName()).equals(getTextControl().getText())) {
+			super.doStore();
+		}
 	}
 }

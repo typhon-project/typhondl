@@ -50,27 +50,8 @@ public class OpenEditorHandler extends AbstractHandler {
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
 			PreferenceDialog preferenceDialog = new TyphonEditorDialog(activeShell, path);
-			preferenceDialog.setPreferenceStore(Activator.getDefault().getPreferenceStore());
-			addListenerToStore();
-			preferenceDialog.create();
-			final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
-			preferenceDialog.getShell().setImage(image);
-			String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
-			preferenceDialog.getShell().setText("Change TyphonDL Model \"" + modelName + "\"");
-			preferenceDialog.open();
+			((TyphonEditorDialog) preferenceDialog).start();
 		}
 		return null;
-	}
-
-	private void addListenerToStore() {
-
-		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-
-			@Override
-			public void propertyChange(PropertyChangeEvent event) {
-				System.out.println(event.getProperty() + ": " + event.getNewValue().toString());
-			}
-		});
-
 	}
 }
