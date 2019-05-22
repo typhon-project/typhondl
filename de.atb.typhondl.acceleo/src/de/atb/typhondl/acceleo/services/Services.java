@@ -3,22 +3,16 @@ package de.atb.typhondl.acceleo.services;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
-import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Specification;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage;
 
 public class Services {
 
@@ -68,17 +62,6 @@ public class Services {
 		return model;
 	}
 
-	private static ArrayList<DB> getDBs(DeploymentModel model) {
-		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (Specification element : model.getElements()) {
-			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-				dbs.add((DB) element);
-			}
-		}
-		return dbs;
-	}
-
 	/*
 	 * TODO maybe put this in "onSave()" in Xtext package
 	 */
@@ -89,23 +72,6 @@ public class Services {
 			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	/*
-	 * TODO maybe put this in "onSave()" in Xtext package
-	 */
-	private static void saveDBsAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet) {
-		ArrayList<DB> list = getDBs(model);
-		for (DB db : list) {
-			Resource xmiResource = resourceSet
-					.createResource(URI.createFileURI(pathToTargetFolder + "/databases/" + db.getName() + ".xmi"));
-			xmiResource.getContents().add(db); // this deletes the db in the model!! stupid
-			try {
-				xmiResource.save(Options.getXMIoptions());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 }

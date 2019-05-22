@@ -24,8 +24,8 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.MetaSpecification;
-import de.atb.typhondl.xtext.typhonDL.Specification;
+import de.atb.typhondl.xtext.typhonDL.MetaModel;
+import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class TyphonEditorDialog extends PreferenceDialog {
@@ -95,7 +95,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static Deployment getDeployment(DeploymentModel model) {
-		for (Specification element : model.getElements()) {
+		for (Model element : model.getElements()) {
 			// TODO not nice
 			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Deployment")) {
 				return (Deployment) element;
@@ -106,13 +106,13 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 	private static ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (MetaSpecification metaSpec : model.getGuiMetaInformation()) {
+		for (MetaModel metaSpec : model.getGuiMetaInformation()) {
 			// TODO not nice
 			if (metaSpec.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
 				Import importedInfo = (Import) metaSpec;
 				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
 				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
-				for (Specification element2 : model2.getElements()) {
+				for (Model element2 : model2.getElements()) {
 					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
 						DB db = (DB) element2;
 						dbs.add(db);
@@ -123,11 +123,6 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		}
 		return dbs;
 	}
-
-	// private ArrayList<DB> getDBsWithoutImport(DeploymentModel model, Resource
-	// resource){
-	//
-	// }
 
 	/**
 	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf

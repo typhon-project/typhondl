@@ -5,21 +5,22 @@ grammar de.atb.typhondl.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
 generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
 
 DeploymentModel:
-	(guiMetaInformation+=MetaSpecification)*
-    (elements+=Specification)*
+    (guiMetaInformation+=MetaModel)*
+    (elements+=Model)*
 ;
 
-MetaSpecification:
-	Import
+MetaModel:
+    Import
 ;
 
-Specification: 
-	Deployment | Type | Software
+Model: 
+    Deployment | Type | Software
 ;
 
 Import:
-	'import' relativePath=Value
+    'import' relativePath=Value
 ;
+
 
 Software:
 	DB | NonDB
