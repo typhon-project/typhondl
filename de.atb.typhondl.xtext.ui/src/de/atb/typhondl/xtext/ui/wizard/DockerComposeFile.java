@@ -18,8 +18,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.internal.core.ModelUpdater;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.ui.wizard.template.AbstractFileTemplate;
 import org.eclipse.xtext.ui.wizard.template.BooleanTemplateVariable;
@@ -160,15 +162,26 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				}
 			}
 		}
+		IPath path = new Path(modelPath.getPath());
+		String[] segments = path.segments();
+		String modelName = "";
+		for (int i = 0; i < segments.length; i++) {
+			if (segments[i].equals(this.getFolder())) {
+				for (int j = i+1; j < segments.length; j++) {
+					modelName += "/" + path.segment(j);
+				}
+			}
+		}
+		_builder_2.append("import " + modelName);
+		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
 				_builder_2.append("import ");
 				_builder_2.append(db.getPathToImage());
-				_builder_2.append(" as ");
-				_builder_2.append(db.getName());
 				_builder_2.newLine();
 			}
 		}
+		_builder_2.newLine();
 		_builder_2.append("platformtype default //TODO (e.g. AWS)");
 		_builder_2.newLine();
 		_builder_2.append("containertype Docker");
@@ -199,7 +212,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				_builder_2.newLineIfNotEmpty();
 				_builder_2.append("\t\t\t\t");
 				String name = db.getName();
-				_builder_2.append(name);
+				_builder_2.append("deploys " + name);
 				_builder_2.newLineIfNotEmpty();
 				_builder_2.append("\t\t\t\t");
 				_builder_2.append("// TODO: volumes, networks, ports etc.");
