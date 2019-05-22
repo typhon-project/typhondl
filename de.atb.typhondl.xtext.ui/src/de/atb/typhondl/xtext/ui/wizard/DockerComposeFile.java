@@ -163,16 +163,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			}
 		}
 		IPath path = new Path(modelPath.getPath());
-		String[] segments = path.segments();
-		String modelName = "";
-		for (int i = 0; i < segments.length; i++) {
-			if (segments[i].equals(this.getFolder())) {
-				for (int j = i+1; j < segments.length; j++) {
-					modelName += "/" + path.segment(j);
-				}
-			}
-		}
-		_builder_2.append("import " + modelName);
+		_builder_2.append("import " + new Path(modelPath.getPath()).lastSegment());
 		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
