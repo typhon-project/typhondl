@@ -53,7 +53,6 @@ public class TyphonFieldEditor extends StringFieldEditor {
 
 	@Override
 	protected void doStore() {
-		System.out.println(this.getPreferenceStore().getString(getPreferenceName()) + ", " + getTextControl().getText());
 		if (!this.getPreferenceStore().getString(getPreferenceName()).equals(getTextControl().getText())) {
 			super.doStore();
 		}

@@ -1,7 +1,11 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.naming.spi.DirStateFactory.Result;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -14,11 +18,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Key_Value;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueList;
+import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.editor.DockerComposeDBFile;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 import de.atb.typhondl.xtext.ui.editor.TyphonFieldEditor;
 
@@ -50,16 +57,16 @@ public class DBPage extends EditorPage {
 		switch (property.eClass().getInstanceClassName()) {
 		case "de.atb.typhondl.xtext.typhonDL.Key_Value":
 			Key_Value keyValue = (Key_Value) property;
-			TyphonFieldEditor field = new TyphonFieldEditor(db.getName() + "." + keyValue.getName(), keyValue.getName(),
-					parent);
+			TyphonFieldEditor field = new TyphonFieldEditor(db.getName() + ".Key_Value." + keyValue.getName(),
+					keyValue.getName(), parent);
 			field.setStringValue(keyValue.getValue());
 			field.setPreferenceStore(preferenceStore);
 			fieldEditorList.add(field);
 			break;
 		case "de.atb.typhondl.xtext.typhonDL.Key_ValueArray":
 			Key_ValueArray array = (Key_ValueArray) property;
-			TyphonFieldEditor field1 = new TyphonFieldEditor(db.getName() + "." + array.getName(), array.getName(),
-					parent);
+			TyphonFieldEditor field1 = new TyphonFieldEditor(db.getName() + ".Key_ValueArray." + array.getName(),
+					array.getName(), parent);
 			String string = array.getValue();
 			for (String value : array.getValues()) {
 				string += ", " + value;
@@ -76,17 +83,17 @@ public class DBPage extends EditorPage {
 			gridData.horizontalSpan = 2;
 			group.setLayoutData(gridData);
 
-            GridLayout layout = new GridLayout();
-            layout.numColumns = 2;
-            layout.horizontalSpacing = 8;
+			GridLayout layout = new GridLayout();
+			layout.numColumns = 2;
+			layout.horizontalSpacing = 8;
 			group.setLayout(layout);
 			group.setText(property.getName());
 			for (String environmentVar : list.getEnvironmentVars()) {
 				String key = environmentVar.substring(1, environmentVar.lastIndexOf('='));
 				String value = environmentVar.substring(environmentVar.lastIndexOf('=') + 1,
 						environmentVar.length() - 1);
-				TyphonFieldEditor field2 = new TyphonFieldEditor(db.getName() + "." + property.getName() + "." + key,
-						key, group);
+				TyphonFieldEditor field2 = new TyphonFieldEditor(
+						db.getName() + ".Key_ValueList." + property.getName() + "." + key, key, group);
 				field2.setStringValue(value);
 				field2.setPreferenceStore(preferenceStore);
 				fieldEditorList.add(field2);
@@ -99,15 +106,50 @@ public class DBPage extends EditorPage {
 
 	@Override
 	public boolean performOk() {
+		boolean changed = false;
 		for (TyphonFieldEditor editor : fieldEditorList) {
-			editor.store();
+			String preference = preferenceStore.getString(editor.getPreferenceName());
+			String value = editor.getStringValue();
+			if (!preference.equals(value)) {
+				editor.store();
+				preference = editor.getPreferenceName();
+				int point = preference.indexOf('.') > 0 ? preference.indexOf('.') : 0;
+				String key = preference.substring(point + 1);
+				value = editor.getStringValue();
+				changedb(key, value);
+				changed = true;
+			}
 		}
-		changeResource();
+		if (changed) {
+			changeResource();
+		}
 		return super.performOk();
+	}
+
+	private void changedb(String key, String value) {
+		switch (key) {
+		case "image":
+			db.getImage().setValue(value);
+			break;
+
+		default:
+			break;
+		}
+
 	}
 
 	private void changeResource() {
 		Resource resource = db.eResource();
-		System.out.println("Resource to change: " + resource.getURI().toString());
+		//DeploymentModel model2 = (DeploymentModel) db.eContainer();
+		//resource.setModified(true);
+		//resource.getContents().remove(0);
+		//resource.getContents().add(model2);
+		try {
+			resource.save(Collections.EMPTY_MAP);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//DockerComposeDBFile.createDBcontent(db);
 	}
 }
