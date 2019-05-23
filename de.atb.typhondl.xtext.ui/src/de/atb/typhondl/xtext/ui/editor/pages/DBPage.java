@@ -5,11 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.naming.spi.DirStateFactory.Result;
-
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -18,14 +15,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Key_Value;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueList;
-import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.editor.DockerComposeDBFile;
 import de.atb.typhondl.xtext.ui.editor.EditorPage;
 import de.atb.typhondl.xtext.ui.editor.TyphonFieldEditor;
 
@@ -127,11 +121,22 @@ public class DBPage extends EditorPage {
 	}
 
 	private void changedb(String key, String value) {
-		switch (key) {
+		String type = key.indexOf('.') > 0 ? key.substring(0, key.indexOf('.')) : "";
+		String name = key.indexOf('.') > 0 ? key.substring(key.indexOf('.') + 1) : key;
+		List<Property> properties = db.getParameters();
+		System.out.println(properties.get(0).getName() + "=" + name);
+		Property prop = (Property) properties.stream().filter(property -> property.getName().equals(name));
+		System.out.println(prop.getName() + "=" + name);
+		switch (type) {
 		case "image":
 			db.getImage().setValue(value);
 			break;
-
+		case "Key_Value":
+			break;
+		case "Key_ValueList":
+			break;
+		case "Key_ValueArray":
+			break;
 		default:
 			break;
 		}
@@ -140,16 +145,11 @@ public class DBPage extends EditorPage {
 
 	private void changeResource() {
 		Resource resource = db.eResource();
-		//DeploymentModel model2 = (DeploymentModel) db.eContainer();
-		//resource.setModified(true);
-		//resource.getContents().remove(0);
-		//resource.getContents().add(model2);
 		try {
 			resource.save(Collections.EMPTY_MAP);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//DockerComposeDBFile.createDBcontent(db);
 	}
 }
