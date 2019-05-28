@@ -6,7 +6,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -41,7 +49,7 @@ public class DBPage extends EditorPage {
 		TyphonFieldEditor field3 = new TyphonFieldEditor(db.getName() + ".image", "image", parent);
 		field3.setStringValue(db.getImage().getValue());
 		field3.setPreferenceStore(preferenceStore);
-		field3.store(); //is needed in case model was changed in textual editor
+		field3.store(); // is needed in case model was changed in textual editor
 		fieldEditorList.add(field3);
 		for (Property property : db.getParameters()) {
 			createPropertyFields(property, parent);
@@ -58,7 +66,6 @@ public class DBPage extends EditorPage {
 			field.setStringValue(keyValue.getValue());
 			field.setPreferenceStore(preferenceStore);
 			field.store();
-			System.out.println(field.getPreferenceName() + ":" + preferenceStore.getString(field.getPreferenceName()));
 			fieldEditorList.add(field);
 			break;
 		case "de.atb.typhondl.xtext.typhonDL.Key_ValueArray":
@@ -137,12 +144,14 @@ public class DBPage extends EditorPage {
 			break;
 		case "Key_ValueList":
 			Key_ValueList list = (Key_ValueList) prop;
-			System.out.println("not able to save this at the moment, pls wait for next version");
+			MessageDialog.openError(this.getShell(), "TODO",
+					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
 			// TODO
 			break;
 		case "Key_ValueArray":
 			Key_ValueArray array = (Key_ValueArray) prop;
-			System.out.println("not able to save this at the moment, pls wait for next version");
+			MessageDialog.openError(this.getShell(), "TODO",
+					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
 			// TODO
 			break;
 		default:
@@ -155,6 +164,14 @@ public class DBPage extends EditorPage {
 		Resource resource = db.eResource();
 		try {
 			resource.save(Collections.EMPTY_MAP);
+			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+			for (IProject iproject : root.getProjects()) {
+				try {
+					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
