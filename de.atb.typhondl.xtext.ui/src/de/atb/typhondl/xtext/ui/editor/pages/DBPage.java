@@ -54,8 +54,7 @@ public class DBPage extends EditorPage {
 	}
 
 	private void createPropertyFields(Property property, Composite parent) {
-		switch (property.eClass().getInstanceClassName()) {
-		case "de.atb.typhondl.xtext.typhonDL.Key_Value":
+		if (Key_Value.class.isInstance(property)) {
 			Key_Value keyValue = (Key_Value) property;
 			TyphonFieldEditor field = new TyphonFieldEditor(db.getName() + ".Key_Value." + keyValue.getName(),
 					keyValue.getName(), parent);
@@ -63,8 +62,7 @@ public class DBPage extends EditorPage {
 			field.setPreferenceStore(preferenceStore);
 			field.store();
 			fieldEditorList.add(field);
-			break;
-		case "de.atb.typhondl.xtext.typhonDL.Key_ValueArray":
+		} else if (Key_ValueArray.class.isInstance(property)) {
 			Key_ValueArray array = (Key_ValueArray) property;
 			TyphonFieldEditor field1 = new TyphonFieldEditor(db.getName() + ".Key_ValueArray." + array.getName(),
 					array.getName(), parent);
@@ -76,8 +74,7 @@ public class DBPage extends EditorPage {
 			field1.setPreferenceStore(preferenceStore);
 			field1.store();
 			fieldEditorList.add(field1);
-			break;
-		case "de.atb.typhondl.xtext.typhonDL.Key_ValueList":
+		} else if (Key_ValueList.class.isInstance(property)) {
 			Key_ValueList list = (Key_ValueList) property;
 			Group group = new Group(parent, SWT.NONE);
 
@@ -101,9 +98,6 @@ public class DBPage extends EditorPage {
 				field2.store();
 				fieldEditorList.add(field2);
 			}
-			break;
-		default:
-			break;
 		}
 	}
 
@@ -133,22 +127,26 @@ public class DBPage extends EditorPage {
 		String type = key.indexOf('.') > 0 ? key.substring(0, key.indexOf('.')) : key;
 		String temp = key.indexOf('.') > 0 ? key.substring(key.indexOf('.') + 1) : key;
 		String name = temp.indexOf('.') > 0 ? temp.substring(0, temp.indexOf('.')) : temp;
-		Property prop = db.getParameters().stream().filter(property -> property.getName().equals(name)).findAny().get();
+		Property prop = db.getParameters().stream()
+				.filter(property -> property.getName().equals(name))
+				.findAny().orElse(null);
 		switch (type) {
 		case "Key_Value":
 			((Key_Value) prop).setValue(value);
 			break;
 		case "Key_ValueList":
-			//Key_ValueList list = (Key_ValueList) prop;
+			// Key_ValueList list = (Key_ValueList) prop;
 			MessageDialog.openError(this.getShell(), "TODO",
-					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
-			// TODO
+					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. "
+					+ "Please use the textual editor and wait for the next version.");
+			// TODO implement saving changes in Key_ValueList
 			break;
 		case "Key_ValueArray":
-			//Key_ValueArray array = (Key_ValueArray) prop;
+			// Key_ValueArray array = (Key_ValueArray) prop;
 			MessageDialog.openError(this.getShell(), "TODO",
-					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
-			// TODO
+					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. "
+					+ "Please use the textual editor and wait for the next version.");
+			// TODO implement saving changes in Key_ValueArray
 			break;
 		default:
 			break;
@@ -169,7 +167,8 @@ public class DBPage extends EditorPage {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			MessageDialog.openError(this.getShell(), "Error",
+					"Sorry, something went wrong while saving " + resource.getURI().lastSegment() + ".");
 			e.printStackTrace();
 		}
 	}

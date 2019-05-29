@@ -2,7 +2,6 @@ package de.atb.typhondl.xtext.ui.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
@@ -27,7 +26,6 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class TyphonEditorDialog extends PreferenceDialog {
@@ -70,7 +68,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 		ArrayList<DB> dbs = getDBs(model, resource);
 		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(model)); // TODO
+				.createPreferenceNode(EditorPageFactory.createEditorPage(model));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
@@ -103,8 +101,8 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static Deployment getDeployment(DeploymentModel model) {
-		return (Deployment) model.getElements().stream().filter(element -> Deployment.class.isInstance(element))
-				.findFirst().get();
+		return model.getElements().stream().filter(element -> Deployment.class.isInstance(element)).findFirst()
+				.map(deployment -> (Deployment) deployment).orElse(null);
 	}
 
 	private static ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {

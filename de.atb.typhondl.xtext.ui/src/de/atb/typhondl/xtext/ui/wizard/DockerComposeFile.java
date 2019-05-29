@@ -96,7 +96,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	}
 
 	public DockerComposeFile() {
-		// TODO Auto-generated constructor stub
+		// mandatory
 	}
 
 	private ArrayList<Database> readModel(URI modelPath) {
@@ -226,7 +226,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	}
 
 	private void deleteExistingDatabaseFile(String _builderdb) {
-		// TODO Auto-generated method stub
 		String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/'));
 		String pathWithoutFolder = pathWithFolder.substring(0, pathWithFolder.lastIndexOf('/') + 1);
 		String path = pathWithoutFolder + _builderdb;

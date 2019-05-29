@@ -6,7 +6,7 @@ public class ContainerPage extends EditorPage {
 
 	public ContainerPage(Container container) {
 		super("Container " + container.getName());
-		// TODO Auto-generated constructor stub
+		// TODO implement editor page Container
 	}
 
 }

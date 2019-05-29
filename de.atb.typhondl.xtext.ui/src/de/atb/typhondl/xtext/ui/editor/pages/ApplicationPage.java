@@ -6,7 +6,7 @@ public class ApplicationPage extends EditorPage {
 
 	public ApplicationPage(Application application) {
 		super("Application " + application.getName());
-		// TODO Auto-generated constructor stub
+		// TODO implement editor page Application
 	}
 
 }
