@@ -2,9 +2,8 @@ package de.atb.typhondl.xtext.ui.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -28,7 +27,6 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.MetaModel;
 import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
@@ -105,44 +103,22 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static Deployment getDeployment(DeploymentModel model) {
-		for (Model element : model.getElements()) {
-			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Deployment")) {
-				return (Deployment) element;
-			}
-		}
-		return null;
+		return (Deployment) model.getElements().stream().filter(element -> Deployment.class.isInstance(element))
+				.findFirst().get();
 	}
 
 	private static ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		Stream<MetaModel> metaModels = model.getGuiMetaInformation().stream().filter(
-				metaModel -> metaModel.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import"));
-		metaModels.forEach(metaModel -> {
-			Import importedInfo = (Import) metaModel;
+		List<Import> importedInfos = model.getGuiMetaInformation().stream()
+				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
+				.collect(Collectors.toList());
+		importedInfos.forEach(importedInfo -> {
 			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
 			DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
-
-			List<Model> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element)).collect(Collectors.toList());
-			dbs.add((DB) dbModel.getElements().stream().filter(
-					element -> element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB"))
-					.collect(Collectors.toList()));
+			List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
+					.map(element -> (DB) element).collect(Collectors.toList());
+			dbs.addAll(dbList);
 		});
-		for (MetaModel metaSpec : model.getGuiMetaInformation()) {
-			// TODO not nice
-			if (metaSpec.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
-				Import importedInfo = (Import) metaSpec;
-				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
-				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
-				for (Model element2 : model2.getElements()) {
-					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-						DB db = (DB) element2;
-						dbs.add(db);
-					}
-				}
-			}
-
-		}
 		return dbs;
 	}
 
