@@ -1,22 +1,15 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
 public class MyOverview extends EditorPage {
 
-	private DeploymentModel model;
-
 	public MyOverview(DeploymentModel model) {
 		super("Databases");
-		this.model = model;
 	}
 
 	/**

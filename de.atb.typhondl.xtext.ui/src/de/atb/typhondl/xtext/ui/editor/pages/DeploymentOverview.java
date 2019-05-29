@@ -1,7 +1,6 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
 import de.atb.typhondl.xtext.typhonDL.Deployment;
-import de.atb.typhondl.xtext.ui.editor.EditorPage;
 
 public class DeploymentOverview extends EditorPage {
 

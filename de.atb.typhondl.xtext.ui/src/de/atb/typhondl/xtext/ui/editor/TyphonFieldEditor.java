@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.editor;
 
-import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 

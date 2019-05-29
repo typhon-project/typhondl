@@ -1,6 +1,9 @@
 package de.atb.typhondl.xtext.ui.editor;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
@@ -11,8 +14,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.xtext.resource.XtextResource;
@@ -33,11 +34,16 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class TyphonEditorDialog extends PreferenceDialog {
 
+	// path to model resource
 	private IPath path;
 
 	public TyphonEditorDialog(Shell parentShell, IPath path) {
 		this(parentShell, createManager(parentShell, path));
 		this.path = path;
+	}
+
+	public TyphonEditorDialog(Shell parentShell, PreferenceManager manager) {
+		super(parentShell, manager);
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
@@ -46,19 +52,18 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
 		URI modelURI = URI.createFileURI(path.toString());
-		URI dbURI = URI.createFileURI(path.removeLastSegments(1) + "/orderdb.tdl");
 
-		Resource dbresource = resourceSet.getResource(dbURI, true);
 		Resource resource = resourceSet.getResource(modelURI, true);
 
 		EcoreUtil.resolveAll(resource); // doesn't change anything
+		/*
+		 * DeploymentModel model only includes the model parts written in the
+		 * File(modelUri), not any parts that are saved in different files like a
+		 * database.tdl
+		 */
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 		PreferenceManager preferenceManager = createPages(model, resource);
 		return preferenceManager;
-	}
-
-	public TyphonEditorDialog(Shell parentShell, PreferenceManager manager) {
-		super(parentShell, manager);
 	}
 
 	private static PreferenceManager createPages(DeploymentModel model, Resource resource) {
@@ -111,6 +116,18 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 	private static ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
+		Stream<MetaModel> metaModels = model.getGuiMetaInformation().stream().filter(
+				metaModel -> metaModel.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import"));
+		metaModels.forEach(metaModel -> {
+			Import importedInfo = (Import) metaModel;
+			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
+			DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
+
+			List<Model> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element)).collect(Collectors.toList());
+			dbs.add((DB) dbModel.getElements().stream().filter(
+					element -> element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB"))
+					.collect(Collectors.toList()));
+		});
 		for (MetaModel metaSpec : model.getGuiMetaInformation()) {
 			// TODO not nice
 			if (metaSpec.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {

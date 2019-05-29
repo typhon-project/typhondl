@@ -13,6 +13,7 @@ import de.atb.typhondl.xtext.ui.editor.pages.ClusterPage;
 import de.atb.typhondl.xtext.ui.editor.pages.ContainerPage;
 import de.atb.typhondl.xtext.ui.editor.pages.DBPage;
 import de.atb.typhondl.xtext.ui.editor.pages.DeploymentOverview;
+import de.atb.typhondl.xtext.ui.editor.pages.EditorPage;
 import de.atb.typhondl.xtext.ui.editor.pages.MyOverview;
 
 public class EditorPageFactory {

@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -29,7 +26,6 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueList;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.editor.EditorPage;
 import de.atb.typhondl.xtext.ui.editor.TyphonFieldEditor;
 
 public class DBPage extends EditorPage {
@@ -143,13 +139,13 @@ public class DBPage extends EditorPage {
 			((Key_Value) prop).setValue(value);
 			break;
 		case "Key_ValueList":
-			Key_ValueList list = (Key_ValueList) prop;
+			//Key_ValueList list = (Key_ValueList) prop;
 			MessageDialog.openError(this.getShell(), "TODO",
 					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
 			// TODO
 			break;
 		case "Key_ValueArray":
-			Key_ValueArray array = (Key_ValueArray) prop;
+			//Key_ValueArray array = (Key_ValueArray) prop;
 			MessageDialog.openError(this.getShell(), "TODO",
 					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. Please use the textual editor and wait for the next version.");
 			// TODO
