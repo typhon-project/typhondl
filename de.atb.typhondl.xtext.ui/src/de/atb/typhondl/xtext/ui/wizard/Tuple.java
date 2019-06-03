@@ -8,13 +8,13 @@ import org.eclipse.xtext.ui.wizard.template.StringTemplateVariable;
 public class Tuple {
 
 	public StringSelectionTemplateVariable dbms;
-	public StringTemplateVariable image;
+	public StringTemplateVariable databaseFile;
 	public BooleanTemplateVariable useTemplateImage;
 
-	public Tuple(StringSelectionTemplateVariable dbms, StringTemplateVariable image,
+	public Tuple(StringSelectionTemplateVariable dbms, StringTemplateVariable databaseFile,
 			BooleanTemplateVariable useTemplateImage) {
 		this.dbms = dbms;
-		this.image = image;
+		this.databaseFile = databaseFile;
 		this.useTemplateImage = useTemplateImage;
 	}
 

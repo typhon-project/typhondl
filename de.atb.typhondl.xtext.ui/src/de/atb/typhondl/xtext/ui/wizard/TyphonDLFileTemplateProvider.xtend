@@ -31,4 +31,9 @@ final class HelloWorldFile {
 			Hello «helloName»!
 		''')
 	}
+	
+	override validate() {
+		super.validate()
+	}
+	
 }

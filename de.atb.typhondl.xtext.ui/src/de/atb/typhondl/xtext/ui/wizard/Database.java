@@ -5,7 +5,7 @@ public class Database {
 	private String name;
 	private DBType type;
 	private String dbms;
-	private String pathToImage;
+	private String pathToDBModelFile;
 
 	public Database(String name, DBType type) {
 		this.name = name;
@@ -28,11 +28,11 @@ public class Database {
 		return type;
 	}
 	
-	public String getPathToImage() {
-		return pathToImage;
+	public String getPathToDBModelFile() {
+		return pathToDBModelFile;
 	}
 
-	public void setPathToImage(String pathToImage) {
-		this.pathToImage = pathToImage;
+	public void setaPathToDBModelFile(String pathToDBModelFile) {
+		this.pathToDBModelFile = pathToDBModelFile;
 	}
 }

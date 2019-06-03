@@ -19,9 +19,14 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.core.ModelUpdater;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.ui.wizard.template.AbstractFileTemplate;
 import org.eclipse.xtext.ui.wizard.template.BooleanTemplateVariable;
@@ -37,9 +42,9 @@ import org.xml.sax.SAXException;
 public final class DockerComposeFile extends AbstractFileTemplate {
 
 	private ArrayList<String> dbTypes;
-	private final GroupTemplateVariable dbmsGroup = this.group("Choose DBMS");
+	// private final GroupTemplateVariable dbmsGroup = this.group("Choose DBMS");
 
-	private final GroupTemplateVariable imageGroup = this.group("Select Image configuration");
+	private final GroupTemplateVariable databaseGroup = this.group("Select Database configuration");
 
 	private final GroupTemplateVariable containerGroup = this.group("Containers will be created for:");
 	private final BooleanTemplateVariable isQL = this.check("QL", false, containerGroup);
@@ -61,16 +66,15 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	private void createParameter() {
 
 		for (Database database : data.keySet()) {
-			StringSelectionTemplateVariable combo = this.combo("DBMS for " + database.getName() + " : ",
-					database.getType().getPossibleDBMSs(),
+			GroupTemplateVariable subGroup = this.group(database.getName(), databaseGroup);
+			BooleanTemplateVariable bool = this.check("Use existing file", true,
+					"If you already have a " + database.getName() + ".tdl template, enter relative path here",
+					subGroup);
+			StringTemplateVariable text = this.text("Database file: ", database.getName() + ".tdl",
+					"Give the path to your database configuration file", subGroup);
+			StringSelectionTemplateVariable combo = this.combo("Chose DBMS: ", database.getType().getPossibleDBMSs(),
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name(),
-					dbmsGroup);
-			BooleanTemplateVariable bool = this.check("Use template for " + database.getName(), false,
-					"If you already have a database.tdl template for " + database.getName()
-							+ " enter relative path here",
-					imageGroup);
-			StringTemplateVariable text = this.text("Image for " + database.getName() + " : ",
-					database.getName() + ".tdl", "Give the path to your image configuration file", imageGroup);
+					subGroup);
 			data.put(database, new Tuple(combo, text, bool));
 
 		}
@@ -80,16 +84,16 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	protected void updateVariables() {
 		for (Database database : data.keySet()) {
 			Tuple fields = data.get(database);
-			// read chosen dbms and add info to database-object
-			String dbms = fields.dbms.getValue().toLowerCase();
-			database.setDbms(dbms);
-			// enable textfields to enter path to database.tdl
-			fields.image.setEnabled(fields.useTemplateImage.getValue());
-			if (fields.useTemplateImage.getValue()) {
-				String image = fields.image.getValue();
-				database.setPathToImage(image);
+			fields.databaseFile.setEnabled(fields.useTemplateImage.getValue());
+			fields.dbms.setEnabled(!fields.useTemplateImage.getValue());
+			if (fields.dbms.isEnabled()) {
+				database.setDbms(fields.dbms.getValue().toLowerCase());
+			}
+			if (fields.databaseFile.isEnabled()) {
+				String image = fields.databaseFile.getValue();
+				database.setaPathToDBModelFile(image);
 			} else {
-				database.setPathToImage("");
+				database.setaPathToDBModelFile("");
 			}
 		}
 		this.dbTypes = getTypes();
@@ -106,6 +110,34 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	protected IStatus validate() {
+		Status status = null;
+		for (Database database : data.keySet()) {
+			Tuple fields = data.get(database);
+			if (fields.databaseFile.isEnabled()) {
+				String pathToDatabaseFile = fields.databaseFile.getValue();
+				if (!pathToDatabaseFile.endsWith(".tdl")) {
+					status = new Status(IStatus.ERROR, "Wizard",
+							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
+				}
+			} else {
+				String pathToDatabaseFile = database.getName() + ".tdl";
+				String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/') + 1);
+				String path = pathWithFolder + pathToDatabaseFile;
+				File file = new File(URI.create(path));
+				if (file.exists()) {
+					status = new Status(IStatus.WARNING, "Wizard", "Database file " + pathToDatabaseFile
+							+ " already exists and will be overwritten if you continue");
+					// IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+					MessageDialog.openWarning(databaseGroup.getWidget().getShell(), "Wizard", "Database file "
+							+ pathToDatabaseFile + " already exists and will be overwritten if you continue");
+				}
+			}
+		}
+		return status;
 	}
 
 	// dbtype is the dbms and not {relational, document etc}
@@ -133,7 +165,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		StringConcatenation _builder_2 = new StringConcatenation();
 		{
 			for (final Database db : this.data.keySet()) {
-				if (db.getPathToImage().isEmpty()) {
+				if (db.getPathToDBModelFile().isEmpty()) {
 					String dbms = db.getDbms();
 					String name = db.getName();
 					StringConcatenation _builderdb = new StringConcatenation();
@@ -141,7 +173,12 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 					_builderdb.append("/");
 					_builderdb.append(name);
 					_builderdb.append(".tdl");
+					db.setaPathToDBModelFile(name + ".tdl");
 					StringConcatenation _builder_1 = new StringConcatenation();
+					_builder_1.append("dbtype ");
+					_builder_1.append(dbms);
+					_builder_1.newLine();
+					_builder_1.newLine();
 					_builder_1.append("database ");
 					_builder_1.append(name);
 					_builder_1.append(" : ");
@@ -168,7 +205,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		{
 			for (final Database db : this.data.keySet()) {
 				_builder_2.append("import ");
-				_builder_2.append(db.getPathToImage());
+				_builder_2.append(db.getPathToDBModelFile());
 				_builder_2.newLine();
 			}
 		}
@@ -177,13 +214,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		_builder_2.newLine();
 		_builder_2.append("containertype Docker");
 		_builder_2.newLine();
-		{
-			for (final String type : this.dbTypes) {
-				_builder_2.append("dbtype ");
-				_builder_2.append(type);
-				_builder_2.newLineIfNotEmpty();
-			}
-		}
 		_builder_2.newLine();
 		_builder_2.append("platform platformname : default { //TODO");
 		_builder_2.newLine();
@@ -230,9 +260,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		String pathWithoutFolder = pathWithFolder.substring(0, pathWithFolder.lastIndexOf('/') + 1);
 		String path = pathWithoutFolder + _builderdb;
 		File file = new File(URI.create(path));
-		System.out.println(file.getAbsolutePath().toString() + ", exists:" + file.exists());
 		if (file.exists()) {
-			System.out.println("Try to delete file");
 			file.delete();
 			for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
 				try {
