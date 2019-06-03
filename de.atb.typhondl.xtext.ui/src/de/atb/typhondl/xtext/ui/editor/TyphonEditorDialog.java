@@ -1,7 +1,8 @@
 package de.atb.typhondl.xtext.ui.editor;
 
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -11,6 +12,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -24,14 +26,21 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.MetaModel;
-import de.atb.typhondl.xtext.typhonDL.Model;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
 
 public class TyphonEditorDialog extends PreferenceDialog {
-	
+
+	// path to model resource
+	private IPath path;
+
 	public TyphonEditorDialog(Shell parentShell, IPath path) {
 		this(parentShell, createManager(parentShell, path));
+		this.path = path;
+	}
+
+	public TyphonEditorDialog(Shell parentShell, PreferenceManager manager) {
+		super(parentShell, manager);
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
@@ -40,21 +49,19 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
 		URI modelURI = URI.createFileURI(path.toString());
-		URI dbURI = URI.createFileURI(path.removeLastSegments(1) + "/orderdb.tdl");
 
-		Resource dbresource = resourceSet.getResource(dbURI, true);
 		Resource resource = resourceSet.getResource(modelURI, true);
-		
+
 		EcoreUtil.resolveAll(resource); // doesn't change anything
+		/*
+		 * DeploymentModel model only includes the model parts written in the
+		 * File(modelUri), not any parts that are saved in different files like a
+		 * database.tdl
+		 */
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 		PreferenceManager preferenceManager = createPages(model, resource);
 		return preferenceManager;
 	}
-
-	public TyphonEditorDialog(Shell parentShell, PreferenceManager manager) {
-		super(parentShell, manager);
-	}
-
 
 	private static PreferenceManager createPages(DeploymentModel model, Resource resource) {
 
@@ -62,7 +69,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 		ArrayList<DB> dbs = getDBs(model, resource);
 		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(model)); // TODO
+				.createPreferenceNode(new DBOverview(dbs));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
@@ -95,32 +102,24 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static Deployment getDeployment(DeploymentModel model) {
-		for (Model element : model.getElements()) {
-			// TODO not nice
-			if (element.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Deployment")) {
-				return (Deployment) element;
-			}
-		}
-		return null;
+		return model.getElements().stream().filter(element -> Deployment.class.isInstance(element)).findFirst()
+				.map(deployment -> (Deployment) deployment).orElse(null);
 	}
 
 	private static ArrayList<DB> getDBs(DeploymentModel model, Resource resource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		for (MetaModel metaSpec : model.getGuiMetaInformation()) {
-			// TODO not nice
-			if (metaSpec.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.Import")) {
-				Import importedInfo = (Import) metaSpec;
+		List<Import> importedInfos = model.getGuiMetaInformation().stream()
+				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
+				.collect(Collectors.toList());
+		importedInfos.forEach(importedInfo -> {
+			if (importedInfo.getRelativePath().endsWith(".tdl")) { // TODO as filter?
 				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
-				DeploymentModel model2 = (DeploymentModel) dbResource.getContents().get(0);
-				for (Model element2 : model2.getElements()) {
-					if (element2.eClass().getInstanceClassName().equals("de.atb.typhondl.xtext.typhonDL.DB")) {
-						DB db = (DB) element2;
-						dbs.add(db);
-					}
-				}
+				DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
+				List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
+						.map(element -> (DB) element).collect(Collectors.toList());
+				dbs.addAll(dbList);
 			}
-
-		}
+		});
 		return dbs;
 	}
 
@@ -158,5 +157,15 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		}
 		final Resource resource = _resource;
 		return resource;
+	}
+
+	public void start() {
+		this.setPreferenceStore(Activator.getDefault().getPreferenceStore());
+		this.create();
+		final Image image = Activator.getDefault().getImageRegistry().get(Activator.IMAGE_PATH);
+		this.getShell().setImage(image);
+		String modelName = path.lastSegment().substring(0, path.lastSegment().lastIndexOf('.'));
+		this.getShell().setText("Change TyphonDL Model \"" + modelName + "\"");
+		this.open();
 	}
 }

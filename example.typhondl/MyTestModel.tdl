@@ -4,8 +4,6 @@ import userdb.tdl
 
 platformtype default //TODO (e.g. AWS)
 containertype Docker
-dbtype mariadb
-dbtype mongo
 
 platform platformname : default { //TODO
 	cluster MyCluster { //TODO

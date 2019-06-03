@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: de.atb.typhondl.acceleo
 Bundle-ManifestVersion: 2
 Bundle-Name: Acceleo Acceleo Module Runtime Plug-in
 Bundle-SymbolicName: de.atb.typhondl.acceleo

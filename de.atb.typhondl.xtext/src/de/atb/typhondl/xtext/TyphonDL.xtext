@@ -101,7 +101,7 @@ Key_Value :
 ;
 
 Key_ValueList:
-	name=ID '{' (environmentVars+=QSTRING)+ '}'
+	name=ID '{' (environmentVars+=Value)+ '}'
 ;
 
 Key_ValueArray : 

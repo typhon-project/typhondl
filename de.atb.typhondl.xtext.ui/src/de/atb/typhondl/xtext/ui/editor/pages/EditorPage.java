@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.editor;
+package de.atb.typhondl.xtext.ui.editor.pages;
 
 import java.awt.Label;
 

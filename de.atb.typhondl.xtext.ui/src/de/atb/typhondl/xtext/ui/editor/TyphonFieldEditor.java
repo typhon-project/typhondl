@@ -49,9 +49,11 @@ public class TyphonFieldEditor extends StringFieldEditor {
 	public TyphonFieldEditor(String name, String labelText, Composite parent) {
 		this(name, labelText, UNLIMITED, parent);
 	}
-	
+
 	@Override
 	protected void doStore() {
-		super.doStore();
+		if (!this.getPreferenceStore().getString(getPreferenceName()).equals(getTextControl().getText())) {
+			super.doStore();
+		}
 	}
 }
