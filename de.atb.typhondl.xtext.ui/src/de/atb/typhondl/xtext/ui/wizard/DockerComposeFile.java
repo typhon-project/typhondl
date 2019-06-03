@@ -42,7 +42,6 @@ import org.xml.sax.SAXException;
 public final class DockerComposeFile extends AbstractFileTemplate {
 
 	private ArrayList<String> dbTypes;
-	// private final GroupTemplateVariable dbmsGroup = this.group("Choose DBMS");
 
 	private final GroupTemplateVariable databaseGroup = this.group("Select Database configuration");
 
@@ -131,7 +130,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 				if (file.exists()) {
 					status = new Status(IStatus.WARNING, "Wizard", "Database file " + pathToDatabaseFile
 							+ " already exists and will be overwritten if you continue");
-					// IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 					MessageDialog.openWarning(databaseGroup.getWidget().getShell(), "Wizard", "Database file "
 							+ pathToDatabaseFile + " already exists and will be overwritten if you continue");
 				}
