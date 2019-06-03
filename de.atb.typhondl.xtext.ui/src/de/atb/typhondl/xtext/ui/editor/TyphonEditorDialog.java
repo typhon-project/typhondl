@@ -27,6 +27,7 @@ import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
 
 public class TyphonEditorDialog extends PreferenceDialog {
 
@@ -68,7 +69,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 
 		ArrayList<DB> dbs = getDBs(model, resource);
 		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(EditorPageFactory.createEditorPage(model));
+				.createPreferenceNode(new DBOverview(dbs));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
@@ -111,11 +112,13 @@ public class TyphonEditorDialog extends PreferenceDialog {
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
 				.collect(Collectors.toList());
 		importedInfos.forEach(importedInfo -> {
-			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
-			DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
-			List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
-					.map(element -> (DB) element).collect(Collectors.toList());
-			dbs.addAll(dbList);
+			if (importedInfo.getRelativePath().endsWith(".tdl")) { // TODO as filter?
+				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
+				DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
+				List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
+						.map(element -> (DB) element).collect(Collectors.toList());
+				dbs.addAll(dbList);
+			}
 		});
 		return dbs;
 	}

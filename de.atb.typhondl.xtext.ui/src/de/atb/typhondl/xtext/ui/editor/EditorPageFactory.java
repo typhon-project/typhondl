@@ -7,14 +7,12 @@ import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.editor.pages.ApplicationPage;
 import de.atb.typhondl.xtext.ui.editor.pages.ClusterPage;
 import de.atb.typhondl.xtext.ui.editor.pages.ContainerPage;
 import de.atb.typhondl.xtext.ui.editor.pages.DBPage;
 import de.atb.typhondl.xtext.ui.editor.pages.DeploymentOverview;
 import de.atb.typhondl.xtext.ui.editor.pages.EditorPage;
-import de.atb.typhondl.xtext.ui.editor.pages.MyOverview;
 
 public class EditorPageFactory {
     public static EditorPage createEditorPage(EObject modelObject) {
@@ -26,8 +24,6 @@ public class EditorPageFactory {
 			return new DBPage((DB) modelObject);
 		case "Deployment":
 			return new DeploymentOverview((Deployment) modelObject);
-		case "DeploymentModel": 
-			return new MyOverview((DeploymentModel) modelObject);
 		case "Container":
 			return new ContainerPage((Container) modelObject);
 		case "Application":

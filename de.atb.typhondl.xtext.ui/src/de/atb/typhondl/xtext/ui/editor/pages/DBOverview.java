@@ -1,15 +1,21 @@
 package de.atb.typhondl.xtext.ui.editor.pages;
 
-import org.eclipse.jface.preference.IntegerFieldEditor;
+import java.util.ArrayList;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.DB;
 
-public class MyOverview extends EditorPage {
+public class DBOverview extends EditorPage {
 
-	public MyOverview(DeploymentModel model) {
+	private ArrayList<DB> dbs;
+
+	public DBOverview(ArrayList<DB> dbs) {
 		super("Databases");
+		super.noDefaultAndApplyButton();
+		this.dbs = dbs;
 		// TODO implement editor page Overview
 	}
 
@@ -72,8 +78,11 @@ public class MyOverview extends EditorPage {
 	@Override
 	protected Control createContents(Composite parent) {
 
-		IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", "deployment", parent);
-		indentSpaces.setValidRange(0, 10);
+		for (DB db : dbs) {
+			new Label(parent, NONE).setText(db.getName() + ": " + db.getType().getName());
+		}
+		//IntegerFieldEditor indentSpaces = new IntegerFieldEditor("testField", "deployment", parent);
+		//indentSpaces.setValidRange(0, 10);
 		return parent;
 	}
 
