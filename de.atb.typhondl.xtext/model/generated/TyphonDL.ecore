@@ -53,8 +53,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ContainerType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="deploys" upperBound="-1"
         eType="#//Reference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="depends_on" upperBound="-1"
+        eType="#//Dependency" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Dependency">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Container"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Software"/>
@@ -66,8 +71,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Key_ValueList" eSuperTypes="#//Property">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentVars" unique="false"
-        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="key_Values" upperBound="-1"
+        eType="#//Key_Value" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Key_ValueArray" eSuperTypes="#//Property">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

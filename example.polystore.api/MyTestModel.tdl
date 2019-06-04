@@ -1,0 +1,35 @@
+import mongostore.tdl
+import mariadbtest.tdl
+
+platformtype default //TODO (e.g. AWS)
+containertype Docker
+
+platform platformname : default { //TODO
+	cluster MyCluster { //TODO
+		application MyPolystoreApplication {
+			container polystore : Docker {
+				depends_on mongostore
+				restart = always;
+				build  {
+					dockerfile = Dockerfile;
+					context = .;
+				}
+				container_name = typhonml.polystore.service;
+    			ports = 8080:8080; 		
+    			volumes = ./models:/models;	
+    		}	
+			container mongostore : Docker {
+				deploys mongostore
+				hostname = polystore.api.db;
+				container_name = polystore.mongo;
+				ports = 27017:27017;
+			}
+			container mariadbtest : Docker {
+				deploys mariadbtest
+				hostname = test.mariadb;
+    			container_name = test.mariadb;
+   				ports = 3306:3306;
+			}
+		}
+	}
+}

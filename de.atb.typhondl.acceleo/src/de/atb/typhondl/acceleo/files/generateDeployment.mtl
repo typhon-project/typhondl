@@ -16,7 +16,11 @@ services:
   [aContainer.name/]:
 [for (aReference : Reference | aContainer.deploys)]
     [aReference.reference.printFeature()/]
-[/for] 
+[/for]
+[for (aDependency : Dependency | aContainer.depends_on)]
+    depends_on: 
+      - [aDependency.reference.name/]
+[/for]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
@@ -36,8 +40,8 @@ services:
 
 [template public printProperties(aProperty : Key_ValueList) ]
 [aProperty.name/]:
-[for (aVar : EString | aProperty.environmentVars)]
-  - [aVar.replaceAll('"', '')/]
+[for (aVar : Key_Value | aProperty.key_Values)]
+  [aVar.printProperties()/]
 [/for][/template]
 
 [template public printProperties(aProperty : Key_ValueArray) ]

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="mongostore.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="mariadbtest.tdl"/>
+  <elements xsi:type="typhonDL:PlatformType" name="default"/>
+  <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
+  <elements xsi:type="typhonDL:Deployment" name="platformname" type="//@elements.0">
+    <clusters name="MyCluster">
+      <applications name="MyPolystoreApplication">
+        <containers name="polystore" type="//@elements.1">
+          <depends_on reference="//@elements.2/@clusters.0/@applications.0/@containers.1"/>
+          <properties xsi:type="typhonDL:Key_Value" name="restart" value="always"/>
+          <properties xsi:type="typhonDL:Key_ValueList" name="build">
+            <key_Values name="dockerfile" value="Dockerfile"/>
+            <key_Values name="context" value="."/>
+          </properties>
+          <properties xsi:type="typhonDL:Key_Value" name="container_name" value="typhonml.polystore.service"/>
+          <properties xsi:type="typhonDL:Key_Value" name="ports" value="8080:8080"/>
+          <properties xsi:type="typhonDL:Key_Value" name="volumes" value="./models:/models"/>
+        </containers>
+        <containers name="mongostore" type="//@elements.1">
+          <deploys>
+            <reference href="platform:/resource/example.polystore.api/mongostore.tdl#//@elements.1"/>
+          </deploys>
+          <properties xsi:type="typhonDL:Key_Value" name="hostname" value="polystore.api.db"/>
+          <properties xsi:type="typhonDL:Key_Value" name="container_name" value="polystore.mongo"/>
+          <properties xsi:type="typhonDL:Key_Value" name="ports" value="27017:27017"/>
+        </containers>
+        <containers name="mariadbtest" type="//@elements.1">
+          <deploys>
+            <reference href="platform:/resource/example.polystore.api/mariadbtest.tdl#//@elements.1"/>
+          </deploys>
+          <properties xsi:type="typhonDL:Key_Value" name="hostname" value="test.mariadb"/>
+          <properties xsi:type="typhonDL:Key_Value" name="container_name" value="test.mariadb"/>
+          <properties xsi:type="typhonDL:Key_Value" name="ports" value="3306:3306"/>
+        </containers>
+      </applications>
+    </clusters>
+  </elements>
+</typhonDL:DeploymentModel>

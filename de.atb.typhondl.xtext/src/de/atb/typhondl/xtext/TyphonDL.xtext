@@ -84,8 +84,13 @@ Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
 		(deploys+=Reference)*
+		(depends_on+=Dependency)*
 		(properties+=Property)*
 	'}'
+;
+
+Dependency:
+	'depends_on' reference=[Container]
 ;
 
 Reference:
@@ -93,15 +98,15 @@ Reference:
 ;
 
 Property :
-	Key_Value | Key_ValueArray | Key_ValueList
+	Key_Value | Key_ValueArray | Key_KeyValueList
 ;
 
 Key_Value : 
-	name=ID '=' value=Value';'
+	name=ID '=' value=Value ';'
 ;
 
-Key_ValueList:
-	name=ID '{' (environmentVars+=Value)+ '}'
+Key_KeyValueList:
+	name=ID '{' (key_Values+=Key_Value)+ '}'
 ;
 
 Key_ValueArray : 

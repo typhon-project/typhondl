@@ -87,10 +87,9 @@ public class DBPage extends EditorPage {
 			layout.horizontalSpacing = 8;
 			group.setLayout(layout);
 			group.setText(property.getName());
-			for (String environmentVar : list.getEnvironmentVars()) {
-				String key = environmentVar.substring(1, environmentVar.lastIndexOf('='));
-				String value = environmentVar.substring(environmentVar.lastIndexOf('=') + 1,
-						environmentVar.length() - 1);
+			for (Key_Value key_value : list.getKey_Values()) {
+				String key = key_value.getName();
+				String value = key_value.getValue();
 				TyphonFieldEditor field2 = new TyphonFieldEditor(
 						db.getName() + ".Key_ValueList." + property.getName() + "." + key, key, group);
 				field2.setStringValue(value);
