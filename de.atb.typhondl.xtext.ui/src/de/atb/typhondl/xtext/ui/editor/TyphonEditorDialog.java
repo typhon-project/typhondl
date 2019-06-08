@@ -68,8 +68,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		PreferenceManager preferenceManager = new PreferenceManager();
 
 		ArrayList<DB> dbs = getDBs(model, resource);
-		PreferenceNode databaseNode = PreferenceNodeFactory
-				.createPreferenceNode(new DBOverview(dbs));
+		PreferenceNode databaseNode = PreferenceNodeFactory.createPreferenceNode(new DBOverview(dbs));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
 			databaseNode.add(PreferenceNodeFactory.createPreferenceNode(EditorPageFactory.createEditorPage(db)));
@@ -111,14 +110,12 @@ public class TyphonEditorDialog extends PreferenceDialog {
 		List<Import> importedInfos = model.getGuiMetaInformation().stream()
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
 				.collect(Collectors.toList());
-		importedInfos.forEach(importedInfo -> {
-			if (importedInfo.getRelativePath().endsWith(".tdl")) { // TODO as filter?
-				Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
-				DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
-				List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
-						.map(element -> (DB) element).collect(Collectors.toList());
-				dbs.addAll(dbList);
-			}
+		importedInfos.stream().filter(info -> info.getRelativePath().endsWith(".tdl")).forEach(importedInfo -> {
+			Resource dbResource = openImport(resource, importedInfo.getRelativePath()); // otherwise DB is null
+			DeploymentModel dbModel = (DeploymentModel) dbResource.getContents().get(0);
+			List<DB> dbList = dbModel.getElements().stream().filter(element -> DB.class.isInstance(element))
+					.map(element -> (DB) element).collect(Collectors.toList());
+			dbs.addAll(dbList);
 		});
 		return dbs;
 	}

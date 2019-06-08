@@ -10,20 +10,14 @@ platform platformname : default { //TODO
 		application MyApplication {
 			container container1 : Docker {
 				deploys productdb
-				ports = 8080:8080;
 				// TODO: volumes, networks, ports etc.
 			}
 			container container2 : Docker {
 				deploys orderdb
-				ports = 8080:2939;
-				testProp1 = value1;
-				testProp2 = value2;
-				testProp3 = value3;
 				// TODO: volumes, networks, ports etc.
 			}
 			container container3 : Docker {
 				deploys userdb
-				ports = 8080:0980398;
 				// TODO: volumes, networks, ports etc.
 			}
 		}
