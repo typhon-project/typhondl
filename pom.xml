@@ -8,6 +8,7 @@
 
 	<modules>
 		<module>de.atb.typhondl.xtext</module>
+		<module>de.atb.typhondl.acceleo</module>
 		<module>de.atb.typhondl.xtext.ide</module>
 		<module>de.atb.typhondl.xtext.ui</module>
 	</modules>
