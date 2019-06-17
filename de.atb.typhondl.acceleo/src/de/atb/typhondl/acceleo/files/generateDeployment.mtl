@@ -38,7 +38,7 @@ services:
 [aProperty.name/]: [aProperty.value/]
 [/template]
 
-[template public printProperties(aProperty : Key_ValueList) ]
+[template public printProperties(aProperty : Key_KeyValueList) ]
 [aProperty.name/]:
 [for (aVar : Key_Value | aProperty.key_Values)]
   [aVar.printProperties()/]
