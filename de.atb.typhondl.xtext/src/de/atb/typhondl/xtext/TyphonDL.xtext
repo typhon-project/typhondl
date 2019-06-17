@@ -28,7 +28,8 @@ Software:
 
 NonDB:
 	'software' name=ID '{'
-	reference=QSTRING
+	(image=IMAGE)
+	(parameters+=Property)*
 	'}'
 ;
    

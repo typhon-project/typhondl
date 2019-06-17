@@ -122,6 +122,13 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 					status = new Status(IStatus.ERROR, "Wizard",
 							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
 				}
+				String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/') + 1);
+				String path = pathWithFolder + pathToDatabaseFile;
+				File file = new File(URI.create(path));
+				if (!file.exists()) {
+					status = new Status(IStatus.ERROR, "Wizard",
+							"Database file " + pathToDatabaseFile + " doesn't exists.");
+				}
 			} else {
 				String pathToDatabaseFile = database.getName() + ".tdl";
 				String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/') + 1);
@@ -153,6 +160,22 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 
 	@Override
 	public void generateFiles(final IFileGenerator generator) {
+
+		/**
+		 * PolystoreUI containers provided by CLMS
+		 */
+		String polystore_api_name = "polystore_api";
+		StringConcatenation _builder_3 = new StringConcatenation();
+		StringConcatenation _builder_4 = new StringConcatenation();
+		_builder_3.append("container polystore : Docker {\r\n" + "\t\t\t\tdeploys polystore_api\r\n"
+				+ "\t\t\t\tdepends_on //TODO \r\n" + "\t\t\t\tcontainer_name = typhonml.polystore.service;\r\n"
+				+ "\t\t\t\tports = 8080:8080;\r\n" + "\t\t\t\tvolumes = ./models:/models;\r\n" + "\t\t\t}\r\n"
+				+ "\t\t\tcontainer polystoreui : Docker {\r\n" + "\t\t\t\tbuild {\r\n"
+				+ "\t\t\t\t\tcontext = Typhon Service UI;\r\n" + "\t\t\t\t}\r\n"
+				+ "\t\t\t\tcontainer_name = polystore.ui;\r\n" + "\t\t\t\tports = 4200:4200;\r\n" + "\t\t\t}");
+		_builder_4.append("software polystore_api {\r\n" + "\timage = clms/typhon-polystore-api:latest;\r\n"
+				+ "\tbuild {\r\n" + "\t\tdockerfile = Dockerfile;\r\n" + "\t\tcontext = .;\r\n" + "\t}\r\n"
+				+ "\trestart = always;\r\n" + "\thostname = polystore.api;\r\n" + "}");
 		StringConcatenation _builder = new StringConcatenation();
 		String _folder = this.getFolder();
 		_builder.append(_folder);
@@ -200,6 +223,9 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		IPath path = new Path(modelPath.getPath());
 		_builder_2.append("import " + new Path(modelPath.getPath()).lastSegment());
 		_builder_2.newLine();
+		// Polystore Api by CLMS (see D7.2)
+		_builder_2.append("import " + polystore_api_name + ".tdl");
+		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
 				_builder_2.append("import ");
@@ -220,6 +246,9 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		_builder_2.newLine();
 		_builder_2.append("\t\t");
 		_builder_2.append("application name { //TODO");
+		_builder_2.newLine();
+		_builder_2.append("\t\t\t");
+		_builder_2.append(_builder_3);
 		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
@@ -251,6 +280,10 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		_builder_2.append("}");
 		_builder_2.newLine();
 		generator.generate(_builder, _builder_2);
+
+		// Polystore API by CLMS
+		deleteExistingDatabaseFile(_folder + "/" + polystore_api_name + ".tdl");
+		generator.generate(_folder + "/" + polystore_api_name + ".tdl", _builder_4);
 	}
 
 	private void deleteExistingDatabaseFile(String _builderdb) {

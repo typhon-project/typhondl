@@ -57,7 +57,10 @@ services:
 [/template]
 
 [template public printFeature(software : NonDB) ]
-	test3
+image: [software.image.value/]
+[for (aProperty : Property | software.parameters)]
+[aProperty.printProperties()/]
+[/for]
 [/template]
 
 [template public printFeature(db : DB) ]
