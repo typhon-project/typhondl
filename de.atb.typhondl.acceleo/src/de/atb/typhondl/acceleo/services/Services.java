@@ -9,14 +9,12 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
-import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 
@@ -61,70 +59,28 @@ public class Services {
 		EcoreUtil.resolveAll(xtextResource);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
 		saveModelAsXMI(model, folder, resourceSet, modelURI);
-		// has to be in this order because xmiResource.getContents().add(db); removes db
-		// from its original container (DB). So in code generation the DBs are also
-		// missing //TODO
-		// saveDBsAsXMI(model, folder, resourceSet);
 		return model;
 	}
 
 	/*
 	 * TODO maybe put this in "onSave()" in Xtext package
 	 */
-	public static void saveModelAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet, URI modelURI) {
+	public static void saveModelAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet,
+			URI modelURI) {
 		Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "/model.xmi"));
 		xmiResource.getContents().add(model);
 		List<Import> importedInfos = model.getGuiMetaInformation().stream()
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
 				.collect(Collectors.toList());
-		for (Import importedInfo : importedInfos) {
-			if (importedInfo.getRelativePath().endsWith(".tdl")) {
-				String absolutPath = modelURI.trimSegments(1).toString() + "/" + importedInfo.getRelativePath();
-				Resource dbResource = resourceSet.getResource(URI.createURI(absolutPath), true);
-				xmiResource.getContents().add(dbResource.getContents().get(0));
-			}
-		}
+		importedInfos.stream().filter(info -> info.getRelativePath().endsWith(".tdl")).forEach(info -> {
+			String absolutPath = modelURI.trimSegments(1).toString() + "/" + info.getRelativePath();
+			Resource dbResource = resourceSet.getResource(URI.createURI(absolutPath), true);
+			xmiResource.getContents().add(dbResource.getContents().get(0));
+		});
 		try {
 			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf
-	 * 
-	 * @param currentResource
-	 * @param importedURIAsString
-	 * @return
-	 */
-	public static Resource openImport(final Resource currentResource, final String importedURIAsString) {
-		URI _uRI = null;
-		if (currentResource != null) {
-			_uRI = currentResource.getURI();
-		}
-		final URI currentURI = _uRI;
-		URI _createURI = null;
-		if (URI.class != null) {
-			_createURI = URI.createURI(importedURIAsString);
-		}
-		final URI importedURI = _createURI;
-		URI _resolve = null;
-		if (importedURI != null) {
-			_resolve = importedURI.resolve(currentURI);
-		}
-		final URI resolvedURI = _resolve;
-		ResourceSet _resourceSet = null;
-		if (currentResource != null) {
-			_resourceSet = currentResource.getResourceSet();
-		}
-		final ResourceSet currentResourceSet = _resourceSet;
-		Resource _resource = null;
-		if (currentResourceSet != null) {
-			_resource = currentResourceSet.getResource(resolvedURI, true);
-		}
-		final Resource resource = _resource;
-		return resource;
-	}
-
 }
