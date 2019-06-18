@@ -1,0 +1,9 @@
+software polystore_api {
+	image = clms/typhon-polystore-api:latest;
+	build {
+      dockerfile = Dockerfile;
+      context = .;
+    }
+    restart = always;
+    hostname = polystore.api;
+}

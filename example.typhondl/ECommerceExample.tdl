@@ -1,0 +1,26 @@
+import SimplifiedTyphonECommerceExample.xmi
+import userdb.tdl
+import orderdb.tdl
+import productdb.tdl
+
+platformtype default //TODO (e.g. AWS)
+containertype Docker
+
+platform platformname : default { //TODO
+	cluster clustername { //TODO
+		application name { //TODO
+			container userdb : Docker {
+				deploys userdb
+				// TODO: volumes, networks, ports etc.
+			}
+			container orderdb : Docker {
+				deploys orderdb
+				// TODO: volumes, networks, ports etc.
+			}
+			container productdb : Docker {
+				deploys productdb
+				// TODO: volumes, networks, ports etc.
+			}
+		}
+	}
+}

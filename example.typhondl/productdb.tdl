@@ -1,5 +1,6 @@
 dbtype mariadb
 
 database productdb : mariadb {
-	image = myMariadbImage;
+	image = test;//TODO
+	// TODO: evironment etc.
 }

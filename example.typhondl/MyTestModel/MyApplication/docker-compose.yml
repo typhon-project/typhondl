@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  container1:
+    image: mariadb:latest
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MYSQL_ROOT_PASSWORD=example
+    ports: 
+      - 8080:8080
+  container2:
+    image: mariadb:latest
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example    
+    command: [
+      '--smallfiles',
+      '--wiredTigerCacheSizeGB 1.5'
+    ]
+    ports: 
+      - 8080:2939
+  container3:
+    image: mariadb:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=example 
+    ports: 
+      - 8080:0980
