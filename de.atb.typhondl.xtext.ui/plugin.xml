@@ -469,6 +469,28 @@
              </visibleWhen>
           </command>
           <command
+                commandId="de.atb.typhondl.xtext.ui.updateWizard.OpenUpdateWizard"
+                label="Update DL model"
+                style="push"
+                tooltip="Update DL model after changing ML model">
+                <visibleWhen
+                   checkEnabled="false">
+                <with
+                      variable="activeMenuSelection">
+                   <iterate
+                         ifEmpty="false">
+                      <adapt
+                            type="org.eclipse.core.resources.IResource">
+                         <test
+                               property="org.eclipse.core.resources.extension"
+                               value="tdl">
+                         </test>
+                      </adapt>
+                   </iterate>
+                </with>
+             </visibleWhen>
+          </command>
+          <command
                 commandId="de.atb.typhondl.acceleo.generate"
                 label="Generate Deployment Scripts"
                 style="push"
@@ -493,7 +515,7 @@
           <command
                 commandId="de.atb.typhondl.xtext.ui.editor.OpenProperties"
                 helpContextId="Enter additional data in a Graphical User Interface"
-                label="Change Model"
+                label="Open Model Editor"
                 style="push"
                 tooltip="Enter additional data in a Graphical User Interface">
                 <visibleWhen
@@ -532,6 +554,11 @@
           defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenEditorHandler"
           id="de.atb.typhondl.xtext.ui.editor.OpenProperties"
           name="Open Editor">
+    </command>
+    <command
+          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenUpdateWizardHandler"
+          id="de.atb.typhondl.xtext.ui.updateWizard.OpenUpdateWizard"
+          name="Open Update Wizard">
     </command>
  </extension>
 </plugin>
