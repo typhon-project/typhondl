@@ -1,16 +1,19 @@
 package de.atb.typhondl.xtext.ui.updateWizard;
 
-import java.io.File;
 import java.net.URI;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.ui.util.FileOpener;
 import org.eclipse.xtext.ui.wizard.template.AbstractFileTemplate;
-import org.eclipse.xtext.ui.wizard.template.NewFileWizardPrimaryPage;
 import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
 import org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard;
+
+import de.atb.typhondl.xtext.typhonDL.ContainerType;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Type;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 
 @SuppressWarnings("restriction")
 public class UpdateModelWizard extends TemplateNewFileWizard {
@@ -22,6 +25,8 @@ public class UpdateModelWizard extends TemplateNewFileWizard {
 	private FileOpener fileOpener;
 
 	protected ShowDiffPage mainPage;
+
+	private DeploymentModel DLmodelOld;
 
 	public UpdateModelWizard(IGrammarAccess grammarAccess, TemplateLabelProvider labelProvider, FileOpener fileOpener,
 			IPath path) {
@@ -43,10 +48,18 @@ public class UpdateModelWizard extends TemplateNewFileWizard {
 		/*
 		 * TODO read container type and create array with just one entry: container type
 		 */
-		AbstractFileTemplate[] templates = null; 
+		this.DLmodelOld = Activator.readDLmodel(this.DLmodelPath);
+		ContainerType containerType = getContainerType();
+		AbstractFileTemplate[] templates = null;
 		mainPage = new ShowDiffPage(pageName, templates, selection, labelProvider, DLmodelURI);
 		super.mainPage = mainPage;
 		return mainPage;
+	}
+
+	private ContainerType getContainerType() {		
+		return DLmodelOld.getElements().stream().filter(element -> Type.class.isInstance(element))
+				.map(element -> (Type) element).filter(type -> ContainerType.class.isInstance(type))
+				.map(type -> (ContainerType) type).collect(Collectors.toList()).get(0);
 	}
 
 }
