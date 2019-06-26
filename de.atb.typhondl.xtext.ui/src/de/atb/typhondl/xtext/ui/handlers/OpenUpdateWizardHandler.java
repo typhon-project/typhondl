@@ -48,8 +48,7 @@ public class OpenUpdateWizardHandler extends AbstractHandler {
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
-			UpdateModelWizard updateModelWizard = new UpdateModelWizard(grammarAccess, labelProvider, fileOpener);
-			updateModelWizard.setModelPath(path.toFile().toURI());
+			UpdateModelWizard updateModelWizard = new UpdateModelWizard(grammarAccess, labelProvider, fileOpener, path);
 			WizardDialog dialog = new WizardDialog(activeShell, updateModelWizard);
 
 			dialog.open();
