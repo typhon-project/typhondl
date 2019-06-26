@@ -14,6 +14,7 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Type;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.service.Service;
 
 @SuppressWarnings("restriction")
 public class UpdateModelWizard extends TemplateNewFileWizard {
@@ -48,7 +49,7 @@ public class UpdateModelWizard extends TemplateNewFileWizard {
 		/*
 		 * TODO read container type and create array with just one entry: container type
 		 */
-		this.DLmodelOld = Activator.readDLmodel(this.DLmodelPath);
+		this.DLmodelOld = Service.readDLmodel(this.DLmodelPath);
 		ContainerType containerType = getContainerType();
 		AbstractFileTemplate[] templates = null;
 		mainPage = new ShowDiffPage(pageName, templates, selection, labelProvider, DLmodelURI);

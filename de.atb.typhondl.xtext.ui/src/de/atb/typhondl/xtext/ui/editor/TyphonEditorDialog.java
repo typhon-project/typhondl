@@ -1,7 +1,7 @@
 package de.atb.typhondl.xtext.ui.editor;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -9,6 +9,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -17,6 +18,7 @@ import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
+import de.atb.typhondl.xtext.ui.service.Service;
 
 public class TyphonEditorDialog extends PreferenceDialog {
 
@@ -33,7 +35,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
-		DeploymentModel model = Activator.readDLmodel(path); // adds all resources to ResourceSet
+		DeploymentModel model = Service.readDLmodel(path); // adds all resources to ResourceSet
 		PreferenceManager preferenceManager = createPages(model);
 		return preferenceManager;
 	}
@@ -41,7 +43,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	private static PreferenceManager createPages(DeploymentModel model) {
 		PreferenceManager preferenceManager = new PreferenceManager();
 
-		ArrayList<DB> dbs = getDBs(model);
+		ArrayList<DB> dbs = Service.getDBs(model);
 		PreferenceNode databaseNode = PreferenceNodeFactory.createPreferenceNode(new DBOverview(dbs));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
@@ -77,16 +79,6 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	private static Deployment getDeployment(DeploymentModel model) {
 		return model.getElements().stream().filter(element -> Deployment.class.isInstance(element)).findFirst()
 				.map(deployment -> (Deployment) deployment).orElse(null);
-	}
-
-	private static ArrayList<DB> getDBs(DeploymentModel model) {
-		ArrayList<DB> dbs = new ArrayList<DB>();
-		model.eResource().getResourceSet().getResources().forEach(resource -> {
-			dbs.addAll(((DeploymentModel) resource.getContents().get(0)).getElements().stream()
-					.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
-					.collect(Collectors.toList()));
-		});	
-		return dbs;
 	}
 
 	public void start() {
