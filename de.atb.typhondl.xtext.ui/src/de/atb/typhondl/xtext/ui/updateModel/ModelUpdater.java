@@ -1,16 +1,11 @@
 package de.atb.typhondl.xtext.ui.updateModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.emf.common.util.URI;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
