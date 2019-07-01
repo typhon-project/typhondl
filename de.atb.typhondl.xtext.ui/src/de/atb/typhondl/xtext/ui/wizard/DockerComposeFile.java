@@ -239,11 +239,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		IPath path = new Path(modelPath.getPath());
 		_builder_2.append("import " + new Path(modelPath.getPath()).lastSegment());
 		_builder_2.newLine();
-		// Polystore Api by CLMS (see D7.2)
-		_builder_2.append("import " + polystore_api_name + ".tdl");
-		_builder_2.newLine();
-		_builder_2.append("import polystoredb.tdl");
-		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {
 				_builder_2.append("import ");
