@@ -1,9 +1,11 @@
 package de.atb.typhondl.xtext.ui.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -18,9 +20,9 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class Service {
-	
+
 	public static DeploymentModel readDLmodel(IPath path) {
-		
+
 		Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
 		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
@@ -35,19 +37,24 @@ public class Service {
 		 * database.tdl
 		 */
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
-		
+
 		addAllResources(model);
 		return model;
 	}
 
-	private static void addAllResources(DeploymentModel model) {
-		model.getGuiMetaInformation().stream()
-				.filter(metaModel -> Import.class.isInstance(metaModel))
-				.map(metaModel -> (Import) metaModel)
-				.filter(info -> info.getRelativePath().endsWith(".tdl"))
-				.map(tdlFile -> openImport(model.eResource(), tdlFile.getRelativePath()));
+	public static void addAllResources(DeploymentModel model) {
+		List<Import> modelList = model.getGuiMetaInformation().stream()
+				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
+				.filter(info -> info.getRelativePath().endsWith(".tdl")).collect(Collectors.toList());
+		for (Import modelFile : modelList) {
+			Resource resource = model.eResource();
+			String relativePath = modelFile.getRelativePath();
+			openImport(resource, relativePath);
+		}
+//		model.getGuiMetaInformation().stream().filter(metaModel -> Import.class.isInstance(metaModel))
+//				.map(metaModel -> (Import) metaModel).filter(info -> info.getRelativePath().endsWith(".tdl"))
+//				.map(tdlFile -> openImport(model.eResource(), tdlFile.getRelativePath()));
 	}
-
 
 	public static ArrayList<DB> getDBs(DeploymentModel model) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
@@ -55,10 +62,10 @@ public class Service {
 			dbs.addAll(((DeploymentModel) resource.getContents().get(0)).getElements().stream()
 					.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
 					.collect(Collectors.toList()));
-		});	
+		});
 		return dbs;
 	}
-	
+
 	/**
 	 * see http://www.cs.kun.nl/J.Hooman/DSL/AdvancedXtextManual.pdf
 	 * 

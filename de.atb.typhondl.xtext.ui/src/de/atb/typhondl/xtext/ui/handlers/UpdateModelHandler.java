@@ -43,7 +43,7 @@ public class UpdateModelHandler extends AbstractHandler {
 		}
 
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(window.getShell(), "UI", "Model was updated"); //TODO description of what was updated
+		//MessageDialog.openInformation(window.getShell(), "UI", "Model was updated"); //TODO description of what was updated
 		return null;
 	}
 
