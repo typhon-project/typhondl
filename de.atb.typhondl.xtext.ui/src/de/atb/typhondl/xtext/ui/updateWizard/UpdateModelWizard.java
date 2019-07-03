@@ -23,12 +23,7 @@ public class UpdateModelWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		this.MLmodel = mainPage.getMLmodel();
-		MLmodel.forEach(database -> {
-			System.out.println(database.getName());
-			System.out.println(database.getPathToDBModelFile());
-			System.out.println(database.getDbms().getName());
-		});
-		return false;
+		return true;
 	}
 
 	public ArrayList<Database> getUpdatedMLmodel() {

@@ -17,9 +17,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.wizard.DBTypeForWizard;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class UpdateMainPage extends WizardPage {
@@ -37,7 +37,7 @@ public class UpdateMainPage extends WizardPage {
 	@Override
 	public void createControl(Composite parent) {
 		setTitle("Update Databases in DL model");
-		MLmodel.add(new Database("testDB", DBTypeForWizard.documentdb));
+		//MLmodel.add(new Database("testDB", DBTypeForWizard.documentdb));
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));
@@ -63,7 +63,7 @@ public class UpdateMainPage extends WizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = wizardFields.get(database);
 					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
-					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
+					//wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection()); see todo below
 				}
 			});
 
@@ -71,7 +71,10 @@ public class UpdateMainPage extends WizardPage {
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			combo.setItems(database.getType().getPossibleDBMSs());
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
-			combo.setEnabled(!checkbox.getSelection());
+			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
+			type.setName(database.getType().getPossibleDBMSs()[0]);
+			database.setDbms(type);
+			//combo.setEnabled(!checkbox.getSelection()); TODO for now the correct DBMS has to be selected
 			combo.setToolTipText(
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
 			combo.addSelectionListener(new SelectionAdapter() {
@@ -90,8 +93,8 @@ public class UpdateMainPage extends WizardPage {
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
+			database.setPathToDBModelFile(textField.getText());
 			textField.addModifyListener(new ModifyListener() {
-
 				@Override
 				public void modifyText(ModifyEvent e) {
 					// TODO Where to put validation?

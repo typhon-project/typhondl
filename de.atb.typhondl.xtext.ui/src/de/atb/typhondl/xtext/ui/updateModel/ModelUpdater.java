@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.service.Service;
@@ -91,7 +92,9 @@ public class ModelUpdater {
 			DB newDB = TyphonDLFactory.eINSTANCE.createDB();
 			newDB.setName(newDatabase.getName());
 			newDB.setType(newDatabase.getDbms());
-			newDB.setImage(newDatabase.getImage());
+			IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+			image.setValue("//TODO enter image");
+			newDB.setImage(image);
 			DeploymentModel container = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			container.getElements().add(newDB.getType());
 			container.getElements().add(newDB);
