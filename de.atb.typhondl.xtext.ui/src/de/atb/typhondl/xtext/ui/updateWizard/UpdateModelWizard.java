@@ -7,14 +7,21 @@ import de.atb.typhondl.xtext.ui.wizard.Database;
 public class UpdateModelWizard extends Wizard {
 
 	private ArrayList<Database> MLmodel;
+	private UpdateMainPage mainPage;
 
 	public UpdateModelWizard(ArrayList<Database> MLmodel) {
 		this.MLmodel = MLmodel;
 	}
 	
 	@Override
+	public void addPages() {
+		mainPage = new UpdateMainPage("Choose DBMS for new databases", MLmodel);
+		addPage(mainPage);
+	}
+	
+	@Override
 	public boolean performFinish() {
-		// TODO save user input in this.MLmodel
+		this.MLmodel = mainPage.getMLmodel();
 		return false;
 	}
 
