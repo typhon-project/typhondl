@@ -154,11 +154,14 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	public ArrayList<String> getTypes() {
 		dbTypes = new ArrayList<String>();
 		for (final Database database : data.keySet()) {
-			boolean _contains = dbTypes.contains(database.getDbms());
-			boolean _not = (!_contains);
-			if (_not) {
-				dbTypes.add(database.getDbms().getName());
+			if (!(database.getDbms() == null)) {
+				boolean _contains = dbTypes.contains(database.getDbms().getName());
+				boolean _not = (!_contains);
+				if (_not) {
+					dbTypes.add(database.getDbms().getName());
+				}
 			}
+
 		}
 		return dbTypes;
 	}
