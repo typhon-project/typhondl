@@ -1,6 +1,7 @@
 package de.atb.typhondl.xtext.ui.updateWizard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -16,7 +17,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.wizard.DBTypeForWizard;
@@ -25,12 +25,13 @@ import de.atb.typhondl.xtext.ui.wizard.Database;
 public class UpdateMainPage extends WizardPage {
 
 	private ArrayList<Database> MLmodel;
-	private Combo combo;
-	private Text textField;
-
+	private HashMap<Database, WizardFields> wizardFields;
+	
+	
 	protected UpdateMainPage(String pageName, ArrayList<Database> MLmodel) {
 		super(pageName);
 		this.MLmodel = MLmodel;
+		this.wizardFields = new HashMap<Database, WizardFields>();
 	}
 
 	@Override
@@ -40,12 +41,12 @@ public class UpdateMainPage extends WizardPage {
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));
-		
+
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
 
 		for (Database database : MLmodel) {
-			
+
 			Group group = new Group(main, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -60,13 +61,14 @@ public class UpdateMainPage extends WizardPage {
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					textField.setEnabled(checkbox.getSelection());
-					combo.setEnabled(!checkbox.getSelection());
+					WizardFields wizardField = wizardFields.get(database);
+					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
+					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 				}
 			});
 
 			new Label(group, NONE).setText("Choose DBMS:");
-			combo = new Combo(group, SWT.READ_ONLY);
+			Combo combo = new Combo(group, SWT.READ_ONLY);
 			combo.setItems(database.getType().getPossibleDBMSs());
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			combo.setEnabled(!checkbox.getSelection());
@@ -76,30 +78,30 @@ public class UpdateMainPage extends WizardPage {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-					type.setName(combo.getText());
+					type.setName(wizardFields.get(database).getCombo().getText());
 					database.setDbms(type);
 					System.out.println(database.getDbms().getName());
 				}
 			});
-			
+
 			new Label(group, NONE).setText("Database file: ");
-			textField = new Text(group, SWT.BORDER);
+			Text textField = new Text(group, SWT.BORDER);
 			textField.setText(database.getName() + ".tdl");
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
 			textField.addModifyListener(new ModifyListener() {
-				
+
 				@Override
 				public void modifyText(ModifyEvent e) {
 					// TODO Where to put validation?
-					database.setPathToDBModelFile(textField.getText());
+					database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText());
 				}
 			});
+			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}
 		setControl(main);
 	}
-
 
 	public ArrayList<Database> getMLmodel() {
 		return MLmodel;
