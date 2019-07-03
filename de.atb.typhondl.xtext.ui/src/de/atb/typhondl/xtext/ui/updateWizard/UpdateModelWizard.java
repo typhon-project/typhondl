@@ -1,6 +1,7 @@
 package de.atb.typhondl.xtext.ui.updateWizard;
 
 import java.util.ArrayList;
+
 import org.eclipse.jface.wizard.Wizard;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
@@ -22,11 +23,15 @@ public class UpdateModelWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		this.MLmodel = mainPage.getMLmodel();
+		MLmodel.forEach(database -> {
+			System.out.println(database.getName());
+			System.out.println(database.getPathToDBModelFile());
+			System.out.println(database.getDbms().getName());
+		});
 		return false;
 	}
 
 	public ArrayList<Database> getUpdatedMLmodel() {
 		return this.MLmodel;
 	}
-
 }

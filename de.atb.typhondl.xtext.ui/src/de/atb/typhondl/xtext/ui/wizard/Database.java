@@ -36,7 +36,7 @@ public class Database {
 		return pathToDBModelFile;
 	}
 
-	public void setaPathToDBModelFile(String pathToDBModelFile) {
+	public void setPathToDBModelFile(String pathToDBModelFile) {
 		this.pathToDBModelFile = pathToDBModelFile;
 	}
 

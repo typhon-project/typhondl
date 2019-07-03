@@ -95,9 +95,9 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			}
 			if (fields.databaseFile.isEnabled()) {
 				String image = fields.databaseFile.getValue();
-				database.setaPathToDBModelFile(image);
+				database.setPathToDBModelFile(image);
 			} else {
-				database.setaPathToDBModelFile("");
+				database.setPathToDBModelFile("");
 			}
 		}
 		this.dbTypes = getTypes();
@@ -218,7 +218,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 					_builderdb.append("/");
 					_builderdb.append(name);
 					_builderdb.append(".tdl");
-					db.setaPathToDBModelFile(name + ".tdl");
+					db.setPathToDBModelFile(name + ".tdl");
 					StringConcatenation _builder_1 = new StringConcatenation();
 					_builder_1.append("dbtype ");
 					_builder_1.append(dbms);
