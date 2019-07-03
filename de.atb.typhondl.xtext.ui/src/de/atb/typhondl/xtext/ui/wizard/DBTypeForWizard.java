@@ -1,6 +1,6 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
-public enum DBType {
+public enum DBTypeForWizard {
 	relationaldb(){
 		@Override String[] getPossibleDBMSs(){
 			return new String[] {"MariaDB", "MySQL"};

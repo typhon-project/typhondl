@@ -37,6 +37,9 @@ import org.eclipse.xtext.ui.wizard.template.StringSelectionTemplateVariable;
 import org.eclipse.xtext.ui.wizard.template.StringTemplateVariable;
 import org.xml.sax.SAXException;
 
+import de.atb.typhondl.xtext.typhonDL.DBType;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+
 @FileTemplate(label = "Docker-Compose", icon = "docker.png", description = "<p><b>Docker-Compose</b></p>\r\n<p>Descriptive text about using Docker-Compose</p>")
 @SuppressWarnings("all")
 public final class DockerComposeFile extends AbstractFileTemplate {
@@ -86,7 +89,9 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			fields.databaseFile.setEnabled(fields.useTemplateImage.getValue());
 			fields.dbms.setEnabled(!fields.useTemplateImage.getValue());
 			if (fields.dbms.isEnabled()) {
-				database.setDbms(fields.dbms.getValue().toLowerCase());
+				DBType dbms = TyphonDLFactory.eINSTANCE.createDBType();
+				dbms.setName(fields.dbms.getValue().toLowerCase());
+				database.setDbms(dbms);
 			}
 			if (fields.databaseFile.isEnabled()) {
 				String image = fields.databaseFile.getValue();
@@ -152,7 +157,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			boolean _contains = dbTypes.contains(database.getDbms());
 			boolean _not = (!_contains);
 			if (_not) {
-				dbTypes.add(database.getDbms());
+				dbTypes.add(database.getDbms().getName());
 			}
 		}
 		return dbTypes;
@@ -203,7 +208,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		{
 			for (final Database db : this.data.keySet()) {
 				if (db.getPathToDBModelFile().isEmpty()) {
-					String dbms = db.getDbms();
+					String dbms = db.getDbms().getName();
 					String name = db.getName();
 					StringConcatenation _builderdb = new StringConcatenation();
 					_builderdb.append(_folder);
