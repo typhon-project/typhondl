@@ -54,7 +54,7 @@ public class UpdateMainPage extends WizardPage {
 			
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing file");
-			checkbox.setSelection(true);
+			checkbox.setSelection(false);
 			checkbox.setLayoutData(gridData);
 			checkbox.setToolTipText(
 					"If you already have a " + database.getName() + ".tdl template, enter relative path here");

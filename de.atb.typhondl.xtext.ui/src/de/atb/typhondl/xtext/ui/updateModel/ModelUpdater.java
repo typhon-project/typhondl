@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -16,10 +19,15 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.xml.sax.SAXException;
 
+import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Container;
+import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.service.Service;
 import de.atb.typhondl.xtext.ui.updateWizard.UpdateModelWizard;
@@ -37,7 +45,7 @@ public class ModelUpdater {
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
-		return compareDLandML(DLmodel, MLmodel, window);
+		return compareDLandML(DLmodel, MLmodel, window, fullPath);
 	}
 
 	/**
@@ -59,16 +67,18 @@ public class ModelUpdater {
 	 * 
 	 * @param DLmodel
 	 * @param MLmodel
-	 * @param window 
+	 * @param window
+	 * @param fullPath
 	 */
-	private static String compareDLandML(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window) {
+	private static String compareDLandML(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window,
+			IPath fullPath) {
 		ArrayList<DB> DLdbs = Service.getDBs(DLmodel);
 		if (MLmodel.size() > DLdbs.size()) { // case 2.1
 			for (DB db : DLdbs) {
 				MLmodel.removeIf(databse -> databse.getName().equals(db.getName()));
 			}
 			MLmodel = openUpdateWizard(DLmodel, MLmodel, window);
-			addDBsToDLmodel(DLmodel, MLmodel);
+			addDBsToDLmodel(DLmodel, MLmodel, fullPath);
 			return "";
 		} else {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
@@ -77,18 +87,21 @@ public class ModelUpdater {
 
 	}
 
-	private static ArrayList<Database> openUpdateWizard(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window) {
+	private static ArrayList<Database> openUpdateWizard(DeploymentModel DLmodel, ArrayList<Database> MLmodel,
+			IWorkbenchWindow window) {
 		UpdateModelWizard updateWizard = new UpdateModelWizard(MLmodel);
 		WizardDialog dialog = new WizardDialog(window.getShell(), updateWizard);
 		dialog.open();
 		return updateWizard.getUpdatedMLmodel();
 	}
 
-	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel) {
+	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IPath fullPath) {
 		Resource DLmodelResource = DLmodel.eResource();
 		XtextResourceSet DLmodelResourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
 		DLmodelResourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		for (Database newDatabase : MLmodel) {
+
+			// 1. create new file for the new database TODO useExistingFile checked
 			DB newDB = TyphonDLFactory.eINSTANCE.createDB();
 			newDB.setName(newDatabase.getName());
 			newDB.setType(newDatabase.getDbms());
@@ -98,7 +111,8 @@ public class ModelUpdater {
 			DeploymentModel container = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			container.getElements().add(newDB.getType());
 			container.getElements().add(newDB);
-			URI dbURI = DLmodelResource.getURI().trimSegments(1).appendSegment(newDB.getName() + ".tdl");
+			String relativePath = newDB.getName() + ".tdl";
+			URI dbURI = DLmodelResource.getURI().trimSegments(1).appendSegment(relativePath);
 			Resource dbResource = DLmodelResourceSet.createResource(dbURI);
 			dbResource.getContents().add(container);
 			try {
@@ -106,8 +120,47 @@ public class ModelUpdater {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
 
+			// 2. add new database file to imports
+			Import newImport = TyphonDLFactory.eINSTANCE.createImport();
+			newImport.setRelativePath(relativePath);
+			DLmodel.getGuiMetaInformation().add(newImport);
+
+			// 3. craeate new dummy-container
+			Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
+			newContainer.setName(newDB.getName());
+			newContainer.setType(getContainerType(DLmodel));
+			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
+			reference.setReference(newDB);
+			newContainer.getDeploys().add(reference);
+			getFirstApplication(DLmodel).getContainers().add(newContainer);
+
+			// 4. save updated model
+			Resource resource = DLmodelResourceSet.getResource(URI.createFileURI(fullPath.toString()), true);
+			resource.getContents().clear();
+			resource.getContents().add(DLmodel);
+			try {
+				resource.save(Collections.EMPTY_MAP);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		// TODO add container for database.
+
+	}
+
+	//TODO only gets the fist app in the first cluster
+	private static Application getFirstApplication(DeploymentModel DLmodel) {
+		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
+				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)
+				.getApplications().get(0);
+	}
+
+	private static ContainerType getContainerType(DeploymentModel DLmodel) {
+		List<ContainerType> types = DLmodel.getElements().stream()
+				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
+				.collect(Collectors.toList());
+		return types.get(0);
 	}
 
 	private static String getMLURI(DeploymentModel DLmodel, IPath fullPath) {

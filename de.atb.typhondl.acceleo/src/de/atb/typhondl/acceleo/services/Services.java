@@ -21,11 +21,9 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 public class Services {
 
 	public static void generateDeployment(String pathToXTextModel, String folder) {
-		System.out.println("Generate from template...");
 		try {
 			DeploymentModel model = loadXtextModel(pathToXTextModel, folder);
 			new Generate(model, new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
-			System.out.println("Generated!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
