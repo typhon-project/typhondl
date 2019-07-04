@@ -106,7 +106,7 @@ public class ModelUpdater {
 			newDB.setName(newDatabase.getName());
 			newDB.setType(newDatabase.getDbms());
 			IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-			image.setValue("//TODO enter image");
+			image.setValue(newDB.getType().getName() + ":latest;");
 			newDB.setImage(image);
 			DeploymentModel container = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			container.getElements().add(newDB.getType());
@@ -127,41 +127,52 @@ public class ModelUpdater {
 			DLmodel.getGuiMetaInformation().add(newImport);
 
 			// 3. craeate new dummy-container
-			Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
-			newContainer.setName(newDB.getName());
-			newContainer.setType(getContainerType(DLmodel));
-			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-			reference.setReference(newDB);
-			newContainer.getDeploys().add(reference);
-			getFirstApplication(DLmodel).getContainers().add(newContainer);
+			/*
+			 * TODO reference to DB in other file (see code below) throws a
+			 * RuntimeException: No EObjectDescription could be found in Scope
+			 * Reference.reference for DeploymentModel.elements[1]->DB'testdb' Semantic
+			 * Object:
+			 * DeploymentModel.elements[2]->Deployment'platformname'.clusters[0]->Cluster'
+			 * clustername'.applications[0]->Application'name'.containers[6]->Container'
+			 * testdb'.deploys[0]->Reference URI:
+			 * file:/C:/Users/flug/runtime-EclipseXtext/example.typhondl/ECommerceExample.
+			 * tdl EStructuralFeature: typhonDL::Reference.reference
+			 */
+//			Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
+//			newContainer.setName(newDB.getName());
+//			newContainer.setType(getContainerType(DLmodel));
+//			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
+//			reference.setReference(newDB);
+//			newContainer.getDeploys().add(reference);
+//			getFirstApplication(DLmodel).getContainers().add(newContainer);
+			
+			// This adds the DB and the type to the main model file:
+			// DLmodel.getElements().add(newDB);
+			// DLmodel.getElements().add(newDB.getType());
 
 			// 4. save updated model
-			Resource resource = DLmodelResourceSet.getResource(URI.createFileURI(fullPath.toString()), true);
-			resource.getContents().clear();
-			resource.getContents().add(DLmodel);
 			try {
-				resource.save(Collections.EMPTY_MAP);
+				DLmodel.eResource().save(Collections.EMPTY_MAP);
+				// TODO add formatting options to save()
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		// TODO add container for database.
-
 	}
 
-	//TODO only gets the fist app in the first cluster
-	private static Application getFirstApplication(DeploymentModel DLmodel) {
-		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
-				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)
-				.getApplications().get(0);
-	}
-
-	private static ContainerType getContainerType(DeploymentModel DLmodel) {
-		List<ContainerType> types = DLmodel.getElements().stream()
-				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
-				.collect(Collectors.toList());
-		return types.get(0);
-	}
+	// TODO only gets the fist app in the first cluster
+//	private static Application getFirstApplication(DeploymentModel DLmodel) {
+//		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
+//				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)
+//				.getApplications().get(0);
+//	}
+//
+//	private static ContainerType getContainerType(DeploymentModel DLmodel) {
+//		List<ContainerType> types = DLmodel.getElements().stream()
+//				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
+//				.collect(Collectors.toList());
+//		return types.get(0);
+//	}
 
 	private static String getMLURI(DeploymentModel DLmodel, IPath fullPath) {
 		String DLmodelName = DLmodel.getGuiMetaInformation().stream()

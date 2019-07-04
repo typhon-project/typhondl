@@ -72,7 +72,7 @@ public class UpdateMainPage extends WizardPage {
 			combo.setItems(database.getType().getPossibleDBMSs());
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-			type.setName(database.getType().getPossibleDBMSs()[0]);
+			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
 			database.setDbms(type);
 			//combo.setEnabled(!checkbox.getSelection()); TODO for now the correct DBMS has to be selected
 			combo.setToolTipText(
@@ -81,9 +81,8 @@ public class UpdateMainPage extends WizardPage {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-					type.setName(wizardFields.get(database).getCombo().getText());
+					type.setName(wizardFields.get(database).getCombo().getText().toLowerCase());
 					database.setDbms(type);
-					System.out.println(database.getDbms().getName());
 				}
 			});
 
