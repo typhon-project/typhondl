@@ -37,7 +37,6 @@ public class UpdateMainPage extends WizardPage {
 	@Override
 	public void createControl(Composite parent) {
 		setTitle("Update Databases in DL model");
-		//MLmodel.add(new Database("testDB", DBTypeForWizard.documentdb));
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));

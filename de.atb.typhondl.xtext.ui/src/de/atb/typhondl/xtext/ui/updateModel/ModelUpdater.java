@@ -4,10 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
@@ -19,15 +15,10 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.xml.sax.SAXException;
 
-import de.atb.typhondl.xtext.typhonDL.Application;
-import de.atb.typhondl.xtext.typhonDL.Container;
-import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.service.Service;
 import de.atb.typhondl.xtext.ui.updateWizard.UpdateModelWizard;
@@ -79,7 +70,13 @@ public class ModelUpdater {
 			}
 			MLmodel = openUpdateWizard(DLmodel, MLmodel, window);
 			addDBsToDLmodel(DLmodel, MLmodel, fullPath);
-			return "";
+			String updatedDBS = MLmodel.get(0).getName();
+			for (int i = 1; i < MLmodel.size(); i++) {
+				updatedDBS += ", " + MLmodel.get(i).getName();
+			}
+			return "Created new file(s) for " + updatedDBS
+					+ ". To add a database to the deployment, please create a new container in your model file "
+					+ fullPath.lastSegment() + " and reference the database via the \"deploys\" key.";
 		} else {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
 					+ "Please add additional model content through the editor.";
@@ -145,10 +142,10 @@ public class ModelUpdater {
 //			reference.setReference(newDB);
 //			newContainer.getDeploys().add(reference);
 //			getFirstApplication(DLmodel).getContainers().add(newContainer);
-			
-			// This adds the DB and the type to the main model file:
-			// DLmodel.getElements().add(newDB);
-			// DLmodel.getElements().add(newDB.getType());
+
+//			This adds the DB and the type to the main model file:
+//			DLmodel.getElements().add(newDB);
+//			DLmodel.getElements().add(newDB.getType());
 
 			// 4. save updated model
 			try {
@@ -160,7 +157,7 @@ public class ModelUpdater {
 		}
 	}
 
-	// TODO only gets the fist app in the first cluster
+// TODO only gets the fist app in the first cluster
 //	private static Application getFirstApplication(DeploymentModel DLmodel) {
 //		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
 //				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)

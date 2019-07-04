@@ -9,6 +9,25 @@ containertype Docker
 platform platformname : default { //TODO
 	cluster clustername { //TODO
 		application name { //TODO
+			container polystore : Docker {
+				deploys polystore_api
+				depends_on polystoredb 
+				container_name = typhonml.polystore.service;
+				ports = 8080:8080;
+				volumes = ./models:/models;
+			}
+			container polystoreui : Docker {
+				build {
+					context = Typhon Service UI;
+				}
+				container_name = polystore.ui;
+				ports = 4200:4200;
+			}
+			container polystoredb : Docker {
+				deploys polystoredb
+				container_name = polystore.mongo;
+				ports = 27017:27017;
+			}
 			container userdb : Docker {
 				deploys userdb
 				// TODO: volumes, networks, ports etc.
