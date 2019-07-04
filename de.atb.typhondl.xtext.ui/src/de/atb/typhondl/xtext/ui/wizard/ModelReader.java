@@ -32,8 +32,8 @@ public class ModelReader {
 		return dbsMap;
 	}
 	
-	private static DBType convertStringToDBType (String toConvert) {
-		return DBType.valueOf(toConvert);
+	private static DBTypeForWizard convertStringToDBType (String toConvert) {
+		return DBTypeForWizard.valueOf(toConvert);
 	}
 	
 }

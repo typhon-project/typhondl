@@ -37,6 +37,9 @@ import org.eclipse.xtext.ui.wizard.template.StringSelectionTemplateVariable;
 import org.eclipse.xtext.ui.wizard.template.StringTemplateVariable;
 import org.xml.sax.SAXException;
 
+import de.atb.typhondl.xtext.typhonDL.DBType;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+
 @FileTemplate(label = "Docker-Compose", icon = "docker.png", description = "<p><b>Docker-Compose</b></p>\r\n<p>Descriptive text about using Docker-Compose</p>")
 @SuppressWarnings("all")
 public final class DockerComposeFile extends AbstractFileTemplate {
@@ -86,13 +89,15 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 			fields.databaseFile.setEnabled(fields.useTemplateImage.getValue());
 			fields.dbms.setEnabled(!fields.useTemplateImage.getValue());
 			if (fields.dbms.isEnabled()) {
-				database.setDbms(fields.dbms.getValue().toLowerCase());
+				DBType dbms = TyphonDLFactory.eINSTANCE.createDBType();
+				dbms.setName(fields.dbms.getValue().toLowerCase());
+				database.setDbms(dbms);
 			}
 			if (fields.databaseFile.isEnabled()) {
 				String image = fields.databaseFile.getValue();
-				database.setaPathToDBModelFile(image);
+				database.setPathToDBModelFile(image);
 			} else {
-				database.setaPathToDBModelFile("");
+				database.setPathToDBModelFile("");
 			}
 		}
 		this.dbTypes = getTypes();
@@ -149,11 +154,14 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 	public ArrayList<String> getTypes() {
 		dbTypes = new ArrayList<String>();
 		for (final Database database : data.keySet()) {
-			boolean _contains = dbTypes.contains(database.getDbms());
-			boolean _not = (!_contains);
-			if (_not) {
-				dbTypes.add(database.getDbms());
+			if (!(database.getDbms() == null)) {
+				boolean _contains = dbTypes.contains(database.getDbms().getName());
+				boolean _not = (!_contains);
+				if (_not) {
+					dbTypes.add(database.getDbms().getName());
+				}
 			}
+
 		}
 		return dbTypes;
 	}
@@ -203,14 +211,14 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		{
 			for (final Database db : this.data.keySet()) {
 				if (db.getPathToDBModelFile().isEmpty()) {
-					String dbms = db.getDbms();
+					String dbms = db.getDbms().getName();
 					String name = db.getName();
 					StringConcatenation _builderdb = new StringConcatenation();
 					_builderdb.append(_folder);
 					_builderdb.append("/");
 					_builderdb.append(name);
 					_builderdb.append(".tdl");
-					db.setaPathToDBModelFile(name + ".tdl");
+					db.setPathToDBModelFile(name + ".tdl");
 					StringConcatenation _builder_1 = new StringConcatenation();
 					_builder_1.append("dbtype ");
 					_builder_1.append(dbms);
@@ -238,11 +246,6 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		}
 		IPath path = new Path(modelPath.getPath());
 		_builder_2.append("import " + new Path(modelPath.getPath()).lastSegment());
-		_builder_2.newLine();
-		// Polystore Api by CLMS (see D7.2)
-		_builder_2.append("import " + polystore_api_name + ".tdl");
-		_builder_2.newLine();
-		_builder_2.append("import polystoredb.tdl");
 		_builder_2.newLine();
 		{
 			for (final Database db : this.data.keySet()) {

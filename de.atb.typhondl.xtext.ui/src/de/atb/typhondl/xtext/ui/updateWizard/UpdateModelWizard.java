@@ -1,65 +1,32 @@
 package de.atb.typhondl.xtext.ui.updateWizard;
 
-import java.net.URI;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.xtext.IGrammarAccess;
-import org.eclipse.xtext.ui.util.FileOpener;
-import org.eclipse.xtext.ui.wizard.template.AbstractFileTemplate;
-import org.eclipse.xtext.ui.wizard.template.TemplateLabelProvider;
-import org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard;
+import org.eclipse.jface.wizard.Wizard;
+import de.atb.typhondl.xtext.ui.wizard.Database;
 
-import de.atb.typhondl.xtext.typhonDL.ContainerType;
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Type;
-import de.atb.typhondl.xtext.ui.activator.Activator;
+public class UpdateModelWizard extends Wizard {
 
-@SuppressWarnings("restriction")
-public class UpdateModelWizard extends TemplateNewFileWizard {
+	private ArrayList<Database> MLmodel;
+	private UpdateMainPage mainPage;
 
-	protected URI DLmodelURI;
-	protected IPath DLmodelPath;
-	private IGrammarAccess grammarAccess;
-	private TemplateLabelProvider labelProvider;
-	private FileOpener fileOpener;
-
-	protected ShowDiffPage mainPage;
-
-	private DeploymentModel DLmodelOld;
-
-	public UpdateModelWizard(IGrammarAccess grammarAccess, TemplateLabelProvider labelProvider, FileOpener fileOpener,
-			IPath path) {
-		super();
-		this.DLmodelPath = path;
-		this.DLmodelURI = path.toFile().toURI();
-		setWindowTitle("Update TyphonDL model " + getDLModelName());
-		this.grammarAccess = grammarAccess;
-		this.labelProvider = labelProvider;
-		this.fileOpener = fileOpener;
+	public UpdateModelWizard(ArrayList<Database> MLmodel) {
+		this.MLmodel = MLmodel;
 	}
-
-	private String getDLModelName() {
-		return this.DLmodelPath.lastSegment().substring(0, this.DLmodelPath.lastSegment().lastIndexOf('.'));
-	}
-
+	
 	@Override
-	protected ShowDiffPage createMainPage(String pageName) {
-		/*
-		 * TODO read container type and create array with just one entry: container type
-		 */
-		this.DLmodelOld = Activator.readDLmodel(this.DLmodelPath);
-		ContainerType containerType = getContainerType();
-		AbstractFileTemplate[] templates = null;
-		mainPage = new ShowDiffPage(pageName, templates, selection, labelProvider, DLmodelURI);
-		super.mainPage = mainPage;
-		return mainPage;
+	public void addPages() {
+		mainPage = new UpdateMainPage("Choose DBMS for new databases", MLmodel);
+		addPage(mainPage);
+	}
+	
+	@Override
+	public boolean performFinish() {
+		this.MLmodel = mainPage.getMLmodel();
+		return true;
 	}
 
-	private ContainerType getContainerType() {		
-		return DLmodelOld.getElements().stream().filter(element -> Type.class.isInstance(element))
-				.map(element -> (Type) element).filter(type -> ContainerType.class.isInstance(type))
-				.map(type -> (ContainerType) type).collect(Collectors.toList()).get(0);
+	public ArrayList<Database> getUpdatedMLmodel() {
+		return this.MLmodel;
 	}
-
 }

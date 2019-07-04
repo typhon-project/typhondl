@@ -1,26 +1,30 @@
 package de.atb.typhondl.xtext.ui.wizard;
 
-public enum DBType {
+public enum DBTypeForWizard {
 	relationaldb(){
-		@Override String[] getPossibleDBMSs(){
+		@Override
+		public String[] getPossibleDBMSs(){
 			return new String[] {"MariaDB", "MySQL"};
 		}
 	},
 	graphdb(){
-		@Override String[] getPossibleDBMSs(){
+		@Override
+		public String[] getPossibleDBMSs(){
 			return new String[] {"ArangoDB", "Neo4j"};
 		}
 	},
 	documentdb(){
-		@Override String[] getPossibleDBMSs(){
+		@Override
+		public String[] getPossibleDBMSs(){
 			return new String[] {"Mongo", "CouchDB"};
 		}
 	},
 	keyvaluedb(){
-		@Override String[] getPossibleDBMSs(){
+		@Override
+		public String[] getPossibleDBMSs(){
 			return new String[] {"ArangoDB", "Redis"};
 		}
 	};
 	
-	abstract String[] getPossibleDBMSs(); 
+	public abstract String[] getPossibleDBMSs(); 
 }

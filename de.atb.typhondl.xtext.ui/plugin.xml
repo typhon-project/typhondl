@@ -469,7 +469,7 @@
              </visibleWhen>
           </command>
           <command
-                commandId="de.atb.typhondl.xtext.ui.updateWizard.OpenUpdateWizard"
+                commandId="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel"
                 label="Update DL model"
                 style="push"
                 tooltip="Update DL model after changing ML model">
@@ -556,9 +556,9 @@
           name="Open Editor">
     </command>
     <command
-          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenUpdateWizardHandler"
-          id="de.atb.typhondl.xtext.ui.updateWizard.OpenUpdateWizard"
-          name="Open Update Wizard">
+          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
+          id="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel"
+          name="Update Model">
     </command>
  </extension>
 </plugin>
