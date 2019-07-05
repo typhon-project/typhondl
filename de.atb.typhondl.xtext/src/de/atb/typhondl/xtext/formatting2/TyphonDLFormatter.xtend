@@ -5,13 +5,19 @@ package de.atb.typhondl.xtext.formatting2
 
 import com.google.inject.Inject
 import de.atb.typhondl.xtext.services.TyphonDLGrammarAccess
+import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel
 import de.atb.typhondl.xtext.typhonDL.NonDB
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
+import de.atb.typhondl.xtext.typhonDL.Deployment
+import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.Application
+import de.atb.typhondl.xtext.typhonDL.Import
+import de.atb.typhondl.xtext.typhonDL.DB
 
 class TyphonDLFormatter extends AbstractFormatter2 {
-	
+
 	@Inject extension TyphonDLGrammarAccess
 
 	def dispatch void format(DeploymentModel deploymentModel, extension IFormattableDocument document) {
@@ -23,14 +29,71 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			model.format
 		}
 	}
+	
+	def dispatch void format(Import imported, extension IFormattableDocument document) {
+		imported.regionFor.keyword('import').prepend[newLine]
+	}
+
 
 	def dispatch void format(NonDB nonDB, extension IFormattableDocument document) {
 		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
 		nonDB.image.format
 		for (property : nonDB.parameters) {
 			property.format
+			property.append[newLine]
 		}
 	}
 	
-	// TODO: implement for DB, Deployment, Cluster, Application, Container, Key_KeyValueList
+	def dispatch void format(DB db, extension IFormattableDocument document) {
+		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
+		db.image.format
+		for (property : db.parameters) {
+			property.format
+			property.append[newLine]
+		}
+	}
+
+
+	def dispatch void format(Deployment deployment, extension IFormattableDocument document) {
+		interior(
+			deployment.regionFor.keyword('{').append[newLine],
+			deployment.regionFor.keyword('}'),
+			[indent]
+		)
+		for (cluster : deployment.clusters) {
+			cluster.format
+		}
+	}
+
+	def dispatch void format(Cluster cluster, extension IFormattableDocument document) {
+		interior(
+			cluster.regionFor.keyword('{').append[newLine],
+			cluster.regionFor.keyword('}'),
+			[indent]
+		)
+		for (app : cluster.applications) {
+			app.format
+		}
+	}
+
+	def dispatch void format(Application app, extension IFormattableDocument document) {
+		interior(
+			app.regionFor.keyword('{').append[newLine],
+			app.regionFor.keyword('}'),
+			[indent]
+		)
+		for (container : app.containers) {
+			container.format
+		}
+	}
+
+	def dispatch void format(Container container, extension IFormattableDocument document) {
+		interior(
+			container.regionFor.keyword('{').append[newLine],
+			container.regionFor.keyword('}'),
+			[indent]
+		)
+	}
+
+// TODO: implement for DB, Deployment, Cluster, Application, Container, Key_KeyValueList
 }
