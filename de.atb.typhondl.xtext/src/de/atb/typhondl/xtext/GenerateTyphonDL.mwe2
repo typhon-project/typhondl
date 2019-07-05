@@ -36,6 +36,9 @@ Workflow {
 			serializer = {
 				generateStub = false
 			}
+			formatter = {
+				generateStub = true
+			}
 			
 			fileWizard = {
 				generate = true

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
@@ -20,6 +21,7 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.service.SavingOptions;
 import de.atb.typhondl.xtext.ui.service.Service;
 import de.atb.typhondl.xtext.ui.updateWizard.UpdateModelWizard;
 import de.atb.typhondl.xtext.ui.wizard.Database;
@@ -149,7 +151,7 @@ public class ModelUpdater {
 
 			// 4. save updated model
 			try {
-				DLmodel.eResource().save(Collections.EMPTY_MAP);
+				DLmodel.eResource().save(SavingOptions.getTDLoptions());
 				// TODO add formatting options to save()
 			} catch (IOException e) {
 				e.printStackTrace();

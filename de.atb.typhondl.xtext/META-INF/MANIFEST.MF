@@ -26,5 +26,6 @@ Export-Package: de.atb.typhondl.xtext.validation,
  de.atb.typhondl.xtext.parser.antlr,
  de.atb.typhondl.xtext.scoping,
  de.atb.typhondl.xtext.serializer,
- de.atb.typhondl.xtext.typhonDL.impl
+ de.atb.typhondl.xtext.typhonDL.impl,
+ de.atb.typhondl.xtext.formatting2
 Import-Package: org.apache.log4j
