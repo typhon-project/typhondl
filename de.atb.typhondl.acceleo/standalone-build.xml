@@ -59,7 +59,7 @@
         <delete dir="output"/>
     </target>
 
-    <target name="compile" description="Compiles Project">
+    <target name="compile" depends="clean" description="Compiles Project">
         <mkdir dir="bin"/>
         <javac
             srcdir="${SOURCE_FOLDER}"
@@ -75,7 +75,7 @@
                  dependencies=""
                  binaryResource="false"
                  packagesToRegister="de.atb.typhondl.xtext.typhonDL.TyphonDLPackage">
-        </acceleoCompiler> <!---->
+        </acceleoCompiler>
     </target>
 
     <target name="dist" depends="compile" description="generate the distribution">
