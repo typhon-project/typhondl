@@ -176,30 +176,43 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		StringConcatenation _builder_3 = new StringConcatenation();
 		StringConcatenation _builder_4 = new StringConcatenation();
 		StringConcatenation _builder_5 = new StringConcatenation();
-		_builder_3.append("container polystore : Docker {\r\n" + "\t\t\t\tdeploys polystore_api\r\n"
-				+ "\t\t\t\tdepends_on polystoredb \r\n" + "\t\t\t\tcontainer_name = typhonml.polystore.service;\r\n"
-				+ "\t\t\t\tports = 8080:8080;\r\n" + "\t\t\t\tvolumes = ./models:/models;\r\n" + "\t\t\t}\r\n"
-				+ "\t\t\tcontainer polystoreui : Docker {\r\n" + "\t\t\t\tbuild {\r\n"
-				+ "\t\t\t\t\tcontext = Typhon Service UI;\r\n" + "\t\t\t\t}\r\n"
-				+ "\t\t\t\tcontainer_name = polystore.ui;\r\n" + "\t\t\t\tports = 4200:4200;\r\n" + "\t\t\t}\r\n");
-		_builder_3.append("\t\t\tcontainer polystoredb : Docker {\r\n" + 
-				"\t\t\t\tdeploys polystoredb\r\n" + 
-				"\t\t\t\tcontainer_name = polystore.mongo;\r\n" + 
-				"\t\t\t\tports = 27017:27017;\r\n" + 
-				"\t\t\t}");
-		_builder_4.append("software polystore_api {\r\n" + "\timage = clms/typhon-polystore-api:latest;\r\n"
-				+ "\tbuild {\r\n" + "\t\tdockerfile = Dockerfile;\r\n" + "\t\tcontext = .;\r\n" + "\t}\r\n"
-				+ "\trestart = always;\r\n" + "\thostname = polystore.api;\r\n" + "}");
-		_builder_5.append("dbtype mongo\r\n" + 
-				"\r\n" + 
-				"database polystoredb : mongo {\r\n" + 
-				"\timage = mongo:latest;\r\n" + 
-				"\thostname = polystore.api.db;\r\n" + 
-				"\tenvironment {\r\n" + 
-				"\t\tMONGO_INITDB_ROOT_USERNAME = admin;\r\n" + 
-				"\t\tMONGO_INITDB_ROOT_PASSWORD = admin;\r\n" + 
-				"\t}\r\n" + 
-				"}");
+		StringConcatenation _builder_6 = new StringConcatenation();
+		_builder_3.append("container polystore_api : Docker {\r\n" 
+				+ "\t\t\t\tdeploys polystore_api\r\n"
+				+ "\t\t\t\tdepends_on polystoredb \r\n" 
+				+ "\t\t\t\tcontainer_name = typhonml.polystore.service;\r\n"
+				+ "\t\t\t\tports = 8080:8080;\r\n" 
+				+ "\t\t\t\tvolumes = ./models:/models;\r\n" 
+				+ "\t\t\t}\r\n");
+		_builder_3.append(
+				"\t\t\tcontainer polystoreui : Docker {\r\n" 
+				+ "\t\t\t\tdeploys polystore_ui\r\n"
+				+ "\t\t\t\tdepends_on polystore_api \r\n" 
+				+ "\t\t\t\tbuild {\r\n"
+				+ "\t\t\t\t\tcontext = Typhon Service UI;\r\n" 
+				+ "\t\t\t\t}\r\n"
+				+ "\t\t\t\tcontainer_name = polystore.ui;\r\n" 
+				+ "\t\t\t\tports = 4200:4200;\r\n" 
+				+ "\t\t\t}\r\n");
+		_builder_3.append("\t\t\tcontainer polystoredb : Docker {\r\n" 
+				+ "\t\t\t\tdeploys polystoredb\r\n"
+				+ "\t\t\t\tcontainer_name = polystore.mongo;\r\n" 
+				+ "\t\t\t\tports = 27017:27017;\r\n" 
+				+ "\t\t\t}");
+		_builder_4.append("software polystore_api {\r\n" 
+				+ "\timage = clms/typhon-polystore-api:latest;\r\n"
+				+ "\trestart = always;\r\n" 
+				+ "\thostname = polystore.api;\r\n" 
+				+ "}");
+		_builder_6.append("software polystore_ui {\r\n"
+				+ "\timage = clms/typhon-polystore-ui:latest;\r\n"
+				+ "\trestart = always;\r\n"
+				+ "\thostname = polystore.ui;\r\n"
+				+ "}");
+		_builder_5.append("dbtype mongo\r\n" + "\r\n" + "database polystoredb : mongo {\r\n"
+				+ "\timage = mongo:latest;\r\n" + "\thostname = polystore.api.db;\r\n" + "\tenvironment {\r\n"
+				+ "\t\tMONGO_INITDB_ROOT_USERNAME = admin;\r\n" + "\t\tMONGO_INITDB_ROOT_PASSWORD = admin;\r\n"
+				+ "\t}\r\n" + "}");
 		StringConcatenation _builder = new StringConcatenation();
 		String _folder = this.getFolder();
 		_builder.append(_folder);
@@ -306,6 +319,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 		deleteExistingDatabaseFile(_folder + "/" + polystore_api_name + ".tdl");
 		generator.generate(_folder + "/" + polystore_api_name + ".tdl", _builder_4);
 		generator.generate(_folder + "/polystoredb.tdl", _builder_5);
+		generator.generate(_folder + "/polystore_ui.tdl", _builder_6);
 	}
 
 	private void deleteExistingDatabaseFile(String _builderdb) {
