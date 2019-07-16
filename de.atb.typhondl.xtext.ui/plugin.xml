@@ -535,6 +535,28 @@
                 </with>
              </visibleWhen>
           </command>
+          <command
+                commandId="de.atb.typhondl.xtext.ui.creationWizard.CreateModel"
+                label="Create DL model"
+                style="push"
+                tooltip="Opens a Wizard to create a TyphonDL Files">
+             <visibleWhen
+                   checkEnabled="false">
+                <with
+                      variable="activeMenuSelection">
+                   <iterate
+                         ifEmpty="false">
+                      <adapt
+                            type="org.eclipse.core.resources.IResource">
+                         <test
+                               property="org.eclipse.core.resources.extension"
+                               value="xmi">
+                         </test>
+                      </adapt>
+                   </iterate>
+                </with>
+             </visibleWhen>
+          </command>
        </menu>
     </menuContribution>
  </extension>
@@ -559,6 +581,11 @@
           defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
           id="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel"
           name="Update Model">
+    </command>
+    <command
+          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.CreateModelHandler"
+          id="de.atb.typhondl.xtext.ui.creationWizard.CreateModel"
+          name="Create Model">
     </command>
  </extension>
 </plugin>

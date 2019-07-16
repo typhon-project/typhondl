@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 
 @FileTemplate(label = "Docker-Compose", icon = "docker.png", description = "<p><b>Docker-Compose</b></p>\r\n<p>Descriptive text about using Docker-Compose</p>")
 @SuppressWarnings("all")
@@ -109,7 +110,7 @@ public final class DockerComposeFile extends AbstractFileTemplate {
 
 	private ArrayList<Database> readModel(URI modelPath) {
 		try {
-			return ModelReader.readXMIFile(modelPath);
+			return MLmodelReader.readXMIFile(modelPath);
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}

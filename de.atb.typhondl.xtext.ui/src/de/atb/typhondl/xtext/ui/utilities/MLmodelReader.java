@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.wizard;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
+import de.atb.typhondl.xtext.ui.wizard.DBTypeForWizard;
+import de.atb.typhondl.xtext.ui.wizard.Database;
+
 import javax.xml.parsers.*;
 import java.io.*;
 
-public class ModelReader {
+public class MLmodelReader {
 
 	public static ArrayList<Database> readXMIFile(URI uri) throws ParserConfigurationException, SAXException, IOException {
 		ArrayList<Database> dbsMap = new ArrayList<Database>();

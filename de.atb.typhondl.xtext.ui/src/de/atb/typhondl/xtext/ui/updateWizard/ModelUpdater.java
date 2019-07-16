@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.updateModel;
+package de.atb.typhondl.xtext.ui.updateWizard;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,19 +20,18 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.service.Service;
-import de.atb.typhondl.xtext.ui.updateWizard.UpdateModelWizard;
+import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.wizard.Database;
-import de.atb.typhondl.xtext.ui.wizard.ModelReader;
 
 public class ModelUpdater {
 
 	public static String updateModel(IPath fullPath, IWorkbenchWindow window) {
-		DeploymentModel DLmodel = Service.readDLmodel(fullPath);
+		DeploymentModel DLmodel = DLmodelReader.readDLmodel(fullPath);
 		ArrayList<Database> MLmodel = null;
 		File file = new File(getMLURI(DLmodel, fullPath));
 		try {
-			MLmodel = ModelReader.readXMIFile(file.toURI());
+			MLmodel = MLmodelReader.readXMIFile(file.toURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
@@ -63,7 +62,7 @@ public class ModelUpdater {
 	 */
 	private static String compareDLandML(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window,
 			IPath fullPath) {
-		ArrayList<DB> DLdbs = Service.getDBs(DLmodel);
+		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel);
 		if (MLmodel.size() > DLdbs.size()) { // case 2.1
 			for (DB db : DLdbs) {
 				MLmodel.removeIf(databse -> databse.getName().equals(db.getName()));
@@ -108,7 +107,7 @@ public class ModelUpdater {
 			DeploymentModel container = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			container.getElements().add(newDB.getType());
 			container.getElements().add(newDB);
-			String relativePath = newDB.getName() + ".tdl";
+			String relativePath = newDatabase.getPathToDBModelFile();
 			URI dbURI = DLmodelResource.getURI().trimSegments(1).appendSegment(relativePath);
 			Resource dbResource = DLmodelResourceSet.createResource(dbURI);
 			dbResource.getContents().add(container);

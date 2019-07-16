@@ -1,10 +1,11 @@
-package de.atb.typhondl.xtext.ui.updateWizard;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -18,34 +19,31 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
-public class UpdateMainPage extends WizardPage {
+public class DBMSComposite extends Composite {
 
 	private ArrayList<Database> MLmodel;
 	private HashMap<Database, WizardFields> wizardFields;
-	
-	
-	protected UpdateMainPage(String pageName, ArrayList<Database> MLmodel) {
-		super(pageName);
+
+	public DBMSComposite(Composite parent, int style, ArrayList<Database> MLmodel) {
+		super(parent, style);
 		this.MLmodel = MLmodel;
 		this.wizardFields = new HashMap<Database, WizardFields>();
 	}
 
-	@Override
-	public void createControl(Composite parent) {
-		setTitle("Update Databases in DL model");
-		Composite main = new Composite(parent, SWT.NONE);
-		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		main.setLayout(new GridLayout(1, false));
-
+	/**
+	 * TODO fields won't be displayed
+	 */
+	public void createFields() {
+		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		this.setLayout(new GridLayout(1, false));
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
 
 		for (Database database : MLmodel) {
 
-			Group group = new Group(main, SWT.READ_ONLY);
+			Group group = new Group(this, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			group.setText(database.getName());
@@ -65,7 +63,7 @@ public class UpdateMainPage extends WizardPage {
 				}
 			});
 
-			new Label(group, NONE).setText("Choose DBMS:");
+			new Label(group, SWT.NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			combo.setItems(database.getType().getPossibleDBMSs());
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
@@ -84,21 +82,25 @@ public class UpdateMainPage extends WizardPage {
 				}
 			});
 
-			new Label(group, NONE).setText("Database file: ");
+			new Label(group, SWT.NONE).setText("Database file: ");
 			Text textField = new Text(group, SWT.BORDER);
 			textField.setText(database.getName() + ".tdl");
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
 			database.setPathToDBModelFile(textField.getText());
-			textField.addModifyListener(e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText()));
+			textField.addModifyListener(new ModifyListener() {
+				@Override
+				public void modifyText(ModifyEvent e) {
+					// TODO Where to put validation?
+					database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText());
+				}
+			});
 			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}
-		setControl(main);
 	}
 
-	public ArrayList<Database> getMLmodel() {
-		return MLmodel;
+	public HashMap<Database, WizardFields> getWizardFields() {
+		return wizardFields;
 	}
-
 }
