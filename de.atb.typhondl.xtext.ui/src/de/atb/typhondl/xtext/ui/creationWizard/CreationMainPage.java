@@ -44,6 +44,7 @@ public class CreationMainPage extends WizardPage {
 	}
 
 	private void createHeader(Composite main) {
+		setTitle("Create a TyphonDL model");
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		main.setLayout(layout);
@@ -122,6 +123,10 @@ public class CreationMainPage extends WizardPage {
 		String path = modelPath.toString();
 		String pathWithoutFile = path.substring(0, path.lastIndexOf("/"));
 		return pathWithoutFile.substring(pathWithoutFile.lastIndexOf("/") + 1);
+	}
+
+	public String getChosenTemplate() {
+		return chosenTemplate;
 	}
 
 }
