@@ -7,26 +7,29 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.typhonDL.DBType;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 import de.atb.typhondl.xtext.ui.wizard.Messages;
 
-public class CreationMainPage extends WizardPage {
+public class CreationMainPage extends MyWizardPage {
 
 	private URI modelPath;
 	private Text fileText;
 	private Combo templateCombo;
 	private String chosenTemplate;
+	private boolean useAnalytics;
 
 	protected CreationMainPage(String pageName, URI modelPath) {
 		super(pageName);
@@ -40,6 +43,7 @@ public class CreationMainPage extends WizardPage {
 		main.setLayout(new GridLayout(2, false));
 		createHeader(main);
 		createCombo(main);
+		createAdditions(main);
 		setControl(main);
 	}
 
@@ -63,6 +67,7 @@ public class CreationMainPage extends WizardPage {
 		fileText.setLayoutData(gridData);
 		fileText.setFocus();
 		fileText.addModifyListener(e -> validate());
+		validate();
 	}
 
 	private void createCombo(Composite main) {
@@ -84,6 +89,29 @@ public class CreationMainPage extends WizardPage {
 		});
 	}
 
+	private void createAdditions(Composite main) {
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		main.setLayout(layout);
+		
+		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+		gridData.horizontalSpan = 2;
+		
+		Button checkbox = new Button(main, SWT.CHECK);
+		checkbox.setText("Use Typhon Data Analytics");
+		checkbox.setSelection(false);
+		this.useAnalytics = false;
+		checkbox.setLayoutData(gridData);
+		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
+		checkbox.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				useAnalytics = checkbox.getSelection();
+			}
+		});
+
+	}
+
 	private void validate() {
 		setStatus(null);
 		if ("".equals(fileText.getText().trim())) { //$NON-NLS-1$
@@ -100,24 +128,6 @@ public class CreationMainPage extends WizardPage {
 		}
 	}
 
-	public void setStatus(IStatus status) {
-		if (status == null || status.getSeverity() == IStatus.OK) {
-			setErrorMessage(null);
-			setMessage(null);
-			setPageComplete(true);
-		} else if (status.getSeverity() == IStatus.ERROR) {
-			setErrorMessage(status.getMessage());
-			setPageComplete(false);
-		} else if (status.getSeverity() == IStatus.WARNING) {
-			setErrorMessage(null);
-			setMessage(status.getMessage(), IMessageProvider.WARNING);
-			setPageComplete(true);
-		} else {
-			setErrorMessage(null);
-			setMessage(status.getMessage(), IMessageProvider.INFORMATION);
-			setPageComplete(true);
-		}
-	}
 
 	private String getFolder() {
 		String path = modelPath.toString();
@@ -127,6 +137,10 @@ public class CreationMainPage extends WizardPage {
 
 	public String getChosenTemplate() {
 		return chosenTemplate;
+	}
+	
+	public boolean getUseAnalytics() {
+		return useAnalytics;
 	}
 
 }

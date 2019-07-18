@@ -3,6 +3,7 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.net.URI;
 import java.util.Set;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -29,6 +30,10 @@ public class CreateModelWizard extends Wizard {
 		Set<Database> databases = dbmsPage.getDatabases();
 		databases.forEach(database -> System.out.println(database.getName() + ": " + database.getType() + ", "
 				+ database.getPathToDBModelFile() + ", " + database.getDbms()));
+		if (!dbmsPage.getMessage().isEmpty()) {
+			return MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage());
+			//MessageDialog.openWarning(this.getShell(), "Wizard", dbmsPage.getMessage());
+		}
 		return true;
 	}
 
