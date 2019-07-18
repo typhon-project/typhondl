@@ -14,6 +14,7 @@ public class CreateModelWizard extends Wizard {
 	private URI modelPath;
 	private CreationMainPage mainPage;
 	private CreationDBMSPage dbmsPage;
+	private CreationAnalyticsPage analyticsPage;
 	private String chosenTemplate;
 
 	@Override
@@ -23,6 +24,9 @@ public class CreateModelWizard extends Wizard {
 
 		dbmsPage = new CreationDBMSPage("Choose DBMS", modelPath);
 		addPage(dbmsPage);
+		
+		//analyticsPage = new CreationAnalyticsPage("Analytics Configuration");
+		//addPage(analyticsPage);
 	}
 
 	@Override
@@ -32,7 +36,6 @@ public class CreateModelWizard extends Wizard {
 				+ database.getPathToDBModelFile() + ", " + database.getDbms()));
 		if (!dbmsPage.getMessage().isEmpty()) {
 			return MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage());
-			//MessageDialog.openWarning(this.getShell(), "Wizard", dbmsPage.getMessage());
 		}
 		return true;
 	}
@@ -43,9 +46,19 @@ public class CreateModelWizard extends Wizard {
 
 	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
+		System.out.println(page.getName());
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
+		if (page instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
+			analyticsPage = createAnalyticsPage("Analytics Page");
+			analyticsPage.setWizard(this);
+			return analyticsPage;
+		}
 		return super.getNextPage(page);
+	}
+
+	private CreationAnalyticsPage createAnalyticsPage(String string) {
+		return new CreationAnalyticsPage(string);
 	}
 }
