@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
+import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class CreateModelWizard extends Wizard {
@@ -17,7 +18,7 @@ public class CreateModelWizard extends Wizard {
 	private CreationDBMSPage dbmsPage;
 	private CreationAnalyticsPage analyticsPage;
 	private int chosenTemplate;
-	private HashMap<String, String> analyticsSettings;
+	private HashMap<String, InputField> analyticsSettings;
 	
 
 	@Override

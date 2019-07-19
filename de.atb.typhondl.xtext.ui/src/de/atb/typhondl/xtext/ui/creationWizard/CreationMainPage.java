@@ -77,6 +77,8 @@ public class CreationMainPage extends MyWizardPage {
 		templateLabel.setText("Template: ");
 		templateCombo = new Combo(main, SWT.READ_ONLY);
 		for (SupportedTechnologies tech : SupportedTechnologies.values()) {
+			System.out.println(tech.ordinal());
+			System.out.println(tech.getDisplayedName());
 			templateCombo.setItem(tech.ordinal(), tech.getDisplayedName());
 		}
 		chosenTemplate = templateCombo.getSelectionIndex();
