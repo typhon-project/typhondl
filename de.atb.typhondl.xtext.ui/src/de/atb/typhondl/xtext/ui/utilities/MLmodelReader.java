@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import de.atb.typhondl.xtext.ui.wizard.DBTypeForWizard;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
 import javax.xml.parsers.*;

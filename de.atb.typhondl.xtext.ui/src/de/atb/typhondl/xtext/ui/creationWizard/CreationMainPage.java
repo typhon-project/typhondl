@@ -18,9 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.typhonDL.DBType;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.utilities.WizardFields;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.wizard.Messages;
 
 public class CreationMainPage extends MyWizardPage {
@@ -28,7 +26,7 @@ public class CreationMainPage extends MyWizardPage {
 	private URI modelPath;
 	private Text fileText;
 	private Combo templateCombo;
-	private String chosenTemplate;
+	private int chosenTemplate;
 	private boolean useAnalytics;
 
 	protected CreationMainPage(String pageName, URI modelPath) {
@@ -56,13 +54,13 @@ public class CreationMainPage extends MyWizardPage {
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 
 		Label folderLabel = new Label(main, SWT.NONE);
-		folderLabel.setText("Folder:");
+		folderLabel.setText("Folder: ");
 		Label folderText = new Label(main, SWT.NONE);
 		folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
 		folderText.setText(getFolder());
 		
 		Label fileLabel = new Label(main, SWT.NONE);
-		fileLabel.setText("Name");
+		fileLabel.setText("Name: ");
 		fileText = new Text(main, SWT.BORDER);
 		fileText.setLayoutData(gridData);
 		fileText.setFocus();
@@ -76,15 +74,16 @@ public class CreationMainPage extends MyWizardPage {
 		main.setLayout(layout);
 
 		Label templateLabel = new Label(main, SWT.NONE);
-		templateLabel.setText(Messages.NewFileWizardPrimaryPage_template_label);
+		templateLabel.setText("Template: ");
 		templateCombo = new Combo(main, SWT.READ_ONLY);
-		templateCombo.setItems("Docker Compose","Kubernetes with Docker"); //TODO specify this somewhere else
-		templateCombo.setText("Docker Compose");
-		chosenTemplate = templateCombo.getText();
+		for (SupportedTechnologies tech : SupportedTechnologies.values()) {
+			templateCombo.setItem(tech.ordinal(), tech.getDisplayedName());
+		}
+		chosenTemplate = templateCombo.getSelectionIndex();
 		templateCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				chosenTemplate = templateCombo.getText();
+				chosenTemplate = templateCombo.getSelectionIndex();
 			}
 		});
 	}
@@ -135,7 +134,7 @@ public class CreationMainPage extends MyWizardPage {
 		return pathWithoutFile.substring(pathWithoutFile.lastIndexOf("/") + 1);
 	}
 
-	public String getChosenTemplate() {
+	public int getChosenTemplate() {
 		return chosenTemplate;
 	}
 	

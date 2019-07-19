@@ -1,6 +1,7 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -15,7 +16,9 @@ public class CreateModelWizard extends Wizard {
 	private CreationMainPage mainPage;
 	private CreationDBMSPage dbmsPage;
 	private CreationAnalyticsPage analyticsPage;
-	private String chosenTemplate;
+	private int chosenTemplate;
+	private HashMap<String, String> analyticsSettings;
+	
 
 	@Override
 	public void addPages() {
@@ -37,6 +40,9 @@ public class CreateModelWizard extends Wizard {
 		if (!dbmsPage.getMessage().isEmpty()) {
 			return MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage());
 		}
+		if (mainPage.getUseAnalytics()) {
+			this.analyticsSettings = this.analyticsPage.getAnalyticsSettings();
+		}
 		return true;
 	}
 
@@ -51,8 +57,8 @@ public class CreateModelWizard extends Wizard {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
 		if (page instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
-			analyticsPage = createAnalyticsPage("Analytics Page");
-			analyticsPage.setWizard(this);
+			this.analyticsPage = createAnalyticsPage("Analytics Page");
+			this.analyticsPage.setWizard(this);
 			return analyticsPage;
 		}
 		return super.getNextPage(page);

@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.wizard;
+package de.atb.typhondl.xtext.ui.utilities;
 
 public enum DBTypeForWizard {
 	relationaldb(){
