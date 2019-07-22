@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -58,6 +57,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
 			Text text = new Text(main, SWT.BORDER);
 			text.setText(inputField.defaultValue);
 			text.setLayoutData(gridData);
+			inputField.value = inputField.defaultValue;
 			analyticsSettings.put(inputField.name, inputField);
 			text.addModifyListener(e -> {
 				inputField.value = text.getText();
@@ -68,10 +68,6 @@ public class CreationAnalyticsPage extends MyWizardPage {
 	}
 
 	public HashMap<String, InputField> getAnalyticsSettings() {
-		for (String name : analyticsSettings.keySet()) {
-			InputField field = analyticsSettings.get(name);
-			System.out.println(name + ": " + field.value);
-		}
 		return analyticsSettings;
 	}
 
