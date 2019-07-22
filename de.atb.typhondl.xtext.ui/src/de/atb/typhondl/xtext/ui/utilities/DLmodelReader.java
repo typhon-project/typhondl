@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.service;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
-public class Service {
+public class DLmodelReader {
 
 	public static DeploymentModel readDLmodel(IPath path) {
 

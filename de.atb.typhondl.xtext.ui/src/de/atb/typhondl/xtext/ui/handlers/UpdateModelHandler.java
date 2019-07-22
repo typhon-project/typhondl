@@ -16,7 +16,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.atb.typhondl.xtext.ui.updateModel.ModelUpdater;
+import de.atb.typhondl.xtext.ui.updateWizard.ModelUpdater;
 
 public class UpdateModelHandler extends AbstractHandler {
 

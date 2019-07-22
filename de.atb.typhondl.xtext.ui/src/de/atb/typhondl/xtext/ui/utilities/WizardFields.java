@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.updateWizard;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
