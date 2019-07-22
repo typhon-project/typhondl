@@ -55,20 +55,19 @@ public class ModelCreator {
 		dbTypes.add(mongo);
 		for (Database database : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
-			importedDB.setRelativePath(database.getPathToDBModelFile());
-			DLmodel.getGuiMetaInformation().add(importedDB);
-			// TODO create containers and references and put them in list
 			DB db;
 			if (database.getPathToDBModelFile() != null) { // use existing .tdl file
 				DeploymentModel existing = DLmodelReader
 						.readDLmodel(MLmodelPath.removeLastSegments(1).append(database.getPathToDBModelFile()));
 				db = DLmodelReader.getDBs(existing).get(0);
 				dbs.add(db);
+				importedDB.setRelativePath(database.getPathToDBModelFile());
 			} else if (database.getDbms() != null) {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
 				db.setType(database.getDbms());
 				dbs.add(db);
+				importedDB.setRelativePath(database.getName() + ".tdl");
 			} else {
 				db = null; //TODO exception?
 				System.out.println("ModelCreator.createDLmodel -> dbms == null && PathToDBModelFile == null");
@@ -76,6 +75,7 @@ public class ModelCreator {
 			if (!dbTypes.contains(db.getType())) {
 				dbTypes.add(db.getType());
 			}
+			DLmodel.getGuiMetaInformation().add(importedDB);
 		}
 
 		DLmodel.getElements().addAll(dbTypes);

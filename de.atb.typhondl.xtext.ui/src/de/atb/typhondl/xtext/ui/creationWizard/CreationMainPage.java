@@ -147,5 +147,9 @@ public class CreationMainPage extends MyWizardPage {
 	public boolean getUseAnalytics() {
 		return useAnalytics;
 	}
+	
+	public String getModelName() {
+		return fileText.getText() + ".tdl";
+	}
 
 }
