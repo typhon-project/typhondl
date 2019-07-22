@@ -1,6 +1,8 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -76,11 +78,13 @@ public class CreationMainPage extends MyWizardPage {
 		Label templateLabel = new Label(main, SWT.NONE);
 		templateLabel.setText("Template: ");
 		templateCombo = new Combo(main, SWT.READ_ONLY);
+		List<String> itemList = new ArrayList<String>();
 		for (SupportedTechnologies tech : SupportedTechnologies.values()) {
-			System.out.println(tech.ordinal());
-			System.out.println(tech.getDisplayedName());
-			templateCombo.setItem(tech.ordinal(), tech.getDisplayedName());
+			itemList.add(tech.getDisplayedName());
+			//templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow doesn't work
 		}
+		templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
+		templateCombo.setText(templateCombo.getItem(0));
 		chosenTemplate = templateCombo.getSelectionIndex();
 		templateCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
