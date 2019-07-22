@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.service;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import java.util.Map;
 
