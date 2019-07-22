@@ -2,10 +2,8 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -15,11 +13,9 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
-import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
-import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class CreateModelWizard extends Wizard {
 
@@ -50,6 +46,8 @@ public class CreateModelWizard extends Wizard {
 		}
 		if (mainPage.getUseAnalytics()) {
 			this.analyticsSettings = this.analyticsPage.getAnalyticsSettings();
+		} else {
+			this.analyticsSettings = null;
 		}
 		DeploymentModel DLmodel = ModelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), MLmodelPath,
 				chosenTemplate);

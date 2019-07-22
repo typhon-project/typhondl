@@ -38,6 +38,8 @@ public class ModelCreator {
 		Import MLmodel = TyphonDLFactory.eINSTANCE.createImport();
 		MLmodel.setRelativePath(getModelName(MLmodelPath));
 		DLmodel.getGuiMetaInformation().add(MLmodel);
+		
+		boolean useAnalytics = analyticsSettings != null;
 
 		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
 		platformType.setName("default");
@@ -66,13 +68,22 @@ public class ModelCreator {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
 				db.setType(database.getDbms());
+				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+				image.setValue(db.getType().getName() + ":latest //TODO");
+				db.setImage(image);
 				dbs.add(db);
 				importedDB.setRelativePath(database.getName() + ".tdl");
 			} else {
-				db = null; //TODO exception?
+				db = null; // this never happens
 				System.out.println("ModelCreator.createDLmodel -> dbms == null && PathToDBModelFile == null");
 			}
-			if (!dbTypes.contains(db.getType())) {
+			boolean containsType = false;
+			for (DBType dbType : dbTypes) {
+				if (dbType.getName().equals(db.getType().getName())) {
+					containsType = true;
+				}
+			}
+			if (!containsType) {
 				dbTypes.add(db.getType());
 			}
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -80,6 +91,13 @@ public class ModelCreator {
 
 		DLmodel.getElements().addAll(dbTypes);
 
+		for (DB db : dbs) { //types need to be the same instance
+			for (DBType dbtype : dbTypes) {
+				if (dbtype.getName().equals(db.getType().getName())) {
+					db.setType(dbtype);
+				}
+			}
+		}
 		DLmodel.getElements().addAll(dbs);// TODO cross refence between files does not work yet
 
 		/**
@@ -226,7 +244,7 @@ public class ModelCreator {
 
 	private static String getModelName(IPath path) {
 		String string = path.toString();
-		return string.substring(string.lastIndexOf('/'), string.length() - 1);
+		return string.substring(string.lastIndexOf('/')+1, string.length());
 	}
 
 }
