@@ -3,7 +3,8 @@ package de.atb.typhondl.xtext.ui.updateWizard;
 import java.util.ArrayList;
 
 import org.eclipse.jface.wizard.Wizard;
-import de.atb.typhondl.xtext.ui.wizard.Database;
+
+import de.atb.typhondl.xtext.ui.creationWizard.Database;
 
 public class UpdateModelWizard extends Wizard {
 

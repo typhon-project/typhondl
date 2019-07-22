@@ -20,9 +20,9 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.creationWizard.Database;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
-import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class ModelUpdater {
 

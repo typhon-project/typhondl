@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.creationWizard.Database;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
-import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class UpdateMainPage extends WizardPage {
 

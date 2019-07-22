@@ -29,7 +29,6 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
-import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class CreationDBMSPage extends MyWizardPage {
 

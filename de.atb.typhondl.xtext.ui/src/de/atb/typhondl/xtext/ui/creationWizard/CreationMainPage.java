@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.wizard.Messages;
 
 public class CreationMainPage extends MyWizardPage {
 
@@ -120,15 +119,15 @@ public class CreationMainPage extends MyWizardPage {
 	private void validate() {
 		setStatus(null);
 		if ("".equals(fileText.getText().trim())) { //$NON-NLS-1$
-			setStatus(new Status(IStatus.ERROR, "NewFileWizard", Messages.NewFileWizardPrimaryPage_empty_name)); //$NON-NLS-1$
+			setStatus(new Status(IStatus.ERROR, "NewFileWizard", "Name must not be empty")); //$NON-NLS-1$
 			return;
 		}
 		IFile file = ResourcesPlugin.getWorkspace().getRoot()
 				.getFile(new Path(getFolder() + "/" + fileText.getText() + ".tdl"));
 		if (file.exists()) {
 			setStatus(new Status(IStatus.ERROR, "NewFileWizard", //$NON-NLS-1$
-					Messages.NewFileWizardPrimaryPage_file_already_exist_pre + fileText.getText() + ".tdl"
-							+ Messages.NewFileWizardPrimaryPage_file_already_exist_post));
+					"File '" + fileText.getText() + ".tdl"
+							+ "' already exists."));
 			return;
 		}
 	}

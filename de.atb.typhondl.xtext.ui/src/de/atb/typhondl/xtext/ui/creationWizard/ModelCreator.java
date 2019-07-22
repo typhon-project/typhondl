@@ -27,7 +27,6 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.wizard.Database;
 
 public class ModelCreator {
 
@@ -69,7 +68,7 @@ public class ModelCreator {
 				db.setName(database.getName());
 				db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(db.getType().getName() + ":latest //TODO");
+				image.setValue(db.getType().getName()  + "image");
 				db.setImage(image);
 				dbs.add(db);
 				importedDB.setRelativePath(database.getName() + ".tdl");
