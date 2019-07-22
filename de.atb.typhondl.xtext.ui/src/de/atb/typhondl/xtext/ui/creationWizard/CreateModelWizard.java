@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.wizard.Database;
 
@@ -44,7 +45,13 @@ public class CreateModelWizard extends Wizard {
 		if (mainPage.getUseAnalytics()) {
 			this.analyticsSettings = this.analyticsPage.getAnalyticsSettings();
 		}
+		DeploymentModel DLmodel = ModelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabaseSettings());
+		createTemplate(DLmodel);
 		return true;
+	}
+
+	private void createTemplate(DeploymentModel DLmodel) {
+		Template template = TemplateFactory.createTemplate(chosenTemplate, DLmodel);
 	}
 
 	public void setModelPath(URI modelPath) {

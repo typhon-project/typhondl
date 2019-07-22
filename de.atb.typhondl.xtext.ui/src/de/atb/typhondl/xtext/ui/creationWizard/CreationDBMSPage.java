@@ -34,6 +34,7 @@ import de.atb.typhondl.xtext.ui.wizard.Database;
 public class CreationDBMSPage extends MyWizardPage {
 
 	private HashMap<Database, WizardFields> databaseSettings;
+
 	private URI modelPath;
 
 	protected CreationDBMSPage(String pageName, URI modelPath) {
@@ -165,5 +166,9 @@ public class CreationDBMSPage extends MyWizardPage {
 
 	public Set<Database> getDatabases() {
 		return databaseSettings.keySet();
+	}
+	
+	public HashMap<Database, WizardFields> getDatabaseSettings() {
+		return databaseSettings;
 	}
 }
