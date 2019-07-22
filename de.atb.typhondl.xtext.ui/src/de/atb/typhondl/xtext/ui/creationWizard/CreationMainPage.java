@@ -25,15 +25,15 @@ import de.atb.typhondl.xtext.ui.wizard.Messages;
 
 public class CreationMainPage extends MyWizardPage {
 
-	private URI modelPath;
+	private URI MLmodelPath;
 	private Text fileText;
 	private Combo templateCombo;
 	private int chosenTemplate;
 	private boolean useAnalytics;
 
-	protected CreationMainPage(String pageName, URI modelPath) {
+	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
-		this.modelPath = modelPath;
+		this.MLmodelPath = MLmodelPath;
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class CreationMainPage extends MyWizardPage {
 
 
 	private String getFolder() {
-		String path = modelPath.toString();
+		String path = MLmodelPath.toString();
 		String pathWithoutFile = path.substring(0, path.lastIndexOf("/"));
 		return pathWithoutFile.substring(pathWithoutFile.lastIndexOf("/") + 1);
 	}

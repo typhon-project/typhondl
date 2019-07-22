@@ -51,7 +51,7 @@ public class CreateModelHandler extends AbstractHandler {
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
 			CreateModelWizard fileWizard = new CreateModelWizard();
-			fileWizard.setModelPath(path.toFile().toURI());
+			fileWizard.setModelPath(path);
 			WizardDialog dialog = new WizardDialog(activeShell, fileWizard);
 
 			dialog.open();

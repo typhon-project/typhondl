@@ -171,10 +171,10 @@ public class ModelUpdater {
 //	}
 
 	private static String getMLURI(DeploymentModel DLmodel, IPath fullPath) {
-		String DLmodelName = DLmodel.getGuiMetaInformation().stream()
+		String MLmodelName = DLmodel.getGuiMetaInformation().stream()
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
 				.filter(info -> info.getRelativePath().endsWith(".xmi")).findFirst().map(info -> info.getRelativePath())
 				.orElse("");
-		return fullPath.toString().substring(0, fullPath.toString().lastIndexOf("/")) + "/" + DLmodelName;
+		return fullPath.toString().substring(0, fullPath.toString().lastIndexOf("/")) + "/" + MLmodelName;
 	}
 }

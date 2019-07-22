@@ -167,8 +167,4 @@ public class CreationDBMSPage extends MyWizardPage {
 	public Set<Database> getDatabases() {
 		return databaseSettings.keySet();
 	}
-	
-	public HashMap<Database, WizardFields> getDatabaseSettings() {
-		return databaseSettings;
-	}
 }
