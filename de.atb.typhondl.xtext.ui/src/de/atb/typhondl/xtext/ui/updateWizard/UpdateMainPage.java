@@ -5,8 +5,6 @@ import java.util.HashMap;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -20,7 +18,8 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.wizard.Database;
+import de.atb.typhondl.xtext.ui.creationWizard.Database;
+import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 public class UpdateMainPage extends WizardPage {
 
@@ -92,13 +91,7 @@ public class UpdateMainPage extends WizardPage {
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
 			database.setPathToDBModelFile(textField.getText());
-			textField.addModifyListener(new ModifyListener() {
-				@Override
-				public void modifyText(ModifyEvent e) {
-					// TODO Where to put validation?
-					database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText());
-				}
-			});
+			textField.addModifyListener(e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText()));
 			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}
 		setControl(main);

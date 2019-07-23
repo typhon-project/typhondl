@@ -18,7 +18,7 @@ import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
-import de.atb.typhondl.xtext.ui.service.Service;
+import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 
 public class TyphonEditorDialog extends PreferenceDialog {
 
@@ -35,7 +35,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
-		DeploymentModel model = Service.readDLmodel(path); // adds all resources to ResourceSet
+		DeploymentModel model = DLmodelReader.readDLmodel(path); // adds all resources to ResourceSet
 		PreferenceManager preferenceManager = createPages(model);
 		return preferenceManager;
 	}
@@ -43,7 +43,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	private static PreferenceManager createPages(DeploymentModel model) {
 		PreferenceManager preferenceManager = new PreferenceManager();
 
-		ArrayList<DB> dbs = Service.getDBs(model);
+		ArrayList<DB> dbs = DLmodelReader.getDBs(model);
 		PreferenceNode databaseNode = PreferenceNodeFactory.createPreferenceNode(new DBOverview(dbs));
 		preferenceManager.addToRoot(databaseNode);
 		for (DB db : dbs) {
