@@ -4,6 +4,6 @@ database userdb : mariadb {
 	image = mariadb:latest;
 	restart = always;
     environment {
-    	"MYSQL_ROOT_PASSWORD=example"
+    	MYSQL_ROOT_PASSWORD = example;
     }
 }

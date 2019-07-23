@@ -9,7 +9,7 @@ containertype Docker
 platform platformname : default { //TODO
 	cluster clustername { //TODO
 		application name { //TODO
-			container polystore : Docker {
+			container polystore_api : Docker {
 				deploys polystore_api
 				depends_on polystoredb 
 				container_name = typhonml.polystore.service;
@@ -17,6 +17,8 @@ platform platformname : default { //TODO
 				volumes = ./models:/models;
 			}
 			container polystoreui : Docker {
+				deploys polystore_ui
+				depends_on polystore_api
 				build {
 					context = Typhon Service UI;
 				}
