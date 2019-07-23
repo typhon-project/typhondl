@@ -35,12 +35,7 @@ services:
 [/template]
 
 [template public printProperties(aProperty : Key_Value) ]
-[if (aProperty.name.equalsIgnoreCase('ports'))] [aProperty.name/]: 
-  - [aProperty.value/] [elseif (aProperty.name.equalsIgnoreCase('volumes'))] [aProperty.name/]:
-  - [aProperty.value/] [else] 
 [aProperty.name/]: [aProperty.value/]
-[/if]
-
 [/template]
 
 [template public printProperties(aProperty : Key_KeyValueList) ]
@@ -50,11 +45,10 @@ services:
 [/for][/template]
 
 [template public printProperties(aProperty : Key_ValueArray) ]
-[aProperty.name/]: [ '[' /]
-  '[aProperty.value/]'[for (aValue : EString | aProperty.values)],
-  '[aValue/]'
+[aProperty.name/]:
+  -[aProperty.value/][for (aValue : EString | aProperty.values)],
+  -[aValue/]
 [/for]
-[ ']' /]
 [/template]
 
 [template public printFeature(software : Software) ]

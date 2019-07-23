@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
@@ -23,6 +24,7 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.Database;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class ModelUpdater {
 
@@ -112,7 +114,7 @@ public class ModelUpdater {
 			Resource dbResource = DLmodelResourceSet.createResource(dbURI);
 			dbResource.getContents().add(container);
 			try {
-				dbResource.save(Collections.EMPTY_MAP);
+				dbResource.save(SavingOptions.getTDLoptions());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
