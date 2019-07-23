@@ -2,7 +2,6 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.IPath;
@@ -16,7 +15,7 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
-import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
+import de.atb.typhondl.xtext.ui.utilities.SavingOptions;	
 
 public class CreateModelWizard extends Wizard {
 
