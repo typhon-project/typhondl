@@ -21,6 +21,8 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
 
+import com.google.inject.Injector;
+
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
@@ -31,6 +33,7 @@ import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.Database;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
@@ -108,7 +111,9 @@ public class ModelUpdater {
 
 	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IFile path,
 			XtextLiveScopeResourceSetProvider provider) {
-		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(path.getProject());
+		Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
+		XtextLiveScopeResourceSetProvider provider2 = injector.getInstance(XtextLiveScopeResourceSetProvider.class);
+		XtextResourceSet resourceSet = (XtextResourceSet) provider2.get(path.getProject());
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		Resource DLmodelResource = DLmodel.eResource();
 		resourceSet.getResources().add(DLmodelResource);
@@ -133,6 +138,16 @@ public class ModelUpdater {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+			//########################################################
+			try {
+				System.out.println("zzzz");
+				Thread.sleep(5000);
+				System.out.println("/zzzzz");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			//########################################################
 
 			// 2. add new database file to imports
 			Import newImport = TyphonDLFactory.eINSTANCE.createImport();

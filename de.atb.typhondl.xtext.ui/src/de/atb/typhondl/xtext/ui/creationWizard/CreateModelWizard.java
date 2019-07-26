@@ -1,7 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
-import java.lang.annotation.Inherited;
 import java.net.URI;
 import java.util.HashMap;
 
@@ -15,10 +14,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
-import com.google.inject.Inject;
-
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
@@ -66,7 +62,6 @@ public class CreateModelWizard extends Wizard {
 		}
 		DeploymentModel DLmodel = ModelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), MLmodelPath,
 				chosenTemplate);
-
 		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(project);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		Resource resource = resourceSet.createResource(org.eclipse.emf.common.util.URI
