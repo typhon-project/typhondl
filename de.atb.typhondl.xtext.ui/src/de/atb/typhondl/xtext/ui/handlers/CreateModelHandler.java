@@ -19,6 +19,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.IGrammarAccess;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
@@ -29,7 +30,11 @@ public class CreateModelHandler extends AbstractHandler {
 	@Inject
 	IGrammarAccess grammarAccess;
 
+	@Inject
+	XtextLiveScopeResourceSetProvider provider;
+
 	IPath path = null;
+	IProject project = null;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -44,10 +49,11 @@ public class CreateModelHandler extends AbstractHandler {
 			if (firstElement instanceof IAdaptable) {
 				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
 				path = file.getLocation();
+				project = file.getProject();
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
-			CreateModelWizard fileWizard = new CreateModelWizard();
+			CreateModelWizard fileWizard = new CreateModelWizard(provider, project);
 			fileWizard.setModelPath(path);
 			WizardDialog dialog = new WizardDialog(activeShell, fileWizard);
 
@@ -55,7 +61,7 @@ public class CreateModelHandler extends AbstractHandler {
 
 		}
 
-		for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) { 
+		for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
 			try {
 				iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 			} catch (CoreException e) {

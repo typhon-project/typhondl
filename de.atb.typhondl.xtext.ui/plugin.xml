@@ -543,15 +543,16 @@
           id="de.atb.typhondl.xtext.ui.editor.OpenProperties"
           name="Open Editor">
     </command>
-    <command
-          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
-          id="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel"
-          name="Update Model">
-    </command>
-    <command
-          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.CreateModelHandler"
-          id="de.atb.typhondl.xtext.ui.creationWizard.CreateModel"
-          name="Create Model">
-    </command>
+ </extension>
+ <extension
+       point="org.eclipse.ui.handlers">
+    <handler
+          class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.CreateModelHandler"
+          commandId="de.atb.typhondl.xtext.ui.creationWizard.CreateModel">
+    </handler>
+    <handler
+          class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
+          commandId="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel">
+    </handler>
  </extension>
 </plugin>

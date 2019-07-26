@@ -15,10 +15,16 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+
+import com.google.inject.Inject;
 
 import de.atb.typhondl.xtext.ui.updateWizard.ModelUpdater;
 
 public class UpdateModelHandler extends AbstractHandler {
+
+	@Inject
+	XtextLiveScopeResourceSetProvider provider;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -30,9 +36,9 @@ public class UpdateModelHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			result = ModelUpdater.updateModel(file.getLocation(), window);
+			result = ModelUpdater.updateModel(file, window, provider);
 
-			for (IProject iproject : root.getProjects()) { 
+			for (IProject iproject : root.getProjects()) {
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				} catch (CoreException e) {
@@ -41,7 +47,6 @@ public class UpdateModelHandler extends AbstractHandler {
 			}
 		}
 
-		
 		if (!result.isEmpty()) {
 			MessageDialog.openInformation(window.getShell(), "TyphonDL Updater", result);
 		}

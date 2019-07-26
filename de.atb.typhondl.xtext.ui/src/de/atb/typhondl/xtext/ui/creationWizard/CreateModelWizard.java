@@ -1,9 +1,11 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
+import java.lang.annotation.Inherited;
 import java.net.URI;
 import java.util.HashMap;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -11,13 +13,20 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+
+import com.google.inject.Inject;
 
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
-import de.atb.typhondl.xtext.ui.utilities.SavingOptions;	
+import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class CreateModelWizard extends Wizard {
+
+	
+	private XtextLiveScopeResourceSetProvider provider;
+	private IProject project;
 
 	private IPath MLmodelPath;
 	private CreationMainPage mainPage;
@@ -26,6 +35,12 @@ public class CreateModelWizard extends Wizard {
 	private int chosenTemplate;
 	private HashMap<String, InputField> analyticsSettings;
 	private URI MLmodelURI;
+
+	public CreateModelWizard(XtextLiveScopeResourceSetProvider provider, IProject project) {
+		super();
+		this.project = project;
+		this.provider = provider;
+	}
 
 	@Override
 	public void addPages() {
@@ -52,8 +67,7 @@ public class CreateModelWizard extends Wizard {
 		DeploymentModel DLmodel = ModelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), MLmodelPath,
 				chosenTemplate);
 
-		XtextResourceSet resourceSet = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-				.getInstance(XtextResourceSet.class);
+		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(project);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		Resource resource = resourceSet.createResource(org.eclipse.emf.common.util.URI
 				.createFileURI(MLmodelPath.removeLastSegments(1).append(mainPage.getModelName()).toString()));
