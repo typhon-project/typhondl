@@ -4,31 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.resource.XtextResourceSet;
-
-import com.google.inject.Injector;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class DLmodelReader {
 
-	public static DeploymentModel readDLmodel(IPath path) {
-
-		Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
-		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-
-		URI modelURI = URI.createFileURI(path.toString());
-
-		Resource resource = resourceSet.getResource(modelURI, true);
+	public static DeploymentModel readDLmodel(Resource resource) {
+//
+//		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
+//				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+//				.getInstance(XtextLiveScopeResourceSetProvider.class).get(file.getProject());
+//		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+//
+//		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+//
+//		Resource resource = resourceSet.getResource(modelURI, true);
 
 		/*
 		 * DeploymentModel model only includes the model parts written in the
@@ -60,7 +55,7 @@ public class DLmodelReader {
 		model.eResource().getResourceSet().getResources().forEach(resource -> {
 			dbs.addAll(((DeploymentModel) resource.getContents().get(0)).getElements().stream()
 					.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
-					.collect(Collectors.toList()));
+					.filter(db -> !db.getName().equals("polystoredb")).collect(Collectors.toList()));
 		});
 		return dbs;
 	}

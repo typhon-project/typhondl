@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
@@ -24,6 +28,7 @@ import de.atb.typhondl.xtext.typhonDL.NonDB;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -31,8 +36,17 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 public class ModelCreator {
 
 	public static DeploymentModel createDLmodel(HashMap<String, InputField> analyticsSettings,
-			Set<Database> databaseInfo, IPath MLmodelPath, int chosenTemplate) {
+			Set<Database> databaseInfo, IFile MLmodelPath, int chosenTemplate) {
 
+		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
+				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+				.getInstance(XtextLiveScopeResourceSetProvider.class).get(MLmodelPath.getProject());
+		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+
+//URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+//
+//Resource resource = resourceSet.getResource(modelURI, true);
+		
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 		Import MLmodel = TyphonDLFactory.eINSTANCE.createImport();
 		MLmodel.setRelativePath(getModelName(MLmodelPath));
@@ -57,9 +71,10 @@ public class ModelCreator {
 		for (Database database : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DB db;
+			
 			if (database.getPathToDBModelFile() != null) { // use existing .tdl file
 				DeploymentModel existing = DLmodelReader
-						.readDLmodel(MLmodelPath.removeLastSegments(1).append(database.getPathToDBModelFile()));
+						.readDLmodel(MLmodelPath.getFullPath().removeLastSegments(1).append(database.getPathToDBModelFile()));
 				db = DLmodelReader.getDBs(existing).get(0);
 				dbs.add(db);
 				importedDB.setRelativePath(database.getPathToDBModelFile());

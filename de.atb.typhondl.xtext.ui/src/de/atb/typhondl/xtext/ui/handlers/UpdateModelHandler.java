@@ -23,9 +23,6 @@ import de.atb.typhondl.xtext.ui.updateWizard.ModelUpdater;
 
 public class UpdateModelHandler extends AbstractHandler {
 
-	@Inject
-	XtextLiveScopeResourceSetProvider provider;
-
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
@@ -36,7 +33,7 @@ public class UpdateModelHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			result = ModelUpdater.updateModel(file, window, provider);
+			result = ModelUpdater.updateModel(file, window);
 
 			for (IProject iproject : root.getProjects()) {
 				try {

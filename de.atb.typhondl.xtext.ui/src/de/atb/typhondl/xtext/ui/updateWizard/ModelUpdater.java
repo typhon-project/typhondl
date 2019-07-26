@@ -2,9 +2,7 @@ package de.atb.typhondl.xtext.ui.updateWizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,17 +39,18 @@ import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class ModelUpdater {
 
-	public static String updateModel(IFile path, IWorkbenchWindow window, XtextLiveScopeResourceSetProvider provider) {
-		IPath fullPath = path.getLocation();
-		DeploymentModel DLmodel = DLmodelReader.readDLmodel(fullPath);
+	public static String updateModel(IFile file, IWorkbenchWindow window) {
+		// read DL and ML models
+		DeploymentModel DLmodel = DLmodelReader.readDLmodel(file);
 		ArrayList<Database> MLmodel = null;
-		File file = new File(getMLURI(DLmodel, fullPath));
+		File MLfile = new File(getMLURI(DLmodel, file.getLocation()));
 		try {
-			MLmodel = MLmodelReader.readXMIFile(file.toURI());
+			MLmodel = MLmodelReader.readXMIFile(MLfile.toURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
-		return compareDLandML(DLmodel, MLmodel, window, path, provider);
+		// and compare them
+		return compareDLandML(DLmodel, MLmodel, window, file);
 	}
 
 	/**
@@ -78,15 +77,19 @@ public class ModelUpdater {
 	 * @param fullPath
 	 */
 	private static String compareDLandML(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window,
-			IFile path, XtextLiveScopeResourceSetProvider provider) {
-		IPath fullPath = path.getLocation();
+			IFile file) {
+		IPath fullPath = file.getLocation();
 		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel);
 		if (MLmodel.size() > DLdbs.size()) { // case 2.1
+			// delete all DBs that are both in the ML and DL (only the new ones remain in
+			// the ML model)
 			for (DB db : DLdbs) {
 				MLmodel.removeIf(databse -> databse.getName().equals(db.getName()));
 			}
+			// ask the user for additional information (DBMS or path to existing model file)
 			MLmodel = openUpdateWizard(DLmodel, MLmodel, window);
-			addDBsToDLmodel(DLmodel, MLmodel, path, provider);
+			// Add the new DBs to the old DL model
+			addDBsToDLmodel(DLmodel, MLmodel, file);
 			String updatedDBS = MLmodel.get(0).getName();
 			for (int i = 1; i < MLmodel.size(); i++) {
 				updatedDBS += ", " + MLmodel.get(i).getName();
@@ -109,11 +112,10 @@ public class ModelUpdater {
 		return updateWizard.getUpdatedMLmodel();
 	}
 
-	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IFile path,
-			XtextLiveScopeResourceSetProvider provider) {
-		Injector injector = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL);
-		XtextLiveScopeResourceSetProvider provider2 = injector.getInstance(XtextLiveScopeResourceSetProvider.class);
-		XtextResourceSet resourceSet = (XtextResourceSet) provider2.get(path.getProject());
+	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IFile file) {
+		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
+				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+				.getInstance(XtextLiveScopeResourceSetProvider.class).get(file.getProject());
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		Resource DLmodelResource = DLmodel.eResource();
 		resourceSet.getResources().add(DLmodelResource);
@@ -138,8 +140,8 @@ public class ModelUpdater {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			//########################################################
+
+			// ########################################################
 			try {
 				System.out.println("zzzz");
 				Thread.sleep(5000);
@@ -147,7 +149,7 @@ public class ModelUpdater {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			//########################################################
+			// ########################################################
 
 			// 2. add new database file to imports
 			Import newImport = TyphonDLFactory.eINSTANCE.createImport();
