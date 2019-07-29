@@ -45,7 +45,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Cluster_Network/name"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Network">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Network/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Network/reference"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Network/references"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Application">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Application/name"/>

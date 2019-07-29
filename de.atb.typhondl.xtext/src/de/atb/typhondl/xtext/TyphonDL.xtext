@@ -80,7 +80,7 @@ Cluster_Network:
 ;
 
 Network:
-	'network' name=[Cluster_Network]
+	'network' reference=[Cluster_Network] (',' references+=[Cluster_Network])*
 ;
 
 Application :
