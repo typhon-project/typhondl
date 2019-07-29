@@ -9,17 +9,14 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.IGrammarAccess;
-import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
@@ -29,12 +26,6 @@ public class CreateModelHandler extends AbstractHandler {
 
 	@Inject
 	IGrammarAccess grammarAccess;
-
-	@Inject
-	XtextLiveScopeResourceSetProvider provider;
-
-	IPath path = null;
-	IProject project = null;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -48,16 +39,12 @@ public class CreateModelHandler extends AbstractHandler {
 			Object firstElement = strucSelection.getFirstElement();
 			if (firstElement instanceof IAdaptable) {
 				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
-				path = file.getLocation();
-				project = file.getProject();
+
+				CreateModelWizard fileWizard = new CreateModelWizard(file);
+				WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), fileWizard);
+
+				dialog.open();
 			}
-			Shell activeShell = HandlerUtil.getActiveShell(event);
-
-			CreateModelWizard fileWizard = new CreateModelWizard(provider, project);
-			fileWizard.setModelPath(path);
-			WizardDialog dialog = new WizardDialog(activeShell, fileWizard);
-
-			dialog.open();
 
 		}
 

@@ -55,7 +55,6 @@ public class ModelUpdater {
 		this.window = window;
 		this.DLmodelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		addResources();
-
 	}
 
 	/**

@@ -1,49 +1,34 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.resource.XtextResourceSet;
-import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
-import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class CreateModelWizard extends Wizard {
 
-	
-	private XtextLiveScopeResourceSetProvider provider;
-	private IProject project;
-
-	private IPath MLmodelPath;
+	private IFile MLmodel;
 	private CreationMainPage mainPage;
 	private CreationDBMSPage dbmsPage;
 	private CreationAnalyticsPage analyticsPage;
 	private int chosenTemplate;
 	private HashMap<String, InputField> analyticsSettings;
-	private URI MLmodelURI;
 
-	public CreateModelWizard(XtextLiveScopeResourceSetProvider provider, IProject project) {
+	public CreateModelWizard(IFile MLmodel) {
 		super();
-		this.project = project;
-		this.provider = provider;
+		this.MLmodel = MLmodel;
 	}
 
 	@Override
 	public void addPages() {
-		mainPage = new CreationMainPage("Create new DL model", MLmodelURI);
+		mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
 		addPage(mainPage);
 
-		dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodelURI);
+		dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel.getLocationURI());
 		addPage(dbmsPage);
 
 		// analyticsPage = new CreationAnalyticsPage("Analytics Configuration");
@@ -60,25 +45,9 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			this.analyticsSettings = null;
 		}
-		DeploymentModel DLmodel = ModelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), MLmodelPath,
-				chosenTemplate);
-		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(project);
-		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-		Resource resource = resourceSet.createResource(org.eclipse.emf.common.util.URI
-				.createFileURI(MLmodelPath.removeLastSegments(1).append(mainPage.getModelName()).toString()));
-		resource.getContents().add(DLmodel);
-		try {
-			resource.save(SavingOptions.getTDLoptions());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		ModelCreator modelCreator = new ModelCreator(MLmodel);
+		modelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), chosenTemplate);
 		return true;
-	}
-
-	public void setModelPath(IPath path) {
-		this.MLmodelPath = path;
-		this.MLmodelURI = path.toFile().toURI();
 	}
 
 	@Override

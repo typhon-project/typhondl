@@ -1,11 +1,18 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -27,37 +34,74 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.NonDB;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
+import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
-import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ModelCreator {
 
-	public static DeploymentModel createDLmodel(HashMap<String, InputField> analyticsSettings,
-			Set<Database> databaseInfo, IFile MLmodelPath, int chosenTemplate) {
+	// the source ML model from which a DL model is created
+	private IFile MLmodel;
+	// the resourceSet containing all tdl resources
+	private XtextResourceSet resourceSet;
+	// path to folder in which to save all model files
+	private IPath folder;
+	private ArrayList<DeploymentModel> DLmodelList;
 
-		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
+	public ModelCreator(IFile MLmodel) {
+		this.MLmodel = MLmodel;
+		this.folder = this.MLmodel.getFullPath().removeLastSegments(1);
+		addResources();
+	}
+
+	/**
+	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
+	 */
+	private void addResources() {
+		this.resourceSet = (XtextResourceSet) Activator.getInstance()
 				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-				.getInstance(XtextLiveScopeResourceSetProvider.class).get(MLmodelPath.getProject());
-		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+				.getInstance(XtextLiveScopeResourceSetProvider.class).get(this.MLmodel.getProject());
+		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		IResource members[] = null;
+		try {
+			members = this.MLmodel.getProject().members();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		System.out.println(resourceSet.getResources().size());
+		for (IResource member : members) {
+			if (member instanceof IFile) {
+				if (((IFile) member).getFileExtension().equals("tdl")) {
+					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+				}
+				System.out.println(resourceSet.getResources().size());
+			}
+		}
+	}
 
-//URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
-//
-//Resource resource = resourceSet.getResource(modelURI, true);
-		
+	public List<DeploymentModel> createDLmodel(HashMap<String, InputField> analyticsSettings,
+			Set<Database> databaseInfo, int chosenTemplate) {
+
+		DLmodelList = new ArrayList<DeploymentModel>();
+		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		Import MLmodel = TyphonDLFactory.eINSTANCE.createImport();
-		MLmodel.setRelativePath(getModelName(MLmodelPath));
-		DLmodel.getGuiMetaInformation().add(MLmodel);
+		DLmodelList.add(DLmodel);
+		// add reference to ML model
+		Import MLmodelImport = TyphonDLFactory.eINSTANCE.createImport();
+		MLmodelImport.setRelativePath(this.MLmodel.getName());
+		DLmodel.getGuiMetaInformation().add(MLmodelImport);
 
 		final boolean useAnalytics = analyticsSettings != null;
 
+		// create dummy platform type
 		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
 		platformType.setName("default");
 		DLmodel.getElements().add(platformType);
 
+		// Add selected container type (chosen template in wizard)
 		ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
 		containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
 		DLmodel.getElements().add(containerType);
@@ -65,32 +109,29 @@ public class ModelCreator {
 		ArrayList<Database> databases = new ArrayList<Database>(databaseInfo);
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-		DBType mongo = TyphonDLFactory.eINSTANCE.createDBType();
-		mongo.setName("mongo");
-		dbTypes.add(mongo);
+
 		for (Database database : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DB db;
-			
+			DeploymentModel dbModel;
 			if (database.getPathToDBModelFile() != null) { // use existing .tdl file
-				DeploymentModel existing = DLmodelReader
-						.readDLmodel(MLmodelPath.getFullPath().removeLastSegments(1).append(database.getPathToDBModelFile()));
-				db = DLmodelReader.getDBs(existing).get(0);
-				dbs.add(db);
+				URI dbURI = URI.createPlatformResourceURI(
+						this.folder.append(database.getPathToDBModelFile()).toString(), true);
+				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
+				db = getDB(dbModel);
 				importedDB.setRelativePath(database.getPathToDBModelFile());
-			} else if (database.getDbms() != null) {
+				DLmodelList.add(dbModel);
+			} else {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
 				db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				image.setValue(db.getType().getName() + "image");
 				db.setImage(image);
-				dbs.add(db);
-				importedDB.setRelativePath(database.getName() + ".tdl");
-			} else {
-				db = null; // this never happens
-				System.out.println("ModelCreator.createDLmodel -> dbms == null && PathToDBModelFile == null");
+				save(db);
 			}
+			dbs.add(db);
+			DLmodel.getGuiMetaInformation().add(importedDB);
 			boolean containsType = false;
 			for (DBType dbType : dbTypes) {
 				if (dbType.getName().equals(db.getType().getName())) {
@@ -100,19 +141,26 @@ public class ModelCreator {
 			if (!containsType) {
 				dbTypes.add(db.getType());
 			}
-			DLmodel.getGuiMetaInformation().add(importedDB);
 		}
 
-		DLmodel.getElements().addAll(dbTypes);
-
+		// TODO DLmodel.getElements().addAll(dbTypes);
+		// mongo DB is always needed for the polystore api
+		DBType mongo = null;
 		for (DB db : dbs) { // types need to be the same instance
 			for (DBType dbtype : dbTypes) {
+				if (dbtype.getName().equals("mongo")) {
+					mongo = dbtype;
+				}
 				if (dbtype.getName().equals(db.getType().getName())) {
 					db.setType(dbtype);
 				}
 			}
 		}
-		DLmodel.getElements().addAll(dbs);// TODO cross refence between files does not work yet
+		if (mongo == null) {
+			mongo = TyphonDLFactory.eINSTANCE.createDBType();
+			mongo.setName("mongo");
+			dbTypes.add(mongo);
+		}
 
 		/**
 		 * Polystore DB for WP7 Polystore API
@@ -123,11 +171,15 @@ public class ModelCreator {
 		IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 		polystoredb_image.setValue("mongo:latest");
 		polystoredb.setImage(polystoredb_image);
-		DLmodel.getElements().add(polystoredb);
+		save(polystoredb);
+		
+		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
+		poystoredbReference.setReference(polystoredb);
 
 		Container polystoredb_container = TyphonDLFactory.eINSTANCE.createContainer();
 		polystoredb_container.setName("polystoredb");
 		polystoredb_container.setType(containerType);
+		polystoredb_container.getDeploys().add(poystoredbReference);
 		Key_Value polystoredb_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 		polystoredb_container_container_name.setName("container_name");
 		polystoredb_container_container_name.setValue("polystore.mongo");
@@ -156,7 +208,7 @@ public class ModelCreator {
 		polystore_api_hostname.setName("hostname");
 		polystore_api_hostname.setValue("polystore_api");
 		polystore_api.getParameters().add(polystore_api_hostname);
-		DLmodel.getElements().add(polystore_api); // TODO cross refence between files does not work yet
+		save(polystore_api);
 
 		Reference polystore_api_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_api_reference.setReference(polystore_api);
@@ -198,7 +250,7 @@ public class ModelCreator {
 		polystore_ui_hostname.setName("hostname");
 		polystore_ui_hostname.setValue("polystore_ui");
 		polystore_ui.getParameters().add(polystore_ui_hostname);
-		DLmodel.getElements().add(polystore_ui); // TODO cross refence between files does not work yet
+		save(polystore_ui);
 
 		Reference polystore_ui_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_ui_reference.setReference(polystore_ui);
@@ -247,7 +299,7 @@ public class ModelCreator {
 			IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			zookeeper_image.setValue("wurstmeister/zookeeper");
 			zookeeper.setImage(zookeeper_image);
-			DLmodel.getElements().add(zookeeper);
+			save(zookeeper);
 
 			Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
 			zookeeper_reference.setReference(zookeeper);
@@ -323,6 +375,7 @@ public class ModelCreator {
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
 			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
 		}
+		
 		/**
 		 * start container structure
 		 */
@@ -357,12 +410,33 @@ public class ModelCreator {
 			application.getContainers().add(container);
 		}
 
-		return DLmodel;
+		return DLmodelList;
 	}
 
-	private static String getModelName(IPath path) {
-		String string = path.toString();
-		return string.substring(string.lastIndexOf('/') + 1, string.length());
+	private void save(Software software) {
+		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		softwareModel.getElements().add(software);
+		if (softwareModel instanceof DB) {
+			softwareModel.getElements().add(((DB) software).getType());
+		}
+		URI softwareURI = URI.createPlatformResourceURI(this.folder.append(software.getName() + ".tdl").toString(),
+				true);
+		Resource softwareResource = resourceSet.createResource(softwareURI);
+		softwareResource.getContents().add(softwareModel);
+		DLmodelList.add(softwareModel);
+		try {
+			softwareResource.save(SavingOptions.getTDLoptions());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private DB getDB(DeploymentModel model) {
+		ArrayList<DB> dbs = new ArrayList<DB>();
+		dbs.addAll(model.getElements().stream().filter(element -> DB.class.isInstance(element))
+				.map(element -> (DB) element).collect(Collectors.toList()));
+		return dbs.get(0);
 	}
 
 }

@@ -15,16 +15,6 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 public class DLmodelReader {
 
 	public static DeploymentModel readDLmodel(Resource resource) {
-//
-//		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
-//				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-//				.getInstance(XtextLiveScopeResourceSetProvider.class).get(file.getProject());
-//		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-//
-//		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
-//
-//		Resource resource = resourceSet.getResource(modelURI, true);
-
 		/*
 		 * DeploymentModel model only includes the model parts written in the
 		 * File(modelUri), not any parts that are saved in different files like a
@@ -32,7 +22,7 @@ public class DLmodelReader {
 		 */
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 
-		addAllResources(model);
+		//addAllResources(model);
 		return model;
 	}
 
