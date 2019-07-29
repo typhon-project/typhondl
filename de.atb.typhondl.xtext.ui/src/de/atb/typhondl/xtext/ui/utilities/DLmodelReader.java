@@ -40,7 +40,7 @@ public class DLmodelReader {
 //				.map(tdlFile -> openImport(model.eResource(), tdlFile.getRelativePath()));
 	}
 
-	public static ArrayList<DB> getDBs(DeploymentModel model) {
+	public static ArrayList<DB> getDBs(DeploymentModel model) { //TODO over import
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		model.eResource().getResourceSet().getResources().forEach(resource -> {
 			dbs.addAll(((DeploymentModel) resource.getContents().get(0)).getElements().stream()

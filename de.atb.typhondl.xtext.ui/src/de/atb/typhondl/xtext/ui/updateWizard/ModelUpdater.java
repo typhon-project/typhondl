@@ -80,7 +80,7 @@ public class ModelUpdater {
 				System.out.println(resourceSet.getResources().size());
 			}
 		}
-		DLmodel = (DeploymentModel) resourceSet.getResource(DLmodelURI, true).getContents().get(0);
+		this.DLmodel = (DeploymentModel) resourceSet.getResource(DLmodelURI, true).getContents().get(0);
 	}
 
 	public String updateModel() {
@@ -93,7 +93,7 @@ public class ModelUpdater {
 		}
 		// compare Databases of ML and DL models
 		IPath fullPath = file.getLocation();
-		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel);
+		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel); // TODO there could be resources in project that are not used
 		if (MLmodel.size() > DLdbs.size()) { // There are more DBs in the ML model
 			// delete all DBs that are both in the ML and DL (only the new ones remain in
 			// the ML model)
@@ -118,6 +118,13 @@ public class ModelUpdater {
 		}
 	}
 
+	private ArrayList<DB> getDBs() {
+		ArrayList<DB> dbs = new ArrayList<DB>();
+		dbs.addAll(this.DLmodel.getElements().stream().filter(obj -> DB.class.isInstance(obj)).map(db -> (DB) db)
+				.collect(Collectors.toList()));
+		return dbs;
+	}
+
 	private ArrayList<Database> getMLmodel() throws ParserConfigurationException, SAXException, IOException {
 		String MLmodelName = DLmodel.getGuiMetaInformation().stream()
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
@@ -126,7 +133,6 @@ public class ModelUpdater {
 		File MLfile = new File(
 				file.getLocation().toString().substring(0, file.getLocation().toString().lastIndexOf("/")) + "/"
 						+ MLmodelName);
-
 		return MLmodelReader.readXMIFile(MLfile.toURI());
 	}
 
@@ -169,33 +175,12 @@ public class ModelUpdater {
 				relativePath = newDatabase.getPathToDBModelFile();
 			}
 
-			// ########################################################
-//			try {
-//				System.out.println("zzzz");
-//				Thread.sleep(5000);
-//				System.out.println("/zzzzz");
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-			// ########################################################
-
 			// 2. add new database file to imports
 			Import newImport = TyphonDLFactory.eINSTANCE.createImport();
 			newImport.setRelativePath(relativePath);
 			DLmodel.getGuiMetaInformation().add(newImport);
 
 			// 3. craeate new dummy-container
-			/*
-			 * TODO reference to DB in other file (see code below) throws a
-			 * RuntimeException: No EObjectDescription could be found in Scope
-			 * Reference.reference for DeploymentModel.elements[1]->DB'testdb' Semantic
-			 * Object:
-			 * DeploymentModel.elements[2]->Deployment'platformname'.clusters[0]->Cluster'
-			 * clustername'.applications[0]->Application'name'.containers[6]->Container'
-			 * testdb'.deploys[0]->Reference URI:
-			 * file:/C:/Users/flug/runtime-EclipseXtext/example.typhondl/ECommerceExample.
-			 * tdl EStructuralFeature: typhonDL::Reference.reference
-			 */
 			Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
 			newContainer.setName(newDB.getName());
 			newContainer.setType(getContainerType(DLmodel));
@@ -203,12 +188,6 @@ public class ModelUpdater {
 			reference.setReference(newDB);
 			newContainer.getDeploys().add(reference);
 			getFirstApplication(DLmodel).getContainers().add(newContainer);
-
-//			This adds the DB and the type to the main model file:
-//			DLmodelResource.getContents().clear();
-//			DLmodelResource.getContents().add(DLmodel);
-//			DLmodel.getElements().add(newDB);
-//			DLmodel.getElements().add(newDB.getType());
 
 			// 4. save updated model
 			try {
