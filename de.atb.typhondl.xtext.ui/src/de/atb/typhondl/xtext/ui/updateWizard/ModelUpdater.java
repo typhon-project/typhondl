@@ -21,8 +21,6 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
 
-import com.google.inject.Injector;
-
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
@@ -40,7 +38,7 @@ import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class ModelUpdater {
-	
+
 	// the main DL model file to be updated
 	private IFile file;
 	// URI of main DL model file
@@ -77,7 +75,7 @@ public class ModelUpdater {
 		System.out.println(resourceSet.getResources().size());
 		for (IResource member : members) {
 			if (member instanceof IFile) {
-				if (((IFile) member).getFileExtension().equals("tdl")){
+				if (((IFile) member).getFileExtension().equals("tdl")) {
 					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
 				}
 				System.out.println(resourceSet.getResources().size());
@@ -126,8 +124,10 @@ public class ModelUpdater {
 				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
 				.filter(info -> info.getRelativePath().endsWith(".xmi")).findFirst().map(info -> info.getRelativePath())
 				.orElse("");
-		File MLfile = new File(file.getLocation().toString().substring(0, file.getLocation().toString().lastIndexOf("/")) + "/" + MLmodelName);
-		
+		File MLfile = new File(
+				file.getLocation().toString().substring(0, file.getLocation().toString().lastIndexOf("/")) + "/"
+						+ MLmodelName);
+
 		return MLmodelReader.readXMIFile(MLfile.toURI());
 	}
 
@@ -141,35 +141,43 @@ public class ModelUpdater {
 	private void addDBsToDLmodel(ArrayList<Database> MLmodel) {
 		Resource DLmodelResource = DLmodel.eResource();
 		for (Database newDatabase : MLmodel) {
-
-			// 1. create new file for the new database TODO useExistingFile checked
-			DB newDB = TyphonDLFactory.eINSTANCE.createDB();
-			newDB.setName(newDatabase.getName());
-			newDB.setType(newDatabase.getDbms());
-			IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-			image.setValue(newDB.getType().getName() + ":latest");
-			newDB.setImage(image);
-			DeploymentModel dbModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-			dbModel.getElements().add(newDB.getType());
-			dbModel.getElements().add(newDB);
-			String relativePath = newDatabase.getPathToDBModelFile();
-			URI dbURI = DLmodel.eResource().getURI().trimSegments(1).appendSegment(relativePath);
-			Resource dbResource = resourceSet.createResource(dbURI);
-			dbResource.getContents().add(dbModel);
-			try {
-				dbResource.save(SavingOptions.getTDLoptions());
-			} catch (IOException e) {
-				e.printStackTrace();
+			String relativePath;
+			DB newDB;
+			// 1. create new Resource if no DB model file exists
+			if (newDatabase.getPathToDBModelFile() == null) {
+				newDB = TyphonDLFactory.eINSTANCE.createDB();
+				newDB.setName(newDatabase.getName());
+				newDB.setType(newDatabase.getDbms());
+				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+				image.setValue(newDB.getType().getName() + ":latest");
+				newDB.setImage(image);
+				DeploymentModel dbModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+				dbModel.getElements().add(newDB.getType());
+				dbModel.getElements().add(newDB);
+				relativePath = newDatabase.getName() + ".tdl";
+				URI dbURI = DLmodel.eResource().getURI().trimSegments(1).appendSegment(relativePath);
+				Resource dbResource = resourceSet.createResource(dbURI);
+				dbResource.getContents().add(dbModel);
+				try {
+					dbResource.save(SavingOptions.getTDLoptions());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else { // otherwise read provided DB model
+				URI dbURI = DLmodel.eResource().getURI().trimSegments(1)
+						.appendSegment(newDatabase.getPathToDBModelFile());
+				newDB = getDB(resourceSet.getResource(dbURI, true));
+				relativePath = newDatabase.getPathToDBModelFile();
 			}
 
 			// ########################################################
-			try {
-				System.out.println("zzzz");
-				Thread.sleep(5000);
-				System.out.println("/zzzzz");
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				System.out.println("zzzz");
+//				Thread.sleep(5000);
+//				System.out.println("/zzzzz");
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			// ########################################################
 
 			// 2. add new database file to imports
@@ -193,13 +201,13 @@ public class ModelUpdater {
 			newContainer.setName(newDB.getName());
 			newContainer.setType(getContainerType(DLmodel));
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-			reference.setReference(getDB(dbResource));
+			reference.setReference(newDB);
 			newContainer.getDeploys().add(reference);
 			getFirstApplication(DLmodel).getContainers().add(newContainer);
 
 //			This adds the DB and the type to the main model file:
-			DLmodelResource.getContents().clear();
-			DLmodelResource.getContents().add(DLmodel);
+//			DLmodelResource.getContents().clear();
+//			DLmodelResource.getContents().add(DLmodel);
 //			DLmodel.getElements().add(newDB);
 //			DLmodel.getElements().add(newDB.getType());
 
@@ -207,12 +215,18 @@ public class ModelUpdater {
 			try {
 				DLmodelResource.save(SavingOptions.getTDLoptions());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
 	}
 
+	/**
+	 * This only works if there is only one DB in each DB model file
+	 * 
+	 * @param dbResource
+	 * @return
+	 */
 	private DB getDB(Resource dbResource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		dbs.addAll(((DeploymentModel) dbResource.getContents().get(0)).getElements().stream()

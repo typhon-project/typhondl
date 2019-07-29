@@ -61,7 +61,14 @@ public class UpdateMainPage extends WizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = wizardFields.get(database);
 					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
-					//wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection()); see todo below
+					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
+					if (wizardField.getCheckbox().getSelection()) {
+						// a predefined database configuration will be used. The dbms can't be specified here
+						database.setDbms(null);
+					} else {
+						// a new model file will be created
+						database.setPathToDBModelFile(null);
+					}
 				}
 			});
 
@@ -71,8 +78,8 @@ public class UpdateMainPage extends WizardPage {
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
 			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
-			database.setDbms(type);
-			//combo.setEnabled(!checkbox.getSelection()); TODO for now the correct DBMS has to be selected
+			if (!checkbox.getSelection()) database.setDbms(type);
+			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText(
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
 			combo.addSelectionListener(new SelectionAdapter() {
@@ -90,7 +97,7 @@ public class UpdateMainPage extends WizardPage {
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
-			database.setPathToDBModelFile(textField.getText());
+			if (checkbox.getSelection()) database.setPathToDBModelFile(textField.getText());
 			textField.addModifyListener(e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText()));
 			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}

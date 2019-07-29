@@ -15,9 +15,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
-
-import com.google.inject.Inject;
 
 import de.atb.typhondl.xtext.ui.updateWizard.ModelUpdater;
 
@@ -33,7 +30,8 @@ public class UpdateModelHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			result = ModelUpdater.updateModel(file, window);
+			ModelUpdater modelUpdater = new ModelUpdater(file, window);
+			result = modelUpdater.updateModel();
 
 			for (IProject iproject : root.getProjects()) {
 				try {
