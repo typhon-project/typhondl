@@ -70,31 +70,32 @@ Platform :
 Cluster :
 	{Cluster}
 	'cluster' name=ID '{'
-		(applications+=Application)*
+		(networks+=Cluster_Network)*
+		(applications+=Application)*		
      '}'
+;
+
+Cluster_Network:
+	'network' name=ID
+;
+
+Network:
+	'network' name=[Cluster_Network]
 ;
 
 Application :
 	{Application}
 	'application' name=ID '{'
 		(containers+=Container)*     
-		(network+=Network)*
-		(volume+=Volume)*
      '}'
 ;
 
-Network:
-	'networks' argument=[Key_ValueArray]
-;
-
-Volume:
-	'volumes' argument=[Key_ValueArray]
-;
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
 		(deploys+=Reference)*
 		(depends_on+=Dependency)*
+		(networks+=Network)*
 		(properties+=Property)*
 	'}'
 ;

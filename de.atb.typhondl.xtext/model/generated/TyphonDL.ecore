@@ -39,23 +39,21 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Cluster">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
+        eType="#//Cluster_Network" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="applications" upperBound="-1"
         eType="#//Application" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Cluster_Network">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Network">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//Cluster_Network"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Application">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="containers" upperBound="-1"
         eType="#//Container" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="network" upperBound="-1"
-        eType="#//Network" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="volume" upperBound="-1"
-        eType="#//Volume" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Network">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="argument" eType="#//Key_ValueArray"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Volume">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="argument" eType="#//Key_ValueArray"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Container">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -64,6 +62,8 @@
         eType="#//Reference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends_on" upperBound="-1"
         eType="#//Dependency" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
+        eType="#//Network" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
   </eClassifiers>
