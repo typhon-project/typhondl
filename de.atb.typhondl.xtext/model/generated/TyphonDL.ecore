@@ -32,7 +32,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="PlatformType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="ContainerType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="DBType" eSuperTypes="#//Type"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Deployment" eSuperTypes="#//Model">
+  <eClassifiers xsi:type="ecore:EClass" name="Platform" eSuperTypes="#//Model">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//PlatformType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clusters" upperBound="-1"
         eType="#//Cluster" containment="true"/>
@@ -46,6 +46,16 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="containers" upperBound="-1"
         eType="#//Container" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="network" upperBound="-1"
+        eType="#//Network" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="volume" upperBound="-1"
+        eType="#//Volume" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Network">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="argument" eType="#//Key_ValueArray"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Volume">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="argument" eType="#//Key_ValueArray"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Container">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

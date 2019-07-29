@@ -13,7 +13,6 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
-import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
@@ -21,6 +20,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Value;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.NonDB;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
@@ -311,7 +311,7 @@ public class ModelCreator {
 		/**
 		 * start container structure
 		 */
-		Deployment deployment = TyphonDLFactory.eINSTANCE.createDeployment();
+		Platform deployment = TyphonDLFactory.eINSTANCE.createPlatform();
 		deployment.setName("platformName");
 		deployment.setType(platformType);
 		DLmodel.getElements().add(deployment);

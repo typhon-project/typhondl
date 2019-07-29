@@ -14,7 +14,7 @@ MetaModel:
 ;
 
 Model: 
-    Deployment | Type | Software
+    Platform | Type | Software
 ;
 
 Import:
@@ -60,8 +60,8 @@ DBType:
 	'dbtype' name=ID
 ;
 
-Deployment :
-	{Deployment}
+Platform :
+	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
      (clusters+=Cluster)*
      '}'
@@ -78,9 +78,18 @@ Application :
 	{Application}
 	'application' name=ID '{'
 		(containers+=Container)*     
+		(network+=Network)*
+		(volume+=Volume)*
      '}'
 ;
 
+Network:
+	'networks' argument=[Key_ValueArray]
+;
+
+Volume:
+	'volumes' argument=[Key_ValueArray]
+;
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
