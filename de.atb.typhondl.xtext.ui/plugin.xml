@@ -454,7 +454,7 @@
                             type="org.eclipse.core.resources.IResource">
                          <test
                                property="org.eclipse.core.resources.extension"
-                               value="tdl">
+                               value="tdlTEST">
                          </test>
                       </adapt>
                    </iterate>
