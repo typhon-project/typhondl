@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -38,58 +40,74 @@ import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class ModelUpdater {
+	
+	// the main DL model file to be updated
+	private IFile file;
+	// URI of main DL model file
+	private URI DLmodelURI;
+	// the DL model
+	private DeploymentModel DLmodel;
+	// the active WorkbenchWindow to open the wizard in
+	private IWorkbenchWindow window;
+	// The resourceSet containing all DL resources in project folder
+	private XtextResourceSet resourceSet;
 
-	public static String updateModel(IFile file, IWorkbenchWindow window) {
-		// read DL and ML models
-		DeploymentModel DLmodel = DLmodelReader.readDLmodel(file);
-		ArrayList<Database> MLmodel = null;
-		File MLfile = new File(getMLURI(DLmodel, file.getLocation()));
-		try {
-			MLmodel = MLmodelReader.readXMIFile(MLfile.toURI());
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
-		}
-		// and compare them
-		return compareDLandML(DLmodel, MLmodel, window, file);
+	public ModelUpdater(IFile file, IWorkbenchWindow window) {
+		this.file = file;
+		this.window = window;
+		this.DLmodelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+		addResources();
+
 	}
 
 	/**
-	 * Possible Cases:
-	 * <ol>
-	 * <li>nothing is changed</li>
-	 * <li>database(s) is/are added and</li>
-	 * <ol>
-	 * <li>none removed</li>
-	 * <li>one/some removed</li>
-	 * </ol>
-	 * <li>database(s) is/are removed and</li>
-	 * <ol>
-	 * <li>none added</li>
-	 * <li>== 2.2</li>
-	 * </ol>
-	 * </ol>
-	 * TODO cases 2.2, 3.* may not be possible, discuss with WP2+WP6
-	 * 
-	 * @param DLmodel
-	 * @param MLmodel
-	 * @param window
-	 * @param provider
-	 * @param fullPath
+	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
 	 */
-	private static String compareDLandML(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IWorkbenchWindow window,
-			IFile file) {
+	private void addResources() {
+		this.resourceSet = (XtextResourceSet) Activator.getInstance()
+				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+				.getInstance(XtextLiveScopeResourceSetProvider.class).get(this.file.getProject());
+		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		IResource members[] = null;
+		try {
+			members = this.file.getProject().members();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		System.out.println(resourceSet.getResources().size());
+		for (IResource member : members) {
+			if (member instanceof IFile) {
+				if (((IFile) member).getFileExtension().equals("tdl")){
+					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+				}
+				System.out.println(resourceSet.getResources().size());
+			}
+		}
+		DLmodel = (DeploymentModel) resourceSet.getResource(DLmodelURI, true).getContents().get(0);
+	}
+
+	public String updateModel() {
+		// read ML model
+		ArrayList<Database> MLmodel = new ArrayList<Database>();
+		try {
+			MLmodel = getMLmodel();
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			e.printStackTrace();
+		}
+		// compare Databases of ML and DL models
 		IPath fullPath = file.getLocation();
 		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel);
-		if (MLmodel.size() > DLdbs.size()) { // case 2.1
+		if (MLmodel.size() > DLdbs.size()) { // There are more DBs in the ML model
 			// delete all DBs that are both in the ML and DL (only the new ones remain in
 			// the ML model)
 			for (DB db : DLdbs) {
 				MLmodel.removeIf(databse -> databse.getName().equals(db.getName()));
 			}
 			// ask the user for additional information (DBMS or path to existing model file)
-			MLmodel = openUpdateWizard(DLmodel, MLmodel, window);
+			MLmodel = openUpdateWizard(MLmodel);
 			// Add the new DBs to the old DL model
-			addDBsToDLmodel(DLmodel, MLmodel, file);
+			addDBsToDLmodel(MLmodel);
+			// Create output String
 			String updatedDBS = MLmodel.get(0).getName();
 			for (int i = 1; i < MLmodel.size(); i++) {
 				updatedDBS += ", " + MLmodel.get(i).getName();
@@ -101,24 +119,27 @@ public class ModelUpdater {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
 					+ "Please add additional model content through the editor.";
 		}
-
 	}
 
-	private static ArrayList<Database> openUpdateWizard(DeploymentModel DLmodel, ArrayList<Database> MLmodel,
-			IWorkbenchWindow window) {
+	private ArrayList<Database> getMLmodel() throws ParserConfigurationException, SAXException, IOException {
+		String MLmodelName = DLmodel.getGuiMetaInformation().stream()
+				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
+				.filter(info -> info.getRelativePath().endsWith(".xmi")).findFirst().map(info -> info.getRelativePath())
+				.orElse("");
+		File MLfile = new File(file.getLocation().toString().substring(0, file.getLocation().toString().lastIndexOf("/")) + "/" + MLmodelName);
+		
+		return MLmodelReader.readXMIFile(MLfile.toURI());
+	}
+
+	private ArrayList<Database> openUpdateWizard(ArrayList<Database> MLmodel) {
 		UpdateModelWizard updateWizard = new UpdateModelWizard(MLmodel);
 		WizardDialog dialog = new WizardDialog(window.getShell(), updateWizard);
 		dialog.open();
 		return updateWizard.getUpdatedMLmodel();
 	}
 
-	private static void addDBsToDLmodel(DeploymentModel DLmodel, ArrayList<Database> MLmodel, IFile file) {
-		XtextResourceSet resourceSet = (XtextResourceSet) Activator.getInstance()
-				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-				.getInstance(XtextLiveScopeResourceSetProvider.class).get(file.getProject());
-		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+	private void addDBsToDLmodel(ArrayList<Database> MLmodel) {
 		Resource DLmodelResource = DLmodel.eResource();
-		resourceSet.getResources().add(DLmodelResource);
 		for (Database newDatabase : MLmodel) {
 
 			// 1. create new file for the new database TODO useExistingFile checked
@@ -192,7 +213,7 @@ public class ModelUpdater {
 		}
 	}
 
-	private static DB getDB(Resource dbResource) {
+	private DB getDB(Resource dbResource) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		dbs.addAll(((DeploymentModel) dbResource.getContents().get(0)).getElements().stream()
 				.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
@@ -201,24 +222,20 @@ public class ModelUpdater {
 	}
 
 // TODO only gets the fist app in the first cluster
-	private static Application getFirstApplication(DeploymentModel DLmodel) {
+	private Application getFirstApplication(DeploymentModel DLmodel) {
 		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
 				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)
 				.getApplications().get(0);
 	}
 
-	private static ContainerType getContainerType(DeploymentModel DLmodel) {
+	private ContainerType getContainerType(DeploymentModel DLmodel) {
 		List<ContainerType> types = DLmodel.getElements().stream()
 				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
 				.collect(Collectors.toList());
 		return types.get(0);
 	}
 
-	private static String getMLURI(DeploymentModel DLmodel, IPath fullPath) {
-		String MLmodelName = DLmodel.getGuiMetaInformation().stream()
-				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
-				.filter(info -> info.getRelativePath().endsWith(".xmi")).findFirst().map(info -> info.getRelativePath())
-				.orElse("");
-		return fullPath.toString().substring(0, fullPath.toString().lastIndexOf("/")) + "/" + MLmodelName;
+	public XtextResourceSet getResourceSet() {
+		return resourceSet;
 	}
 }
