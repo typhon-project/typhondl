@@ -174,7 +174,7 @@ public class ModelCreator {
 		if (checkExist(createSoftwareURI("polystoredb"))) {
 			polystoredb = getDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystoredb"), true)
 					.getContents().get(0));
-			addSoftwareModelToList(polystoredb);
+			addSoftwareModelToList(polystoredb); // TODO this doesn't work
 		} else {
 			polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 			polystoredb.setName("polystoredb");
