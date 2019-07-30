@@ -62,6 +62,9 @@ public class Services {
 		//so example/test.tdl -> example/test/test.xmi
 		Resource xmiResource = resourceSet.createResource(folder.appendSegment(folder.lastSegment()+".xmi"));
 		xmiResource.getContents().add(DLmodelResource.getContents().get(0));
+//		for (Resource resource : resourceSet.getResources()) {
+//			xmiResource.getContents().add(resource.getContents().get(0));
+//		}
 		EcoreUtil.resolveAll(resourceSet);
 		try {
 			xmiResource.save(Options.getXMIoptions());
