@@ -83,7 +83,7 @@ public class ModelCreator {
 	}
 
 	public void createDLmodel(HashMap<String, InputField> analyticsSettings,
-			Set<Database> databaseInfo, int chosenTemplate) {
+			ArrayList<Database> databases, int chosenTemplate) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -104,7 +104,6 @@ public class ModelCreator {
 		containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
 		DLmodel.getElements().add(containerType);
 
-		ArrayList<Database> databases = new ArrayList<Database>(databaseInfo);
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
 

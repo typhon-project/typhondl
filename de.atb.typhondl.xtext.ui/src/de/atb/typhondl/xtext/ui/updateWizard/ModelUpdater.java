@@ -132,7 +132,7 @@ public class ModelUpdater {
 	}
 
 	private ArrayList<Database> openUpdateWizard() {
-		UpdateModelWizard updateWizard = new UpdateModelWizard(MLmodel);
+		UpdateModelWizard updateWizard = new UpdateModelWizard(MLmodel, file);
 		WizardDialog dialog = new WizardDialog(window.getShell(), updateWizard);
 		dialog.open();
 		return updateWizard.getUpdatedMLmodel();

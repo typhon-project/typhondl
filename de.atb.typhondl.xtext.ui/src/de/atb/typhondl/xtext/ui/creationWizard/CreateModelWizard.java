@@ -28,7 +28,7 @@ public class CreateModelWizard extends Wizard {
 		mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
 		addPage(mainPage);
 
-		dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel.getLocationURI());
+		dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel);
 		addPage(dbmsPage);
 
 		// analyticsPage = new CreationAnalyticsPage("Analytics Configuration");
