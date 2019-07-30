@@ -141,7 +141,6 @@ public class ModelCreator {
 			}
 		}
 
-		// TODO DLmodel.getElements().addAll(dbTypes);
 		// mongo DB is always needed for the polystore api
 		DBType mongo = null;
 		for (DB db : dbs) { // types need to be the same instance

@@ -6,7 +6,7 @@ public class ContainerPage extends EditorPage {
 
 	public ContainerPage(Container container) {
 		super("Container " + container.getName());
-		// TODO implement editor page Container
+		// TODO TyphonDLEditor: implement editor page Container
 	}
 
 }

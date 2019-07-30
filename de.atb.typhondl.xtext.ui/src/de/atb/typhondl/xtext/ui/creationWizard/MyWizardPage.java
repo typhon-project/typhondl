@@ -8,7 +8,6 @@ public abstract class MyWizardPage extends WizardPage {
 
 	protected MyWizardPage(String pageName) {
 		super(pageName);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**

@@ -176,7 +176,7 @@ public class Generate extends AbstractAcceleoGenerator {
     @Override
     public void doGenerate(Monitor monitor) throws IOException {
         /*
-         * TODO if you wish to change the generation as a whole, override this. The default behavior should
+         * if you wish to change the generation as a whole, override this. The default behavior should
          * be sufficient in most cases. If you want to change the content of this method, do NOT forget to
          * change the "@generated" tag in the Javadoc of this method to "@generated NOT". Without this new tag,
          * any compilation of the Acceleo module with the main template that has caused the creation of this
@@ -212,7 +212,7 @@ public class Generate extends AbstractAcceleoGenerator {
     public List<IAcceleoTextGenerationListener> getGenerationListeners() {
         List<IAcceleoTextGenerationListener> listeners = super.getGenerationListeners();
         /*
-         * TODO if you need to listen to generation event, add listeners to the list here. If you want to change
+         * if you need to listen to generation event, add listeners to the list here. If you want to change
          * the content of this method, do NOT forget to change the "@generated" tag in the Javadoc of this method
          * to "@generated NOT". Without this new tag, any compilation of the Acceleo module with the main template
          * that has caused the creation of this class will revert your modifications.
@@ -277,7 +277,7 @@ public class Generate extends AbstractAcceleoGenerator {
          */
 
         /*
-         * TODO if your generation module requires access to properties files, add their qualified path to the list here.
+         * if your generation module requires access to properties files, add their qualified path to the list here.
          * 
          * Properties files can be located in an Eclipse plug-in or in the file system (all Acceleo projects are Eclipse
          * plug-in). In order to use properties files located in an Eclipse plugin, you need to add the path of the properties
@@ -392,7 +392,7 @@ public class Generate extends AbstractAcceleoGenerator {
          */
         
         /*
-         * TODO If you need additional resource factories registrations, you can register them here. the following line
+         * If you need additional resource factories registrations, you can register them here. the following line
          * (in comment) is an example of the resource factory registration.
          *
          * If you want to use the generator in stand alone, the resource factory registration will be required.

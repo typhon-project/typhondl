@@ -44,15 +44,17 @@ public class Services {
 		 * create a new instance of an Injector that is different from used by Eclipse.
 		 * Also it can break the state of EMF registries.
 		 * 
-		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator, theres
-		 * a loop in the manifest because acceleo.service package requires xtext.ui
-		 * package and vice versa
+		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator,
+		 * there's a loop in the manifest because acceleo.service package requires
+		 * xtext.ui package and vice versa. Idea: Provider can be injected in Handler
+		 * and given to generateDeployment()
 		 */
+		// TODO use the right resourceSet
 		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
 				.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 
-		URI modelURI = URI.createURI(pathToXTextModel);
+		URI modelURI = URI.createPlatformResourceURI(pathToXTextModel, true);
 		Resource xtextResource = resourceSet.getResource(modelURI, true);
 		EcoreUtil.resolveAll(xtextResource);
 		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
@@ -72,7 +74,7 @@ public class Services {
 				.collect(Collectors.toList());
 		importedInfos.stream().filter(info -> info.getRelativePath().endsWith(".tdl")).forEach(info -> {
 			String absolutPath = modelURI.trimSegments(1).toString() + "/" + info.getRelativePath();
-			Resource dbResource = resourceSet.getResource(URI.createURI(absolutPath), true);
+			Resource dbResource = resourceSet.getResource(URI.createPlatformResourceURI(absolutPath, true), true);
 			xmiResource.getContents().add(dbResource.getContents().get(0));
 		});
 		try {

@@ -36,7 +36,8 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
-		DeploymentModel model = TyphonDLFactory.eINSTANCE.createDeploymentModel(); //DLmodelReader.readDLmodel(path); // TODO
+		DeploymentModel model = TyphonDLFactory.eINSTANCE.createDeploymentModel(); //DLmodelReader.readDLmodel(path); 
+		// TODO TyphonDLEditor: read DL model
 		PreferenceManager preferenceManager = createPages(model);
 		return preferenceManager;
 	}

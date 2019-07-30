@@ -106,8 +106,8 @@ public class UpdateMainPage extends WizardPage {
 			if (checkbox.getSelection())
 				database.setPathToDBModelFile(textField.getText());
 			textField.addModifyListener(
-					e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText())); // TODO
-																												// validation
+					e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText())); 
+			// TODO validation
 			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}
 		setControl(main);
