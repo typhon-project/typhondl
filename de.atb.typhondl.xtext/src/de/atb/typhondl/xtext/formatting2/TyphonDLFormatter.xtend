@@ -5,24 +5,23 @@ package de.atb.typhondl.xtext.formatting2
 
 import com.google.inject.Inject
 import de.atb.typhondl.xtext.services.TyphonDLGrammarAccess
-import de.atb.typhondl.xtext.typhonDL.Container
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel
-import de.atb.typhondl.xtext.typhonDL.NonDB
-import org.eclipse.xtext.formatting2.AbstractFormatter2
-import org.eclipse.xtext.formatting2.IFormattableDocument
-import de.atb.typhondl.xtext.typhonDL.Deployment
-import de.atb.typhondl.xtext.typhonDL.Cluster
 import de.atb.typhondl.xtext.typhonDL.Application
-import de.atb.typhondl.xtext.typhonDL.Import
-import de.atb.typhondl.xtext.typhonDL.DB
-import de.atb.typhondl.xtext.typhonDL.IMAGE
-import de.atb.typhondl.xtext.typhonDL.PlatformType
-import org.eclipse.xtext.resource.XtextResource
+import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.ContainerType
+import de.atb.typhondl.xtext.typhonDL.DB
 import de.atb.typhondl.xtext.typhonDL.DBType
+import de.atb.typhondl.xtext.typhonDL.Deployment
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel
+import de.atb.typhondl.xtext.typhonDL.IMAGE
+import de.atb.typhondl.xtext.typhonDL.Import
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_Value
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
+import de.atb.typhondl.xtext.typhonDL.NonDB
+import de.atb.typhondl.xtext.typhonDL.PlatformType
+import org.eclipse.xtext.formatting2.AbstractFormatter2
+import org.eclipse.xtext.formatting2.IFormattableDocument
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 

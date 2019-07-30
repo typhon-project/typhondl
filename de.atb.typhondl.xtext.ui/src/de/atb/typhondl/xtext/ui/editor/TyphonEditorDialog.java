@@ -16,6 +16,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Deployment;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.editor.pages.DBOverview;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
@@ -35,7 +36,7 @@ public class TyphonEditorDialog extends PreferenceDialog {
 	}
 
 	private static PreferenceManager createManager(Shell parentShell, IPath path) {
-		DeploymentModel model = DLmodelReader.readDLmodel(path); // adds all resources to ResourceSet
+		DeploymentModel model = TyphonDLFactory.eINSTANCE.createDeploymentModel(); //DLmodelReader.readDLmodel(path); // TODO
 		PreferenceManager preferenceManager = createPages(model);
 		return preferenceManager;
 	}
