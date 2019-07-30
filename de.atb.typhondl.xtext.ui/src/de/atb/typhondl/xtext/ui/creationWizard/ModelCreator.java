@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +51,15 @@ public class ModelCreator {
 	private XtextResourceSet resourceSet;
 	// path to folder in which to save all model files
 	private IPath folder;
+	// a list including every created Deployment Model (each database has its own
+	// model
 	private ArrayList<DeploymentModel> DLmodelList;
+	private String DLmodelName;
 
-	public ModelCreator(IFile MLmodel) {
+	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
 		this.folder = this.MLmodel.getFullPath().removeLastSegments(1);
+		this.DLmodelName = DLmodelName;
 		addResources();
 	}
 
@@ -72,13 +77,11 @@ public class ModelCreator {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		System.out.println(resourceSet.getResources().size());
 		for (IResource member : members) {
 			if (member instanceof IFile) {
 				if (((IFile) member).getFileExtension().equals("tdl")) {
 					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
 				}
-				System.out.println(resourceSet.getResources().size());
 			}
 		}
 	}
@@ -128,6 +131,7 @@ public class ModelCreator {
 				db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				image.setValue(db.getType().getName() + "image");
+				importedDB.setRelativePath(db.getName() + ".tdl");
 				db.setImage(image);
 				save(db);
 			}
@@ -166,14 +170,20 @@ public class ModelCreator {
 		/**
 		 * Polystore DB for WP7 Polystore API
 		 */
-		DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
-		polystoredb.setName("polystoredb");
-		polystoredb.setType(mongo);
-		IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-		polystoredb_image.setValue("mongo:latest");
-		polystoredb.setImage(polystoredb_image);
-		save(polystoredb);
-		
+		DB polystoredb;
+		if (checkExist(createSoftwareURI("polystoredb"))) {
+			polystoredb = getDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystoredb"), true)
+					.getContents().get(0));
+			addSoftwareModelToList(polystoredb);
+		} else {
+			polystoredb = TyphonDLFactory.eINSTANCE.createDB();
+			polystoredb.setName("polystoredb");
+			polystoredb.setType(mongo);
+			IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+			polystoredb_image.setValue("mongo:latest");
+			polystoredb.setImage(polystoredb_image);
+			save(polystoredb);
+		}
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
 		poystoredbReference.setReference(polystoredb);
 
@@ -196,21 +206,27 @@ public class ModelCreator {
 		/**
 		 * polystore_api
 		 */
-		NonDB polystore_api = TyphonDLFactory.eINSTANCE.createNonDB();
-		polystore_api.setName("polystore_api");
-		IMAGE polystore_api_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-		polystore_api_image.setValue("clms/typhon-polystore-api:latest");
-		polystore_api.setImage(polystore_api_image);
-		Key_Value polystore_api_restart = TyphonDLFactory.eINSTANCE.createKey_Value();
-		polystore_api_restart.setName("restart");
-		polystore_api_restart.setValue("always");
-		polystore_api.getParameters().add(polystore_api_restart);
-		Key_Value polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Value();
-		polystore_api_hostname.setName("hostname");
-		polystore_api_hostname.setValue("polystore_api");
-		polystore_api.getParameters().add(polystore_api_hostname);
-		save(polystore_api);
-
+		NonDB polystore_api;
+		if (checkExist(createSoftwareURI("polystore_api"))) {
+			polystore_api = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_api"), true)
+					.getContents().get(0));
+			addSoftwareModelToList(polystore_api);
+		} else {
+			polystore_api = TyphonDLFactory.eINSTANCE.createNonDB();
+			polystore_api.setName("polystore_api");
+			IMAGE polystore_api_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+			polystore_api_image.setValue("clms/typhon-polystore-api:latest");
+			polystore_api.setImage(polystore_api_image);
+			Key_Value polystore_api_restart = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystore_api_restart.setName("restart");
+			polystore_api_restart.setValue("always");
+			polystore_api.getParameters().add(polystore_api_restart);
+			Key_Value polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystore_api_hostname.setName("hostname");
+			polystore_api_hostname.setValue("polystore_api");
+			polystore_api.getParameters().add(polystore_api_hostname);
+			save(polystore_api);
+		}
 		Reference polystore_api_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_api_reference.setReference(polystore_api);
 
@@ -238,21 +254,27 @@ public class ModelCreator {
 		/**
 		 * polystore ui
 		 */
-		NonDB polystore_ui = TyphonDLFactory.eINSTANCE.createNonDB();
-		polystore_ui.setName("polystore_ui");
-		IMAGE polystore_ui_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-		polystore_ui_image.setValue("clms/typhon-polystore-ui:latest");
-		polystore_ui.setImage(polystore_ui_image);
-		Key_Value polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Value();
-		polystore_ui_restart.setName("restart");
-		polystore_ui_restart.setValue("always");
-		polystore_ui.getParameters().add(polystore_ui_restart);
-		Key_Value polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Value();
-		polystore_ui_hostname.setName("hostname");
-		polystore_ui_hostname.setValue("polystore_ui");
-		polystore_ui.getParameters().add(polystore_ui_hostname);
-		save(polystore_ui);
-
+		NonDB polystore_ui;
+		if (checkExist(createSoftwareURI("polystore_ui"))) {
+			polystore_ui = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_ui"), true)
+					.getContents().get(0));
+			addSoftwareModelToList(polystore_ui);
+		} else {
+			polystore_ui = TyphonDLFactory.eINSTANCE.createNonDB();
+			polystore_ui.setName("polystore_ui");
+			IMAGE polystore_ui_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+			polystore_ui_image.setValue("clms/typhon-polystore-ui:latest");
+			polystore_ui.setImage(polystore_ui_image);
+			Key_Value polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystore_ui_restart.setName("restart");
+			polystore_ui_restart.setValue("always");
+			polystore_ui.getParameters().add(polystore_ui_restart);
+			Key_Value polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystore_ui_hostname.setName("hostname");
+			polystore_ui_hostname.setValue("polystore_ui");
+			polystore_ui.getParameters().add(polystore_ui_hostname);
+			save(polystore_ui);
+		}
 		Reference polystore_ui_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_ui_reference.setReference(polystore_ui);
 
@@ -295,13 +317,18 @@ public class ModelCreator {
 			kafkaListenersString += "PLAINTEXT_HOST://:" + kafkaPort;
 			kafkaAdvertisedListenerString += "PLAINTEXT_HOST://localhost:" + kafkaPort;
 
-			NonDB zookeeper = TyphonDLFactory.eINSTANCE.createNonDB();
-			zookeeper.setName("zookeeper");
-			IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-			zookeeper_image.setValue("wurstmeister/zookeeper");
-			zookeeper.setImage(zookeeper_image);
-			save(zookeeper);
-
+			NonDB zookeeper;
+			if (checkExist(createSoftwareURI("zookeeper"))) {
+				zookeeper = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("zookeeper"), true)
+						.getContents().get(0));
+			} else {
+				zookeeper = TyphonDLFactory.eINSTANCE.createNonDB();
+				zookeeper.setName("zookeeper");
+				IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+				zookeeper_image.setValue("wurstmeister/zookeeper");
+				zookeeper.setImage(zookeeper_image);
+				save(zookeeper);
+			}
 			Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
 			zookeeper_reference.setReference(zookeeper);
 
@@ -376,7 +403,7 @@ public class ModelCreator {
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
 			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
 		}
-		
+
 		/**
 		 * start container structure
 		 */
@@ -411,26 +438,55 @@ public class ModelCreator {
 			application.getContainers().add(container);
 		}
 
+		/**
+		 * save main model file
+		 */
+		URI DLmodelURI = createSoftwareURI(DLmodelName);
+		Resource DLmodelResource = resourceSet.createResource(DLmodelURI);
+		DLmodelResource.getContents().add(DLmodel);
+		try {
+			DLmodelResource.save(SavingOptions.getTDLoptions());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return DLmodelList;
 	}
 
 	private void save(Software software) {
-		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		softwareModel.getElements().add(software);
-		if (softwareModel instanceof DB) {
-			softwareModel.getElements().add(((DB) software).getType());
+		addSoftwareModelToList(software);
+		URI softwareURI = createSoftwareURI(software.getName());
+		// delete resource if it already exists
+		if (checkExist(softwareURI)) {
+			try {
+				resourceSet.getResource(softwareURI, true).delete(Collections.EMPTY_MAP);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		URI softwareURI = URI.createPlatformResourceURI(this.folder.append(software.getName() + ".tdl").toString(),
-				true);
 		Resource softwareResource = resourceSet.createResource(softwareURI);
-		softwareResource.getContents().add(softwareModel);
-		DLmodelList.add(softwareModel);
+		softwareResource.getContents().add(software.eContainer());
 		try {
 			softwareResource.save(SavingOptions.getTDLoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void addSoftwareModelToList(Software software) {
+		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		softwareModel.getElements().add(software);		
+		if (DB.class.isInstance(software)) {
+			softwareModel.getElements().add(((DB) software).getType());
+		}
+		DLmodelList.add(softwareModel);
+	}
 
+	private URI createSoftwareURI(String name) {
+		return URI.createPlatformResourceURI(this.folder.append(name + ".tdl").toString(), true);
+	}
+
+	private boolean checkExist(URI softwareURI) {
+		return resourceSet.getResource(softwareURI, false) != null;
 	}
 
 	private DB getDB(DeploymentModel model) {
@@ -438,6 +494,13 @@ public class ModelCreator {
 		dbs.addAll(model.getElements().stream().filter(element -> DB.class.isInstance(element))
 				.map(element -> (DB) element).collect(Collectors.toList()));
 		return dbs.get(0);
+	}
+
+	private NonDB getNonDB(DeploymentModel model) {
+		ArrayList<NonDB> Nondbs = new ArrayList<NonDB>();
+		Nondbs.addAll(model.getElements().stream().filter(element -> NonDB.class.isInstance(element))
+				.map(element -> (NonDB) element).collect(Collectors.toList()));
+		return Nondbs.get(0);
 	}
 
 }

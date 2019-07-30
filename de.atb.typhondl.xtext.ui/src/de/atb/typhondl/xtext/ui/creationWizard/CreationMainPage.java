@@ -29,6 +29,7 @@ public class CreationMainPage extends MyWizardPage {
 	private Combo templateCombo;
 	private int chosenTemplate;
 	private boolean useAnalytics;
+	private String DLmodelName;
 
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
@@ -65,7 +66,10 @@ public class CreationMainPage extends MyWizardPage {
 		fileText = new Text(main, SWT.BORDER);
 		fileText.setLayoutData(gridData);
 		fileText.setFocus();
-		fileText.addModifyListener(e -> validate());
+		fileText.addModifyListener(e -> {
+			validate();
+			this.DLmodelName = fileText.getText();
+		});
 		validate();
 	}
 
@@ -149,6 +153,10 @@ public class CreationMainPage extends MyWizardPage {
 	
 	public String getModelName() {
 		return fileText.getText() + ".tdl";
+	}
+
+	public String getDLmodelName() {
+		return DLmodelName;
 	}
 
 }

@@ -49,6 +49,7 @@ public class ModelUpdater {
 	private IWorkbenchWindow window;
 	// The resourceSet containing all DL resources in project folder
 	private XtextResourceSet resourceSet;
+	// The updated MLmodel
 	private ArrayList<Database> MLmodel;
 
 	public ModelUpdater(IFile file, IWorkbenchWindow window) {

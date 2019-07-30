@@ -38,14 +38,16 @@ public class CreateModelWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		if (dbmsPage.getMessage() != null) {
-			return MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage());
+			if (!MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage())) {
+				return false;
+			}
 		}
 		if (mainPage.getUseAnalytics()) {
 			this.analyticsSettings = this.analyticsPage.getAnalyticsSettings();
 		} else {
 			this.analyticsSettings = null;
 		}
-		ModelCreator modelCreator = new ModelCreator(MLmodel);
+		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		modelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), chosenTemplate);
 		return true;
 	}
