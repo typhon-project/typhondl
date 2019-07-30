@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -23,7 +24,6 @@ public class Services {
 		try {
 			String outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
 			DeploymentModel model = loadXtextModel(file, provider);
-			//DeploymentModel model = loadXtextModel(pathToXTextModel, folder);
 			new Generate(model, new File(outputFolder), new ArrayList<String>()).doGenerate(new BasicMonitor());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -49,18 +49,20 @@ public class Services {
 			}
 		}
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
-		Resource DLmodel = resourceSet.getResource(modelURI, true);
-		saveModelAsXMI(DLmodel);
-		return (DeploymentModel) DLmodel.getContents().get(0);
+		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
+		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
+		saveModelAsXMI(DLmodelResource);
+		return model;
 	}
 
-	private static void saveModelAsXMI(Resource DLmodel) {
-		XtextResourceSet resourceSet = (XtextResourceSet) DLmodel.getResourceSet();
-		URI folder = DLmodel.getURI().trimFileExtension();
+	private static void saveModelAsXMI(Resource DLmodelResource) {
+		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
+		URI folder = DLmodelResource.getURI().trimFileExtension();
 		//creates a xmi resource with the same name as the model in a folder named like the model
 		//so example/test.tdl -> example/test/test.xmi
 		Resource xmiResource = resourceSet.createResource(folder.appendSegment(folder.lastSegment()+".xmi"));
-		xmiResource.getContents().add(DLmodel.getContents().get(0));
+		xmiResource.getContents().add(DLmodelResource.getContents().get(0));
+		EcoreUtil.resolveAll(resourceSet);
 		try {
 			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
