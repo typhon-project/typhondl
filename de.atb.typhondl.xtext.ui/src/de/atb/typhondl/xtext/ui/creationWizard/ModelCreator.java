@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,9 +50,6 @@ public class ModelCreator {
 	private XtextResourceSet resourceSet;
 	// path to folder in which to save all model files
 	private IPath folder;
-	// a list including every created Deployment Model (each database has its own
-	// model
-	private ArrayList<DeploymentModel> DLmodelList;
 	private String DLmodelName;
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
@@ -86,13 +82,11 @@ public class ModelCreator {
 		}
 	}
 
-	public List<DeploymentModel> createDLmodel(HashMap<String, InputField> analyticsSettings,
+	public void createDLmodel(HashMap<String, InputField> analyticsSettings,
 			Set<Database> databaseInfo, int chosenTemplate) {
 
-		DLmodelList = new ArrayList<DeploymentModel>();
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		DLmodelList.add(DLmodel);
 		// add reference to ML model
 		Import MLmodelImport = TyphonDLFactory.eINSTANCE.createImport();
 		MLmodelImport.setRelativePath(this.MLmodel.getName());
@@ -124,7 +118,6 @@ public class ModelCreator {
 				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
 				db = getDB(dbModel);
 				importedDB.setRelativePath(database.getPathToDBModelFile());
-				DLmodelList.add(dbModel);
 			} else {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
@@ -174,7 +167,7 @@ public class ModelCreator {
 		if (checkExist(createSoftwareURI("polystoredb"))) {
 			polystoredb = getDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystoredb"), true)
 					.getContents().get(0));
-			addSoftwareModelToList(polystoredb); // TODO this doesn't work
+			polystoredb.setType(mongo);
 		} else {
 			polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 			polystoredb.setName("polystoredb");
@@ -210,7 +203,6 @@ public class ModelCreator {
 		if (checkExist(createSoftwareURI("polystore_api"))) {
 			polystore_api = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_api"), true)
 					.getContents().get(0));
-			addSoftwareModelToList(polystore_api);
 		} else {
 			polystore_api = TyphonDLFactory.eINSTANCE.createNonDB();
 			polystore_api.setName("polystore_api");
@@ -258,7 +250,6 @@ public class ModelCreator {
 		if (checkExist(createSoftwareURI("polystore_ui"))) {
 			polystore_ui = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_ui"), true)
 					.getContents().get(0));
-			addSoftwareModelToList(polystore_ui);
 		} else {
 			polystore_ui = TyphonDLFactory.eINSTANCE.createNonDB();
 			polystore_ui.setName("polystore_ui");
@@ -449,11 +440,14 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return DLmodelList;
 	}
 
 	private void save(Software software) {
-		addSoftwareModelToList(software);
+		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		if (DB.class.isInstance(software)) {
+			softwareModel.getElements().add(((DB) software).getType());
+		}
+		softwareModel.getElements().add(software);		
 		URI softwareURI = createSoftwareURI(software.getName());
 		// delete resource if it already exists
 		if (checkExist(softwareURI)) {
@@ -470,15 +464,6 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	private void addSoftwareModelToList(Software software) {
-		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		softwareModel.getElements().add(software);		
-		if (DB.class.isInstance(software)) {
-			softwareModel.getElements().add(((DB) software).getType());
-		}
-		DLmodelList.add(softwareModel);
 	}
 
 	private URI createSoftwareURI(String name) {
