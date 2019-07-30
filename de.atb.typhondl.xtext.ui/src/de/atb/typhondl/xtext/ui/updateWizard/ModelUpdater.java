@@ -3,6 +3,7 @@ package de.atb.typhondl.xtext.ui.updateWizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,7 +12,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -32,8 +32,8 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.creationWizard.Database;
 import de.atb.typhondl.xtext.ui.utilities.DLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
@@ -49,6 +49,7 @@ public class ModelUpdater {
 	private IWorkbenchWindow window;
 	// The resourceSet containing all DL resources in project folder
 	private XtextResourceSet resourceSet;
+	private ArrayList<Database> MLmodel;
 
 	public ModelUpdater(IFile file, IWorkbenchWindow window) {
 		this.file = file;
@@ -58,7 +59,8 @@ public class ModelUpdater {
 	}
 
 	/**
-	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
+	 * Gets the provided ResourceSet and adds all .tdl files in the project folder
+	 * to the ResourceSet
 	 */
 	private void addResources() {
 		this.resourceSet = (XtextResourceSet) Activator.getInstance()
@@ -71,13 +73,11 @@ public class ModelUpdater {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		System.out.println(resourceSet.getResources().size());
 		for (IResource member : members) {
 			if (member instanceof IFile) {
 				if (((IFile) member).getFileExtension().equals("tdl")) {
 					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
 				}
-				System.out.println(resourceSet.getResources().size());
 			}
 		}
 		this.DLmodel = (DeploymentModel) resourceSet.getResource(DLmodelURI, true).getContents().get(0);
@@ -85,15 +85,14 @@ public class ModelUpdater {
 
 	public String updateModel() {
 		// read ML model
-		ArrayList<Database> MLmodel = new ArrayList<Database>();
+		MLmodel = new ArrayList<Database>();
 		try {
 			MLmodel = getMLmodel();
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
 		// compare Databases of ML and DL models
-		IPath fullPath = file.getLocation();
-		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel); // TODO there could be resources in project that are not used
+		ArrayList<DB> DLdbs = DLmodelReader.getDBs(DLmodel);
 		if (MLmodel.size() > DLdbs.size()) { // There are more DBs in the ML model
 			// delete all DBs that are both in the ML and DL (only the new ones remain in
 			// the ML model)
@@ -101,28 +100,23 @@ public class ModelUpdater {
 				MLmodel.removeIf(databse -> databse.getName().equals(db.getName()));
 			}
 			// ask the user for additional information (DBMS or path to existing model file)
-			MLmodel = openUpdateWizard(MLmodel);
+			MLmodel = openUpdateWizard();
 			// Add the new DBs to the old DL model
-			addDBsToDLmodel(MLmodel);
+			addDBsToDLmodel();
 			// Create output String
 			String updatedDBS = MLmodel.get(0).getName();
+			String dbModelFiles = MLmodel.get(0).getPathToDBModelFile();
 			for (int i = 1; i < MLmodel.size(); i++) {
 				updatedDBS += ", " + MLmodel.get(i).getName();
+				dbModelFiles += ", " + MLmodel.get(i).getPathToDBModelFile();
 			}
-			return "Created new file(s) for " + updatedDBS
-					+ ". To add a database to the deployment, please create a new container in your model file "
-					+ fullPath.lastSegment() + " and reference the database via the \"deploys\" key.";
+			return "New container(s) created for " + updatedDBS + " in Application " + getFirstApplication().getName()
+					+ ". Please add additional configuration details and check the database model file(s) " + dbModelFiles
+					+ ".";
 		} else {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
 					+ "Please add additional model content through the editor.";
 		}
-	}
-
-	private ArrayList<DB> getDBs() {
-		ArrayList<DB> dbs = new ArrayList<DB>();
-		dbs.addAll(this.DLmodel.getElements().stream().filter(obj -> DB.class.isInstance(obj)).map(db -> (DB) db)
-				.collect(Collectors.toList()));
-		return dbs;
 	}
 
 	private ArrayList<Database> getMLmodel() throws ParserConfigurationException, SAXException, IOException {
@@ -136,14 +130,14 @@ public class ModelUpdater {
 		return MLmodelReader.readXMIFile(MLfile.toURI());
 	}
 
-	private ArrayList<Database> openUpdateWizard(ArrayList<Database> MLmodel) {
+	private ArrayList<Database> openUpdateWizard() {
 		UpdateModelWizard updateWizard = new UpdateModelWizard(MLmodel);
 		WizardDialog dialog = new WizardDialog(window.getShell(), updateWizard);
 		dialog.open();
 		return updateWizard.getUpdatedMLmodel();
 	}
 
-	private void addDBsToDLmodel(ArrayList<Database> MLmodel) {
+	private void addDBsToDLmodel() {
 		Resource DLmodelResource = DLmodel.eResource();
 		for (Database newDatabase : MLmodel) {
 			String relativePath;
@@ -160,7 +154,16 @@ public class ModelUpdater {
 				dbModel.getElements().add(newDB.getType());
 				dbModel.getElements().add(newDB);
 				relativePath = newDatabase.getName() + ".tdl";
+				newDatabase.setPathToDBModelFile(relativePath);
 				URI dbURI = DLmodel.eResource().getURI().trimSegments(1).appendSegment(relativePath);
+				// delete resource in case it exists
+				if (resourceSet.getResource(dbURI, true) != null) {
+					try {
+						resourceSet.getResource(dbURI, true).delete(Collections.EMPTY_MAP);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				Resource dbResource = resourceSet.createResource(dbURI);
 				dbResource.getContents().add(dbModel);
 				try {
@@ -183,11 +186,11 @@ public class ModelUpdater {
 			// 3. craeate new dummy-container
 			Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
 			newContainer.setName(newDB.getName());
-			newContainer.setType(getContainerType(DLmodel));
+			newContainer.setType(getContainerType());
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(newDB);
 			newContainer.getDeploys().add(reference);
-			getFirstApplication(DLmodel).getContainers().add(newContainer);
+			getFirstApplication().getContainers().add(newContainer);
 
 			// 4. save updated model
 			try {
@@ -213,15 +216,20 @@ public class ModelUpdater {
 		return dbs.get(0);
 	}
 
-// TODO only gets the fist app in the first cluster
-	private Application getFirstApplication(DeploymentModel DLmodel) {
-		return DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
+	/*
+	 * TODO only gets the fist app in the first cluster, maybe ask in the wizard
+	 * where to put this,
+	 * /de.atb.typhondl.xtext.ui/src/de/atb/typhondl/xtext/ui/utilities/Database.
+	 * java has to get an attribute "application"
+	 */
+	private Application getFirstApplication() {
+		return this.DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
 				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0).getClusters().get(0)
 				.getApplications().get(0);
 	}
 
-	private ContainerType getContainerType(DeploymentModel DLmodel) {
-		List<ContainerType> types = DLmodel.getElements().stream()
+	private ContainerType getContainerType() {
+		List<ContainerType> types = this.DLmodel.getElements().stream()
 				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
 				.collect(Collectors.toList());
 		return types.get(0);

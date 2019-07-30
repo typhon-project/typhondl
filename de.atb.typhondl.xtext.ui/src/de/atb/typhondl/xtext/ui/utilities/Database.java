@@ -1,8 +1,7 @@
-package de.atb.typhondl.xtext.ui.creationWizard;
+package de.atb.typhondl.xtext.ui.utilities;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
-import de.atb.typhondl.xtext.ui.utilities.DBTypeForWizard;
 
 public class Database {
 

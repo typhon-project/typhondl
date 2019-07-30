@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.wizard.Wizard;
 
-import de.atb.typhondl.xtext.ui.creationWizard.Database;
+import de.atb.typhondl.xtext.ui.utilities.Database;
 
 public class UpdateModelWizard extends Wizard {
 

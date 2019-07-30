@@ -22,7 +22,7 @@ public class DLmodelReader {
 		 */
 		DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
 
-		//addAllResources(model);
+		// addAllResources(model);
 		return model;
 	}
 
@@ -40,13 +40,18 @@ public class DLmodelReader {
 //				.map(tdlFile -> openImport(model.eResource(), tdlFile.getRelativePath()));
 	}
 
-	public static ArrayList<DB> getDBs(DeploymentModel model) { //TODO over import
+	public static ArrayList<DB> getDBs(DeploymentModel model) { // TODO over import
 		ArrayList<DB> dbs = new ArrayList<DB>();
-		model.eResource().getResourceSet().getResources().forEach(resource -> {
-			dbs.addAll(((DeploymentModel) resource.getContents().get(0)).getElements().stream()
-					.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
-					.filter(db -> !db.getName().equals("polystoredb")).collect(Collectors.toList()));
-		});
+		List<Import> dbModelList = model.getGuiMetaInformation().stream()
+				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
+				.filter(info -> info.getRelativePath().endsWith(".tdl")).collect(Collectors.toList());
+		for (Import importedDB : dbModelList) {
+			URI uri = model.eResource().getURI().trimSegments(1).appendSegment(importedDB.getRelativePath());
+			dbs.addAll(
+					((DeploymentModel) model.eResource().getResourceSet().getResource(uri, true).getContents().get(0))
+							.getElements().stream().filter(element -> DB.class.isInstance(element))
+							.map(element -> (DB) element).collect(Collectors.toList()));
+		}
 		return dbs;
 	}
 

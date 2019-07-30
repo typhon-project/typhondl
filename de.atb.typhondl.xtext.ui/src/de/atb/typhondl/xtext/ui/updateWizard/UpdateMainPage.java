@@ -18,15 +18,14 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.creationWizard.Database;
+import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 public class UpdateMainPage extends WizardPage {
 
 	private ArrayList<Database> MLmodel;
 	private HashMap<Database, WizardFields> wizardFields;
-	
-	
+
 	protected UpdateMainPage(String pageName, ArrayList<Database> MLmodel) {
 		super(pageName);
 		this.MLmodel = MLmodel;
@@ -49,7 +48,7 @@ public class UpdateMainPage extends WizardPage {
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			group.setText(database.getName());
-			
+
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing file");
 			checkbox.setSelection(false);
@@ -63,12 +62,18 @@ public class UpdateMainPage extends WizardPage {
 					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 					if (wizardField.getCheckbox().getSelection()) {
-						// a predefined database configuration will be used. The dbms can't be specified here
+						// a predefined database configuration will be used. The dbms can't be specified
+						// here
 						database.setDbms(null);
+						database.setPathToDBModelFile(wizardField.getTextField().getText());
 					} else {
 						// a new model file will be created
 						database.setPathToDBModelFile(null);
+						DBType type = TyphonDLFactory.eINSTANCE.createDBType();
+						type.setName(wizardFields.get(database).getCombo().getText().toLowerCase());
+						database.setDbms(type);
 					}
+					// TODO validation
 				}
 			});
 
@@ -78,7 +83,8 @@ public class UpdateMainPage extends WizardPage {
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
 			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
-			if (!checkbox.getSelection()) database.setDbms(type);
+			if (!checkbox.getSelection())
+				database.setDbms(type);
 			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText(
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
@@ -87,7 +93,7 @@ public class UpdateMainPage extends WizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
 					type.setName(wizardFields.get(database).getCombo().getText().toLowerCase());
-					database.setDbms(type);
+					database.setDbms(type); // TODO validation
 				}
 			});
 
@@ -97,8 +103,11 @@ public class UpdateMainPage extends WizardPage {
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
-			if (checkbox.getSelection()) database.setPathToDBModelFile(textField.getText());
-			textField.addModifyListener(e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText()));
+			if (checkbox.getSelection())
+				database.setPathToDBModelFile(textField.getText());
+			textField.addModifyListener(
+					e -> database.setPathToDBModelFile(wizardFields.get(database).getTextField().getText())); // TODO
+																												// validation
 			wizardFields.put(database, new WizardFields(checkbox, combo, textField));
 		}
 		setControl(main);
