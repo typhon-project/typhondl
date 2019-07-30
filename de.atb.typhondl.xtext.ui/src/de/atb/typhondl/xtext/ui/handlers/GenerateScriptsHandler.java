@@ -1,7 +1,5 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
-import java.io.File;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -17,10 +15,17 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+
+import com.google.inject.Inject;
+
 import de.atb.typhondl.acceleo.services.Services;
 
 public class GenerateScriptsHandler extends AbstractHandler {
 
+	@Inject
+	XtextLiveScopeResourceSetProvider provider;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
@@ -30,11 +35,11 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		IWorkspaceRoot root = workspace.getRoot();
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), ""));
-			String pathToModel = file.getFullPath().toString();
-			String outputPath = folder.getAbsolutePath();
+			//File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), ""));
+			//String pathToModel = file.getFullPath().toString();
+			//String outputPath = folder.getAbsolutePath();
 			
-			Services.generateDeployment(pathToModel, outputPath);
+			Services.generateDeployment(file, provider);
 
 			for (IProject iproject : root.getProjects()) { 
 				try {

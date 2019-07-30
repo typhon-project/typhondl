@@ -3,80 +3,64 @@ package de.atb.typhondl.acceleo.services;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.acceleo.main.Generate;
-import de.atb.typhondl.xtext.TyphonDLStandaloneSetup;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Import;
 
 public class Services {
 
-	public static void generateDeployment(String pathToXTextModel, String folder) {
+	public static void generateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
 		try {
-			DeploymentModel model = loadXtextModel(pathToXTextModel, folder);
-			new Generate(model, new File(folder), new ArrayList<String>()).doGenerate(new BasicMonitor());
+			String outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
+			DeploymentModel model = loadXtextModel(file, provider);
+			//DeploymentModel model = loadXtextModel(pathToXTextModel, folder);
+			new Generate(model, new File(outputFolder), new ArrayList<String>()).doGenerate(new BasicMonitor());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static DeploymentModel loadXtextModel(String pathToXTextModel, String folder) {
-		/*
-		 * TODO TYP-45
-		 * https://stackoverflow.com/questions/35839786/xtext-export-model-as-xmi-xml#
-		 * 35885943
-		 *
-		 * Inside Eclipse IDE never use MyLanguageStandaloneSetup, the instance of an
-		 * injector MUST be accessed via an Activator of a UI plugin:
-		 * MyLanguageActivator.getInstance().getInjector(MyLanguageActivator.
-		 * COM_MYCOMPANY_MYLANGUAGE).
-		 * 
-		 * Calling of MyLanguageStandaloneSetup.createInjectorAndDoEMFRegistration will
-		 * create a new instance of an Injector that is different from used by Eclipse.
-		 * Also it can break the state of EMF registries.
-		 * 
-		 * flug: when doing so with de.atb.typhondl.xtext.ui.activator.Activator,
-		 * there's a loop in the manifest because acceleo.service package requires
-		 * xtext.ui package and vice versa. Idea: Provider can be injected in Handler
-		 * and given to generateDeployment()
-		 */
-		// TODO use the right resourceSet
-		XtextResourceSet resourceSet = new TyphonDLStandaloneSetup().createInjector()
-				.getInstance(XtextResourceSet.class);
-		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+	public static DeploymentModel loadXtextModel(IFile file, XtextLiveScopeResourceSetProvider provider) {
 
-		URI modelURI = URI.createPlatformResourceURI(pathToXTextModel, true);
-		Resource xtextResource = resourceSet.getResource(modelURI, true);
-		EcoreUtil.resolveAll(xtextResource);
-		DeploymentModel model = (DeploymentModel) resourceSet.getResource(modelURI, true).getContents().get(0);
-		saveModelAsXMI(model, folder, resourceSet, modelURI);
-		return model;
+		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
+		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		// adds all .tdl files in project folder to resourceSet
+		IResource members[] = null;
+		try {
+			members = file.getProject().members();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		for (IResource member : members) {
+			if (member instanceof IFile) {
+				if (((IFile) member).getFileExtension().equals("tdl")) {
+					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+				}
+			}
+		}
+		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+		Resource DLmodel = resourceSet.getResource(modelURI, true);
+		saveModelAsXMI(DLmodel);
+		return (DeploymentModel) DLmodel.getContents().get(0);
 	}
 
-	/*
-	 * TODO maybe put this in "onSave()" in Xtext package
-	 */
-	public static void saveModelAsXMI(DeploymentModel model, String pathToTargetFolder, XtextResourceSet resourceSet,
-			URI modelURI) {
-		Resource xmiResource = resourceSet.createResource(URI.createFileURI(pathToTargetFolder + "/model.xmi"));
-		xmiResource.getContents().add(model);
-		List<Import> importedInfos = model.getGuiMetaInformation().stream()
-				.filter(metaModel -> Import.class.isInstance(metaModel)).map(metaModel -> (Import) metaModel)
-				.collect(Collectors.toList());
-		importedInfos.stream().filter(info -> info.getRelativePath().endsWith(".tdl")).forEach(info -> {
-			String absolutPath = modelURI.trimSegments(1).toString() + "/" + info.getRelativePath();
-			Resource dbResource = resourceSet.getResource(URI.createPlatformResourceURI(absolutPath, true), true);
-			xmiResource.getContents().add(dbResource.getContents().get(0));
-		});
+	private static void saveModelAsXMI(Resource DLmodel) {
+		XtextResourceSet resourceSet = (XtextResourceSet) DLmodel.getResourceSet();
+		URI folder = DLmodel.getURI().trimFileExtension();
+		//creates a xmi resource with the same name as the model in a folder named like the model
+		//so example/test.tdl -> example/test/test.xmi
+		Resource xmiResource = resourceSet.createResource(folder.appendSegment(folder.lastSegment()+".xmi"));
+		xmiResource.getContents().add(DLmodel.getContents().get(0));
 		try {
 			xmiResource.save(Options.getXMIoptions());
 		} catch (IOException e) {
