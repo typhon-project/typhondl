@@ -71,21 +71,19 @@ Cluster :
 	{Cluster}
 	'cluster' name=ID '{'
 		(networks+=Cluster_Network)*
-		(volumes+=Cluster_Volume)*
+		(properties+=Property)*
 		(applications+=Application)*		
      '}'
 ;
 
 Cluster_Network:
-	'network' name=ID
+	'network' name=ID '{'
+		(key_values+=Key_Value)*
+	'}'
 ;
 
 Container_Network:
 	'networks' reference=[Cluster_Network] (',' references+=[Cluster_Network])*
-;
-
-Cluster_Volume:
-	'volume' name=ID
 ;
 
 Application :
