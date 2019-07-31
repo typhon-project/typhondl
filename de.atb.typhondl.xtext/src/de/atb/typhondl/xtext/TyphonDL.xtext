@@ -63,7 +63,7 @@ DBType:
 Platform :
 	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
-     (clusters+=Cluster)*
+     (clusters+=Cluster)* 
      '}'
 ;
 
@@ -77,9 +77,10 @@ Cluster :
 ;
 
 Cluster_Network:
-	'network' name=ID '{'
-		(key_values+=Key_Value)*
-	'}'
+	'network' name=ID 
+		('{'
+		(key_values+=Key_Value)* 
+		'}')?
 ;
 
 Container_Network:
