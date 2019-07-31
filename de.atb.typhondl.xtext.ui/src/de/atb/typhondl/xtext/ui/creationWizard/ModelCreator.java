@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -19,8 +18,10 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.Cluster_Network;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
+import de.atb.typhondl.xtext.typhonDL.Container_Network;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
@@ -292,6 +293,7 @@ public class ModelCreator {
 		 */
 		Container zookeeper_container = null;
 		Container kafka_container = null;
+		Cluster_Network typhonNetwork = null;
 		if (useAnalytics) {
 			String zookeeperPort = analyticsSettings.get("zookeeperPort").value;
 			String kafkaPort = analyticsSettings.get("kafkaPort").value;
@@ -321,6 +323,8 @@ public class ModelCreator {
 			Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
 			zookeeper_reference.setReference(zookeeper);
 
+			typhonNetwork = TyphonDLFactory.eINSTANCE.createCluster_Network();
+			typhonNetwork.setName("typhon");
 			zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
 			zookeeper_container.setName("zookeeper");
 			zookeeper_container.setType(containerType);
@@ -333,10 +337,9 @@ public class ModelCreator {
 			zookeeper_container_ports.setName("ports");
 			zookeeper_container_ports.setValue("2181:" + zookeeperPort);
 			zookeeper_container.getProperties().add(zookeeper_container_ports);
-			Key_ValueArray zookeeper_container_networks = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-			zookeeper_container_networks.setName("networks");
-			zookeeper_container_networks.setValue("typhon");// TODO this should reference to top level "networks"
-			zookeeper_container.getProperties().add(zookeeper_container_networks);
+			Container_Network zookeeper_container_networks = TyphonDLFactory.eINSTANCE.createContainer_Network();
+			zookeeper_container_networks.setReference(typhonNetwork);
+			zookeeper_container.getNetworks().add(zookeeper_container_networks);
 
 			Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 			zookeeper_dependency.setReference(zookeeper_container);
@@ -403,6 +406,9 @@ public class ModelCreator {
 
 		Cluster cluster = TyphonDLFactory.eINSTANCE.createCluster();
 		cluster.setName("clusterName");
+		if (useAnalytics) {
+			cluster.getNetworks().add(typhonNetwork);
+		}
 		deployment.getClusters().add(cluster);
 
 		Application application = TyphonDLFactory.eINSTANCE.createApplication();

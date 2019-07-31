@@ -6,7 +6,7 @@
 /]
 
 [query public getAllClusters(aDeploymentModel : DeploymentModel) : Sequence(Cluster) = 
- aDeploymentModel.elements->filter(typhonDL::Deployment).clusters 
+ aDeploymentModel.elements->filter(typhonDL::Platform).clusters 
 /]
 
 [query public getAllApplications(aCluster : Cluster) : OrderedSet(Application) = 

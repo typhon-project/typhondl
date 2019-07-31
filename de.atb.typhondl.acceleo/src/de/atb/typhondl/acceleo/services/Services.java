@@ -20,7 +20,7 @@ import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
-import de.atb.typhondl.xtext.typhonDL.Deployment;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 
@@ -98,9 +98,9 @@ public class Services {
 	}
 
 	private static boolean analyticsIsUsed(DeploymentModel DLmodel) {
-		Deployment deployment = DLmodel.getElements().stream().filter(element -> Deployment.class.isInstance(element))
-				.map(element -> (Deployment) element).collect(Collectors.toList()).get(0);
-		for (Cluster cluster : deployment.getClusters()) {
+		Platform platform = DLmodel.getElements().stream().filter(element -> Platform.class.isInstance(element))
+				.map(element -> (Platform) element).collect(Collectors.toList()).get(0);
+		for (Cluster cluster : platform.getClusters()) {
 			for (Application application : cluster.getApplications()) {
 				for (Container container : application.getContainers()) {
 					if (container.getName().equals("zookeeper")) {
