@@ -1,8 +1,0 @@
-dbtype mariabd
-
-database mariadbtest : mariabd {
-	image = mariadb:latest;
-    environment {
-		MYSQL_ROOT_PASSWORD = admin;
-	}
-}

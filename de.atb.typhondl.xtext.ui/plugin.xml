@@ -534,11 +534,6 @@
  <extension
        point="org.eclipse.ui.commands">
     <command
-          defaultHandler="de.atb.typhondl.xtext.ui.handlers.GenerateScriptsHandler"
-          id="de.atb.typhondl.acceleo.generate"
-          name="Generate Scripts">
-    </command>
-    <command
           defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenEditorHandler"
           id="de.atb.typhondl.xtext.ui.editor.OpenProperties"
           name="Open Editor">
@@ -553,6 +548,10 @@
     <handler
           class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
           commandId="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel">
+    </handler>
+    <handler
+          class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.GenerateScriptsHandler"
+          commandId="de.atb.typhondl.acceleo.generate">
     </handler>
  </extension>
 </plugin>

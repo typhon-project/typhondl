@@ -112,8 +112,8 @@ public class ModelUpdater {
 				dbModelFiles += ", " + MLmodel.get(i).getPathToDBModelFile();
 			}
 			return "New container(s) created for " + updatedDBS + " in Application " + getFirstApplication().getName()
-					+ ". Please add additional configuration details and check the database model file(s) " + dbModelFiles
-					+ ".";
+					+ ". Please add additional configuration details and check the database model file(s) "
+					+ dbModelFiles + ".";
 		} else {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
 					+ "Please add additional model content through the editor.";
@@ -158,7 +158,7 @@ public class ModelUpdater {
 				newDatabase.setPathToDBModelFile(relativePath);
 				URI dbURI = DLmodel.eResource().getURI().trimSegments(1).appendSegment(relativePath);
 				// delete resource in case it exists
-				if (resourceSet.getResource(dbURI, true) != null) {
+				if (resourceSet.getResource(dbURI, false) != null) {
 					try {
 						resourceSet.getResource(dbURI, true).delete(Collections.EMPTY_MAP);
 					} catch (IOException e) {
