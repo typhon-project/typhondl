@@ -112,8 +112,8 @@ public class ModelUpdater {
 				dbModelFiles += ", " + MLmodel.get(i).getPathToDBModelFile();
 			}
 			return "New container(s) created for " + updatedDBS + " in Application " + getFirstApplication().getName()
-					+ ". Please add additional configuration details and check the database model file(s) " + dbModelFiles
-					+ ".";
+					+ ". Please add additional configuration details and check the database model file(s) "
+					+ dbModelFiles + ".";
 		} else {
 			return "All ML databases match the DL databases. The DL model does not have to be updated via the Updater. "
 					+ "Please add additional model content through the editor.";
