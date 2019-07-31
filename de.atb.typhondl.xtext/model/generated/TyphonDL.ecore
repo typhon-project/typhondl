@@ -57,11 +57,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="Cluster_Volume">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Container_Volume">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Cluster_Volume"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="references" unique="false"
-        upperBound="-1" eType="#//Cluster_Volume"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Application">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="containers" upperBound="-1"
@@ -76,8 +71,6 @@
         eType="#//Dependency" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
         eType="#//Container_Network" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="volumes" upperBound="-1"
-        eType="#//Container_Volume" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
   </eClassifiers>

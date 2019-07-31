@@ -88,10 +88,6 @@ Cluster_Volume:
 	'volume' name=ID
 ;
 
-Container_Volume:
-	'volumes' reference=[Cluster_Volume] (',' references+=[Cluster_Volume])*
-;
-
 Application :
 	{Application}
 	'application' name=ID '{'
@@ -105,7 +101,6 @@ Container :
 		(deploys+=Reference)*
 		(depends_on+=Dependency)*
 		(networks+=Container_Network)*
-		(volumes+=Container_Volume)*
 		(properties+=Property)*
 	'}'
 ;

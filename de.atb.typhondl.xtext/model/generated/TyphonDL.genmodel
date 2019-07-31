@@ -52,10 +52,6 @@
     <genClasses ecoreClass="TyphonDL.ecore#//Cluster_Volume">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Cluster_Volume/name"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Container_Volume">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container_Volume/reference"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container_Volume/references"/>
-    </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Application">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Application/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Application/containers"/>
@@ -66,7 +62,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/deploys"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/depends_on"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/networks"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/volumes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Dependency">
