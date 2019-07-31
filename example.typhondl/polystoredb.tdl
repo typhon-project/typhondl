@@ -1,1 +1,4 @@
-dbtype mongo database polystoredb : mongo { image = mongo:latest;  }
+dbtype mongo
+database polystoredb : mongo {
+	image = mongo:latest ;
+}

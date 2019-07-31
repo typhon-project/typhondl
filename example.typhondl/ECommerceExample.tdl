@@ -1,46 +1,51 @@
 import SimplifiedTyphonECommerceExample.xmi
-import userdb.tdl
-import orderdb.tdl
 import productdb.tdl
-
-platformtype default //TODO (e.g. AWS)
+import orderdb.tdl
+import userdb.tdl
+platformtype default
 containertype Docker
-
-platform platformname : default { //TODO
-	cluster clustername { //TODO
-		application name { //TODO
+platform platformName : default {
+	cluster clusterName {
+		application Polystore {
 			container polystore_api : Docker {
 				deploys polystore_api
-				depends_on polystoredb 
-				container_name = typhonml.polystore.service;
-				ports = 8080:8080;
-				volumes = ./models:/models;
+				depends_on polystoredb
+				container_name = typhonml.polystore.service ;
+				ports [ 8080:8080 ]
+				volumes [ ./models:/models ]
 			}
-			container polystoreui : Docker {
+			container polystore_ui : Docker {
 				deploys polystore_ui
 				depends_on polystore_api
-				build {
-					context = Typhon Service UI;
-				}
-				container_name = polystore.ui;
-				ports = 4200:4200;
+				container_name = polystore.ui ;
+				ports [ 4200:4200 ]
 			}
 			container polystoredb : Docker {
 				deploys polystoredb
-				container_name = polystore.mongo;
-				ports = 27017:27017;
+				container_name = polystore.mongo ;
+				ports [ 27017:27017 ]
 			}
-			container userdb : Docker {
-				deploys userdb
-				// TODO: volumes, networks, ports etc.
+			container zookeeper : Docker {
+				deploys zookeeper
+				container_name = zookeeper ;
+				ports [ 2181:2181 ]
+				networks [ typhon ]
 			}
-			container orderdb : Docker {
-				deploys orderdb
-				// TODO: volumes, networks, ports etc.
+			container kafka : Docker {
+				depends_on zookeeper
+				container_name = kafka ;
+				ports [ 9092:9092 ]
+				networks [ typhon ]
+				volumes [ /var/run/docker.sock:/var/run/docker.sock ]
 			}
 			container productdb : Docker {
 				deploys productdb
-				// TODO: volumes, networks, ports etc.
+			}
+			container orderdb : Docker {
+				deploys orderdb
+			}
+			container userdb : Docker {
+				deploys userdb
 			}
 		}
 	}

@@ -6,10 +6,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
@@ -27,25 +27,29 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 public class CreationDBMSPage extends MyWizardPage {
 
 	private HashMap<Database, WizardFields> databaseSettings;
+	private IFile file;
 
-	private URI modelPath;
-
-	protected CreationDBMSPage(String pageName, URI modelPath) {
+	public CreationDBMSPage(String pageName, IFile file) {
+		this(pageName, file, readModel(file));
+	}
+	
+	public CreationDBMSPage(String pageName, IFile file, ArrayList<Database> MLmodel) {
 		super(pageName);
 		this.databaseSettings = new HashMap<Database, WizardFields>();
-		this.modelPath = modelPath;
-		readModel(modelPath).forEach(db -> this.databaseSettings.put(db, null));
+		MLmodel.forEach(db -> this.databaseSettings.put(db, null));
+		this.file = file;
 	}
 
-	private ArrayList<Database> readModel(URI modelPath) {
+	private static ArrayList<Database> readModel(IFile MLmodel) {
 		try {
-			return MLmodelReader.readXMIFile(modelPath);
+			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
@@ -81,10 +85,10 @@ public class CreationDBMSPage extends MyWizardPage {
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 					if (wizardField.getCheckbox().getSelection()) {
 						database.setDbms(null); // delete set DBMS in database if an existing file is used
-						database.setPathToDBModelFile(databaseSettings.get(database).getTextField().getText());
+						database.setPathToDBModelFile(wizardField.getTextField().getText());
 					} else {
 						DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-						type.setName(databaseSettings.get(database).getCombo().getText().toLowerCase());
+						type.setName(wizardField.getCombo().getText().toLowerCase());
 						database.setDbms(type);
 						database.setPathToDBModelFile(null);
 					}
@@ -98,7 +102,8 @@ public class CreationDBMSPage extends MyWizardPage {
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
 			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
-			database.setDbms(type);
+			if (!checkbox.getSelection())
+				database.setDbms(type);
 			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText(
 					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
@@ -118,6 +123,8 @@ public class CreationDBMSPage extends MyWizardPage {
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
+			if (checkbox.getSelection())
+				database.setPathToDBModelFile(textField.getText());
 			textField.addModifyListener(e -> {
 				database.setPathToDBModelFile(databaseSettings.get(database).getTextField().getText());
 				validate();
@@ -131,6 +138,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
+		URI uri = file.getLocationURI();
 		for (Database database : databaseSettings.keySet()) {
 			WizardFields fields = databaseSettings.get(database);
 			if (fields.getTextField().isEnabled()) {
@@ -139,7 +147,8 @@ public class CreationDBMSPage extends MyWizardPage {
 					status = new Status(IStatus.ERROR, "Wizard",
 							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
 				}
-				String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/') + 1);
+				
+				String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
 				String path = pathWithFolder + pathToDatabaseFile;
 				File file = new File(URI.create(path));
 				if (!file.exists()) {
@@ -148,7 +157,7 @@ public class CreationDBMSPage extends MyWizardPage {
 				}
 			} else {
 				String pathToDatabaseFile = database.getName() + ".tdl";
-				String pathWithFolder = modelPath.toString().substring(0, modelPath.toString().lastIndexOf('/') + 1);
+				String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
 				String path = pathWithFolder + pathToDatabaseFile;
 				File file = new File(URI.create(path));
 				if (file.exists()) {
@@ -163,7 +172,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		setStatus(status);
 	}
 
-	public Set<Database> getDatabases() {
-		return databaseSettings.keySet();
+	public ArrayList<Database> getDatabases() {
+		return new ArrayList<Database>(databaseSettings.keySet());
 	}
 }

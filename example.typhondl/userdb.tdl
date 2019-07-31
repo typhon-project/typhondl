@@ -1,9 +1,4 @@
 dbtype mariadb
-
 database userdb : mariadb {
-	image = mariadb:latest;
-	restart = always;
-    environment {
-    	MYSQL_ROOT_PASSWORD = example;
-    }
+	image = mariadbimage ;
 }

@@ -6,7 +6,7 @@ public class ClusterPage extends EditorPage {
 
 	public ClusterPage(Cluster cluster) {
 		super("Cluster " + cluster.getName());
-		// TODO implement editor page Cluster
+		// TODO TyphonDLEditor: implement editor page Cluster
 	}
 
 }

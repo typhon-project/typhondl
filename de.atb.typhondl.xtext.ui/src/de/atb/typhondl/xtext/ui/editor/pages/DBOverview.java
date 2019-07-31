@@ -16,7 +16,7 @@ public class DBOverview extends EditorPage {
 		super("Databases");
 		super.noDefaultAndApplyButton();
 		this.dbs = dbs;
-		// TODO implement editor page Overview
+		// TODO TyphonDLEditor: implement editor page Overview
 	}
 
 	/**

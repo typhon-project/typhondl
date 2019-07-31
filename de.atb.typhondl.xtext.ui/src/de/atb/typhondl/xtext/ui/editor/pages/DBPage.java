@@ -138,14 +138,14 @@ public class DBPage extends EditorPage {
 			MessageDialog.openError(this.getShell(), "TODO",
 					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. "
 					+ "Please use the textual editor and wait for the next version.");
-			// TODO implement saving changes in Key_KeyValueList
+			// TODO TyphonDLEditor: implement saving changes in Key_KeyValueList
 			break;
 		case "Key_ValueArray":
 			// Key_ValueArray array = (Key_ValueArray) prop;
 			MessageDialog.openError(this.getShell(), "TODO",
 					"Sorry, only the image and Key-Value pairs can be saved in the GUI at the moment. "
 					+ "Please use the textual editor and wait for the next version.");
-			// TODO implement saving changes in Key_ValueArray
+			// TODO TyphonDLEditor: implement saving changes in Key_ValueArray
 			break;
 		default:
 			break;

@@ -28,7 +28,6 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 	@Inject extension TyphonDLGrammarAccess
 
 	def dispatch void format(DeploymentModel deploymentModel, extension IFormattableDocument document) {
-		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
 		for (metaModel : deploymentModel.guiMetaInformation) {
 			metaModel.format
 		}
@@ -39,7 +38,6 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(Import imported, extension IFormattableDocument document) {
 		imported.append[newLine]
-	// imported.regionFor.keyword('import').prepend[newLine] // TODO
 	}
 
 	def dispatch void format(NonDB nonDB, extension IFormattableDocument document) {

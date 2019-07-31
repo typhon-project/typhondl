@@ -1,6 +1,4 @@
 dbtype mariadb
-
 database productdb : mariadb {
-	image = mariadb:latest;
-	// TODO: evironment etc.
+	image = mariadbimage ;
 }

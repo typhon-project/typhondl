@@ -30,9 +30,10 @@ public class UpdateModelHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			result = ModelUpdater.updateModel(file.getLocation(), window);
+			ModelUpdater modelUpdater = new ModelUpdater(file, window);
+			result = modelUpdater.updateModel();
 
-			for (IProject iproject : root.getProjects()) { 
+			for (IProject iproject : root.getProjects()) {
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				} catch (CoreException e) {
@@ -41,7 +42,6 @@ public class UpdateModelHandler extends AbstractHandler {
 			}
 		}
 
-		
 		if (!result.isEmpty()) {
 			MessageDialog.openInformation(window.getShell(), "TyphonDL Updater", result);
 		}

@@ -6,7 +6,7 @@ public class ApplicationPage extends EditorPage {
 
 	public ApplicationPage(Application application) {
 		super("Application " + application.getName());
-		// TODO implement editor page Application
+		// TODO TyphonDLEditor: implement editor page Application
 	}
 
 }
