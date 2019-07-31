@@ -71,6 +71,7 @@ Cluster :
 	{Cluster}
 	'cluster' name=ID '{'
 		(networks+=Cluster_Network)*
+		(volumes+=Cluster_Volume)*
 		(applications+=Application)*		
      '}'
 ;
@@ -79,8 +80,16 @@ Cluster_Network:
 	'network' name=ID
 ;
 
-Network:
+Container_Network:
 	'network' reference=[Cluster_Network] (',' references+=[Cluster_Network])*
+;
+
+Cluster_Volume:
+	'volume' name=ID
+;
+
+Container_Volume:
+	'volume' reference=[Cluster_Volume] (',' references+=[Cluster_Volume])*
 ;
 
 Application :
@@ -95,7 +104,8 @@ Container :
 	'container' name=ID ':' type=[ContainerType]'{'
 		(deploys+=Reference)*
 		(depends_on+=Dependency)*
-		(networks+=Network)*
+		(networks+=Container_Network)*
+		(volumes+=Container_Volume)*
 		(properties+=Property)*
 	'}'
 ;
