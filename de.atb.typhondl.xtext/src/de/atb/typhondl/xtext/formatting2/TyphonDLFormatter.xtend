@@ -11,7 +11,6 @@ import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.ContainerType
 import de.atb.typhondl.xtext.typhonDL.DB
 import de.atb.typhondl.xtext.typhonDL.DBType
-import de.atb.typhondl.xtext.typhonDL.Deployment
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel
 import de.atb.typhondl.xtext.typhonDL.IMAGE
 import de.atb.typhondl.xtext.typhonDL.Import
@@ -19,6 +18,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_Value
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
 import de.atb.typhondl.xtext.typhonDL.NonDB
+import de.atb.typhondl.xtext.typhonDL.Platform
 import de.atb.typhondl.xtext.typhonDL.PlatformType
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
@@ -82,13 +82,13 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		dbType.append[newLine]
 	}
 
-	def dispatch void format(Deployment deployment, extension IFormattableDocument document) {
+	def dispatch void format(Platform platform, extension IFormattableDocument document) {
 		interior(
-			deployment.regionFor.keyword('{').append[newLine],
-			deployment.regionFor.keyword('}').prepend[newLine].append[newLine],
+			platform.regionFor.keyword('{').append[newLine],
+			platform.regionFor.keyword('}').prepend[newLine].append[newLine],
 			[indent]
 		)
-		for (cluster : deployment.clusters) {
+		for (cluster : platform.clusters) {
 			cluster.format
 		}
 	}

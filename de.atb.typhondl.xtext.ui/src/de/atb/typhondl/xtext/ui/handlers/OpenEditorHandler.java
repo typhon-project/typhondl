@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.atb.typhondl.xtext.ui.editor.TyphonEditorDialog;
+//import de.atb.typhondl.xtext.ui.editor.TyphonEditorDialog;
 
 public class OpenEditorHandler extends AbstractHandler {
 
@@ -33,8 +33,8 @@ public class OpenEditorHandler extends AbstractHandler {
 			}
 			Shell activeShell = HandlerUtil.getActiveShell(event);
 
-			TyphonEditorDialog preferenceDialog = new TyphonEditorDialog(activeShell, path);
-			preferenceDialog.start();
+			//TyphonEditorDialog preferenceDialog = new TyphonEditorDialog(activeShell, path);
+			//preferenceDialog.start();
 		}
 		return null;
 	}

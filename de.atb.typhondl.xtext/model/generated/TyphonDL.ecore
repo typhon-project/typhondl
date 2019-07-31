@@ -32,15 +32,29 @@
   <eClassifiers xsi:type="ecore:EClass" name="PlatformType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="ContainerType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="DBType" eSuperTypes="#//Type"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Deployment" eSuperTypes="#//Model">
+  <eClassifiers xsi:type="ecore:EClass" name="Platform" eSuperTypes="#//Model">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//PlatformType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clusters" upperBound="-1"
         eType="#//Cluster" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Cluster">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
+        eType="#//Cluster_Network" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
+        eType="#//Property" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="applications" upperBound="-1"
         eType="#//Application" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Cluster_Network">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="key_values" upperBound="-1"
+        eType="#//Key_Value" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Container_Network">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Cluster_Network"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="references" unique="false"
+        upperBound="-1" eType="#//Cluster_Network"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Application">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -54,6 +68,8 @@
         eType="#//Reference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends_on" upperBound="-1"
         eType="#//Dependency" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
+        eType="#//Container_Network" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
   </eClassifiers>
