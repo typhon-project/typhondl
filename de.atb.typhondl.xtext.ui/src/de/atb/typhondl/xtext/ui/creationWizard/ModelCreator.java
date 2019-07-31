@@ -356,10 +356,9 @@ public class ModelCreator {
 			kafka_container_ports.setName("ports");
 			kafka_container_ports.setValue("9092:" + kafkaPort);
 			kafka_container.getProperties().add(kafka_container_ports);
-			Key_ValueArray kafka_container_networks = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-			kafka_container_networks.setName("networks");
-			kafka_container_networks.setValue("typhon");// TODO this should reference to top level "networks"
-			kafka_container.getProperties().add(kafka_container_networks);
+			Container_Network kafka_container_networks = TyphonDLFactory.eINSTANCE.createContainer_Network();
+			kafka_container_networks.setReference(typhonNetwork);
+			kafka_container.getNetworks().add(kafka_container_networks);
 			Key_ValueArray kafka_container_volumes = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 			kafka_container_volumes.setName("volumes");
 			kafka_container_volumes.setValue("/var/run/docker.sock:/var/run/docker.sock");

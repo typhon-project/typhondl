@@ -22,6 +22,7 @@ import de.atb.typhondl.xtext.typhonDL.Platform
 import de.atb.typhondl.xtext.typhonDL.PlatformType
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
+import de.atb.typhondl.xtext.typhonDL.Cluster_Network
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -99,8 +100,24 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			cluster.regionFor.keyword('}').prepend[newLine].append[newLine],
 			[indent]
 		)
+		for (network : cluster.networks) {
+			network.append[newLine]
+			network.format
+		}
 		for (app : cluster.applications) {
 			app.format
+		}
+	}
+
+	def dispatch void format(Cluster_Network network, extension IFormattableDocument document) {
+		interior(
+			network.regionFor.keyword('{').append[newLine],
+			network.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		network.append[newLine]
+		for (key_value : network.key_values) {
+			key_value.format
 		}
 	}
 
@@ -126,6 +143,9 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		}
 		for (deploys : container.deploys) {
 			deploys.append[newLine]
+		}
+		for (network : container.networks) {
+			network.append[newLine]
 		}
 		for (property : container.properties) {
 			property.format
