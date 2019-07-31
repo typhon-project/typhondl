@@ -1,4 +1,4 @@
 dbtype mongo
-database orderdb : mongo {
+database testdb : mongo {
 	image = mongoimage ;
 }

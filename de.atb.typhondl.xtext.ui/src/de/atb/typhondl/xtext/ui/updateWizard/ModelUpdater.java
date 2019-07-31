@@ -158,7 +158,7 @@ public class ModelUpdater {
 				newDatabase.setPathToDBModelFile(relativePath);
 				URI dbURI = DLmodel.eResource().getURI().trimSegments(1).appendSegment(relativePath);
 				// delete resource in case it exists
-				if (resourceSet.getResource(dbURI, true) != null) {
+				if (resourceSet.getResource(dbURI, false) != null) {
 					try {
 						resourceSet.getResource(dbURI, true).delete(Collections.EMPTY_MAP);
 					} catch (IOException e) {
