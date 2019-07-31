@@ -43,8 +43,9 @@ networks:
 
 [template public print(networks : Container_Network)]
 networks:
-  -[networks.reference.name/][for (reference : Cluster_Network | networks.references)]
-  -[reference.name/]
+  - [networks.reference.name/]
+[for (reference : Cluster_Network | networks.references)]
+  - [reference.name/]
 [/for]
 [/template]
 [template public printProperties(aProperty : Property) ]
@@ -63,8 +64,8 @@ networks:
 
 [template public printProperties(aProperty : Key_ValueArray) ]
 [aProperty.name/]:
-  -[aProperty.value/][for (aValue : EString | aProperty.values)],
-  -[aValue/]
+  - [aProperty.value/][for (aValue : EString | aProperty.values)],
+  - [aValue/]
 [/for]
 [/template]
 
