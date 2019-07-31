@@ -141,12 +141,11 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		for (depends_on : container.depends_on) {
 			depends_on.append[newLine]
 		}
-		for (deploys : container.deploys) {
-			deploys.append[newLine]
-		}
-		for (network : container.networks) {
-			network.append[newLine]
-		}
+//		container.get
+//		container.deploys.append[newLine]
+//		for (network : container.networks) {
+//			network.append[newLine]
+//		}
 		for (property : container.properties) {
 			property.format
 		}

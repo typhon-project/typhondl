@@ -97,9 +97,9 @@ Application :
 Container :
 	{Container}
 	'container' name=ID ':' type=[ContainerType]'{'
-		(deploys+=Reference)*
+		(deploys=Reference)?
 		(depends_on+=Dependency)*
-		(networks+=Container_Network)*
+		(networks=Container_Network)?
 		(properties+=Property)*
 	'}'
 ;

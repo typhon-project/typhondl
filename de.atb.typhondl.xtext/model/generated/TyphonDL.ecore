@@ -64,12 +64,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="Container">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ContainerType"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="deploys" upperBound="-1"
-        eType="#//Reference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="deploys" eType="#//Reference"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends_on" upperBound="-1"
         eType="#//Dependency" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" upperBound="-1"
-        eType="#//Container_Network" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="networks" eType="#//Container_Network"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
   </eClassifiers>

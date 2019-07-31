@@ -7,9 +7,8 @@ import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Reference;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 
 public class DLmodelReader {
@@ -21,11 +20,9 @@ public class DLmodelReader {
 		for (Cluster cluster : platform.getClusters()) {
 			for (Application application : cluster.getApplications()) {
 				for (Container container : application.getContainers()) {
-					for (Reference reference : container.getDeploys()) {
-						Software software = reference.getReference();
-						if (DB.class.isInstance(software) && !software.getName().equals("polystoredb")) {
-							dbs.add((DB) software);
-						}
+					Software software = container.getDeploys().getReference();
+					if (DB.class.isInstance(software) && !software.getName().equals("polystoredb")) {
+						dbs.add((DB) software);
 					}
 				}
 			}

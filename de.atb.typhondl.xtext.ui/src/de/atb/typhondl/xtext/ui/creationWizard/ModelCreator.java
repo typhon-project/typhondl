@@ -182,7 +182,7 @@ public class ModelCreator {
 		Container polystoredb_container = TyphonDLFactory.eINSTANCE.createContainer();
 		polystoredb_container.setName("polystoredb");
 		polystoredb_container.setType(containerType);
-		polystoredb_container.getDeploys().add(poystoredbReference);
+		polystoredb_container.setDeploys(poystoredbReference);
 		Key_Value polystoredb_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 		polystoredb_container_container_name.setName("container_name");
 		polystoredb_container_container_name.setValue("polystore.mongo");
@@ -224,7 +224,7 @@ public class ModelCreator {
 		Container polystore_api_container = TyphonDLFactory.eINSTANCE.createContainer();
 		polystore_api_container.setName("polystore_api");
 		polystore_api_container.setType(containerType);
-		polystore_api_container.getDeploys().add(polystore_api_reference);
+		polystore_api_container.setDeploys(polystore_api_reference);
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
 		Key_Value polystore_api_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 		polystore_api_container_container_name.setName("container_name");
@@ -271,7 +271,7 @@ public class ModelCreator {
 		Container polystore_ui_container = TyphonDLFactory.eINSTANCE.createContainer();
 		polystore_ui_container.setName("polystore_ui");
 		polystore_ui_container.setType(containerType);
-		polystore_ui_container.getDeploys().add(polystore_ui_reference);
+		polystore_ui_container.setDeploys(polystore_ui_reference);
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
 		Key_Value polystore_ui_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 		polystore_ui_container_container_name.setName("container_name");
@@ -328,7 +328,7 @@ public class ModelCreator {
 			zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
 			zookeeper_container.setName("zookeeper");
 			zookeeper_container.setType(containerType);
-			zookeeper_container.getDeploys().add(zookeeper_reference);
+			zookeeper_container.setDeploys(zookeeper_reference);
 			Key_Value zookeeper_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 			zookeeper_container_name.setName("container_name");
 			zookeeper_container_name.setValue("zookeeper");
@@ -339,7 +339,7 @@ public class ModelCreator {
 			zookeeper_container.getProperties().add(zookeeper_container_ports);
 			Container_Network zookeeper_container_networks = TyphonDLFactory.eINSTANCE.createContainer_Network();
 			zookeeper_container_networks.setReference(typhonNetwork);
-			zookeeper_container.getNetworks().add(zookeeper_container_networks);
+			zookeeper_container.setNetworks(zookeeper_container_networks);
 
 			Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 			zookeeper_dependency.setReference(zookeeper_container);
@@ -358,7 +358,7 @@ public class ModelCreator {
 			kafka_container.getProperties().add(kafka_container_ports);
 			Container_Network kafka_container_networks = TyphonDLFactory.eINSTANCE.createContainer_Network();
 			kafka_container_networks.setReference(typhonNetwork);
-			kafka_container.getNetworks().add(kafka_container_networks);
+			kafka_container.setNetworks(kafka_container_networks);
 			Key_ValueArray kafka_container_volumes = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 			kafka_container_volumes.setName("volumes");
 			kafka_container_volumes.setValue("/var/run/docker.sock:/var/run/docker.sock");
@@ -428,7 +428,7 @@ public class ModelCreator {
 			container.setType(containerType);
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
-			container.getDeploys().add(reference);
+			container.setDeploys(reference);
 			application.getContainers().add(container);
 		}
 

@@ -190,7 +190,7 @@ public class ModelUpdater {
 			newContainer.setType(getContainerType());
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(newDB);
-			newContainer.getDeploys().add(reference);
+			newContainer.setDeploys(reference);
 			getFirstApplication().getContainers().add(newContainer);
 
 			// 4. save updated model

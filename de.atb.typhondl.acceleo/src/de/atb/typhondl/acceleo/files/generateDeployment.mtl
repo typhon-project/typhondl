@@ -11,16 +11,19 @@
 [file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
+[for (aNetwork : Cluster_Network | aCluster.networks)]
+[aNetwork.print()/]
+[/for]
+
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
-[for (aReference : Reference | aContainer.deploys)]
-    [aReference.reference.printFeature()/]
-[/for]
+    [aContainer.deploys.reference.printFeature()/]
 [for (aDependency : Dependency | aContainer.depends_on)]
     depends_on: 
       - [aDependency.reference.name/]
 [/for]
+    [aContainer.networks.print()/]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
@@ -30,6 +33,20 @@ services:
 [/for]
 [/template]
 
+[template public print(aNetwork : Cluster_Network)]
+networks:
+  [aNetwork.name/]: 
+[for (key_Value : Key_Value | aNetwork.key_values)]
+    [key_Value.printProperties()/]
+[/for]
+[/template]
+
+[template public print(networks : Container_Network)]
+networks:
+  -[networks.reference.name/][for (reference : Cluster_Network | networks.references)]
+  -[reference.name/]
+[/for]
+[/template]
 [template public printProperties(aProperty : Property) ]
 	test1
 [/template]
