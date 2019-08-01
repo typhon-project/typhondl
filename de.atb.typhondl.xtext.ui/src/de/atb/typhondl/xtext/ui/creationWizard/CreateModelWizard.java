@@ -53,6 +53,17 @@ public class CreateModelWizard extends Wizard {
 	}
 
 	@Override
+	public boolean canFinish() {
+		if (this.getContainer().getCurrentPage() instanceof CreationMainPage) {
+			return false;
+		}
+		if (this.getContainer().getCurrentPage() instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
+			return false;
+		}
+		return super.canFinish();
+	}
+
+	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
