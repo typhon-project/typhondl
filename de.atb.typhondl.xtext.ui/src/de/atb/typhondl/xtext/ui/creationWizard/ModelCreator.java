@@ -123,7 +123,7 @@ public class ModelCreator {
 				db.setName(database.getName());
 				db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(db.getType().getName() + "image");
+				image.setValue(db.getType().getName() + ":latest");
 				importedDB.setRelativePath(db.getName() + ".tdl");
 				db.setImage(image);
 				save(db);
