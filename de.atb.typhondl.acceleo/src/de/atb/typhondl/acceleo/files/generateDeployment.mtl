@@ -18,15 +18,23 @@ version: '3.7'
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
+[if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.printFeature()/]
+[/if]
+[if (aContainer.depends_on <> null)]
 [for (aDependency : Dependency | aContainer.depends_on)]
     depends_on: 
       - [aDependency.reference.name/]
 [/for]
-    [aContainer.networks.print()/]
+[/if]
+[if (aContainer.networks <> null)]
+	[aContainer.networks.print()/]
+[/if]    
+[if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
+[/if]
 [/for]
 [/file]
 [/for]
@@ -75,16 +83,20 @@ networks:
 
 [template public printFeature(software : NonDB) ]
 image: [software.image.value/]
+[if (software.parameters <> null)]
 [for (aProperty : Property | software.parameters)]
 [aProperty.printProperties()/]
 [/for]
+[/if]
 [/template]
 
 [template public printFeature(db : DB) ]
 image: [db.image.value/]
+[if (db.parameters <> null)]
 [for (aProperty : Property | db.parameters)]
 [aProperty.printProperties()/]
 [/for]
+[/if]
 [/template]
 
 
