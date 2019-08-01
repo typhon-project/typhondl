@@ -347,6 +347,10 @@ public class ModelCreator {
 			kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
 			kafka_container.setName("kafka");
 			kafka_container.setType(containerType);
+			Key_Value kafka_container_build = TyphonDLFactory.eINSTANCE.createKey_Value();
+			kafka_container_build.setName("build");
+			kafka_container_build.setValue(".");
+			kafka_container.getProperties().add(kafka_container_build);
 			kafka_container.getDepends_on().add(zookeeper_dependency);
 			Key_Value kafka_container_name = TyphonDLFactory.eINSTANCE.createKey_Value();
 			kafka_container_name.setName("container_name");
