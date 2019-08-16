@@ -41,7 +41,7 @@ services:
 [/for]
 [/template]
 
-[template public print(aNetwork : Cluster_Network)]
+[template public print(aNetwork : Cluster_Network) post (trim())]
 networks:
   [aNetwork.name/]: 
 [for (key_Value : Key_Value | aNetwork.key_values)]
@@ -49,39 +49,39 @@ networks:
 [/for]
 [/template]
 
-[template public print(networks : Container_Network)]
+[template public print(networks : Container_Network) post (trim())]
 networks:
   - [networks.reference.name/]
 [for (reference : Cluster_Network | networks.references)]
   - [reference.name/]
 [/for]
 [/template]
-[template public printProperties(aProperty : Property) ]
+[template public printProperties(aProperty : Property) post (trim()) ]
 	test1
 [/template]
 
-[template public printProperties(aProperty : Key_Value) ]
+[template public printProperties(aProperty : Key_Value)  post (trim())]
 [aProperty.name/]: [aProperty.value/]
 [/template]
 
-[template public printProperties(aProperty : Key_KeyValueList) ]
+[template public printProperties(aProperty : Key_KeyValueList)  post (trim())]
 [aProperty.name/]:
 [for (aVar : Key_Value | aProperty.key_Values)]
   [aVar.printProperties()/]
 [/for][/template]
 
-[template public printProperties(aProperty : Key_ValueArray) ]
+[template public printProperties(aProperty : Key_ValueArray)  post (trim())]
 [aProperty.name/]:
   - [aProperty.value/][for (aValue : EString | aProperty.values)],
   - [aValue/]
 [/for]
 [/template]
 
-[template public printFeature(software : Software) ]
+[template public printFeature(software : Software)  post (trim())]
 	something went wrong with Rule Software
 [/template]
 
-[template public printFeature(software : NonDB) ]
+[template public printFeature(software : NonDB)  post (trim())]
 image: [software.image.value/]
 [if (software.parameters <> null)]
 [for (aProperty : Property | software.parameters)]
@@ -90,7 +90,7 @@ image: [software.image.value/]
 [/if]
 [/template]
 
-[template public printFeature(db : DB) ]
+[template public printFeature(db : DB)  post (trim())]
 image: [db.image.value/]
 [if (db.parameters <> null)]
 [for (aProperty : Property | db.parameters)]

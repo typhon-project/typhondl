@@ -35,10 +35,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		IWorkspaceRoot root = workspace.getRoot();
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			//File folder = new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), ""));
-			//String pathToModel = file.getFullPath().toString();
-			//String outputPath = folder.getAbsolutePath();
-			
 			Services.generateDeployment(file, provider);
 
 			for (IProject iproject : root.getProjects()) { 
@@ -51,6 +47,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		}
 
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+		//TODO only open popup if generation really worked
 		MessageDialog.openInformation(window.getShell(), "UI", "Deployment Scripts were generated");
 		return null;
 	}
