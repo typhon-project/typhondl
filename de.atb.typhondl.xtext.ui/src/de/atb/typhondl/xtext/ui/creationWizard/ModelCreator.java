@@ -184,6 +184,7 @@ public class ModelCreator {
 			polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
 			polystoredb_environment_2.setValue("admin");
 			polystoredb_environment.getKey_Values().add(polystoredb_environment_2);
+			polystoredb.getParameters().add(polystoredb_environment);
 			save(polystoredb);
 		}
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
