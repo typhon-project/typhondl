@@ -174,6 +174,16 @@ public class ModelCreator {
 			IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystoredb_image.setValue("mongo:latest");
 			polystoredb.setImage(polystoredb_image);
+			Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			polystoredb_environment.setName("environment");
+			Key_Value polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystoredb_environment_1.setName("MONGO_INITDB_ROOT_USERNAME");
+			polystoredb_environment_1.setValue("admin");
+			polystoredb_environment.getKey_Values().add(polystoredb_environment_1);
+			Key_Value polystoredb_environment_2 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
+			polystoredb_environment_2.setValue("admin");
+			polystoredb_environment.getKey_Values().add(polystoredb_environment_2);
 			save(polystoredb);
 		}
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -397,6 +407,7 @@ public class ModelCreator {
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setName("KAFKA_AUTO_CREATE_TOPICS_ENABLE");
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
 			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
+			kafka_container.getProperties().add(kafka_environment);
 		}
 
 		/**
@@ -433,6 +444,10 @@ public class ModelCreator {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
+			Key_ValueArray db_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			db_ports.setName("ports");//TODO
+			db_ports.setValue(getStandardPorts(db.getType().getName()));
+			container.getProperties().add(db_ports);
 			application.getContainers().add(container);
 		}
 
@@ -446,6 +461,19 @@ public class ModelCreator {
 			DLmodelResource.save(SavingOptions.getTDLoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private String getStandardPorts(String name) {
+		switch (name) {
+		case "mariadb":
+			return "3306:3306";
+		case "mysql":
+			return "3306:3306";
+		case "mongo":
+			return "27018:27018"; //27017 is occupied by documentdbs
+		default:
+			return "0:0";
 		}
 	}
 
