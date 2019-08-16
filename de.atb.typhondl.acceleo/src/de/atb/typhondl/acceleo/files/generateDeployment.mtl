@@ -3,7 +3,7 @@
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
-[template public generateDeployment(aDeploymentModel : DeploymentModel)]
+[template public generateDeployment(aDeploymentModel : DeploymentModel) ? (aDeploymentModel.isDocker())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [for (aApplication : Application | aCluster.getAllApplications())]
