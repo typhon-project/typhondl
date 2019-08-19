@@ -131,9 +131,8 @@ Key_ValueArray :
 ;
 
 Value : 
-	(STRING|ID|INT|'/'|':'|'-'|'.'|'=')+
+	(STRING|ID|INT|'/'|':'|'-'|'.'|'='|'//')+
 ;
 
-terminal QSTRING:
-			'"' ('A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9'|'=')* '"'
-;
+@Override 
+terminal SL_COMMENT: '#' !('\n'|'\r')* ('\r'? '\n')?;
