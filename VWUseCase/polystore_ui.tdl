@@ -1,0 +1,5 @@
+software polystore_ui {
+	image = clms/typhon-polystore-ui:latest ;
+	restart = always ;
+	hostname = polystore_ui ;
+}
