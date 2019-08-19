@@ -126,14 +126,13 @@ Key_KeyValueList:
 
 Key_ValueArray : 
 	name=ID '['
-		(value+=Value)','(values+=Value)*
+		(value=Value)(','values+=Value)*
 	']'
 ;
 
 Value : 
-	(STRING|ID|INT|'/'|':'|'-'|'.'|'=')+
+	(STRING|ID|INT|'/'|':'|'-'|'.'|'='|'//')+
 ;
 
-terminal QSTRING:
-			'"' ('A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9'|'=')* '"'
-;
+@Override 
+terminal SL_COMMENT: '#' !('\n'|'\r')* ('\r'? '\n')?;

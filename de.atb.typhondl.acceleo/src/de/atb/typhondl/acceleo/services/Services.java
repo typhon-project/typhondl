@@ -20,19 +20,55 @@ import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 
 public class Services {
 
-	public static void generateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
+	public static String generateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
+		String result = "";
 		try {
 			String outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
+			deleteOldGeneratedFiles(new File(outputFolder));
 			DeploymentModel model = loadXtextModel(file, provider);
 			new Generate(model, new File(outputFolder), new ArrayList<String>()).doGenerate(new BasicMonitor());
+			result = getResult(new File(outputFolder));
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		return result;
+	}
+
+	private static String getResult(File folder) {
+		if (!folder.exists()) {
+			return "Something went wrong";
+		} else {
+			for (File subFile : folder.listFiles()) {
+				if (subFile.isDirectory()) {
+					for (File subSubFile : subFile.listFiles()) {
+						if (subSubFile.getName().equals("docker-compose.yml")) { // TODO horrible
+							return "Docker Compose File generated";
+						}
+					}
+				}
+				if (subFile.getName().endsWith("xmi")) {
+					return "Only the model to export was generated";
+				}
+			}
+		}
+		return null;
+	}
+
+	private static void deleteOldGeneratedFiles(File folder) {
+		if (folder.exists()) {
+			for (File subFile : folder.listFiles()) {
+				if (subFile.isDirectory()) {
+					deleteOldGeneratedFiles(subFile);
+				} else {
+					subFile.delete();
+				}
+			}
 		}
 	}
 

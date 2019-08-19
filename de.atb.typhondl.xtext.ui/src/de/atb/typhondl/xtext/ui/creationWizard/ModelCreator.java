@@ -126,6 +126,7 @@ public class ModelCreator {
 				image.setValue(db.getType().getName() + ":latest");
 				importedDB.setRelativePath(db.getName() + ".tdl");
 				db.setImage(image);
+				db = addEnvironment(db);
 				save(db);
 			}
 			dbs.add(db);
@@ -446,7 +447,7 @@ public class ModelCreator {
 			reference.setReference(db);
 			container.setDeploys(reference);
 			Key_ValueArray db_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-			db_ports.setName("ports");//TODO
+			db_ports.setName("ports");
 			db_ports.setValue(getStandardPorts(db.getType().getName()));
 			container.getProperties().add(db_ports);
 			application.getContainers().add(container);
@@ -465,6 +466,51 @@ public class ModelCreator {
 		}
 	}
 
+	// TODO put this in /de.atb.typhondl.xtext.ui/src/de/atb/typhondl/xtext/ui/utilities/DBTypeForWizard.java
+	private DB addEnvironment(DB db) {
+		switch (db.getType().getName()) {
+		case "mariadb":
+			Key_KeyValueList mariadbenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mariadbenvironment.setName("environment");
+			Key_Value mariadbenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mariadbenv1.setName("MYSQL_ROOT_PASSWORD");
+			mariadbenv1.setValue("example");
+			mariadbenvironment.getKey_Values().add(mariadbenv1);
+			db.getParameters().add(mariadbenvironment);
+			break;
+		case "mysql":
+			Key_KeyValueList mysqlenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mysqlenvironment.setName("environment");
+			Key_Value mysqlenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlenv1.setName("MYSQL_ROOT_PASSWORD");
+			mysqlenv1.setValue("example");
+			mysqlenvironment.getKey_Values().add(mysqlenv1);
+			Key_Value mysqlcommand = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlcommand.setName("command");
+			mysqlcommand.setValue("--default-authentication-plugin=mysql_native_password");
+			db.getParameters().add(mysqlcommand);
+			db.getParameters().add(mysqlenvironment);
+			break;
+		case "mongo":
+			Key_KeyValueList mongoenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mongoenvironment.setName("environment");
+			Key_Value mongoenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv1.setName("MONGO_INITDB_ROOT_USERNAME");
+			mongoenv1.setValue("admin");
+			Key_Value mongoenv2 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv2.setName("MONGO_INITDB_ROOT_PASSWORD");
+			mongoenv2.setValue("admin");
+			mongoenvironment.getKey_Values().add(mongoenv1);
+			mongoenvironment.getKey_Values().add(mongoenv2);
+			db.getParameters().add(mongoenvironment);
+			break;
+		default:
+			break;
+		}
+		return db;
+	}
+
+	// TODO put this in /de.atb.typhondl.xtext.ui/src/de/atb/typhondl/xtext/ui/utilities/DBTypeForWizard.java
 	private String getStandardPorts(String name) {
 		switch (name) {
 		case "mariadb":
@@ -472,7 +518,7 @@ public class ModelCreator {
 		case "mysql":
 			return "3306:3306";
 		case "mongo":
-			return "27018:27018"; //27017 is occupied by documentdbs
+			return "27017:27018"; //27017 is occupied by documentdbs
 		default:
 			return "0:0";
 		}
