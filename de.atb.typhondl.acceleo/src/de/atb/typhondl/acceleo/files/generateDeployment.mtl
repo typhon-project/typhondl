@@ -11,10 +11,11 @@
 [file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
+[if (aCluster.networks <> null)]
 [for (aNetwork : Cluster_Network | aCluster.networks)]
 [aNetwork.print()/]
 [/for]
-
+[/if]
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:

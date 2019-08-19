@@ -126,7 +126,7 @@ Key_KeyValueList:
 
 Key_ValueArray : 
 	name=ID '['
-		(value=Value)(','values+=Value)*
+		(value+=Value)','(values+=Value)*
 	']'
 ;
 
