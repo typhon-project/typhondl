@@ -32,8 +32,8 @@ public class MLmodelReader {
 		return dbsMap;
 	}
 	
-	private static DBTypeForWizard convertStringToDBType (String toConvert) {
-		return DBTypeForWizard.valueOf(toConvert);
+	private static SupportedDBMS convertStringToDBType (String toConvert) {
+		return SupportedDBMS.valueOf(toConvert);
 	}
 	
 }
