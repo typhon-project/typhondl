@@ -3,7 +3,7 @@
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
-[template public generateDeployment(aDeploymentModel : DeploymentModel) ? (aDeploymentModel.isDocker())]
+[template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isDocker()) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [for (aApplication : Application | aCluster.getAllApplications())]
@@ -11,10 +11,11 @@
 [file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
+[if (aCluster.networks <> null)]
 [for (aNetwork : Cluster_Network | aCluster.networks)]
 [aNetwork.print()/]
 [/for]
-
+[/if]
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
   [aContainer.name/]:
@@ -56,6 +57,7 @@ networks:
   - [reference.name/]
 [/for]
 [/template]
+
 [template public printProperties(aProperty : Property) post (trim()) ]
 	test1
 [/template]
@@ -72,7 +74,7 @@ networks:
 
 [template public printProperties(aProperty : Key_ValueArray)  post (trim())]
 [aProperty.name/]:
-  - [aProperty.value/][for (aValue : EString | aProperty.values)],
+  - [aProperty.value/][for (aValue : EString | aProperty.values)]
   - [aValue/]
 [/for]
 [/template]

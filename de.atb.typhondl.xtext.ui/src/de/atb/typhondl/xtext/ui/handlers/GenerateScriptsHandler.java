@@ -25,19 +25,21 @@ public class GenerateScriptsHandler extends AbstractHandler {
 
 	@Inject
 	XtextLiveScopeResourceSetProvider provider;
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
+		String result = "";
 		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 		Object object = selection.getFirstElement();
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		if (object instanceof IFile) {
 			IFile file = (IFile) object;
-			Services.generateDeployment(file, provider);
 
-			for (IProject iproject : root.getProjects()) { 
+			result = Services.generateDeployment(file, provider);
+
+			for (IProject iproject : root.getProjects()) {
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				} catch (CoreException e) {
@@ -47,8 +49,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
 		}
 
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		//TODO only open popup if generation really worked
-		MessageDialog.openInformation(window.getShell(), "UI", "Deployment Scripts were generated");
+		MessageDialog.openInformation(window.getShell(), "UI", result);
 		return null;
 	}
 

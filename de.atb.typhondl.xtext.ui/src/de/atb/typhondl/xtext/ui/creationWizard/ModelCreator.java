@@ -126,6 +126,7 @@ public class ModelCreator {
 				image.setValue(db.getType().getName() + ":latest");
 				importedDB.setRelativePath(db.getName() + ".tdl");
 				db.setImage(image);
+				db = addEnvironment(db);
 				save(db);
 			}
 			dbs.add(db);
@@ -174,6 +175,17 @@ public class ModelCreator {
 			IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystoredb_image.setValue("mongo:latest");
 			polystoredb.setImage(polystoredb_image);
+			Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			polystoredb_environment.setName("environment");
+			Key_Value polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystoredb_environment_1.setName("MONGO_INITDB_ROOT_USERNAME");
+			polystoredb_environment_1.setValue("admin");
+			polystoredb_environment.getKey_Values().add(polystoredb_environment_1);
+			Key_Value polystoredb_environment_2 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
+			polystoredb_environment_2.setValue("admin");
+			polystoredb_environment.getKey_Values().add(polystoredb_environment_2);
+			polystoredb.getParameters().add(polystoredb_environment);
 			save(polystoredb);
 		}
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -397,6 +409,7 @@ public class ModelCreator {
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setName("KAFKA_AUTO_CREATE_TOPICS_ENABLE");
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
 			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
+			kafka_container.getProperties().add(kafka_environment);
 		}
 
 		/**
@@ -433,6 +446,10 @@ public class ModelCreator {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
+			Key_ValueArray db_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			db_ports.setName("ports");
+			db_ports.setValue(getStandardPorts(db.getType().getName()));
+			container.getProperties().add(db_ports);
 			application.getContainers().add(container);
 		}
 
@@ -446,6 +463,64 @@ public class ModelCreator {
 			DLmodelResource.save(SavingOptions.getTDLoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	// TODO This should be from an external config file
+	private DB addEnvironment(DB db) {
+		switch (db.getType().getName()) {
+		case "mariadb":
+			Key_KeyValueList mariadbenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mariadbenvironment.setName("environment");
+			Key_Value mariadbenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mariadbenv1.setName("MYSQL_ROOT_PASSWORD");
+			mariadbenv1.setValue("example");
+			mariadbenvironment.getKey_Values().add(mariadbenv1);
+			db.getParameters().add(mariadbenvironment);
+			break;
+		case "mysql":
+			Key_KeyValueList mysqlenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mysqlenvironment.setName("environment");
+			Key_Value mysqlenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlenv1.setName("MYSQL_ROOT_PASSWORD");
+			mysqlenv1.setValue("example");
+			mysqlenvironment.getKey_Values().add(mysqlenv1);
+			Key_Value mysqlcommand = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlcommand.setName("command");
+			mysqlcommand.setValue("--default-authentication-plugin=mysql_native_password");
+			db.getParameters().add(mysqlcommand);
+			db.getParameters().add(mysqlenvironment);
+			break;
+		case "mongo":
+			Key_KeyValueList mongoenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mongoenvironment.setName("environment");
+			Key_Value mongoenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv1.setName("MONGO_INITDB_ROOT_USERNAME");
+			mongoenv1.setValue("admin");
+			Key_Value mongoenv2 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv2.setName("MONGO_INITDB_ROOT_PASSWORD");
+			mongoenv2.setValue("admin");
+			mongoenvironment.getKey_Values().add(mongoenv1);
+			mongoenvironment.getKey_Values().add(mongoenv2);
+			db.getParameters().add(mongoenvironment);
+			break;
+		default:
+			break;
+		}
+		return db;
+	}
+
+	// TODO This should be from an external config file
+	private String getStandardPorts(String name) {
+		switch (name) {
+		case "mariadb":
+			return "3306:3306";
+		case "mysql":
+			return "3306:3306";
+		case "mongo":
+			return "27017:27018"; //27017 is occupied by documentdbs
+		default:
+			return "0:0";
 		}
 	}
 
