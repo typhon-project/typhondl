@@ -1,6 +1,6 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
-public enum DBTypeForWizard {
+public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public String[] getPossibleDBMSs(){

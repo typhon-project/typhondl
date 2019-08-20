@@ -6,12 +6,12 @@ import de.atb.typhondl.xtext.typhonDL.IMAGE;
 public class Database {
 
 	private String name;
-	private DBTypeForWizard type;
+	private SupportedDBMS type;
 	private DBType dbms;
 	private String pathToDBModelFile;
 	private IMAGE image;
 
-	public Database(String name, DBTypeForWizard type) {
+	public Database(String name, SupportedDBMS type) {
 		this.name = name;
 		this.type = type;
 	}
@@ -28,7 +28,7 @@ public class Database {
 		return name;
 	}
 
-	public DBTypeForWizard getType() {
+	public SupportedDBMS getType() {
 		return type;
 	}
 	

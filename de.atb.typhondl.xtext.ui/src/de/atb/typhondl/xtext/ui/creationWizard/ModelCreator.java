@@ -8,8 +8,10 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResource;
@@ -83,8 +85,8 @@ public class ModelCreator {
 		}
 	}
 
-	public void createDLmodel(HashMap<String, InputField> analyticsSettings,
-			ArrayList<Database> databases, int chosenTemplate) {
+	public IFile createDLmodel(HashMap<String, InputField> analyticsSettings, ArrayList<Database> databases,
+			int chosenTemplate) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -160,7 +162,7 @@ public class ModelCreator {
 			dbTypes.add(mongo);
 		}
 
-		/**
+		/*
 		 * Polystore DB for WP7 Polystore API
 		 */
 		DB polystoredb;
@@ -207,7 +209,7 @@ public class ModelCreator {
 		Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 		polystoredb_dependency.setReference(polystoredb_container);
 
-		/**
+		/*
 		 * polystore_api
 		 */
 		NonDB polystore_api;
@@ -254,7 +256,7 @@ public class ModelCreator {
 		Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 		polystore_api_dependency.setReference(polystore_api_container);
 
-		/**
+		/*
 		 * polystore ui
 		 */
 		NonDB polystore_ui;
@@ -300,7 +302,7 @@ public class ModelCreator {
 		polystore_ui_container_build_context.setValue("Typhon Service UI");
 		polystore_ui_container_build.getKey_Values().add(polystore_ui_container_build_context);
 
-		/**
+		/*
 		 * Analytics, see https://github.com/typhon-project/typhondl/issues/6
 		 */
 		Container zookeeper_container = null;
@@ -412,7 +414,7 @@ public class ModelCreator {
 			kafka_container.getProperties().add(kafka_environment);
 		}
 
-		/**
+		/*
 		 * start container structure
 		 */
 		Platform deployment = TyphonDLFactory.eINSTANCE.createPlatform();
@@ -453,7 +455,7 @@ public class ModelCreator {
 			application.getContainers().add(container);
 		}
 
-		/**
+		/*
 		 * save main model file
 		 */
 		URI DLmodelURI = createSoftwareURI(DLmodelName);
@@ -464,6 +466,9 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		// return main model file to be opened in editor
+		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
 
 	// TODO This should be from an external config file
@@ -518,7 +523,7 @@ public class ModelCreator {
 		case "mysql":
 			return "3306:3306";
 		case "mongo":
-			return "27017:27018"; //27017 is occupied by documentdbs
+			return "27017:27018"; // 27017 is occupied by documentdbs
 		default:
 			return "0:0";
 		}
@@ -529,7 +534,7 @@ public class ModelCreator {
 		if (DB.class.isInstance(software)) {
 			softwareModel.getElements().add(((DB) software).getType());
 		}
-		softwareModel.getElements().add(software);		
+		softwareModel.getElements().add(software);
 		URI softwareURI = createSoftwareURI(software.getName());
 		// delete resource if it already exists
 		if (checkExist(softwareURI)) {
