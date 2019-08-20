@@ -1,0 +1,8 @@
+dbtype mongo
+database TextWarningData : mongo {
+	image = mongo:latest ;
+	environment {
+		MONGO_INITDB_ROOT_USERNAME = admin;
+		MONGO_INITDB_ROOT_PASSWORD = admin;
+	}
+}

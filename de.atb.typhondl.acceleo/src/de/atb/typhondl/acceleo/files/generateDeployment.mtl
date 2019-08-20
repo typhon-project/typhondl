@@ -57,15 +57,16 @@ networks:
   - [reference.name/]
 [/for]
 [/template]
-[template public printProperties(aProperty : Property)  post (trim())]
+
+[template public printProperties(aProperty : Property) post (trim()) ]
 	test1
 [/template]
 
-[template public printProperties(aProperty : Key_Value) post (trim()) ]
+[template public printProperties(aProperty : Key_Value)  post (trim())]
 [aProperty.name/]: [aProperty.value/]
 [/template]
 
-[template public printProperties(aProperty : Key_KeyValueList) post (trim()) ]
+[template public printProperties(aProperty : Key_KeyValueList)  post (trim())]
 [aProperty.name/]:
 [for (aVar : Key_Value | aProperty.key_Values)]
   [aVar.printProperties()/]
@@ -82,7 +83,7 @@ networks:
 	something went wrong with Rule Software
 [/template]
 
-[template public printFeature(software : NonDB) post (trim()) ]
+[template public printFeature(software : NonDB)  post (trim())]
 image: [software.image.value/]
 [if (software.parameters <> null)]
 [for (aProperty : Property | software.parameters)]
