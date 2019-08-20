@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" uid="_ct2LEMKYEemJUrCf1Ye42A" version="14.1.0.201810161215">
+  <semanticResources>weather_warning_ML.tml</semanticResources>
+  <semanticResources>TextWarningData.tdl</semanticResources>
+  <semanticResources>AppData.tdl</semanticResources>
+  <semanticResources>polystoredb.tdl</semanticResources>
+  <semanticResources>polystore_api.tdl</semanticResources>
+  <semanticResources>polystore_ui.tdl</semanticResources>
+  <semanticResources>weather_warning_DL.tdl</semanticResources>
+</viewpoint:DAnalysis>

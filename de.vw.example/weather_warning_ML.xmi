@@ -25,20 +25,20 @@
       <implementation location="it.univaq.disim.double"/>
     </elements>
   </dataTypes>
+  <dataTypes xsi:type="typhonml:CustomDataType" name="polygon">
+    <elements name="position_one" type="//@dataTypes.6">
+      <implementation location="de.vw.position"/>
+    </elements>
+    <elements name="position_two" type="//@dataTypes.6">
+      <implementation location="de.vw.position"/>
+    </elements>
+  </dataTypes>
   <dataTypes xsi:type="typhonml:CustomDataType" name="timeRange">
     <elements name="begin" type="//@dataTypes.0">
       <implementation location="it.univaq.disim.Date"/>
     </elements>
     <elements name="end" type="//@dataTypes.0">
       <implementation location="it.univaq.disim.Date"/>
-    </elements>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:CustomDataType" name="polygon">
-    <elements name="position_one" type="//@dataTypes.6">
-      <implementation location="this.position"/>
-    </elements>
-    <elements name="position_two" type="//@dataTypes.6">
-      <implementation location="this.position"/>
     </elements>
   </dataTypes>
   <dataTypes xsi:type="typhonml:Entity" name="App">
@@ -48,11 +48,11 @@
     <relations name="warnings" type="//@dataTypes.10" cardinality="zero_many" isContainment="true"/>
   </dataTypes>
   <dataTypes xsi:type="typhonml:Entity" name="Warning">
-    <attributes name="time" type="//@dataTypes.7"/>
+    <attributes name="time" type="//@dataTypes.8"/>
     <attributes name="id" type="//@dataTypes.1"/>
     <attributes name="warningType" type="//@dataTypes.1"/>
     <attributes name="severity" type="//@dataTypes.4"/>
-    <attributes name="area" type="//@dataTypes.8"/>
+    <attributes name="area" type="//@dataTypes.7"/>
   </dataTypes>
   <dataTypes xsi:type="typhonml:Entity" name="TextWarning">
     <attributes name="timeStamp" type="//@dataTypes.0"/>

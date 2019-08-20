@@ -13,8 +13,8 @@ customdatatype position {
 }
 customdatatype polygon {
 	elements {
-		position_one : position ['this.position'],
-		position_two : position ['this.position']
+		position_one : position ['de.vw.position'],
+		position_two : position ['de.vw.position']
 	}
 }
 
