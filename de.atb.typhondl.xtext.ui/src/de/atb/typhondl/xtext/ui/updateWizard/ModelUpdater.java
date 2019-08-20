@@ -29,6 +29,9 @@ import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
+import de.atb.typhondl.xtext.typhonDL.Key_Value;
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
@@ -151,6 +154,7 @@ public class ModelUpdater {
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				image.setValue(newDB.getType().getName() + ":latest");
 				newDB.setImage(image);
+				newDB = addEnvironment(newDB);
 				DeploymentModel dbModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 				dbModel.getElements().add(newDB.getType());
 				dbModel.getElements().add(newDB);
@@ -191,6 +195,10 @@ public class ModelUpdater {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(newDB);
 			newContainer.setDeploys(reference);
+			Key_ValueArray db_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			db_ports.setName("ports");
+			db_ports.setValue(getStandardPorts(newDB.getType().getName()));
+			newContainer.getProperties().add(db_ports);
 			getFirstApplication().getContainers().add(newContainer);
 
 			// 4. save updated model
@@ -234,6 +242,64 @@ public class ModelUpdater {
 				.filter(element -> ContainerType.class.isInstance(element)).map(element -> (ContainerType) element)
 				.collect(Collectors.toList());
 		return types.get(0);
+	}
+	
+	// TODO This should be from an external config file
+	private DB addEnvironment(DB db) {
+		switch (db.getType().getName()) {
+		case "mariadb":
+			Key_KeyValueList mariadbenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mariadbenvironment.setName("environment");
+			Key_Value mariadbenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mariadbenv1.setName("MYSQL_ROOT_PASSWORD");
+			mariadbenv1.setValue("example");
+			mariadbenvironment.getKey_Values().add(mariadbenv1);
+			db.getParameters().add(mariadbenvironment);
+			break;
+		case "mysql":
+			Key_KeyValueList mysqlenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mysqlenvironment.setName("environment");
+			Key_Value mysqlenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlenv1.setName("MYSQL_ROOT_PASSWORD");
+			mysqlenv1.setValue("example");
+			mysqlenvironment.getKey_Values().add(mysqlenv1);
+			Key_Value mysqlcommand = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mysqlcommand.setName("command");
+			mysqlcommand.setValue("--default-authentication-plugin=mysql_native_password");
+			db.getParameters().add(mysqlcommand);
+			db.getParameters().add(mysqlenvironment);
+			break;
+		case "mongo":
+			Key_KeyValueList mongoenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			mongoenvironment.setName("environment");
+			Key_Value mongoenv1 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv1.setName("MONGO_INITDB_ROOT_USERNAME");
+			mongoenv1.setValue("admin");
+			Key_Value mongoenv2 = TyphonDLFactory.eINSTANCE.createKey_Value();
+			mongoenv2.setName("MONGO_INITDB_ROOT_PASSWORD");
+			mongoenv2.setValue("admin");
+			mongoenvironment.getKey_Values().add(mongoenv1);
+			mongoenvironment.getKey_Values().add(mongoenv2);
+			db.getParameters().add(mongoenvironment);
+			break;
+		default:
+			break;
+		}
+		return db;
+	}
+
+	// TODO This should be from an external config file
+	private String getStandardPorts(String name) {
+		switch (name) {
+		case "mariadb":
+			return "3306:3306";
+		case "mysql":
+			return "3306:3306";
+		case "mongo":
+			return "27017:27018"; //27017 is occupied by documentdbs
+		default:
+			return "0:0";
+		}
 	}
 
 	public XtextResourceSet getResourceSet() {

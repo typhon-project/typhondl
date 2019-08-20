@@ -466,7 +466,7 @@ public class ModelCreator {
 		}
 	}
 
-	// TODO put this in /de.atb.typhondl.xtext.ui/src/de/atb/typhondl/xtext/ui/utilities/DBTypeForWizard.java
+	// TODO This should be from an external config file
 	private DB addEnvironment(DB db) {
 		switch (db.getType().getName()) {
 		case "mariadb":
@@ -510,7 +510,7 @@ public class ModelCreator {
 		return db;
 	}
 
-	// TODO put this in /de.atb.typhondl.xtext.ui/src/de/atb/typhondl/xtext/ui/utilities/DBTypeForWizard.java
+	// TODO This should be from an external config file
 	private String getStandardPorts(String name) {
 		switch (name) {
 		case "mariadb":
