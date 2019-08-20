@@ -6,7 +6,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.xtext.ui.util.FileOpener;
 
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 
 public class CreateModelWizard extends Wizard {
@@ -48,9 +50,18 @@ public class CreateModelWizard extends Wizard {
 			this.analyticsSettings = null;
 		}
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
-		modelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), chosenTemplate);
+		// create DL model
+		IFile file = modelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), chosenTemplate);
+		// get fileOpener
+		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+				.getInstance(FileOpener.class);
+		// main DL model gets selected in Project Explorer
+		fileOpener.selectAndReveal(file);
+		// main DL model is opened in editor
+		fileOpener.openFileToEdit(this.getShell(), file);		
 		return true;
 	}
+
 
 	@Override
 	public boolean canFinish() {

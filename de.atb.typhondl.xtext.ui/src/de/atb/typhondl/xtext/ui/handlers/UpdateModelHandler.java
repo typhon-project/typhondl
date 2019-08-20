@@ -15,7 +15,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.xtext.ui.util.FileOpener;
 
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.updateWizard.ModelUpdater;
 
 public class UpdateModelHandler extends AbstractHandler {
@@ -33,6 +35,12 @@ public class UpdateModelHandler extends AbstractHandler {
 			ModelUpdater modelUpdater = new ModelUpdater(file, window);
 			result = modelUpdater.updateModel();
 
+			FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+					.getInstance(FileOpener.class);
+			// main DL model gets selected in Project Explorer
+			fileOpener.selectAndReveal(file);
+			// main DL model is opened in editor
+			fileOpener.openFileToEdit(window.getShell(), file);	
 			for (IProject iproject : root.getProjects()) {
 				try {
 					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
