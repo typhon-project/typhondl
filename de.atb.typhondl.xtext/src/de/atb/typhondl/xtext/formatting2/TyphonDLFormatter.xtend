@@ -7,6 +7,7 @@ import com.google.inject.Inject
 import de.atb.typhondl.xtext.services.TyphonDLGrammarAccess
 import de.atb.typhondl.xtext.typhonDL.Application
 import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.Cluster_Network
 import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.ContainerType
 import de.atb.typhondl.xtext.typhonDL.DB
@@ -15,14 +16,13 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel
 import de.atb.typhondl.xtext.typhonDL.IMAGE
 import de.atb.typhondl.xtext.typhonDL.Import
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
-import de.atb.typhondl.xtext.typhonDL.Key_Value
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
 import de.atb.typhondl.xtext.typhonDL.NonDB
 import de.atb.typhondl.xtext.typhonDL.Platform
 import de.atb.typhondl.xtext.typhonDL.PlatformType
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
-import de.atb.typhondl.xtext.typhonDL.Cluster_Network
+import de.atb.typhondl.xtext.typhonDL.Key_Values
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -149,8 +149,8 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		}
 	}
 
-	def dispatch void format(Key_Value key_value, extension IFormattableDocument document) {
-		key_value.append[newLine]
+	def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {
+		key_values.append[newLine]
 	}
 
 	def dispatch void format(Key_ValueArray key_valueArray, extension IFormattableDocument document) {
@@ -163,8 +163,8 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			key_keyValueList.regionFor.keyword('}').prepend[newLine].append[newLine],
 			[indent]
 		)
-		for (key_value : key_keyValueList.key_Values) {
-			key_value.append[newLine]
+		for (key_values : key_keyValueList.key_Values) {
+			key_values.append[newLine]
 		}
 	}
 

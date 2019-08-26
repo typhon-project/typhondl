@@ -79,12 +79,12 @@ Cluster :
 Cluster_Network:
 	'network' name=ID 
 		('{'
-		(key_values+=Key_Value)* 
+		(key_values+=Key_Values)* 
 		'}')?
 ;
 
 Container_Network:
-	'networks' reference=[Cluster_Network] (',' references+=[Cluster_Network])*
+	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*
 ;
 
 Application :
@@ -113,21 +113,21 @@ Reference:
 ;
 
 Property :
-	Key_Value | Key_ValueArray | Key_KeyValueList
+	Key_Values | Key_ValueArray | Key_KeyValueList 
 ;
 
-Key_Value : 
-	name=ID '=' value=Value ';'
+Key_Values : 
+	name=ID '=' value=Value(','values+=Value)* ';'
 ;
 
 Key_KeyValueList:
-	name=ID '{' (key_Values+=Key_Value)+ '}'
+	name=ID '{' (key_Values+=Key_Values)+ '}'
 ;
 
 Key_ValueArray : 
-	name=ID '['
-		(value=Value)(','values+=Value)*
-	']'
+	name=ID ('[')
+		(values+=Value)(','values+=Value)*
+	(']')
 ;
 
 Value : 
