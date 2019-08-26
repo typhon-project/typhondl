@@ -45,36 +45,36 @@ services:
 [template public print(aNetwork : Cluster_Network) post (trim())]
 networks:
   [aNetwork.name/]: 
-[for (key_Value : Key_Value | aNetwork.key_values)]
-    [key_Value.printProperties()/]
+[for (key_Values : Key_Values | aNetwork.key_values)]
+    [key_Values.printProperties()/]
 [/for]
 [/template]
 
 [template public print(networks : Container_Network) post (trim())]
 networks:
-  - [networks.reference.name/]
 [for (reference : Cluster_Network | networks.references)]
   - [reference.name/]
 [/for]
 [/template]
 
 [template public printProperties(aProperty : Property) post (trim()) ]
-	test1
+	something went wrong with Rule Property
 [/template]
 
-[template public printProperties(aProperty : Key_Value)  post (trim())]
-[aProperty.name/]: [aProperty.value/]
+[template public printProperties(aProperty : Key_Values)  post (trim())]
+[aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
+[/if]
 [/template]
 
 [template public printProperties(aProperty : Key_KeyValueList)  post (trim())]
 [aProperty.name/]:
-[for (aVar : Key_Value | aProperty.key_Values)]
+[for (aVar : Key_Values | aProperty.key_Values)]
   [aVar.printProperties()/]
 [/for][/template]
 
 [template public printProperties(aProperty : Key_ValueArray)  post (trim())]
 [aProperty.name/]:
-  - [aProperty.value/][for (aValue : EString | aProperty.values)]
+[for (aValue : EString | aProperty.values)]
   - [aValue/]
 [/for]
 [/template]

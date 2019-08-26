@@ -192,12 +192,12 @@ public class Generate extends AbstractAcceleoGenerator {
          * use the code below.
          */
 
-		if (model != null && model.eResource() != null) {
-			List<org.eclipse.emf.ecore.resource.Resource.Diagnostic> errors = model.eResource().getErrors();
-			for (org.eclipse.emf.ecore.resource.Resource.Diagnostic diagnostic : errors) {
-				System.err.println(diagnostic.toString());
-			}
-		}
+        //if (model != null && model.eResource() != null) {
+        //    List<org.eclipse.emf.ecore.resource.Resource.Diagnostic> errors = model.eResource().getErrors();
+        //    for (org.eclipse.emf.ecore.resource.Resource.Diagnostic diagnostic : errors) {
+        //        System.err.println(diagnostic.toString());
+        //    }
+        //}
 
         super.doGenerate(monitor);
     }
