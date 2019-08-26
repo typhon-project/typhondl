@@ -296,7 +296,7 @@ public class ModelUpdater {
 		case "mysql":
 			return "3306:3306";
 		case "mongo":
-			return "27017:27018"; //27017 is occupied by documentdbs
+			return "27018:27017"; //27017 is occupied by documentdbs
 		default:
 			return "0:0";
 		}
