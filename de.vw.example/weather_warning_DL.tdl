@@ -26,7 +26,7 @@ platform platformName : default {
 			}
 			container TextWarningData : Docker {
 				deploys TextWarningData
-				ports [ 27017:27018 ]
+				ports [ 27018:27017 ]
 			}
 			container AppData : Docker {
 				deploys AppData
