@@ -1,0 +1,49 @@
+datatype Date
+datatype String
+datatype Double
+datatype Int
+
+entity App {
+	timeStamp : Date
+	vehicle_id : String
+	vehicle_position : Double
+	warnings :-> Warning[0..*]
+}
+
+entity Warning {
+	time : Date
+	warning_id : String
+	warningType : String
+	severity : Int
+	area : Double
+}
+
+entity TextWarning {
+	timeStamp : Date
+	textWarning_id : String
+	text : String
+	freetext Meteosafe [RelationExtraction, TermExtraction]
+}
+
+relationaldb AppData {
+	tables {
+		table {
+			AppDB : App 
+			index appIndex {
+				attributes ("App.vehicle_id")
+			}
+		}
+		table {
+			WarningDB : Warning
+			index warningIndex {
+				attributes ("Warning.warning_id")
+			}
+		}
+	}
+}
+
+documentdb TextWarningData {
+	collections {
+		TextWarningDB : TextWarning
+	}
+}

@@ -1,0 +1,37 @@
+import weather_warning_ML.xmi
+import AppData.tdl
+import TextWarningData.tdl
+platformtype default
+containertype Docker
+platform platformName : default {
+	cluster clusterName {
+		application Polystore {
+			container polystore_api : Docker {
+				deploys polystore_api
+				depends_on polystoredb
+				container_name = typhonml.polystore.service ;
+				ports [ 8080:8080 ]
+				volumes [ ./models:/models ]
+			}
+			container polystore_ui : Docker {
+				deploys polystore_ui
+				depends_on polystore_api
+				container_name = polystore.ui ;
+				ports [ 4200:4200 ]
+			}
+			container polystoredb : Docker {
+				deploys polystoredb
+				container_name = polystore.mongo ;
+				ports [ 27017:27017 ]
+			}
+			container AppData : Docker {
+				deploys AppData
+				ports [ 3306:3306 ]
+			}
+			container TextWarningData : Docker {
+				deploys TextWarningData
+				ports [ 27018:27017 ]
+			}
+		}
+	}
+}
