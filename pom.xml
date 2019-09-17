@@ -11,7 +11,6 @@
 		<module>de.atb.typhondl.acceleo</module>
 		<module>de.atb.typhondl.xtext.ide</module>
 		<module>de.atb.typhondl.xtext.ui</module>
-		<module>de.atb.typhondl.updatesite</module>
 	</modules>
 
 	<properties>

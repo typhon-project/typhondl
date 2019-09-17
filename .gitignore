@@ -48,4 +48,3 @@ test-bin/
 hs_err_pid*
 
 # End of https://www.gitignore.io/api/java
-de.atb.typhondl.updatesite/target/
