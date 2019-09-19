@@ -1,0 +1,14 @@
+import justMongo.xmi
+import TextWarningData.tdl
+platformtype default
+containertype Docker
+platform platformName : default {
+	cluster clusterName {
+		application Polystore {
+			container TextWarningData : Docker {
+				deploys TextWarningData
+				ports [ 27017:27017 ]
+			}
+		}
+	}
+}

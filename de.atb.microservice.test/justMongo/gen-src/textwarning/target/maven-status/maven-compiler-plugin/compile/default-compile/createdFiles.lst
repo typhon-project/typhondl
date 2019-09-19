@@ -1,0 +1,5 @@
+org/typhon/textwarning/TextWarningApplication.class
+org/typhon/textwarning/model/TextWarning.class
+org/typhon/textwarning/configuration/RepositoryConfig.class
+org/typhon/textwarning/model/repository/TextWarningRepository.class
+org/typhon/textwarning/configuration/SwaggerConfig.class
