@@ -54,6 +54,14 @@ public class ModelCreator {
 	// path to folder in which to save all model files
 	private IPath folder;
 	private String DLmodelName;
+	
+	// names of polystore containers:
+	private final String CONTAINERNAME_API = "typhon-polystore-service";
+	private final String HOSTNAME_API = "polystore-api";
+	private final String CONTAINERNAME_UI = "polystore-ui";
+	private final String HOSTNAME_UI = "polystore-ui";
+	private final String CONTAINERNAME_DB = "polystore-mongo";
+	private final String HOSTNAME_DB = "polystore-api-db";	
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -199,8 +207,12 @@ public class ModelCreator {
 		polystoredb_container.setDeploys(poystoredbReference);
 		Key_Values polystoredb_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_container_name.setName("container_name");
-		polystoredb_container_container_name.setValue("polystore.mongo");
+		polystoredb_container_container_name.setValue(CONTAINERNAME_DB);
 		polystoredb_container.getProperties().add(polystoredb_container_container_name);
+		Key_Values polystoredb_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_hostname.setName("hostname");
+		polystoredb_container_hostname.setValue(HOSTNAME_DB);
+		polystoredb_container.getProperties().add(polystoredb_container_hostname);
 		Key_ValueArray polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		polystoredb_container_ports.setName("ports");
 		polystoredb_container_ports.getValues().add("27017:27017");
@@ -222,14 +234,6 @@ public class ModelCreator {
 			IMAGE polystore_api_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystore_api_image.setValue("clms/typhon-polystore-api:latest");
 			polystore_api.setImage(polystore_api_image);
-			Key_Values polystore_api_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
-			polystore_api_restart.setName("restart");
-			polystore_api_restart.setValue("always");
-			polystore_api.getParameters().add(polystore_api_restart);
-			Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-			polystore_api_hostname.setName("hostname");
-			polystore_api_hostname.setValue("polystore_api");
-			polystore_api.getParameters().add(polystore_api_hostname);
 			save(polystore_api);
 		}
 		Reference polystore_api_reference = TyphonDLFactory.eINSTANCE.createReference();
@@ -242,8 +246,16 @@ public class ModelCreator {
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
 		Key_Values polystore_api_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_api_container_container_name.setName("container_name");
-		polystore_api_container_container_name.setValue("typhonml.polystore.service");
+		polystore_api_container_container_name.setValue(CONTAINERNAME_API);
 		polystore_api_container.getProperties().add(polystore_api_container_container_name);
+		Key_Values polystore_api_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_restart.setName("restart");
+		polystore_api_restart.setValue("always");
+		polystore_api_container.getProperties().add(polystore_api_restart);
+		Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_hostname.setName("hostname");
+		polystore_api_hostname.setValue(HOSTNAME_API);
+		polystore_api_container.getProperties().add(polystore_api_hostname);
 		Key_ValueArray polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		polystore_api_container_ports.setName("ports");
 		polystore_api_container_ports.getValues().add("8080:8080");
@@ -269,14 +281,13 @@ public class ModelCreator {
 			IMAGE polystore_ui_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystore_ui_image.setValue("clms/typhon-polystore-ui:latest");
 			polystore_ui.setImage(polystore_ui_image);
-			Key_Values polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
-			polystore_ui_restart.setName("restart");
-			polystore_ui_restart.setValue("always");
-			polystore_ui.getParameters().add(polystore_ui_restart);
-			Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-			polystore_ui_hostname.setName("hostname");
-			polystore_ui_hostname.setValue("polystore_ui");
-			polystore_ui.getParameters().add(polystore_ui_hostname);
+			Key_KeyValueList polystore_ui_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			polystore_ui_environment.setName("environment");
+			Key_Values polystore_ui_environment1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			polystore_ui_environment1.setName("APIPORT");
+			polystore_ui_environment1.setValue("8080");
+			polystore_ui_environment.getKey_Values().add(polystore_ui_environment1);
+			polystore_ui.getParameters().add(polystore_ui_environment);
 			save(polystore_ui);
 		}
 		Reference polystore_ui_reference = TyphonDLFactory.eINSTANCE.createReference();
@@ -289,12 +300,20 @@ public class ModelCreator {
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
 		Key_Values polystore_ui_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_container_container_name.setName("container_name");
-		polystore_ui_container_container_name.setValue("polystore.ui");
+		polystore_ui_container_container_name.setValue(CONTAINERNAME_UI);
 		polystore_ui_container.getProperties().add(polystore_ui_container_container_name);
 		Key_ValueArray polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		polystore_ui_container_ports.setName("ports");
 		polystore_ui_container_ports.getValues().add("4200:4200");
 		polystore_ui_container.getProperties().add(polystore_ui_container_ports);
+		Key_Values polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_restart.setName("restart");
+		polystore_ui_restart.setValue("always");
+		polystore_ui_container.getProperties().add(polystore_ui_restart);
+		Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_hostname.setName("hostname");
+		polystore_ui_hostname.setValue(HOSTNAME_UI);
+		polystore_ui_container.getProperties().add(polystore_ui_hostname);
 		Key_KeyValueList polystore_ui_container_build = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 		polystore_ui_container_build.setName("build");
 		Key_Values polystore_ui_container_build_context = TyphonDLFactory.eINSTANCE.createKey_Values();
