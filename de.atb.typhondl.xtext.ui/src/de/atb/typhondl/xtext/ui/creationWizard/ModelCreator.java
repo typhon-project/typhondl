@@ -199,7 +199,7 @@ public class ModelCreator {
 		polystoredb_container.setDeploys(poystoredbReference);
 		Key_Values polystoredb_container_container_name = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_container_name.setName("container_name");
-		polystoredb_container_container_name.setValue("polystore.mongo");
+		polystoredb_container_container_name.setValue("polystore-mongo");
 		polystoredb_container.getProperties().add(polystoredb_container_container_name);
 		Key_ValueArray polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		polystoredb_container_ports.setName("ports");
