@@ -16,7 +16,7 @@ public enum SupportedDBMS {
 	documentdb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"Mongo", "CouchDB"};
+			return new String[] {"Mongo"};
 		}
 	},
 	keyvaluedb(){
