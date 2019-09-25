@@ -12,7 +12,9 @@
           <containers name="polystore_api" type="/0/@elements.1">
             <deploys reference="/2/@elements.0"/>
             <depends_on reference="/0/@elements.2/@clusters.0/@applications.0/@containers.2"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="typhonml.polystore.service"/>
+            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="typhon-polystore-service"/>
+            <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
+            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>8080:8080</values>
             </properties>
@@ -23,14 +25,17 @@
           <containers name="polystore_ui" type="/0/@elements.1">
             <deploys reference="/1/@elements.0"/>
             <depends_on reference="/0/@elements.2/@clusters.0/@applications.0/@containers.0"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore.ui"/>
+            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-ui"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>4200:4200</values>
             </properties>
+            <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
+            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-ui"/>
           </containers>
           <containers name="polystoredb" type="/0/@elements.1">
             <deploys reference="/3/@elements.1"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore.mongo"/>
+            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-mongo"/>
+            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api-db"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>27017:27017</values>
             </properties>
@@ -54,15 +59,14 @@
   <typhonDL:DeploymentModel>
     <elements xsi:type="typhonDL:NonDB" name="polystore_ui">
       <image value="clms/typhon-polystore-ui:latest"/>
-      <parameters xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
-      <parameters xsi:type="typhonDL:Key_Values" name="hostname" value="polystore_ui"/>
+      <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+        <key_Values name="APIPORT" value="8080"/>
+      </parameters>
     </elements>
   </typhonDL:DeploymentModel>
   <typhonDL:DeploymentModel>
     <elements xsi:type="typhonDL:NonDB" name="polystore_api">
       <image value="clms/typhon-polystore-api:latest"/>
-      <parameters xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
-      <parameters xsi:type="typhonDL:Key_Values" name="hostname" value="polystore_api"/>
     </elements>
   </typhonDL:DeploymentModel>
   <typhonDL:DeploymentModel>

@@ -3,30 +3,33 @@ version: '3.7'
 services:
   polystore_api:
     image: clms/typhon-polystore-api:latest
-    restart: always
-    hostname: polystore_api
     depends_on: 
       - polystoredb
-    container_name: typhonml.polystore.service
+    container_name: typhon-polystore-service
+    restart: always
+    hostname: polystore-api
     ports:
       - 8080:8080
     volumes:
       - ./models:/models
   polystore_ui:
     image: clms/typhon-polystore-ui:latest
-    restart: always
-    hostname: polystore_ui
+    environment:
+      APIPORT: 8080
     depends_on: 
       - polystore_api
-    container_name: polystore.ui
+    container_name: polystore-ui
     ports:
       - 4200:4200
+    restart: always
+    hostname: polystore-ui
   polystoredb:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-    container_name: polystore.mongo
+    container_name: polystore-mongo
+    hostname: polystore-api-db
     ports:
       - 27017:27017
   AppData:

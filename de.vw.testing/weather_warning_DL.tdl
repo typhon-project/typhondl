@@ -9,19 +9,24 @@ platform platformName : default {
 			container polystore_api : Docker {
 				deploys polystore_api
 				depends_on polystoredb
-				container_name = typhonml.polystore.service ;
+				container_name = typhon-polystore-service ;
+				restart = always ;
+				hostname = polystore-api ;
 				ports [ 8080:8080 ]
 				volumes [ ./models:/models ]
 			}
 			container polystore_ui : Docker {
 				deploys polystore_ui
 				depends_on polystore_api
-				container_name = polystore.ui ;
+				container_name = polystore-ui ;
 				ports [ 4200:4200 ]
+				restart = always ;
+				hostname = polystore-ui ;
 			}
 			container polystoredb : Docker {
 				deploys polystoredb
-				container_name = polystore.mongo ;
+				container_name = polystore-mongo ;
+				hostname = polystore-api-db ;
 				ports [ 27017:27017 ]
 			}
 			container AppData : Docker {
