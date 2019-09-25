@@ -61,7 +61,7 @@ public class ModelCreator {
 	private final String CONTAINERNAME_UI = "polystore-ui";
 	private final String HOSTNAME_UI = "polystore-ui";
 	private final String CONTAINERNAME_DB = "polystore-mongo";
-	private final String HOSTNAME_DB = "polystore-api-db";	
+	private final String HOSTNAME_DB = "polystore-mongo";	
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;

@@ -29,7 +29,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     container_name: polystore-mongo
-    hostname: polystore-api-db
+    hostname: polystore-mongo
     ports:
       - 27017:27017
   AppData:
