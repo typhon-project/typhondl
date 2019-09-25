@@ -76,10 +76,9 @@
     </elements>
   </typhonDL:DeploymentModel>
   <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:DBType" name="mysql"/>
+    <elements xsi:type="typhonDL:DBType" name="mariadb"/>
     <elements xsi:type="typhonDL:DB" name="AppData" type="/4/@elements.0">
-      <image value="mysql:latest"/>
-      <parameters xsi:type="typhonDL:Key_Values" name="command" value="--default-authentication-plugin=mysql_native_password"/>
+      <image value="mariadb:latest"/>
       <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
         <key_Values name="MYSQL_ROOT_PASSWORD" value="example"/>
       </parameters>

@@ -1,29 +1,30 @@
 datatype Date
 datatype String
-datatype Double
-datatype Int
+datatype double
+datatype int
 
 entity App {
 	timeStamp : Date
 	vehicle_id : String
-	vehicle_position : Double
+	vehicle_position : double
 	warnings :-> Warning[0..*]
+	textwarnings :-> TextWarning[0..*]
 }
 
 entity Warning {
 	time : Date
 	warning_id : String
 	warningType : String
-	severity : Int
-	area : Double
+	severity : int
+	area : double
 }
 
 entity TextWarning {
 	timeStamp : Date
 	textWarning_id : String
 	text : String
-	freetext Meteosafe [RelationExtraction, TermExtraction]
 }
+
 
 relationaldb AppData {
 	tables {
