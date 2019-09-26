@@ -1,12 +1,11 @@
 datatype Date
 datatype String
-datatype double
 datatype int
 
 entity App {
 	timeStamp : Date
 	vehicle_id : String
-	vehicle_position : double
+	vehicle_position : int
 	warnings :-> Warning[0..*]
 	textwarnings :-> TextWarning[0..*]
 }
@@ -16,7 +15,7 @@ entity Warning {
 	warning_id : String
 	warningType : String
 	severity : int
-	area : double
+	area : int
 }
 
 entity TextWarning {
