@@ -284,9 +284,13 @@ public class ModelCreator {
 			Key_KeyValueList polystore_ui_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 			polystore_ui_environment.setName("environment");
 			Key_Values polystore_ui_environment1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			polystore_ui_environment1.setName("APIPORT");
+			polystore_ui_environment1.setName("API_PORT");
 			polystore_ui_environment1.setValue("8080");
 			polystore_ui_environment.getKey_Values().add(polystore_ui_environment1);
+			Key_Values polystore_ui_environment2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			polystore_ui_environment2.setName("API_HOST");
+			polystore_ui_environment2.setValue("localhost");
+			polystore_ui_environment.getKey_Values().add(polystore_ui_environment2);
 			polystore_ui.getParameters().add(polystore_ui_environment);
 			save(polystore_ui);
 		}
