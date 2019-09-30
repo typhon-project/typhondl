@@ -17,11 +17,11 @@
     <genClasses ecoreClass="TyphonDL.ecore#//Import">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Import/relativePath"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Software">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Software/image"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Software/parameters"/>
+    <genClasses ecoreClass="TyphonDL.ecore#//Services">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Services/image"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Services/parameters"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//NonDB"/>
+    <genClasses ecoreClass="TyphonDL.ecore#//Software"/>
     <genClasses ecoreClass="TyphonDL.ecore#//Type"/>
     <genClasses ecoreClass="TyphonDL.ecore#//DB">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/type"/>
