@@ -165,7 +165,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		setStatus(status);
 	}
 
-	protected boolean fileExists(String fileName) {
+	private boolean fileExists(String fileName) {
 		URI uri = file.getLocationURI();
 		String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
 		String path = pathWithFolder + fileName;
