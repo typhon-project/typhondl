@@ -82,11 +82,11 @@ networks:
 [/for]
 [/template]
 
-[template public printFeature(software : Software)  post (trim())]
-	something went wrong with Rule Software
+[template public printFeature(services : Services)  post (trim())]
+	something went wrong with Rule Services
 [/template]
 
-[template public printFeature(software : NonDB)  post (trim())]
+[template public printFeature(software : Software)  post (trim())]
 image: [software.image.value/]
 [if (software.parameters <> null)]
 [for (aProperty : Property | software.parameters)]
