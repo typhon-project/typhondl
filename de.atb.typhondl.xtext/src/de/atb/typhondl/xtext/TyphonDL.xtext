@@ -14,7 +14,7 @@ MetaModel:
 ;
 
 Model: 
-    Platform | Type | Software
+    Platform | Type | Services
 ;
 
 Import:
@@ -22,11 +22,11 @@ Import:
 ;
 
 
-Software:
-	DB | NonDB
+Services:
+	DB | Software
 ;
 
-NonDB:
+Software:
 	'software' name=ID '{'
 	(image=IMAGE)
 	(parameters+=Property)*
@@ -109,7 +109,7 @@ Dependency:
 ;
 
 Reference:
-	'deploys' reference=[Software]
+	'deploys' reference=[Services]
 ;
 
 Property :

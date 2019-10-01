@@ -33,11 +33,11 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
-import de.atb.typhondl.xtext.typhonDL.NonDB;
+import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
-import de.atb.typhondl.xtext.typhonDL.Software;
+import de.atb.typhondl.xtext.typhonDL.Services;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
@@ -174,8 +174,8 @@ public class ModelCreator {
 		 * Polystore DB for WP7 Polystore API
 		 */
 		DB polystoredb;
-		if (checkExist(createSoftwareURI("polystoredb"))) {
-			polystoredb = getDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystoredb"), true)
+		if (checkExist(createServicesURI("polystoredb"))) {
+			polystoredb = getDB((DeploymentModel) resourceSet.getResource(createServicesURI("polystoredb"), true)
 					.getContents().get(0));
 			polystoredb.setType(mongo);
 		} else {
@@ -224,12 +224,12 @@ public class ModelCreator {
 		/*
 		 * polystore_api
 		 */
-		NonDB polystore_api;
-		if (checkExist(createSoftwareURI("polystore_api"))) {
-			polystore_api = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_api"), true)
+		Software polystore_api;
+		if (checkExist(createServicesURI("polystore_api"))) {
+			polystore_api = getSoftware((DeploymentModel) resourceSet.getResource(createServicesURI("polystore_api"), true)
 					.getContents().get(0));
 		} else {
-			polystore_api = TyphonDLFactory.eINSTANCE.createNonDB();
+			polystore_api = TyphonDLFactory.eINSTANCE.createSoftware();
 			polystore_api.setName("polystore_api");
 			IMAGE polystore_api_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystore_api_image.setValue("clms/typhon-polystore-api:latest");
@@ -271,12 +271,12 @@ public class ModelCreator {
 		/*
 		 * polystore ui
 		 */
-		NonDB polystore_ui;
-		if (checkExist(createSoftwareURI("polystore_ui"))) {
-			polystore_ui = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("polystore_ui"), true)
+		Software polystore_ui;
+		if (checkExist(createServicesURI("polystore_ui"))) {
+			polystore_ui = getSoftware((DeploymentModel) resourceSet.getResource(createServicesURI("polystore_ui"), true)
 					.getContents().get(0));
 		} else {
-			polystore_ui = TyphonDLFactory.eINSTANCE.createNonDB();
+			polystore_ui = TyphonDLFactory.eINSTANCE.createSoftware();
 			polystore_ui.setName("polystore_ui");
 			IMAGE polystore_ui_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 			polystore_ui_image.setValue("clms/typhon-polystore-ui:latest");
@@ -345,12 +345,12 @@ public class ModelCreator {
 			kafkaListenersString += "PLAINTEXT_HOST://:" + kafkaPort;
 			kafkaAdvertisedListenerString += "PLAINTEXT_HOST://localhost:" + kafkaPort;
 
-			NonDB zookeeper;
-			if (checkExist(createSoftwareURI("zookeeper"))) {
-				zookeeper = getNonDB((DeploymentModel) resourceSet.getResource(createSoftwareURI("zookeeper"), true)
+			Software zookeeper;
+			if (checkExist(createServicesURI("zookeeper"))) {
+				zookeeper = getSoftware((DeploymentModel) resourceSet.getResource(createServicesURI("zookeeper"), true)
 						.getContents().get(0));
 			} else {
-				zookeeper = TyphonDLFactory.eINSTANCE.createNonDB();
+				zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
 				zookeeper.setName("zookeeper");
 				IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				zookeeper_image.setValue("wurstmeister/zookeeper");
@@ -481,7 +481,7 @@ public class ModelCreator {
 		/*
 		 * save main model file
 		 */
-		URI DLmodelURI = createSoftwareURI(DLmodelName);
+		URI DLmodelURI = createServicesURI(DLmodelName);
 		Resource DLmodelResource = resourceSet.createResource(DLmodelURI);
 		DLmodelResource.getContents().add(DLmodel);
 		try {
@@ -552,36 +552,36 @@ public class ModelCreator {
 		}
 	}
 
-	private void save(Software software) {
-		DeploymentModel softwareModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		if (DB.class.isInstance(software)) {
-			softwareModel.getElements().add(((DB) software).getType());
+	private void save(Services services) {
+		DeploymentModel servicesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		if (DB.class.isInstance(services)) {
+			servicesModel.getElements().add(((DB) services).getType());
 		}
-		softwareModel.getElements().add(software);
-		URI softwareURI = createSoftwareURI(software.getName());
+		servicesModel.getElements().add(services);
+		URI servicesURI = createServicesURI(services.getName());
 		// delete resource if it already exists
-		if (checkExist(softwareURI)) {
+		if (checkExist(servicesURI)) {
 			try {
-				resourceSet.getResource(softwareURI, true).delete(Collections.EMPTY_MAP);
+				resourceSet.getResource(servicesURI, true).delete(Collections.EMPTY_MAP);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		Resource softwareResource = resourceSet.createResource(softwareURI);
-		softwareResource.getContents().add(software.eContainer());
+		Resource servicesResource = resourceSet.createResource(servicesURI);
+		servicesResource.getContents().add(services.eContainer());
 		try {
-			softwareResource.save(SavingOptions.getTDLoptions());
+			servicesResource.save(SavingOptions.getTDLoptions());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private URI createSoftwareURI(String name) {
+	private URI createServicesURI(String name) {
 		return URI.createPlatformResourceURI(this.folder.append(name + ".tdl").toString(), true);
 	}
 
-	private boolean checkExist(URI softwareURI) {
-		return resourceSet.getResource(softwareURI, false) != null;
+	private boolean checkExist(URI servicesURI) {
+		return resourceSet.getResource(servicesURI, false) != null;
 	}
 
 	private DB getDB(DeploymentModel model) {
@@ -591,10 +591,10 @@ public class ModelCreator {
 		return dbs.get(0);
 	}
 
-	private NonDB getNonDB(DeploymentModel model) {
-		ArrayList<NonDB> Nondbs = new ArrayList<NonDB>();
-		Nondbs.addAll(model.getElements().stream().filter(element -> NonDB.class.isInstance(element))
-				.map(element -> (NonDB) element).collect(Collectors.toList()));
+	private Software getSoftware(DeploymentModel model) {
+		ArrayList<Software> Nondbs = new ArrayList<Software>();
+		Nondbs.addAll(model.getElements().stream().filter(element -> Software.class.isInstance(element))
+				.map(element -> (Software) element).collect(Collectors.toList()));
 		return Nondbs.get(0);
 	}
 
