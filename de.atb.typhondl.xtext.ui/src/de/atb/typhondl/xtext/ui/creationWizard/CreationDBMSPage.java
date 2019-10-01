@@ -39,7 +39,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	public CreationDBMSPage(String pageName, IFile file) {
 		this(pageName, file, readModel(file));
 	}
-	
+
 	public CreationDBMSPage(String pageName, IFile file, ArrayList<Database> MLmodel) {
 		super(pageName);
 		this.databaseSettings = new HashMap<Database, WizardFields>();
@@ -74,9 +74,9 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing file");
-			checkbox.setSelection(false);
+			checkbox.setSelection(fileExists(database.getName() + ".tdl"));
 			checkbox.setLayoutData(gridData);
-			checkbox.setToolTipText("Check if you already have a model file for " + database.getName());
+			checkbox.setToolTipText("Check this box if you already have a model file for " + database.getName());
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
@@ -138,7 +138,6 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		URI uri = file.getLocationURI();
 		for (Database database : databaseSettings.keySet()) {
 			WizardFields fields = databaseSettings.get(database);
 			if (fields.getTextField().isEnabled()) {
@@ -147,20 +146,14 @@ public class CreationDBMSPage extends MyWizardPage {
 					status = new Status(IStatus.ERROR, "Wizard",
 							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
 				}
-				
-				String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
-				String path = pathWithFolder + pathToDatabaseFile;
-				File file = new File(URI.create(path));
-				if (!file.exists()) {
+
+				if (!fileExists(pathToDatabaseFile)) {
 					status = new Status(IStatus.ERROR, "Wizard",
 							"Database file " + pathToDatabaseFile + " doesn't exists.");
 				}
 			} else {
 				String pathToDatabaseFile = database.getName() + ".tdl";
-				String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
-				String path = pathWithFolder + pathToDatabaseFile;
-				File file = new File(URI.create(path));
-				if (file.exists()) {
+				if (fileExists(pathToDatabaseFile)) {
 					warning.add(pathToDatabaseFile);
 				}
 			}
@@ -170,6 +163,17 @@ public class CreationDBMSPage extends MyWizardPage {
 					+ " already exist(s) and will be overwritten if you continue");
 		}
 		setStatus(status);
+	}
+
+	private boolean fileExists(String fileName) {
+		URI uri = file.getLocationURI();
+		String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
+		String path = pathWithFolder + fileName;
+		File file = new File(URI.create(path));
+		if (file.exists()) {
+			return true;
+		}
+		return false;
 	}
 
 	public ArrayList<Database> getDatabases() {
