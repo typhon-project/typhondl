@@ -9,7 +9,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Platform;
-import de.atb.typhondl.xtext.typhonDL.Software;
+import de.atb.typhondl.xtext.typhonDL.Services;
 
 public class DLmodelReader {
 
@@ -20,9 +20,9 @@ public class DLmodelReader {
 		for (Cluster cluster : platform.getClusters()) {
 			for (Application application : cluster.getApplications()) {
 				for (Container container : application.getContainers()) {
-					Software software = container.getDeploys().getReference();
-					if (DB.class.isInstance(software) && !software.getName().equals("polystoredb")) {
-						dbs.add((DB) software);
+					Services services = container.getDeploys().getReference();
+					if (DB.class.isInstance(services) && !services.getName().equals("polystoredb")) {
+						dbs.add((DB) services);
 					}
 				}
 			}

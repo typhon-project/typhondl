@@ -109,7 +109,7 @@ Dependency:
 ;
 
 Reference:
-	'deploys' reference=[Software]
+	'deploys' reference=[Services]
 ;
 
 Property :
