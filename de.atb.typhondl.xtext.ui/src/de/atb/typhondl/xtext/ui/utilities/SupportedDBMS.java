@@ -4,7 +4,7 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"MariaDB", "MySQL"};
+			return new String[] {"MariaDB"};
 		}
 	},
 	graphdb(){
