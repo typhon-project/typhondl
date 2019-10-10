@@ -17,6 +17,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.IGrammarAccess;
+import org.eclipse.xtext.ui.XtextProjectHelper;
 
 import com.google.inject.Inject;
 
@@ -40,6 +41,14 @@ public class CreateModelHandler extends AbstractHandler {
 			if (firstElement instanceof IAdaptable) {
 				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
 
+				IProject project = file.getProject();
+				boolean hasXtextNature;
+				try {
+					hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				CreateModelWizard fileWizard = new CreateModelWizard(file);
 				WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), fileWizard);
 
