@@ -5,6 +5,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -45,6 +46,15 @@ public class CreateModelHandler extends AbstractHandler {
 				boolean hasXtextNature;
 				try {
 					hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
+					if (!hasXtextNature) {
+						IProjectDescription projectDescription = project.getDescription();
+						String[] oldNatures = projectDescription.getNatureIds();
+						String[] newNatures = new String[oldNatures.length + 1];
+						System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
+						newNatures[0] = XtextProjectHelper.NATURE_ID;
+						projectDescription.setNatureIds(newNatures);
+						project.setDescription(projectDescription, null);
+					}
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
