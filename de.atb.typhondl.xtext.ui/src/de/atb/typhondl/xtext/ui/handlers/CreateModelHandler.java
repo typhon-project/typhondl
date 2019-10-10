@@ -11,6 +11,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -56,7 +57,8 @@ public class CreateModelHandler extends AbstractHandler {
 						project.setDescription(projectDescription, null);
 					}
 				} catch (CoreException e) {
-					// TODO Auto-generated catch block
+					MessageDialog.openWarning(window.getShell(), "UI",
+							"Please add Xtext Project Nature to your project");
 					e.printStackTrace();
 				}
 				CreateModelWizard fileWizard = new CreateModelWizard(file);
