@@ -54,7 +54,8 @@ ContainerType:
 	
 DBType:
 	'dbtype' name=ID '{'
-		(images+=IMAGE)+
+		'default' (image=IMAGE)
+		(images+=IMAGE)*
 	'}'
 ;
 
