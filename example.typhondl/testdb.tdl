@@ -1,4 +1,0 @@
-dbtype mongo
-database testdb : mongo {
-	image = mongoimage ;
-}

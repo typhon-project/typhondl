@@ -1,4 +1,0 @@
-dbtype mariadb
-database productdb : mariadb {
-	image = mariadbimage ;
-}
