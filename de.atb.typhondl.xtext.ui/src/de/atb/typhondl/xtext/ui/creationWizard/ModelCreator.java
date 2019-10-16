@@ -131,11 +131,14 @@ public class ModelCreator {
 			} else {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
-				db.setType(database.getDbms());
+				DBType dbType = database.getDbms();
+				//db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(db.getType().getName() + ":latest");
+				image.setValue(dbType.getName() + ":latest");
+				dbType.setImage(image);
+				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
-				db.setImage(image);
+				//db.setImage(image);
 				db = addEnvironment(db);
 				save(db);
 			}
@@ -182,9 +185,6 @@ public class ModelCreator {
 			polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 			polystoredb.setName("polystoredb");
 			polystoredb.setType(mongo);
-			IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-			polystoredb_image.setValue("mongo:latest");
-			polystoredb.setImage(polystoredb_image);
 			Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 			polystoredb_environment.setName("environment");
 			Key_Values polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Values();
