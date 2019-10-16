@@ -1,6 +1,7 @@
 import weather_warning_ML.xmi
 import AppData.tdl
 import TextWarningData.tdl
+import dbTypes.tdl
 platformtype local
 containertype Docker
 platform platformName : local {
