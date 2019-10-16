@@ -1,5 +1,5 @@
 dbtype mongo {
-	image = mongo:latest ;
+	default image = mongo:latest ;
 	image = mongo:v2 ;
 }
 
