@@ -1,10 +1,4 @@
-dbtype mongo {
-	default image = mongo:latest ;
-	image = mongo:v2 ;
-}
-
 database polystoredb : mongo {
-	image = mongo:v2 ;
 	environment {
 		MONGO_INITDB_ROOT_USERNAME = admin ;
 		MONGO_INITDB_ROOT_PASSWORD = admin ;
