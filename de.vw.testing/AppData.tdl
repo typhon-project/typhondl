@@ -1,5 +1,5 @@
 dbtype mariadb {
-	image = mariadb:latest ;
+	default image = mariadb:latest ;
 }
 
 database AppData : mariadb {

@@ -1,9 +1,9 @@
 import weather_warning_ML.xmi
 import AppData.tdl
 import TextWarningData.tdl
-platformtype default
+platformtype local
 containertype Docker
-platform platformName : default {
+platform platformName : local {
 	cluster clusterName {
 		application Polystore {
 			container polystore_api : Docker {

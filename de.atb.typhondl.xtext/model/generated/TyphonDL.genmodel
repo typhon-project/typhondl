@@ -29,6 +29,7 @@
     <genClasses ecoreClass="TyphonDL.ecore#//PlatformType"/>
     <genClasses ecoreClass="TyphonDL.ecore#//ContainerType"/>
     <genClasses ecoreClass="TyphonDL.ecore#//DBType">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DBType/image"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DBType/images"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//IMAGE">

@@ -29,6 +29,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="PlatformType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="ContainerType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="DBType" eSuperTypes="#//Type">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="image" eType="#//IMAGE"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="images" upperBound="-1"
         eType="#//IMAGE" containment="true"/>
   </eClassifiers>

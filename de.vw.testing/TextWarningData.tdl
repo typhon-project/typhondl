@@ -1,5 +1,5 @@
 dbtype mongo {
-	image = mongo:latest ;
+	default image = mongo:latest ;
 }
 
 database TextWarningData : mongo {
