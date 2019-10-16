@@ -26,12 +26,17 @@
   <eClassifiers xsi:type="ecore:EClass" name="DB" eSuperTypes="#//Services">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//DBType"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PlatformType" eSuperTypes="#//Type"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ContainerType" eSuperTypes="#//Type"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DBType" eSuperTypes="#//Type">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="image" eType="#//IMAGE"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="images" upperBound="-1"
+        eType="#//IMAGE" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IMAGE">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PlatformType" eSuperTypes="#//Type"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ContainerType" eSuperTypes="#//Type"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DBType" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="Platform" eSuperTypes="#//Model">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//PlatformType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clusters" upperBound="-1"

@@ -31,13 +31,13 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
-import de.atb.typhondl.xtext.typhonDL.Software;
+import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Services;
+import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
@@ -61,7 +61,8 @@ public class ModelCreator {
 	private final String CONTAINERNAME_UI = "polystore-ui";
 	private final String HOSTNAME_UI = "polystore-ui";
 	private final String CONTAINERNAME_DB = "polystore-mongo";
-	private final String HOSTNAME_DB = "polystore-mongo";	
+	private final String HOSTNAME_DB = "polystore-mongo";
+	private final String DBTYPES_FILENAME = "dbTypes.tdl";	
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -107,7 +108,7 @@ public class ModelCreator {
 
 		// create dummy platform type
 		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-		platformType.setName("default");
+		platformType.setName("local");
 		DLmodel.getElements().add(platformType);
 
 		// Add selected container type (chosen template in wizard)
@@ -131,13 +132,14 @@ public class ModelCreator {
 			} else {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
-				db.setType(database.getDbms());
+				DBType dbType = database.getDbms();
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(db.getType().getName() + ":latest");
+				image.setValue(dbType.getName() + ":latest");
+				dbType.setImage(image);
+				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
-				db.setImage(image);
 				db = addEnvironment(db);
-				save(db);
+				//save(db);
 			}
 			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -167,9 +169,18 @@ public class ModelCreator {
 		if (mongo == null) {
 			mongo = TyphonDLFactory.eINSTANCE.createDBType();
 			mongo.setName("mongo");
+			IMAGE mongoImage = TyphonDLFactory.eINSTANCE.createIMAGE();
+			mongoImage.setValue("mongo:latest");
+			mongo.setImage(mongoImage);
 			dbTypes.add(mongo);
 		}
-
+		save(dbTypes);
+		Import dbTypesImport = TyphonDLFactory.eINSTANCE.createImport();
+		dbTypesImport.setRelativePath(DBTYPES_FILENAME);
+		DLmodel.getGuiMetaInformation().add(dbTypesImport);
+		for (DB db : dbs) {
+			save(db);
+		}
 		/*
 		 * Polystore DB for WP7 Polystore API
 		 */
@@ -182,9 +193,6 @@ public class ModelCreator {
 			polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 			polystoredb.setName("polystoredb");
 			polystoredb.setType(mongo);
-			IMAGE polystoredb_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-			polystoredb_image.setValue("mongo:latest");
-			polystoredb.setImage(polystoredb_image);
 			Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 			polystoredb_environment.setName("environment");
 			Key_Values polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -551,12 +559,32 @@ public class ModelCreator {
 			return "0:0";
 		}
 	}
+	
+
+	private void save(ArrayList<DBType> dbTypes) {
+		DeploymentModel dbTypesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		for (DBType dbType : dbTypes) {
+			dbTypesModel.getElements().add(dbType);
+		}
+		URI dbTypeURI = URI.createPlatformResourceURI(this.folder.append(DBTYPES_FILENAME).toString(), true);
+		if (checkExist(dbTypeURI)) {
+			try {
+				resourceSet.getResource(dbTypeURI, true).delete(Collections.EMPTY_MAP);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		Resource dbTypeResource = resourceSet.createResource(dbTypeURI);
+		dbTypeResource.getContents().add(dbTypesModel);
+		try {
+			dbTypeResource.save(SavingOptions.getTDLoptions());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void save(Services services) {
 		DeploymentModel servicesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		if (DB.class.isInstance(services)) {
-			servicesModel.getElements().add(((DB) services).getType());
-		}
 		servicesModel.getElements().add(services);
 		URI servicesURI = createServicesURI(services.getName());
 		// delete resource if it already exists

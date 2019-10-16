@@ -39,13 +39,9 @@ Type:
 
 DB:
 	'database' name=ID ':' type=[DBType] '{'
-	(image=IMAGE)
+	(image=IMAGE)?
 	(parameters+=Property)*
 	'}'
-;
-
-IMAGE:
-	'image' '=' value=Value ';'
 ;
 
 PlatformType:
@@ -57,7 +53,14 @@ ContainerType:
 ;
 	
 DBType:
-	'dbtype' name=ID
+	'dbtype' name=ID '{'
+		'default' (image=IMAGE)
+		(images+=IMAGE)*
+	'}'
+;
+
+IMAGE:
+	'image' '=' value=Value ';'
 ;
 
 Platform :
