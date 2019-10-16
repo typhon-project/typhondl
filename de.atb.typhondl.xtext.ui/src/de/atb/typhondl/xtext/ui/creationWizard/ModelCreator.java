@@ -132,13 +132,11 @@ public class ModelCreator {
 				db = TyphonDLFactory.eINSTANCE.createDB();
 				db.setName(database.getName());
 				DBType dbType = database.getDbms();
-				//db.setType(database.getDbms());
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				image.setValue(dbType.getName() + ":latest");
 				dbType.setImage(image);
 				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
-				//db.setImage(image);
 				db = addEnvironment(db);
 				save(db);
 			}
@@ -170,8 +168,12 @@ public class ModelCreator {
 		if (mongo == null) {
 			mongo = TyphonDLFactory.eINSTANCE.createDBType();
 			mongo.setName("mongo");
+			IMAGE mongoImage = TyphonDLFactory.eINSTANCE.createIMAGE();
+			mongoImage.setValue("mongo:latest");
+			mongo.setImage(mongoImage );
 			dbTypes.add(mongo);
 		}
+		save(dbTypes);
 
 		/*
 		 * Polystore DB for WP7 Polystore API
@@ -551,12 +553,32 @@ public class ModelCreator {
 			return "0:0";
 		}
 	}
+	
+
+	private void save(ArrayList<DBType> dbTypes) {
+		DeploymentModel dbTypesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		for (DBType dbType : dbTypes) {
+			dbTypesModel.getElements().add(dbType);
+		}
+		URI dbTypeURI = URI.createPlatformResourceURI(this.folder.append("dbTypes.tdl").toString(), true);
+		if (checkExist(dbTypeURI)) {
+			try {
+				resourceSet.getResource(dbTypeURI, true).delete(Collections.EMPTY_MAP);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		Resource dbTypeResource = resourceSet.createResource(dbTypeURI);
+		dbTypeResource.getContents().add(dbTypesModel);
+		try {
+			dbTypeResource.save(SavingOptions.getTDLoptions());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void save(Services services) {
 		DeploymentModel servicesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-		if (DB.class.isInstance(services)) {
-			servicesModel.getElements().add(((DB) services).getType());
-		}
 		servicesModel.getElements().add(services);
 		URI servicesURI = createServicesURI(services.getName());
 		// delete resource if it already exists
