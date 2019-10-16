@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+import javax.swing.DefaultBoundedRangeModel;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -61,7 +63,8 @@ public class ModelCreator {
 	private final String CONTAINERNAME_UI = "polystore-ui";
 	private final String HOSTNAME_UI = "polystore-ui";
 	private final String CONTAINERNAME_DB = "polystore-mongo";
-	private final String HOSTNAME_DB = "polystore-mongo";	
+	private final String HOSTNAME_DB = "polystore-mongo";
+	private final String DBTYPES_FILENAME = "dbTypes.tdl";	
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -107,7 +110,7 @@ public class ModelCreator {
 
 		// create dummy platform type
 		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-		platformType.setName("default");
+		platformType.setName("local");
 		DLmodel.getElements().add(platformType);
 
 		// Add selected container type (chosen template in wizard)
@@ -138,7 +141,7 @@ public class ModelCreator {
 				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
 				db = addEnvironment(db);
-				save(db);
+				//save(db);
 			}
 			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -170,11 +173,15 @@ public class ModelCreator {
 			mongo.setName("mongo");
 			IMAGE mongoImage = TyphonDLFactory.eINSTANCE.createIMAGE();
 			mongoImage.setValue("mongo:latest");
-			mongo.setImage(mongoImage );
+			mongo.setImage(mongoImage);
 			dbTypes.add(mongo);
 		}
 		save(dbTypes);
-
+		Import dbTypesImport = TyphonDLFactory.eINSTANCE.createImport();
+		dbTypesImport.setRelativePath(DBTYPES_FILENAME);
+		for (DB db : dbs) {
+			save(db);
+		}
 		/*
 		 * Polystore DB for WP7 Polystore API
 		 */
@@ -560,7 +567,7 @@ public class ModelCreator {
 		for (DBType dbType : dbTypes) {
 			dbTypesModel.getElements().add(dbType);
 		}
-		URI dbTypeURI = URI.createPlatformResourceURI(this.folder.append("dbTypes.tdl").toString(), true);
+		URI dbTypeURI = URI.createPlatformResourceURI(this.folder.append(DBTYPES_FILENAME).toString(), true);
 		if (checkExist(dbTypeURI)) {
 			try {
 				resourceSet.getResource(dbTypeURI, true).delete(Collections.EMPTY_MAP);
