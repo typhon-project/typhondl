@@ -179,6 +179,7 @@ public class ModelCreator {
 		save(dbTypes);
 		Import dbTypesImport = TyphonDLFactory.eINSTANCE.createImport();
 		dbTypesImport.setRelativePath(DBTYPES_FILENAME);
+		DLmodel.getGuiMetaInformation().add(dbTypesImport);
 		for (DB db : dbs) {
 			save(db);
 		}
