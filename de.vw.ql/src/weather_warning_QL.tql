@@ -1,0 +1,17 @@
+insert App {vehicle_id: "v_01", vehicle_position: 53080881, warnings: [Warning {severity: 1, area: 53000800, warningType: "Schauer", warning_id: "w_01"}], textwarnings: [TextWarning {textWarning_id: "tw_01", text: "2 km südwestlich von Moabit wurde um 13:15 Uhr ein Starkregenschauer registriert, der sich mit 57 km/h nach Nordosten verlagert. Bisher wurden keine Blitze registriert. Folgende Orte liegen derzeit in der Zugbahn des Starkregenschauers und werden zu den angegebenen Zeiten erreicht: Alt-Treptow (13:15), Berlin (13:15), Berlin Schöneberg (13:15), Berlin Treptow (13:15), Charlottenburg (13:15), Charlottenburg-Nord (13:15), Friedrichshain (13:15), Gesundbrunnen (13:15), Hansaviertel (13:15), Kreuzberg (13:15), Mitte (13:15), Moabit (13:15), Märkisches Viertel (13:15), Pankow (13:15), Prenzlauer Berg (13:15), Reinickendorf (13:15), Rummelsburg (13:15), Schöneberg (13:15), Tegel (13:15), Tempelhof (13:15), Tiergarten (13:15), Wedding (13:15), Wilhelmsruh (13:15), Wittenau (13:15), Fennpfuhl (13:17), Friedrichsfelde (13:17), Heinersdorf (13:17), Lichtenberg (13:17), Niederschönhausen (13:17), Rosenthal (13:17), Alt-Hohenschönhausen (13:19), Französisch Buchholz (13:19), Weißensee (13:19), Blankenburg (13:21), Neu-Hohenschönhausen (13:21), Karow (13:23), Marzahn (13:23), Buch (13:25), Bernau bei Berlin (13:35), Biesenthal (13:43), Eberswalde (13:59)"}]}
+
+insert TextWarning {textWarning_id: "tw_02", text: "Es ist sehr windig an der Weser"}
+
+insert TextWarning {textWarning_id: "tw_03", text: "Es gibt ein starkes Gewitter in Bremen"}
+
+insert Warning {warning_id: "w_02", warningType: "Sturm", severity: 2, area: 53085409}
+
+insert Warning {warning_id: "w_03", warningType: "Gewitter", severity: 3, area: 53085409}
+
+from Warning w select w.warning_id where w.warningType == "Sturm"
+
+from App a select a.vehicle_position where a.vehicle_id == "v_02"
+
+delete Warning w where w.warningType == "Gewitter"
+
+update App a where a.vehicle_id == "v_01" set {vehicle_position: 53080882}

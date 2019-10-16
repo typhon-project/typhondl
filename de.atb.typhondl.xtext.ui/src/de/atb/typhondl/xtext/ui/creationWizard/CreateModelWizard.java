@@ -32,9 +32,6 @@ public class CreateModelWizard extends Wizard {
 
 		dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel);
 		addPage(dbmsPage);
-
-		// analyticsPage = new CreationAnalyticsPage("Analytics Configuration");
-		// addPage(analyticsPage);
 	}
 
 	@Override

@@ -17,7 +17,7 @@ import de.atb.typhondl.xtext.typhonDL.IMAGE
 import de.atb.typhondl.xtext.typhonDL.Import
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
-import de.atb.typhondl.xtext.typhonDL.NonDB
+import de.atb.typhondl.xtext.typhonDL.Software
 import de.atb.typhondl.xtext.typhonDL.Platform
 import de.atb.typhondl.xtext.typhonDL.PlatformType
 import org.eclipse.xtext.formatting2.AbstractFormatter2
@@ -41,14 +41,14 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		imported.append[newLine]
 	}
 
-	def dispatch void format(NonDB nonDB, extension IFormattableDocument document) {
+	def dispatch void format(Software software, extension IFormattableDocument document) {
 		interior(
-			nonDB.regionFor.keyword('{').append[newLine],
-			nonDB.regionFor.keyword('}').prepend[newLine].append[newLine],
+			software.regionFor.keyword('{').append[newLine],
+			software.regionFor.keyword('}').prepend[newLine].append[newLine],
 			[indent]
 		)
-		nonDB.image.format
-		for (property : nonDB.parameters) {
+		software.image.format
+		for (property : software.parameters) {
 			property.format
 			property.append[newLine]
 		}
