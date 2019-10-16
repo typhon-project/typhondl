@@ -1,5 +1,5 @@
 dbtype mariadb {
-	image = mongo:latest ;
+	image = mariadb:latest ;
 }
 
 database AppData : mariadb {
