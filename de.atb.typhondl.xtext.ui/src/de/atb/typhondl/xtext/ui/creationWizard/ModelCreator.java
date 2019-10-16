@@ -556,7 +556,7 @@ public class ModelCreator {
 		case "mysql":
 			return "3306:3306";
 		case "mongo":
-			return "27018:27017"; // 27017 is occupied by documentdbs
+			return "27018:27017"; // 27017 is occupied by polystoredb
 		default:
 			return "0:0";
 		}
@@ -622,10 +622,10 @@ public class ModelCreator {
 	}
 
 	private Software getSoftware(DeploymentModel model) {
-		ArrayList<Software> Nondbs = new ArrayList<Software>();
-		Nondbs.addAll(model.getElements().stream().filter(element -> Software.class.isInstance(element))
+		ArrayList<Software> softwares = new ArrayList<Software>();
+		softwares.addAll(model.getElements().stream().filter(element -> Software.class.isInstance(element))
 				.map(element -> (Software) element).collect(Collectors.toList()));
-		return Nondbs.get(0);
+		return softwares.get(0);
 	}
 
 }

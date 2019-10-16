@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-db-deployment
+  labels:
+    app: polystore-db-pod
+spec:
+  selector:
+    matchLabels:
+      app: polystore-db-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-db-pod
+    spec:
+      containers:
+        - name: polystore-mongo
+          image: mongo:latest
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: admin

@@ -21,52 +21,6 @@ services:
 [if (aContainer.name = 'kafka')]
 [aApplication.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name/]:
-[if (aContainer.deploys <> null)]
-    [aContainer.deploys.reference.printFeature()/]
-[/if]
-[if (aContainer.depends_on <> null)]
-[for (aDependency : Dependency | aContainer.depends_on)]
-    depends_on: 
-      - [aDependency.reference.name/]
-[/for]
-[/if]
-[if (aContainer.networks <> null)]
-    [aContainer.networks.print()/]
-[/if]    
-[if (aContainer.properties <> null)]
-[for (aProperty : Property | aContainer.properties)]
-    [aProperty.printProperties()/]
-[/for]
-[/if]
-[/for]
-[/file]
-[/for]
-[/for]
-[/template]
-
-[template public print(aNetwork : Cluster_Network) post (trim())]
-networks:
-  [aNetwork.name/]: 
-[for (key_Values : Key_Values | aNetwork.key_values)]
-    [key_Values.printProperties()/]
-[/for]
-[/template]
-
-[template public print(networks : Container_Network) post (trim())]
-networks:
-[for (reference : Cluster_Network | networks.references)]
-  - [reference.name/]
-[/for]
-[/template]
-
-[template public printProperties(aProperty : Property) post (trim()) ]
-	something went wrong with Rule Property
-[/template]
-
-[template public printProperties(aProperty : Key_Values)  post (trim())]
-[aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
-[/if]
 [/template]
 
 [template public printProperties(aProperty : Key_KeyValueList)  post (trim())]
