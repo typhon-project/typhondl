@@ -34,7 +34,7 @@ Software:
 ;
    
 Type:
-    PlatformType | ContainerType | DBType
+    PlatformType | ClusterType | ContainerType | DBType 
 ;
 
 DB:
@@ -46,6 +46,10 @@ DB:
 
 PlatformType:
 	'platformtype' name=ID
+;
+
+ClusterType:
+	'clustertype' name=ID
 ;
 	
 ContainerType:
@@ -72,7 +76,7 @@ Platform :
 
 Cluster :
 	{Cluster}
-	'cluster' name=ID '{'
+	'cluster' name=ID ':' type=[ClusterType] '{'
 		(networks+=Cluster_Network)*
 		(properties+=Property)*
 		(applications+=Application)*		
@@ -99,7 +103,7 @@ Application :
 
 Container :
 	{Container}
-	'container' name=ID ':' type=[ContainerType]'{'
+	'container' name=ID ':' (type=[ContainerType])? '{'
 		(deploys=Reference)?
 		(depends_on+=Dependency)*
 		(networks=Container_Network)?
