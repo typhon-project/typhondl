@@ -5,11 +5,13 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -17,6 +19,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.IGrammarAccess;
+import org.eclipse.xtext.ui.XtextProjectHelper;
 
 import com.google.inject.Inject;
 
@@ -40,6 +43,24 @@ public class CreateModelHandler extends AbstractHandler {
 			if (firstElement instanceof IAdaptable) {
 				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
 
+				IProject project = file.getProject();
+				boolean hasXtextNature;
+				try {
+					hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
+					if (!hasXtextNature) {
+						IProjectDescription projectDescription = project.getDescription();
+						String[] oldNatures = projectDescription.getNatureIds();
+						String[] newNatures = new String[oldNatures.length + 1];
+						System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
+						newNatures[0] = XtextProjectHelper.NATURE_ID;
+						projectDescription.setNatureIds(newNatures);
+						project.setDescription(projectDescription, null);
+					}
+				} catch (CoreException e) {
+					MessageDialog.openWarning(window.getShell(), "UI",
+							"Please add Xtext Project Nature to your project");
+					e.printStackTrace();
+				}
 				CreateModelWizard fileWizard = new CreateModelWizard(file);
 				WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), fileWizard);
 

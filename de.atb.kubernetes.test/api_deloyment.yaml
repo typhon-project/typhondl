@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-api-deployment
+  labels:
+    app: polystore-api-pod
+spec:
+  selector:
+    matchLabels:
+      app: polystore-api-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-api-pod
+    spec:
+      containers:
+        - name: typhonml-polystore-service
+          image: clms/typhon-polystore-api:latest

@@ -1,3 +1,0 @@
-software zookeeper {
-	image = wurstmeister/zookeeper ;
-}

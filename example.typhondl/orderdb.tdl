@@ -1,4 +1,0 @@
-dbtype mongo
-database orderdb : mongo {
-	image = mongoimage ;
-}

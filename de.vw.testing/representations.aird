@@ -8,5 +8,6 @@
   <semanticResources>polystore_api.tdl</semanticResources>
   <semanticResources>polystore_ui.tdl</semanticResources>
   <semanticResources>weather_warning_DL.tdl</semanticResources>
+  <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>weather_warning_DL/weather_warning_DL.xmi</semanticResources>
 </viewpoint:DAnalysis>

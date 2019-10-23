@@ -80,7 +80,15 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 	}
 
 	def dispatch void format(DBType dbType, extension IFormattableDocument document) {
-		dbType.append[newLine]
+		interior(
+			dbType.regionFor.keyword('{').append[newLine],
+			dbType.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		dbType.image.format
+		for (image : dbType.images) {
+			image.format
+		}
 	}
 
 	def dispatch void format(Platform platform, extension IFormattableDocument document) {

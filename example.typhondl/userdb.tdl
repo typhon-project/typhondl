@@ -1,4 +1,0 @@
-dbtype mariadb
-database userdb : mariadb {
-	image = mariadbimage ;
-}
