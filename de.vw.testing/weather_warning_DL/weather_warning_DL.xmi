@@ -6,13 +6,14 @@
     <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
     <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
     <elements xsi:type="typhonDL:PlatformType" name="local"/>
+    <elements xsi:type="typhonDL:ClusterType" name="DockerCompose"/>
     <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
     <elements xsi:type="typhonDL:Platform" name="platformName" type="/0/@elements.0">
-      <clusters name="clusterName">
+      <clusters name="clusterName" type="/0/@elements.1">
         <applications name="Polystore">
-          <containers name="polystore_api" type="/0/@elements.1">
+          <containers name="polystore_api" type="/0/@elements.2">
             <deploys reference="/2/@elements.0"/>
-            <depends_on reference="/0/@elements.2/@clusters.0/@applications.0/@containers.2"/>
+            <depends_on reference="/0/@elements.3/@clusters.0/@applications.0/@containers.2"/>
             <properties xsi:type="typhonDL:Key_Values" name="container_name" value="typhon-polystore-service"/>
             <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
             <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api"/>
@@ -23,9 +24,9 @@
               <values>./models:/models</values>
             </properties>
           </containers>
-          <containers name="polystore_ui" type="/0/@elements.1">
+          <containers name="polystore_ui" type="/0/@elements.2">
             <deploys reference="/1/@elements.0"/>
-            <depends_on reference="/0/@elements.2/@clusters.0/@applications.0/@containers.0"/>
+            <depends_on reference="/0/@elements.3/@clusters.0/@applications.0/@containers.0"/>
             <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-ui"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>4200:4200</values>
@@ -33,7 +34,7 @@
             <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
             <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-ui"/>
           </containers>
-          <containers name="polystoredb" type="/0/@elements.1">
+          <containers name="polystoredb" type="/0/@elements.2">
             <deploys reference="/3/@elements.0"/>
             <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-mongo"/>
             <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-mongo"/>
@@ -41,13 +42,13 @@
               <values>27017:27017</values>
             </properties>
           </containers>
-          <containers name="AppData" type="/0/@elements.1">
+          <containers name="AppData" type="/0/@elements.2">
             <deploys reference="/4/@elements.0"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>3306:3306</values>
             </properties>
           </containers>
-          <containers name="TextWarningData" type="/0/@elements.1">
+          <containers name="TextWarningData" type="/0/@elements.2">
             <deploys reference="/5/@elements.0"/>
             <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
               <values>27018:27017</values>

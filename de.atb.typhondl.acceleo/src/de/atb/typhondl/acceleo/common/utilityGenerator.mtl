@@ -17,14 +17,10 @@
  aApplication.containers 
 /]
 
-[query public isDocker(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(str | str='Docker')<>null
+[query public isDockerCompose(aDeploymentModel : DeploymentModel) : Boolean = 
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='DockerCompose')<>null
 /]
 
 [query public isKubernetes(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(self = 'Kubernetes') <> null
-/]
-
-[query public isRocket(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(self = 'Rocket') <> null
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(self = 'Kubernetes') <> null
 /]

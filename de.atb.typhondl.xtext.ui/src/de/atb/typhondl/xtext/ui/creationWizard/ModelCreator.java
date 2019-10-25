@@ -20,6 +20,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Cluster_Network;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
@@ -115,6 +116,11 @@ public class ModelCreator {
 		ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
 		containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
 		DLmodel.getElements().add(containerType);
+
+		// Add selected cluster type (chosen template in wizard)
+		ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
+		clusterType.setName(SupportedTechnologies.values()[chosenTemplate].getClusterType());
+		DLmodel.getElements().add(clusterType);
 
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
@@ -455,6 +461,7 @@ public class ModelCreator {
 
 		Cluster cluster = TyphonDLFactory.eINSTANCE.createCluster();
 		cluster.setName("clusterName");
+		cluster.setType(clusterType);
 		if (useAnalytics) {
 			cluster.getNetworks().add(typhonNetwork);
 		}

@@ -23,6 +23,7 @@ import de.atb.typhondl.xtext.typhonDL.PlatformType
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 import de.atb.typhondl.xtext.typhonDL.Key_Values
+import de.atb.typhondl.xtext.typhonDL.ClusterType
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -77,6 +78,10 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(ContainerType containerType, extension IFormattableDocument document) {
 		containerType.append[newLine]
+	}
+	
+	def dispatch void format(ClusterType clusterType, extension IFormattableDocument document) {
+		clusterType.append[newLine]
 	}
 
 	def dispatch void format(DBType dbType, extension IFormattableDocument document) {
