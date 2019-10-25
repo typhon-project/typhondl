@@ -42,6 +42,7 @@ import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
+import de.atb.typhondl.xtext.ui.utilities.DBMSdefaultConfiguration;
 import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -55,7 +56,7 @@ public class ModelCreator {
 	// path to folder in which to save all model files
 	private IPath folder;
 	private String DLmodelName;
-	
+
 	// names of polystore containers:
 	private final String CONTAINERNAME_API = "typhon-polystore-service";
 	private final String HOSTNAME_API = "polystore-api";
@@ -63,7 +64,7 @@ public class ModelCreator {
 	private final String HOSTNAME_UI = "polystore-ui";
 	private final String CONTAINERNAME_DB = "polystore-mongo";
 	private final String HOSTNAME_DB = "polystore-mongo";
-	private final String DBTYPES_FILENAME = "dbTypes.tdl";	
+	private final String DBTYPES_FILENAME = "dbTypes.tdl";
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -140,12 +141,11 @@ public class ModelCreator {
 				db.setName(database.getName());
 				DBType dbType = database.getDbms();
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(dbType.getName() + ":latest");
+				image.setValue(DBMSdefaultConfiguration.valueOf(dbType.getName()).getImage());
 				dbType.setImage(image);
 				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
 				db = addEnvironment(db);
-				//save(db);
 			}
 			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -240,8 +240,8 @@ public class ModelCreator {
 		 */
 		Software polystore_api;
 		if (checkExist(createServicesURI("polystore_api"))) {
-			polystore_api = getSoftware((DeploymentModel) resourceSet.getResource(createServicesURI("polystore_api"), true)
-					.getContents().get(0));
+			polystore_api = getSoftware((DeploymentModel) resourceSet
+					.getResource(createServicesURI("polystore_api"), true).getContents().get(0));
 		} else {
 			polystore_api = TyphonDLFactory.eINSTANCE.createSoftware();
 			polystore_api.setName("polystore_api");
@@ -287,8 +287,8 @@ public class ModelCreator {
 		 */
 		Software polystore_ui;
 		if (checkExist(createServicesURI("polystore_ui"))) {
-			polystore_ui = getSoftware((DeploymentModel) resourceSet.getResource(createServicesURI("polystore_ui"), true)
-					.getContents().get(0));
+			polystore_ui = getSoftware((DeploymentModel) resourceSet
+					.getResource(createServicesURI("polystore_ui"), true).getContents().get(0));
 		} else {
 			polystore_ui = TyphonDLFactory.eINSTANCE.createSoftware();
 			polystore_ui.setName("polystore_ui");
@@ -504,69 +504,50 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		// return main model file to be opened in editor
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
 
 	// TODO This should be from an external config file
 	private DB addEnvironment(DB db) {
-		switch (db.getType().getName()) {
-		case "mariadb":
-			Key_KeyValueList mariadbenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-			mariadbenvironment.setName("environment");
-			Key_Values mariadbenv1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			mariadbenv1.setName("MYSQL_ROOT_PASSWORD");
-			mariadbenv1.setValue("example");
-			mariadbenvironment.getKey_Values().add(mariadbenv1);
-			db.getParameters().add(mariadbenvironment);
-			break;
-		case "mysql":
-			Key_KeyValueList mysqlenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-			mysqlenvironment.setName("environment");
-			Key_Values mysqlenv1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			mysqlenv1.setName("MYSQL_ROOT_PASSWORD");
-			mysqlenv1.setValue("example");
-			mysqlenvironment.getKey_Values().add(mysqlenv1);
-			Key_Values mysqlcommand = TyphonDLFactory.eINSTANCE.createKey_Values();
-			mysqlcommand.setName("command");
-			mysqlcommand.setValue("--default-authentication-plugin=mysql_native_password");
-			db.getParameters().add(mysqlcommand);
-			db.getParameters().add(mysqlenvironment);
-			break;
-		case "mongo":
-			Key_KeyValueList mongoenvironment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-			mongoenvironment.setName("environment");
-			Key_Values mongoenv1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			mongoenv1.setName("MONGO_INITDB_ROOT_USERNAME");
-			mongoenv1.setValue("admin");
-			Key_Values mongoenv2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			mongoenv2.setName("MONGO_INITDB_ROOT_PASSWORD");
-			mongoenv2.setValue("admin");
-			mongoenvironment.getKey_Values().add(mongoenv1);
-			mongoenvironment.getKey_Values().add(mongoenv2);
-			db.getParameters().add(mongoenvironment);
-			break;
-		default:
-			break;
+		String[] environmentArray = DBMSdefaultConfiguration.valueOf(db.getType().getName()).getEnvironment();
+		String[] keyValuesArray = DBMSdefaultConfiguration.valueOf(db.getType().getName()).getKeyValues();
+		if (environmentArray != null) {
+			Key_KeyValueList environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			environment.setName("environment"); // TODO different in kubernetes
+			for (int i = 0; i < environmentArray.length; i = i + 2) {
+				Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
+				key_value.setName(environmentArray[i]);
+				key_value.setValue(environmentArray[i + 1]);
+				environment.getKey_Values().add(key_value);
+			}
+			db.getParameters().add(environment);
+		}
+		if (keyValuesArray != null) {
+			for (int i = 0; i < keyValuesArray.length; i = i + 2) {
+				Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
+				key_value.setName(keyValuesArray[i]);
+				key_value.setValue(keyValuesArray[i + 1]);
+				db.getParameters().add(key_value);
+			}
 		}
 		return db;
 	}
 
-	// TODO This should be from an external config file
+	// TODO This should be from an external config file TODO different in Kubernetes
 	private String getStandardPorts(String name) {
 		switch (name) {
 		case "mariadb":
-			return "3306:3306";
+			return DBMSdefaultConfiguration.MariaDB.getPort() + ":3306";
 		case "mysql":
-			return "3306:3306";
+			return DBMSdefaultConfiguration.MySQL.getPort() + ":3306";
 		case "mongo":
-			return "27018:27017"; // 27017 is occupied by polystoredb
+			return DBMSdefaultConfiguration.Mongo.getPort() + ":27017"; // 27017 is occupied by polystoredb
 		default:
 			return "0:0";
 		}
 	}
-	
 
 	private void save(ArrayList<DBType> dbTypes) {
 		DeploymentModel dbTypesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();

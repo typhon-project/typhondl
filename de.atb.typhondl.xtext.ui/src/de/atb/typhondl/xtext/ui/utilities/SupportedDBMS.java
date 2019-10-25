@@ -4,25 +4,25 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"MariaDB"};
+			return new String[] {DBMSdefaultConfiguration.MariaDB.name(), DBMSdefaultConfiguration.MySQL.name()};
 		}
 	},
 	graphdb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"ArangoDB", "Neo4j"};
+			return new String[] {"not supported yet"};
 		}
 	},
 	documentdb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"Mongo"};
+			return new String[] {DBMSdefaultConfiguration.Mongo.name()};
 		}
 	},
 	keyvaluedb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"ArangoDB", "Redis"};
+			return new String[] {"not supported yet"};
 		}
 	};
 	
