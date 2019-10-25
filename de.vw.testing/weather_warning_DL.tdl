@@ -3,9 +3,10 @@ import AppData.tdl
 import TextWarningData.tdl
 import dbTypes.tdl
 platformtype local
+clustertype dockerCompose
 containertype Docker
 platform platformName : local {
-	cluster clusterName {
+	cluster clusterName : dockerCompose {
 		application Polystore {
 			container polystore_api : Docker {
 				deploys polystore_api
