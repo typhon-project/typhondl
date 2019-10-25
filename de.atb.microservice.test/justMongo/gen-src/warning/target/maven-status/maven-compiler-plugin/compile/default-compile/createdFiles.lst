@@ -1,5 +1,0 @@
-org/typhon/warning/model/Warning.class
-org/typhon/warning/configuration/SwaggerConfig.class
-org/typhon/warning/WarningApplication.class
-org/typhon/warning/configuration/RepositoryConfig.class
-org/typhon/warning/model/repository/WarningRepository.class
