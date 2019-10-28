@@ -1,0 +1,3 @@
+software polystore_api {
+	image = clms/typhon-polystore-api:latest ;
+}
