@@ -1,8 +1,8 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
 public enum SupportedTechnologies {
-	DockerCompose ("Docker Compose", "Docker", "DockerCompose");//,
-	//Kubernetes ("Kubernetes with Docker", "Docker", "Kubernetes");
+	DockerCompose ("Docker Compose", "Docker", "DockerCompose"),
+	Kubernetes ("Kubernetes with Docker", "Docker", "Kubernetes");
 	
 	private final String displayedName;
 	private final String containerType;
