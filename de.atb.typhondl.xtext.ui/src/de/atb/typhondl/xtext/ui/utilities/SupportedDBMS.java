@@ -4,7 +4,7 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {DBMSdefaultConfiguration.MariaDB.name(), DBMSdefaultConfiguration.MySQL.name()};
+			return new String[] {"MariaDB", "MySQL"};
 		}
 	},
 	graphdb(){
@@ -16,7 +16,7 @@ public enum SupportedDBMS {
 	documentdb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {DBMSdefaultConfiguration.Mongo.name()};
+			return new String[] {"Mongo"};
 		}
 	},
 	keyvaluedb(){
