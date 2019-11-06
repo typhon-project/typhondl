@@ -53,29 +53,14 @@ public class ModelCreator {
 	private IPath folder;
 	private String DLmodelName;
 
-	// names of polystore containers:
-	private final Properties polystoreProperties;
-
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
 		this.folder = this.MLmodel.getFullPath().removeLastSegments(1);
 		this.DLmodelName = DLmodelName;
-		this.polystoreProperties = new Properties();
-		loadProperties();
 		addResources();
 	}
 
-	private void loadProperties() {
-		InputStream input = ModelCreator.class.getClassLoader()
-				.getResourceAsStream("de/atb/typhondl/xtext/ui/properties/polystore.properties");
-		try {
-			this.polystoreProperties.load(input);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
+	/*
 	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
 	 */
 	private void addResources() {
@@ -162,7 +147,7 @@ public class ModelCreator {
 					environment.setName("environment");
 					environmentKeys.forEach(key -> {
 						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key);
+						key_value.setName(key.substring(key.lastIndexOf('.')+1));
 						key_value.setValue((String) dbProperties.get(key));
 						environment.getKey_Values().add(key_value);
 					});
@@ -228,7 +213,7 @@ public class ModelCreator {
 			container.setDeploys(reference);
 			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			db_port.setName("port");
-			db_port.setValue(getStandardPorts(db.getType().getName())); //TODO
+			db_port.setValue(getStandardPorts(db.getType().getName())); //TODO can be removed later
 			container.getProperties().add(db_port);
 			application.getContainers().add(container);
 		}
@@ -249,15 +234,15 @@ public class ModelCreator {
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
 	
-	// TODO This should be from an external config file TODO different in Kubernetes
+	// TODO This should not be needed, since the databases should only be reachable inside the same network/cluster
 	private String getStandardPorts(String name) {
 		switch (name) {
 		case "mariadb":
-			return ":3306";
+			return "3306:3306";
 		case "mysql":
-			return ":3306";
+			return "3306:3306";
 		case "mongo":
-			return ":27017"; // 27017 is occupied by polystoredb
+			return "27018:27017"; // 27017 is occupied by polystoredb
 		default:
 			return "0:0";
 		}

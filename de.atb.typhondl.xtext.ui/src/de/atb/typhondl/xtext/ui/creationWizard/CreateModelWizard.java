@@ -1,6 +1,10 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -55,10 +59,16 @@ public class CreateModelWizard extends Wizard {
 		// main DL model gets selected in Project Explorer
 		fileOpener.selectAndReveal(file);
 		// main DL model is opened in editor
-		fileOpener.openFileToEdit(this.getShell(), file);		
+		fileOpener.openFileToEdit(this.getShell(), file);
+		Properties properties = this.mainPage.getProperties();
+		try {
+			OutputStream output = new FileOutputStream(this.mainPage.getPROPERTIES_PATH());
+			properties.store(output, null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return true;
 	}
-
 
 	@Override
 	public boolean canFinish() {
