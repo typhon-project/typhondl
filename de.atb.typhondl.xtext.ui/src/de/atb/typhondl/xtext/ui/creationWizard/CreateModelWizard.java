@@ -1,5 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -7,6 +8,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -62,8 +65,12 @@ public class CreateModelWizard extends Wizard {
 		fileOpener.openFileToEdit(this.getShell(), file);
 		Properties properties = this.mainPage.getProperties();
 		try {
-			OutputStream output = new FileOutputStream(this.mainPage.getPROPERTIES_PATH());
-			properties.store(output, null);
+			String location = file.getLocationURI().toString();
+			String path = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
+			File propertiesFile = new File(path);
+			propertiesFile.createNewFile();
+			OutputStream output = new FileOutputStream(path);
+			properties.store(output, "Only edit this if you know what you are doing!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
