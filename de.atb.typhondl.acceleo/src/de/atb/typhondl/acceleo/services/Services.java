@@ -2,7 +2,6 @@ package de.atb.typhondl.acceleo.services;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.ui.texteditor.PropagatingFontFieldEditor;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -28,7 +26,6 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Platform;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class Services {
 
@@ -99,6 +96,7 @@ public class Services {
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
+		model = addPolystoreModel(DLmodelResource.getURI().trimSegments(1).toString(), model);
 		saveModelAsXMI(DLmodelResource);
 		return model;
 	}
@@ -114,8 +112,8 @@ public class Services {
 		// add main model
 		xmiResource.getContents().add(DLmodel);
 		// add polystore_ui, polystore_api and polystoredb to xmi model
-		DeploymentModel polystoreModel = createPolystoreModelFromProperties(folder.toString());
-		xmiResource.getContents().add(polystoreModel);
+		//DeploymentModel polystoreModel = createPolystoreModelFromProperties(folder.toString());
+		//xmiResource.getContents().add(polystoreModel);
 
 		// add DBs
 		URI uri = DLmodelResource.getURI().trimSegments(1);
@@ -136,8 +134,7 @@ public class Services {
 		}
 	}
 
-	private static DeploymentModel createPolystoreModelFromProperties(String folder) {
-		DeploymentModel polystoreModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+	private static DeploymentModel addPolystoreModel(String folder, DeploymentModel model) {
 		Properties polystoreProperties = new Properties();
 		try {
 			InputStream input = new FileInputStream(folder + "/polystore.properties");
@@ -145,7 +142,15 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return polystoreModel;
+		//TODO 1. dbTypes
+		//TODO 2. software api
+		//TODO 3. software ui
+		//TODO 4. database mongo
+		//TODO 5. container api
+		//TODO 6. container ui
+		//TODO 7. container database
+		
+		return model;
 	}
 
 	private static boolean analyticsIsUsed(DeploymentModel DLmodel) {
