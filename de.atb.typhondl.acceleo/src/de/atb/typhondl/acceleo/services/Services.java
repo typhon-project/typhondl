@@ -108,7 +108,9 @@ public class Services {
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
-		model = addPolystoreModel(DLmodelResource.getURI().trimSegments(1).toString(), model);
+		String location = file.getLocation().toString();
+		String path = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
+		model = addPolystoreModel(path , model);
 		saveModelAsXMI(DLmodelResource);
 		return model;
 	}
@@ -147,18 +149,17 @@ public class Services {
 		}
 	}
 
-	private static DeploymentModel addPolystoreModel(String folder, DeploymentModel model) {
+	private static DeploymentModel addPolystoreModel(String path, DeploymentModel model) {
 		Properties properties = new Properties();
 		try {
-			InputStream input = new FileInputStream(folder + "/polystore.properties");
+			InputStream input = new FileInputStream(path);
 			properties.load(input);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// TODO containerType
 		// TODO analytics
 
-		// Add mongo as dbType if not yet exists
+		// Add mongo as dbType if not yet exists TODO doesn't find dbTypes in different file
 		List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
 				.map(element -> (DBType) element).collect(Collectors.toList());
 		DBType mongo = null;

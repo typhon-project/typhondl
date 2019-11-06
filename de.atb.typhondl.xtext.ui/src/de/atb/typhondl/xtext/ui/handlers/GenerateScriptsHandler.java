@@ -1,9 +1,5 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -26,7 +22,6 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import com.google.inject.Inject;
 
 import de.atb.typhondl.acceleo.services.Services;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationMainPage;
 
 public class GenerateScriptsHandler extends AbstractHandler {
 
@@ -63,18 +58,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
 						"Please add Xtext Project Nature to your project");
 				e.printStackTrace();
 			}
-			// get properties
-			Properties properties = new Properties();
-			InputStream input = CreationMainPage.class.getClassLoader()
-					.getResourceAsStream("de/atb/typhondl/xtext/ui/properties/polystore.properties");
-			try {
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			for (Object key : properties.keySet()) {
-				String string = (String) (key + " = " + properties.get(key));
-			}
+			
 			result = Services.generateDeployment(file, provider);
 
 			for (IProject iproject : root.getProjects()) {
