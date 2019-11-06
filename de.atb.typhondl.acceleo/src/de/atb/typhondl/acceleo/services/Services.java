@@ -1,8 +1,12 @@
 package de.atb.typhondl.acceleo.services;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -12,6 +16,7 @@ import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.ui.texteditor.PropagatingFontFieldEditor;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -23,6 +28,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Platform;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class Services {
 
@@ -108,14 +114,11 @@ public class Services {
 		// add main model
 		xmiResource.getContents().add(DLmodel);
 		// add polystore_ui, polystore_api and polystoredb to xmi model
-		URI uri = DLmodelResource.getURI().trimSegments(1);
-		xmiResource.getContents()
-				.add(resourceSet.getResource(uri.appendSegment("polystore_ui.tdl"), true).getContents().get(0));
-		xmiResource.getContents()
-				.add(resourceSet.getResource(uri.appendSegment("polystore_api.tdl"), true).getContents().get(0));
-		xmiResource.getContents()
-				.add(resourceSet.getResource(uri.appendSegment("polystoredb.tdl"), true).getContents().get(0));
+		DeploymentModel polystoreModel = createPolystoreModelFromProperties(folder.toString());
+		xmiResource.getContents().add(polystoreModel);
+
 		// add DBs
+		URI uri = DLmodelResource.getURI().trimSegments(1);
 		for (String dbFileName : getDBs(DLmodel)) {
 			xmiResource.getContents()
 					.add(resourceSet.getResource(uri.appendSegment(dbFileName), true).getContents().get(0));
@@ -131,6 +134,18 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static DeploymentModel createPolystoreModelFromProperties(String folder) {
+		DeploymentModel polystoreModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+		Properties polystoreProperties = new Properties();
+		try {
+			InputStream input = new FileInputStream(folder + "/polystore.properties");
+			polystoreProperties.load(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return polystoreModel;
 	}
 
 	private static boolean analyticsIsUsed(DeploymentModel DLmodel) {
