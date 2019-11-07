@@ -36,6 +36,9 @@ services:
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
+[if (aProperty.name.equalsIgnoreCase('port')._or(aProperty.name.equalsIgnoreCase('publishedPort')))]
+
+[/if]
     [aProperty.printProperties()/]
 [/for]
 [/if]
