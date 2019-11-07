@@ -31,8 +31,8 @@ public class CreationAnalyticsPage extends MyWizardPage {
 	}
 
 	public class KafkaConfigEditor {
-		public List<InputField> fields = Arrays.asList(new InputField("Zookeeper Port: ", "analytics.zookeeper.exposedPort"),
-				new InputField("Kafka Port: ", "analytics.kafka.exposedPort"),
+		public List<InputField> fields = Arrays.asList(new InputField("Zookeeper Port: ", "analytics.zookeeper.publishedPort"),
+				new InputField("Kafka Port: ", "analytics.kafka.publishedPort"),
 				new InputField("Kafka Listeners: ", "analytics.kafka.listeners"),
 				new InputField("Kafka Inter Broker Listener Name: ", "analytics.kafka.listenerName"));
 	}

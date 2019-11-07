@@ -158,7 +158,7 @@ public class CreationMainPage extends MyWizardPage {
 		portText.setText(properties.getProperty("ui.environment.API_PORT"));
 		portText.addModifyListener(e -> {
 			properties.setProperty("ui.environment.API_PORT", portText.getText());
-			properties.setProperty("api.exposedPort", portText.getText());
+			properties.setProperty("api.publishedPort", portText.getText());
 		});
 	}
 
