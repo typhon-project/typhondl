@@ -158,7 +158,10 @@ public class CreationMainPage extends MyWizardPage {
 		Text portText = new Text(main, SWT.BORDER);
 		portText.setLayoutData(gridData);
 		portText.setText(properties.getProperty("ui.environment.API_PORT"));
-		portText.addModifyListener(e -> properties.setProperty("ui.environment.API_PORT", portText.getText()));
+		portText.addModifyListener(e -> {
+			properties.setProperty("ui.environment.API_PORT", portText.getText());
+			properties.setProperty("api.port", portText.getText());
+		});
 	}
 
 	private void validate() {

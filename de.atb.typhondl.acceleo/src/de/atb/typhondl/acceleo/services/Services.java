@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -23,7 +22,6 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
-import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -35,7 +33,6 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
-import de.atb.typhondl.xtext.typhonDL.MetaModel;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Software;
@@ -179,7 +176,7 @@ public class Services {
 			mongo.setImage(mongoImage);
 			model.getElements().add(mongo);
 		}
-		
+
 		// get Application for polystore containers
 		Application application = null;
 		if (!properties.get("polystore.inApplication").equals("default")) {
@@ -220,10 +217,14 @@ public class Services {
 		polystoredb_container_hostname.setName("hostname");
 		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
 		polystoredb_container.getProperties().add(polystoredb_container_hostname);
-		Key_ValueArray polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		polystoredb_container_ports.setName("exposedPort");
-		polystoredb_container_ports.getValues().add(properties.getProperty("db.port"));
-		polystoredb_container.getProperties().add(polystoredb_container_ports);
+		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_ports1.setName("exposedPort");
+		polystoredb_container_ports1.setValue(properties.getProperty("db.exposedPort"));
+		polystoredb_container.getProperties().add(polystoredb_container_ports1);
+		Key_Values polystoredb_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_ports2.setName("port");
+		polystoredb_container_ports2.setValue(properties.getProperty("db.port"));
+		polystoredb_container.getProperties().add(polystoredb_container_ports2);
 
 		Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 		polystoredb_dependency.setReference(polystoredb_container);
@@ -252,10 +253,14 @@ public class Services {
 		polystore_api_hostname.setName("hostname");
 		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
 		polystore_api_container.getProperties().add(polystore_api_hostname);
-		Key_ValueArray polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		polystore_api_container_ports.setName("exposedPort");
-		polystore_api_container_ports.getValues().add(properties.getProperty(properties.getProperty("api.port")));
-		polystore_api_container.getProperties().add(polystore_api_container_ports);
+		Key_Values polystore_api_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_ports1.setName("exposedPort");
+		polystore_api_container_ports1.setValue(properties.getProperty(properties.getProperty("api.exposedPort")));
+		polystore_api_container.getProperties().add(polystore_api_container_ports1);
+		Key_Values polystore_api_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_ports2.setName("port");
+		polystore_api_container_ports2.setValue(properties.getProperty(properties.getProperty("api.port")));
+		polystore_api_container.getProperties().add(polystore_api_container_ports2);
 
 		Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 		polystore_api_dependency.setReference(polystore_api_container);
@@ -286,10 +291,14 @@ public class Services {
 		polystore_ui_container.setType(containerType);
 		polystore_ui_container.setDeploys(polystore_ui_reference);
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
-		Key_ValueArray polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		polystore_ui_container_ports.setName("exposedPort");
-		polystore_ui_container_ports.getValues().add(properties.getProperty("ui.port"));
-		polystore_ui_container.getProperties().add(polystore_ui_container_ports);
+		Key_Values polystore_ui_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_container_ports1.setName("exposedPort");
+		polystore_ui_container_ports1.setValue(properties.getProperty("ui.exposedPort"));
+		polystore_ui_container.getProperties().add(polystore_ui_container_ports1);
+		Key_Values polystore_ui_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_container_ports2.setName("port");
+		polystore_ui_container_ports2.setValue(properties.getProperty("ui.port"));
+		polystore_ui_container.getProperties().add(polystore_ui_container_ports2);
 		Key_Values polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_restart.setName("restart");
 		polystore_ui_restart.setValue(properties.getProperty("ui.restart"));
@@ -308,7 +317,106 @@ public class Services {
 		application.getContainers().add(polystoredb_container);
 		application.getContainers().add(polystore_api_container);
 		application.getContainers().add(polystore_ui_container);
-		return model;
+
+		if (properties.get("polystore.useAnalytics").equals("true")) {
+			/*
+			 * Analytics, see https://github.com/typhon-project/typhondl/issues/6
+			 */
+			String zookeeperPort = properties.getProperty("analytics.zookeeper.port");
+			String kafkaPort = properties.getProperty("analytics.kafka.port");
+			String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
+			String kafkaListenerName = properties.getProperty("analytics.kafka.listenerName");
+			String kafkaListenersString = "";
+			String kafkaAdvertisedListenerString = "";
+			for (int i = 0; i < kafkaListeners.length; i++) {
+				kafkaListenersString += kafkaListenerName + "://:" + kafkaListeners[i] + ", ";
+				kafkaAdvertisedListenerString += kafkaListenerName + "://kafka:" + kafkaListeners[i] + ", ";
+			}
+			kafkaListenersString += "PLAINTEXT_HOST://:" + kafkaPort;
+			kafkaAdvertisedListenerString += "PLAINTEXT_HOST://localhost:" + kafkaPort;
+
+			Software zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
+			zookeeper.setName("zookeeper");
+			IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+			zookeeper_image.setValue(properties.getProperty("analytics.zookeeper.image"));
+			zookeeper.setImage(zookeeper_image);
+			model.getElements().add(zookeeper);
+			Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
+			zookeeper_reference.setReference(zookeeper);
+
+			Container zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
+			zookeeper_container.setName(properties.getProperty("analytics.zookeeper.containername"));
+			zookeeper_container.setType(containerType);
+			zookeeper_container.setDeploys(zookeeper_reference);
+			Key_Values zookeeper_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			zookeeper_container_ports1.setName("exposedPort");
+			zookeeper_container_ports1.setValue(zookeeperPort);
+			zookeeper_container.getProperties().add(zookeeper_container_ports1);
+			Key_Values zookeeper_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			zookeeper_container_ports2.setName("port");
+			zookeeper_container_ports2.setValue(properties.getProperty("analytics.zookeeper.port"));
+			zookeeper_container.getProperties().add(zookeeper_container_ports2);
+
+			Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
+			zookeeper_dependency.setReference(zookeeper_container);
+			
+			application.getContainers().add(zookeeper_container);
+
+			Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
+			kafka_container.setName(properties.getProperty("analytics.kafka.containername"));
+			kafka_container.setType(containerType);
+			Key_Values kafka_container_build = TyphonDLFactory.eINSTANCE.createKey_Values();
+			kafka_container_build.setName("build");
+			kafka_container_build.setValue(".");
+			kafka_container.getProperties().add(kafka_container_build);
+			kafka_container.getDepends_on().add(zookeeper_dependency);
+			Key_Values kafka_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			kafka_container_ports1.setName("exposedPort");
+			kafka_container_ports1.setValue(kafkaPort);
+			kafka_container.getProperties().add(kafka_container_ports1);
+			Key_Values kafka_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			kafka_container_ports2.setName("port");
+			kafka_container_ports2.setValue(properties.getProperty("analytics.kafka.port"));
+			kafka_container.getProperties().add(kafka_container_ports2);
+			Key_ValueArray kafka_container_volumes = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			kafka_container_volumes.setName("volumes");
+			kafka_container_volumes.getValues().add("/var/run/docker.sock:/var/run/docker.sock");
+			kafka_container.getProperties().add(kafka_container_volumes);
+			Key_KeyValueList kafka_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			kafka_environment.setName("environment");
+			Key_Values KAFKA_ZOOKEEPER_CONNECT = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_ZOOKEEPER_CONNECT.setName("KAFKA_ZOOKEEPER_CONNECT");
+			KAFKA_ZOOKEEPER_CONNECT.setValue("zookeeper:" + zookeeperPort);
+			kafka_environment.getKey_Values().add(KAFKA_ZOOKEEPER_CONNECT);
+			Key_Values KAFKA_ADVERTISED_HOST_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_ADVERTISED_HOST_NAME.setName("KAFKA_ADVERTISED_HOST_NAME");
+			KAFKA_ADVERTISED_HOST_NAME.setValue("kafka");
+			kafka_environment.getKey_Values().add(KAFKA_ADVERTISED_HOST_NAME);
+			Key_Values KAFKA_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_LISTENERS.setName("KAFKA_LISTENERS");
+			KAFKA_LISTENERS.setValue(kafkaListenersString);
+			kafka_environment.getKey_Values().add(KAFKA_LISTENERS);
+			Key_Values KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setName("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
+			KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setValue(kafkaListenerName + ":PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT");
+			kafka_environment.getKey_Values().add(KAFKA_LISTENER_SECURITY_PROTOCOL_MAP);
+			Key_Values KAFKA_INTER_BROKER_LISTENER_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_INTER_BROKER_LISTENER_NAME.setName("KAFKA_INTER_BROKER_LISTENER_NAME");
+			KAFKA_INTER_BROKER_LISTENER_NAME.setValue(kafkaListenerName);
+			kafka_environment.getKey_Values().add(KAFKA_INTER_BROKER_LISTENER_NAME);
+			Key_Values KAFKA_ADVERTISED_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_ADVERTISED_LISTENERS.setName("KAFKA_ADVERTISED_LISTENERS");
+			KAFKA_ADVERTISED_LISTENERS.setValue(kafkaAdvertisedListenerString);
+			kafka_environment.getKey_Values().add(KAFKA_ADVERTISED_LISTENERS);
+			Key_Values KAFKA_AUTO_CREATE_TOPICS_ENABLE = TyphonDLFactory.eINSTANCE.createKey_Values();
+			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setName("KAFKA_AUTO_CREATE_TOPICS_ENABLE");
+			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
+			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
+			kafka_container.getProperties().add(kafka_environment);
+			
+			application.getContainers().add(kafka_container);
+		}
+	return model;
 	}
 
 	private static Application getApplication(DeploymentModel model, String appName) {
@@ -316,7 +424,7 @@ public class Services {
 		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
 				.map(element -> (Platform) element)
 				.forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications().stream()
-						.filter(app -> app.getName().equals(appName)).map(app -> list.add(app)))); //TODO not nice?
-		return (list.size() == 1)? list.get(0) : null;
+						.filter(app -> app.getName().equals(appName)).map(app -> list.add(app)))); // TODO not nice?
+		return (list.size() == 1) ? list.get(0) : null;
 	}
 }
