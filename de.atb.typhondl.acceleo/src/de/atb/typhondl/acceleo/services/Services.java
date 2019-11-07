@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -34,6 +35,7 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.MetaModel;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Software;
@@ -109,9 +111,26 @@ public class Services {
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
 		String location = file.getLocation().toString();
-		String path = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
-		model = addPolystoreModel(path , model);
+		String path = location.substring(0, location.lastIndexOf('/') + 1) + "polystore.properties";
+		model = addDBsToModel(model);
+		model = addPolystoreToModel(path, model);
 		saveModelAsXMI(DLmodelResource);
+		return model;
+	}
+
+	private static DeploymentModel addDBsToModel(DeploymentModel model) {
+		Resource resource = model.eResource();
+		URI uri = resource.getURI().trimSegments(1);
+
+		model.getGuiMetaInformation().stream().filter(imortedModel -> Import.class.isInstance(imortedModel))
+				.map(importedModel -> (Import) importedModel).filter(info -> info.getRelativePath().endsWith("tdl"))
+				.forEach(info -> {
+					model.getElements()
+							.addAll(((DeploymentModel) resource.getResourceSet()
+									.getResource(uri.appendSegment(info.getRelativePath()), true).getContents().get(0))
+											.getElements());
+				});
+		;
 		return model;
 	}
 
@@ -120,27 +139,12 @@ public class Services {
 		DeploymentModel DLmodel = (DeploymentModel) DLmodelResource.getContents().get(0);
 		URI folder = DLmodelResource.getURI().trimFileExtension();
 		// creates a xmi resource with the same name as the model in a folder named like
-		// the model
-		// so example/test.tdl -> example/test/test.xmi
+		// the model, so example/test.tdl -> example/test/test.xmi
 		Resource xmiResource = resourceSet.createResource(folder.appendSegment(folder.lastSegment() + ".xmi"));
-		// add main model
-		xmiResource.getContents().add(DLmodel);
-		// add polystore_ui, polystore_api and polystoredb to xmi model
-		// DeploymentModel polystoreModel =
-		// createPolystoreModelFromProperties(folder.toString());
-		// xmiResource.getContents().add(polystoreModel);
 
-		// add DBs
-		URI uri = DLmodelResource.getURI().trimSegments(1);
-		for (String dbFileName : getDBs(DLmodel)) {
-			xmiResource.getContents()
-					.add(resourceSet.getResource(uri.appendSegment(dbFileName), true).getContents().get(0));
-		}
-		// add analytics if used
-		if (analyticsIsUsed(DLmodel)) {
-			xmiResource.getContents()
-					.add(resourceSet.getResource(uri.appendSegment("zookeeper.tdl"), true).getContents().get(0));
-		}
+		// add model
+		xmiResource.getContents().add(DLmodel);
+
 		EcoreUtil.resolveAll(resourceSet);
 		try {
 			xmiResource.save(Options.getXMIoptions());
@@ -149,17 +153,16 @@ public class Services {
 		}
 	}
 
-	private static DeploymentModel addPolystoreModel(String path, DeploymentModel model) {
+	private static DeploymentModel addPolystoreToModel(String path, DeploymentModel model) {
 		Properties properties = new Properties();
 		try {
 			InputStream input = new FileInputStream(path);
 			properties.load(input);
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace();// TODO popup if nonexistent
 		}
 		// TODO analytics
 
-		// Add mongo as dbType if not yet exists TODO doesn't find dbTypes in different file
 		List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
 				.map(element -> (DBType) element).collect(Collectors.toList());
 		DBType mongo = null;
@@ -176,15 +179,20 @@ public class Services {
 			mongo.setImage(mongoImage);
 			model.getElements().add(mongo);
 		}
-
-		// get first application in first cluster on first platform
-		Application application = ((Platform) model.getElements().stream()
-				.filter(element -> Platform.class.isInstance(element)).collect(Collectors.toList()).get(0))
-						.getClusters().get(0).getApplications().get(0);
 		
+		// get Application for polystore containers
+		Application application = null;
+		if (!properties.get("polystore.inApplication").equals("default")) {
+			application = getApplication(model, (String) properties.get("polystore.inApplication"));
+		} else if (properties.get("polystore.inApplication").equals("default") || application == null) {
+			// get first application in first cluster on first platform
+			application = ((Platform) model.getElements().stream().filter(element -> Platform.class.isInstance(element))
+					.collect(Collectors.toList()).get(0)).getClusters().get(0).getApplications().get(0);
+		}
+
 		// get containertype
 		ContainerType containerType = application.getContainers().get(0).getType();
-		
+
 		// polystore_db
 		DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 		polystoredb.setName(properties.getProperty("db.name"));
@@ -200,6 +208,7 @@ public class Services {
 		polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
 		polystoredb_environment.getKey_Values().add(polystoredb_environment_2);
 		polystoredb.getParameters().add(polystoredb_environment);
+		model.getElements().add(polystoredb);
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
 		poystoredbReference.setReference(polystoredb);
 
@@ -226,6 +235,7 @@ public class Services {
 		IMAGE polystore_api_image = TyphonDLFactory.eINSTANCE.createIMAGE();
 		polystore_api_image.setValue(properties.getProperty("api.image"));
 		polystore_api.setImage(polystore_api_image);
+		model.getElements().add(polystore_api);
 		Reference polystore_api_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_api_reference.setReference(polystore_api);
 
@@ -267,7 +277,7 @@ public class Services {
 		polystore_ui_environment2.setValue(properties.getProperty("ui.environment.API_HOST"));
 		polystore_ui_environment.getKey_Values().add(polystore_ui_environment2);
 		polystore_ui.getParameters().add(polystore_ui_environment);
-
+		model.getElements().add(polystore_ui);
 		Reference polystore_ui_reference = TyphonDLFactory.eINSTANCE.createReference();
 		polystore_ui_reference.setReference(polystore_ui);
 
@@ -301,26 +311,12 @@ public class Services {
 		return model;
 	}
 
-	private static boolean analyticsIsUsed(DeploymentModel DLmodel) {
-		Platform platform = DLmodel.getElements().stream().filter(element -> Platform.class.isInstance(element))
-				.map(element -> (Platform) element).collect(Collectors.toList()).get(0);
-		for (Cluster cluster : platform.getClusters()) {
-			for (Application application : cluster.getApplications()) {
-				for (Container container : application.getContainers()) {
-					if (container.getName().equals("zookeeper")) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	private static ArrayList<String> getDBs(DeploymentModel DLmodel) {
-		ArrayList<String> dbs = new ArrayList<String>();
-		DLmodel.getGuiMetaInformation().stream().filter(metaModel -> Import.class.isInstance(metaModel))
-				.map(metaModel -> (Import) metaModel).filter(info -> info.getRelativePath().endsWith(".tdl"))
-				.forEach(info -> dbs.add(info.getRelativePath()));
-		return dbs;
+	private static Application getApplication(DeploymentModel model, String appName) {
+		List<Application> list = new ArrayList<Application>();
+		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
+				.map(element -> (Platform) element)
+				.forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications().stream()
+						.filter(app -> app.getName().equals(appName)).map(app -> list.add(app)))); //TODO not nice?
+		return (list.size() == 1)? list.get(0) : null;
 	}
 }
