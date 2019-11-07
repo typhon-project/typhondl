@@ -31,7 +31,6 @@ public class CreationMainPage extends MyWizardPage {
 	private Text fileText;
 	private Combo templateCombo;
 	private int chosenTemplate;
-	private boolean useAnalytics;
 	private String DLmodelName;
 	private Properties properties;
 	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
@@ -127,13 +126,11 @@ public class CreationMainPage extends MyWizardPage {
 		Button checkbox = new Button(main, SWT.CHECK);
 		checkbox.setText("Use Typhon Data Analytics");
 		checkbox.setSelection(false);
-		this.useAnalytics = false;
 		checkbox.setLayoutData(gridData);
 		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
 		checkbox.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				useAnalytics = checkbox.getSelection();
 				properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
 			}
 		});
@@ -191,7 +188,7 @@ public class CreationMainPage extends MyWizardPage {
 	}
 
 	public boolean getUseAnalytics() {
-		return useAnalytics;
+		return Boolean.parseBoolean((String) properties.get("polystore.useAnalytics"));
 	}
 
 	public String getModelName() {
