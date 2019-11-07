@@ -210,8 +210,12 @@ public class ModelCreator {
 			container.setDeploys(reference);
 			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			db_port.setName("port");
-			db_port.setValue(getStandardPorts(db.getType().getName())); //TODO can be removed later
+			db_port.setValue(getStandardPort(db.getType().getName())); //TODO can be removed later
 			container.getProperties().add(db_port);
+			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+			publishedDB_port.setName("publishedPort");
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName())); //TODO can be removed later
+			container.getProperties().add(publishedDB_port);
 			application.getContainers().add(container);
 		}
 
@@ -232,18 +236,32 @@ public class ModelCreator {
 	}
 	
 	// TODO This should not be needed, since the databases should only be reachable inside the same network/cluster
-	private String getStandardPorts(String name) {
+	private String getStandardPort(String name) {
 		switch (name) {
 		case "mariadb":
-			return "3306:3306";
+			return "3306";
 		case "mysql":
-			return "3306:3306";
+			return "3306";
 		case "mongo":
-			return "27018:27017"; // 27017 is occupied by polystoredb
+			return "27017"; // 27017 is occupied by polystoredb
 		default:
 			return "0:0";
 		}
 	}
+	// TODO This should not be needed, since the databases should only be reachable inside the same network/cluster
+		private String getStandardPublishedPort(String name) {
+			switch (name) {
+			case "mariadb":
+				return "3306";
+			case "mysql":
+				return "3306";
+			case "mongo":
+				return "27018"; // 27017 is occupied by polystoredb
+			default:
+				return "0:0";
+			}
+		}
+	
 	
 	private void save(DeploymentModel model, String filename) {
 		URI uri = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
