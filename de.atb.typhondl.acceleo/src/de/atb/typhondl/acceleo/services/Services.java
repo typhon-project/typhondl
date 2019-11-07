@@ -158,7 +158,6 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();// TODO popup if nonexistent
 		}
-		// TODO analytics
 
 		List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
 				.map(element -> (DBType) element).collect(Collectors.toList());
@@ -318,10 +317,8 @@ public class Services {
 		application.getContainers().add(polystore_api_container);
 		application.getContainers().add(polystore_ui_container);
 
+		// Analytics, see https://github.com/typhon-project/typhondl/issues/6
 		if (properties.get("polystore.useAnalytics").equals("true")) {
-			/*
-			 * Analytics, see https://github.com/typhon-project/typhondl/issues/6
-			 */
 			String zookeeperPort = properties.getProperty("analytics.zookeeper.port");
 			String kafkaPort = properties.getProperty("analytics.kafka.port");
 			String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
@@ -359,7 +356,7 @@ public class Services {
 
 			Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 			zookeeper_dependency.setReference(zookeeper_container);
-			
+
 			application.getContainers().add(zookeeper_container);
 
 			Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
@@ -413,10 +410,10 @@ public class Services {
 			KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
 			kafka_environment.getKey_Values().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
 			kafka_container.getProperties().add(kafka_environment);
-			
+
 			application.getContainers().add(kafka_container);
 		}
-	return model;
+		return model;
 	}
 
 	private static Application getApplication(DeploymentModel model, String appName) {

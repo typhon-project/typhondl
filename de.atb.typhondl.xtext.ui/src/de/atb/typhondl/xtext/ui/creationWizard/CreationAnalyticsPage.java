@@ -1,8 +1,8 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -13,32 +13,28 @@ import org.eclipse.swt.widgets.Text;
 
 public class CreationAnalyticsPage extends MyWizardPage {
 
-	private HashMap<String, InputField> analyticsSettings;
+	private Properties properties;
 
-	protected CreationAnalyticsPage(String pageName) {
+	protected CreationAnalyticsPage(String pageName, Properties properties) {
 		super(pageName);
-		this.analyticsSettings = new HashMap<String, InputField>();
+		this.properties = properties;
 	}
 
 	public class InputField {
 		public final String label;
-		public final String name;
-		public String value;
-		public final String defaultValue;
+		public final String propertyName;
 
-		public InputField(String label, String name, String defaultValue) {
+		public InputField(String label, String propertyName) {
 			this.label = label;
-			this.name = name;
-			this.defaultValue = defaultValue;
+			this.propertyName = propertyName;
 		}
 	}
 
 	public class KafkaConfigEditor {
-		public List<InputField> fields = Arrays.asList(
-				new InputField("Zookeeper Port: ", "zookeeperPort", "2181"),
-				new InputField("Kafka Port: ", "kafkaPort", "9092"),
-				new InputField("Kafka Listeners: ", "kafkaListeners", "29092, 29093"),
-				new InputField("Kafka Inter Broker Listener Name: ", "kafkaListenerName", "PLAINTEXT"));
+		public List<InputField> fields = Arrays.asList(new InputField("Zookeeper Port: ", "analytics.zookeeper.exposedPort"),
+				new InputField("Kafka Port: ", "analytics.kafka.exposedPort"),
+				new InputField("Kafka Listeners: ", "analytics.kafka.listeners"),
+				new InputField("Kafka Inter Broker Listener Name: ", "analytics.kafka.listenerName"));
 	}
 
 	@Override
@@ -49,26 +45,24 @@ public class CreationAnalyticsPage extends MyWizardPage {
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(2, false));
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
+		
 		KafkaConfigEditor editor = new KafkaConfigEditor();
 
 		for (InputField inputField : editor.fields) {
 			new Label(main, NONE).setText(inputField.label);
 			Text text = new Text(main, SWT.BORDER);
-			text.setText(inputField.defaultValue);
+			text.setText(properties.getProperty(inputField.propertyName));
 			text.setLayoutData(gridData);
-			inputField.value = inputField.defaultValue;
-			analyticsSettings.put(inputField.name, inputField);
 			text.addModifyListener(e -> {
-				inputField.value = text.getText();
+				properties.setProperty(inputField.propertyName, text.getText());
 			});
 		}
 
 		setControl(main);
 	}
 
-	public HashMap<String, InputField> getAnalyticsSettings() {
-		return analyticsSettings;
+	public Properties getProperties() {
+		return properties;
 	}
 
 }

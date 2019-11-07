@@ -134,6 +134,7 @@ public class CreationMainPage extends MyWizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				useAnalytics = checkbox.getSelection();
+				properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
 			}
 		});
 

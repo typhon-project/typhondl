@@ -3,7 +3,6 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
@@ -13,7 +12,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
 
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 
 public class CreateModelWizard extends Wizard {
 
@@ -22,7 +20,6 @@ public class CreateModelWizard extends Wizard {
 	private CreationDBMSPage dbmsPage;
 	private CreationAnalyticsPage analyticsPage;
 	private int chosenTemplate;
-	private HashMap<String, InputField> analyticsSettings;
 
 	public CreateModelWizard(IFile MLmodel) {
 		super();
@@ -45,14 +42,15 @@ public class CreateModelWizard extends Wizard {
 				return false;
 			}
 		}
+		Properties properties;
 		if (mainPage.getUseAnalytics()) {
-			this.analyticsSettings = this.analyticsPage.getAnalyticsSettings();
+			properties = this.analyticsPage.getProperties();
 		} else {
-			this.analyticsSettings = null;
+			properties = this.mainPage.getProperties();
 		}
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		IFile file = modelCreator.createDLmodel(analyticsSettings, dbmsPage.getDatabases(), chosenTemplate);
+		IFile file = modelCreator.createDLmodel(dbmsPage.getDatabases(), chosenTemplate);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);
@@ -61,11 +59,10 @@ public class CreateModelWizard extends Wizard {
 		// main DL model is opened in editor
 		fileOpener.openFileToEdit(this.getShell(), file);
 		// save properties
-		Properties properties = this.mainPage.getProperties();
+		String location = file.getLocation().toString();
+		String pathToProperties = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
 		try {
-			String location = file.getLocation().toString();
-			String path = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
-			OutputStream output = new FileOutputStream(path);
+			OutputStream output = new FileOutputStream(pathToProperties);
 			properties.store(output, "Only edit this if you know what you are doing!");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -90,14 +87,14 @@ public class CreateModelWizard extends Wizard {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
 		if (page instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
-			this.analyticsPage = createAnalyticsPage("Analytics Page");
+			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
 			this.analyticsPage.setWizard(this);
 			return analyticsPage;
 		}
 		return super.getNextPage(page);
 	}
 
-	private CreationAnalyticsPage createAnalyticsPage(String string) {
-		return new CreationAnalyticsPage(string);
+	private CreationAnalyticsPage createAnalyticsPage(String string, Properties properties) {
+		return new CreationAnalyticsPage(string, properties);
 	}
 }

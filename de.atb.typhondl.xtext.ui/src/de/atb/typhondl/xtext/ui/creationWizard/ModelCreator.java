@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -38,7 +37,6 @@ import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.InputField;
 import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -83,8 +81,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(HashMap<String, InputField> analyticsSettings, ArrayList<Database> databases,
-			int chosenTemplate) {
+	public IFile createDLmodel(ArrayList<Database> databases, int chosenTemplate) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
