@@ -3,14 +3,17 @@
  */
 package de.atb.typhondl.xtext.validation
 
+import de.atb.typhondl.xtext.typhonDL.Key_Values
+import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 
 /**
  * This class contains custom validation rules. 
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class TyphonDLValidator extends AbstractTyphonDLValidator {
-	
+
+	public static val INVALID_PORT = 'invalidPort'
 //	public static val INVALID_NAME = 'invalidName'
 //
 //	@Check
@@ -21,5 +24,14 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 //					INVALID_NAME)
 //		}
 //	}
-	
+	def checkPorts(Key_Values key_values) {
+		if (key_values.name.contains("port")) {
+			if (key_values.value.contains(':')) {
+				error(
+					"Split the port into the containerPort and the publishedPort (as a Key_KeyValueList named ports) or just give the publishedPort (as a Key_Values)",
+					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+			}
+		}
+	}
+
 }
