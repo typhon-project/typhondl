@@ -7,6 +7,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 import org.eclipse.xtext.validation.Check
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
+import de.atb.typhondl.xtext.typhonDL.DBType
 
 /**
  * This class contains custom validation rules. 
@@ -17,6 +18,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	public static val INVALID_PORT = 'invalidPort'
 	public static val INTERNAL_PORT = 'internalPort'
+	public static val COLON_IN_PORTS = 'colonInPorts'
 
 	@Check
 	def checkPorts(Key_Values key_values) {
@@ -24,11 +26,11 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			if (key_values.value.contains(':')) {
 				error(
 					"Split the port into the containerPort and the publishedPort (as a Key_KeyValueList named ports) or just give the publishedPort (as a Key_Values)",
-					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+					TyphonDLPackage.Literals.KEY_VALUES__VALUE, COLON_IN_PORTS)
 			}
 			if (key_values.name.equalsIgnoreCase("port")) {
 				warning(
-					"This will not be a published port. This port has to be defined in the Docker image and will be the internal container port. If you want to publish a port, name this Key_Values \"publishedPort\"",
+					"This will not be a published port. This port has to be defined in the Docker image and will be the internal container port. If you want to publish this port, name this Key_Values \"publishedPort\"",
 					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INTERNAL_PORT)
 			}
 		}
@@ -46,6 +48,14 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 						TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
 				}
 			}
+		}
+	}
+
+	@Check
+	def checkImage(DBType dbType) {
+		if (!dbType.image.value.contains(dbType.name)) {
+			warning("This image does not contain the name of the DB, are you sure it is the right image?",
+				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
 		}
 	}
 
