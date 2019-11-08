@@ -3,11 +3,11 @@
  */
 package de.atb.typhondl.xtext.validation
 
+import de.atb.typhondl.xtext.typhonDL.DBType
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 import org.eclipse.xtext.validation.Check
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
-import de.atb.typhondl.xtext.typhonDL.DBType
 
 /**
  * This class contains custom validation rules. 
