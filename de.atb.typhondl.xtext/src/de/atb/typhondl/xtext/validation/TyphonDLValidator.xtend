@@ -6,6 +6,7 @@ package de.atb.typhondl.xtext.validation
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 import org.eclipse.xtext.validation.Check
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 
 /**
  * This class contains custom validation rules. 
@@ -26,8 +27,24 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
 			}
 			if (key_values.name.equalsIgnoreCase("port")) {
-				warning("This will not be a published port. This port has to be defined in the Docker image and will be the internal container port. If you want to publish a port, name this Key_Values \"publishedPort\"",
+				warning(
+					"This will not be a published port. This port has to be defined in the Docker image and will be the internal container port. If you want to publish a port, name this Key_Values \"publishedPort\"",
 					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INTERNAL_PORT)
+			}
+		}
+	}
+
+	@Check
+	def checkPorts(Key_KeyValueList key_keyValueList) {
+		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
+			for (key_Values : key_keyValueList.key_Values) {
+				if (!(key_Values.name.equalsIgnoreCase("publishedPort") || key_Values.name.equalsIgnoreCase("port") ||
+					key_Values.name.equalsIgnoreCase("targetPort") ||
+					key_Values.name.equalsIgnoreCase("containerPort"))) {
+					error(
+						"Use one of the following keywords to define the ports: for internal ports: \"port\", \"targetPort\" or \"containerPort\" and for a published port: \"publishedPort\"",
+						TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+				}
 			}
 		}
 	}
