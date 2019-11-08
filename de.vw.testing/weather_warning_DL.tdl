@@ -1,43 +1,25 @@
 import weather_warning_ML.xmi
-import AppData.tdl
 import TextWarningData.tdl
+import AppData.tdl
 import dbTypes.tdl
 platformtype local
-clustertype DockerCompose
 containertype Docker
+clustertype DockerCompose
 platform platformName : local {
 	cluster clusterName : DockerCompose {
 		application Polystore {
-			container polystore_api : Docker {
-				deploys polystore_api
-				depends_on polystoredb
-				container_name = typhon-polystore-service ;
-				restart = always ;
-				hostname = polystore-api ;
-				ports [ 8080:8080 ]
-				volumes [ ./models:/models ]
-			}
-			container polystore_ui : Docker {
-				deploys polystore_ui
-				depends_on polystore_api
-				container_name = polystore-ui ;
-				ports [ 4200:4200 ]
-				restart = always ;
-				hostname = polystore-ui ;
-			}
-			container polystoredb : Docker {
-				deploys polystoredb
-				container_name = polystore-mongo ;
-				hostname = polystore-mongo ;
-				ports [ 27017:27017 ]
+			container TextWarningData : Docker {
+				deploys TextWarningData
+				ports {
+					containerPort = 27018:27017 ;
+				}
 			}
 			container AppData : Docker {
 				deploys AppData
-				ports [ 3306:3306 ]
-			}
-			container TextWarningData : Docker {
-				deploys TextWarningData
-				ports [ 27018:27017 ]
+				ports {
+					containerPort = 3306 ;
+					publishedPort = 3306 ;
+				}
 			}
 		}
 	}

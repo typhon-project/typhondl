@@ -1,105 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
-  <typhonDL:DeploymentModel>
-    <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weather_warning_ML.xmi"/>
-    <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
-    <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
-    <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
-    <elements xsi:type="typhonDL:PlatformType" name="local"/>
-    <elements xsi:type="typhonDL:ClusterType" name="DockerCompose"/>
-    <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
-    <elements xsi:type="typhonDL:Platform" name="platformName" type="/0/@elements.0">
-      <clusters name="clusterName" type="/0/@elements.1">
-        <applications name="Polystore">
-          <containers name="polystore_api" type="/0/@elements.2">
-            <deploys reference="/2/@elements.0"/>
-            <depends_on reference="/0/@elements.3/@clusters.0/@applications.0/@containers.2"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="typhon-polystore-service"/>
-            <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
-            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api"/>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
-              <values>8080:8080</values>
-            </properties>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="volumes">
-              <values>./models:/models</values>
-            </properties>
-          </containers>
-          <containers name="polystore_ui" type="/0/@elements.2">
-            <deploys reference="/1/@elements.0"/>
-            <depends_on reference="/0/@elements.3/@clusters.0/@applications.0/@containers.0"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-ui"/>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
-              <values>4200:4200</values>
-            </properties>
-            <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
-            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-ui"/>
-          </containers>
-          <containers name="polystoredb" type="/0/@elements.2">
-            <deploys reference="/3/@elements.0"/>
-            <properties xsi:type="typhonDL:Key_Values" name="container_name" value="polystore-mongo"/>
-            <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-mongo"/>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
-              <values>27017:27017</values>
-            </properties>
-          </containers>
-          <containers name="AppData" type="/0/@elements.2">
-            <deploys reference="/4/@elements.0"/>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
-              <values>3306:3306</values>
-            </properties>
-          </containers>
-          <containers name="TextWarningData" type="/0/@elements.2">
-            <deploys reference="/5/@elements.0"/>
-            <properties xsi:type="typhonDL:Key_ValueArray" name="ports">
-              <values>27018:27017</values>
-            </properties>
-          </containers>
-        </applications>
-      </clusters>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:Software" name="polystore_ui">
-      <image value="clms/typhon-polystore-ui:latest"/>
-      <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-        <key_Values name="APIPORT" value="8080"/>
-      </parameters>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:Software" name="polystore_api">
-      <image value="clms/typhon-polystore-api:latest"/>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:DB" name="polystoredb" type="/6/@elements.0">
-      <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-        <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
-        <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
-      </parameters>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:DB" name="AppData" type="/6/@elements.1">
-      <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-        <key_Values name="MYSQL_ROOT_PASSWORD" value="example"/>
-      </parameters>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:DB" name="TextWarningData" type="/6/@elements.0">
-      <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-        <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
-        <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
-      </parameters>
-    </elements>
-  </typhonDL:DeploymentModel>
-  <typhonDL:DeploymentModel>
-    <elements xsi:type="typhonDL:DBType" name="mongo">
-      <image value="mongo:latest"/>
-    </elements>
-    <elements xsi:type="typhonDL:DBType" name="mariadb">
-      <image value="mariadb:latest"/>
-    </elements>
-  </typhonDL:DeploymentModel>
-</xmi:XMI>
+<typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weather_warning_ML.xmi"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
+  <elements xsi:type="typhonDL:PlatformType" name="local"/>
+  <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
+  <elements xsi:type="typhonDL:ClusterType" name="DockerCompose"/>
+  <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.0">
+    <clusters name="clusterName" type="//@elements.2">
+      <applications name="Polystore">
+        <containers name="TextWarningData" type="//@elements.1">
+          <deploys reference="//@elements.4"/>
+          <properties xsi:type="typhonDL:Key_KeyValueList" name="ports">
+            <key_Values name="containerPort" value="27017"/>
+            <key_Values name="publishedPort" value="27018"/>
+          </properties>
+        </containers>
+        <containers name="AppData" type="//@elements.1">
+          <deploys reference="//@elements.5"/>
+          <properties xsi:type="typhonDL:Key_KeyValueList" name="ports">
+            <key_Values name="containerPort" value="3306"/>
+            <key_Values name="publishedPort" value="3306"/>
+          </properties>
+        </containers>
+        <containers name="polystore-mongo" type="//@elements.1">
+          <deploys reference="//@elements.8"/>
+          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-mongo"/>
+          <properties xsi:type="typhonDL:Key_KeyValueList" name="ports">
+            <key_Values name="publishedPort" value="27017"/>
+            <key_Values name="containerPort" value="27017"/>
+          </properties>
+        </containers>
+        <containers name="typhon-polystore-service" type="//@elements.1">
+          <deploys reference="//@elements.9"/>
+          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.2"/>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
+          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api"/>
+          <properties xsi:type="typhonDL:Key_KeyValueList" name="ports">
+            <key_Values name="publishedPort"/>
+            <key_Values name="containerPort"/>
+          </properties>
+        </containers>
+        <containers name="polystore-ui" type="//@elements.1">
+          <deploys reference="//@elements.10"/>
+          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.3"/>
+          <properties xsi:type="typhonDL:Key_KeyValueList" name="ports">
+            <key_Values name="publishedPort" value="4200"/>
+            <key_Values name="containerPort" value="4200"/>
+          </properties>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
+          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-ui"/>
+        </containers>
+      </applications>
+    </clusters>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.6">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
+      <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
+    </parameters>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.7"/>
+  <elements xsi:type="typhonDL:DBType" name="mongo">
+    <image value="mongo:latest"/>
+  </elements>
+  <elements xsi:type="typhonDL:DBType" name="mariadb">
+    <image value="mariadb:latest"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.6">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
+      <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
+    </parameters>
+  </elements>
+  <elements xsi:type="typhonDL:Software" name="polystore_api">
+    <image value="clms/typhon-polystore-api:latest"/>
+  </elements>
+  <elements xsi:type="typhonDL:Software" name="polystore_ui">
+    <image value="clms/typhon-polystore-ui:latest"/>
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <key_Values name="API_PORT" value="8080"/>
+      <key_Values name="API_HOST" value="localhost"/>
+    </parameters>
+  </elements>
+</typhonDL:DeploymentModel>
