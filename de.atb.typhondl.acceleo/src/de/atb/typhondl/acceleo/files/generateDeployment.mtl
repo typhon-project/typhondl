@@ -36,10 +36,25 @@ services:
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
-[if (aProperty.name.equalsIgnoreCase('port')._or(aProperty.name.equalsIgnoreCase('publishedPort')))]
-
-[/if]
+[if (aProperty.oclIsTypeOf(Key_Values)._and(aProperty.name.equalsIgnoreCase('port')._or(aProperty.name.equalsIgnoreCase('ports'))))]
+	ports:
+      - [aProperty.oclAsType(Key_Values).value/]
+[elseif (aProperty.oclIsTypeOf(Key_Values)._and(aProperty.name.equalsIgnoreCase('publishedPort')))]
+	ports:
+      - published:[aProperty.oclAsType(Key_Values).value/]
+[elseif (aProperty.oclIsTypeOf(Key_KeyValueList)._and(aProperty.name.equalsIgnoreCase('ports')))]
+    ports:
+[for (aKey_Values : Key_Values | aProperty.oclAsType(Key_KeyValueList).key_Values)]
+	[if (aKey_Values.name.equalsIgnoreCase('port')._or(aKey_Values.name.equalsIgnoreCase('ports'))._or(aKey_Values.name.equalsIgnoreCase('containerport')))]
+      - target:[aKey_Values.value/]
+	[/if]
+	[if (aKey_Values.name.equalsIgnoreCase('publishedPort'))]
+        published:[aKey_Values.value/]
+	[/if]
+[/for]
+[else]
     [aProperty.printProperties()/]
+[/if]
 [/for]
 [/if]
 [/for]
