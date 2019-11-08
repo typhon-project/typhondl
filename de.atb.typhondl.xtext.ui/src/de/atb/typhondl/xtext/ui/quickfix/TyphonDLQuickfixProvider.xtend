@@ -45,7 +45,7 @@ class TyphonDLQuickfixProvider extends DefaultQuickfixProvider {
 					list.key_Values.add(internal)
 					list.key_Values.add(published)
 
-					// add to model
+					// add to model remove old Key_Values
 					container.properties.add(list)
 					container.properties.remove(keyValue)
 				}

@@ -44,9 +44,10 @@ services:
       - published:[aProperty.oclAsType(Key_Values).value/]
 [elseif (aProperty.oclIsTypeOf(Key_KeyValueList)._and(aProperty.name.equalsIgnoreCase('ports')))]
     ports:
+      -
 [for (aKey_Values : Key_Values | aProperty.oclAsType(Key_KeyValueList).key_Values)]
 	[if (aKey_Values.name.equalsIgnoreCase('port')._or(aKey_Values.name.equalsIgnoreCase('containerport')))._or(aKey_Values.name.equalsIgnoreCase('targetPort'))]
-      - target:[aKey_Values.value/]
+        target:[aKey_Values.value/]
 	[/if]
 	[if (aKey_Values.name.equalsIgnoreCase('publishedPort'))]
         published:[aKey_Values.value/]
