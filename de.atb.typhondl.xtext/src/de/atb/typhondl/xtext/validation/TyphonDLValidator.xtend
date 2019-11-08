@@ -5,6 +5,7 @@ package de.atb.typhondl.xtext.validation
 
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
@@ -14,22 +15,19 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	public static val INVALID_PORT = 'invalidPort'
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					TyphonDLPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
+	public static val INTERNAL_PORT = 'internalPort'
+
+	@Check
 	def checkPorts(Key_Values key_values) {
-		if (key_values.name.contains("port")) {
+		if (key_values.name.contains("port") || key_values.name.contains("Port")) {
 			if (key_values.value.contains(':')) {
 				error(
 					"Split the port into the containerPort and the publishedPort (as a Key_KeyValueList named ports) or just give the publishedPort (as a Key_Values)",
 					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+			}
+			if (key_values.name.equalsIgnoreCase("port")) {
+				warning("This will not be a published port. This port has to be defined in the Docker image and will be the internal container port. If you want to publish a port, name this Key_Values \"publishedPort\"",
+					TyphonDLPackage.Literals.KEY_VALUES__VALUE, INTERNAL_PORT)
 			}
 		}
 	}
