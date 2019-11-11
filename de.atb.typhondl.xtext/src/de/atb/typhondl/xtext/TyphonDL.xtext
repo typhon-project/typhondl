@@ -40,6 +40,7 @@ Type:
 DB:
 	'database' name=ID ':' type=[DBType] '{'
 	(image=IMAGE)?
+	'environment {'
 	(parameters+=Property)*
 	'}'
 ;
@@ -107,8 +108,16 @@ Container :
 		(deploys=Reference)?
 		(depends_on+=Dependency)*
 		(networks=Container_Network)?
+		(port = Port)
 		(properties+=Property)*
 	'}'
+;
+
+Port:
+	{Port}
+	'port' '{'
+		(key_values+=Key_Values)* 
+	'}' 
 ;
 
 Dependency:
