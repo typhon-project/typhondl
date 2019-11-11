@@ -56,6 +56,7 @@
     </clusters>
   </elements>
   <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.6">
+        <key_Values name="API_HOST" value="localhost"/>
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
       <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
