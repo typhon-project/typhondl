@@ -6,39 +6,55 @@ platformtype local
 containertype Docker
 clustertype DockerCompose
 platform platformName : local {
-	cluster clusterName : DockerCompose {
-		application Polystore {
-			container polystore_api : Docker {
-				deploys polystore_api
-				depends_on polystoredb
-				container_name = typhon-polystore-service ;
-				restart = always ;
-				hostname = polystore-api ;
-				ports [ 8080:8080 ]
-				volumes [ ./models:/models ]
+cluster clusterName : DockerCompose {
+	application Polystore {
+		container polystore_api : Docker {
+			deploys polystore_api
+			depends_on polystoredb
+			ports {
+				target=8080;
+				published=8080;
 			}
-			container polystore_ui : Docker {
-				deploys polystore_ui
-				depends_on polystore_api
-				container_name = polystore-ui ;
-				ports [ 4200:4200 ]
-				restart = always ;
-				hostname = polystore-ui ;
+			container_name = typhon-polystore-service ;
+			restart = always ;
+			hostname = polystore-api ;
+			volumes [ ./models:/models ]
+		}
+		container polystore_ui : Docker {
+			deploys polystore_ui
+			depends_on polystore_api
+			ports {
+				target=4200;
+				published=4200;
 			}
-			container polystoredb : Docker {
-				deploys polystoredb
-				container_name = polystore-mongo ;
-				hostname = polystore-mongo ;
-				ports [ 27017:27017 ]
+			container_name = polystore-ui ;
+			restart = always ;
+			hostname = polystore-ui ;
+		}
+		container polystoredb : Docker {
+			deploys polystoredb
+			ports {
+				target=27017;
+				published=27017;
 			}
-			container AppData : Docker {
-				deploys AppData
-				ports [ 3306:3306 ]
-			}
-			container TextWarningData : Docker {
-				deploys TextWarningData
-				ports [ 27018:27017 ]
+			container_name = polystore-mongo ;
+			hostname = polystore-mongo ;
+		}
+		container AppData : Docker {
+			deploys AppData
+			ports {
+				target=3306;
+				published=3306;
 			}
 		}
+		container TextWarningData : Docker {
+			deploys TextWarningData
+			ports { 
+			published=27018;
+			target=27017;
+			}
+		}
+	}
+	
 	}
 }
