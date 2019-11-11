@@ -108,8 +108,16 @@ Container :
 		(deploys=Reference)?
 		(depends_on+=Dependency)*
 		(networks=Container_Network)?
+		(ports=Ports)?
 		(properties+=Property)*
 	'}'
+;
+
+Ports:
+	{Ports}
+	'ports' '{'
+		(key_values+=Key_Values)+
+	'}' 
 ;
 
 Dependency:
