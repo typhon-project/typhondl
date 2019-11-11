@@ -116,8 +116,14 @@ Container :
 Ports:
 	{Ports}
 	'ports' '{'
-		(key_values+=Key_Values)+
+		((port+=Port) ';')*
+		(key_values+=Key_Values)*
 	'}' 
+;
+
+Port:
+	{Port}
+	INT
 ;
 
 Dependency:
