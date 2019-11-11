@@ -116,8 +116,7 @@ Container :
 Ports:
 	{Ports}
 	'ports' '{'
-		((port+=Port) ';')*
-		(key_values+=Key_Values)*
+		(((port+=Port) ';') | (key_values+=Key_Values)+)
 	'}' 
 ;
 
