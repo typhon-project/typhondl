@@ -40,9 +40,9 @@ Type:
 DB:
 	'database' name=ID ':' type=[DBType] '{'
 	(image=IMAGE)?
-	('environment' '{'
-	(parameters+=Property)*
-	'}')?
+	//('environment' '{'
+	//(parameters+=Property)*
+	//'}')?
 	'}'
 ;
 
