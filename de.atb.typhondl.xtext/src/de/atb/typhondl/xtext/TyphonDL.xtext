@@ -43,6 +43,7 @@ DB:
 	('environment' '{'
 	(parameters+=Property)*
 	'}')?
+	'}'
 ;
 
 PlatformType:
@@ -113,12 +114,17 @@ Container :
 	'}'
 ;
 
+//Ports:
+	//{Ports}
+	//'ports' '{'
+		//(((port=Port) ';') | (key_values+=Key_Values)+)
+	//'}' 
+//;
+
 Ports:
 	{Ports}
-	'ports' '{'
-		(((port=Port) ';') | (key_values+=Key_Values)+)
-	'}' 
-;
+	(key_values+=Key_Values)+
+	;
 
 Port:
 	{Port}
