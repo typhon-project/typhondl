@@ -108,7 +108,7 @@ Container :
 		(deploys=Reference)?
 		(depends_on+=Dependency)*
 		(networks=Container_Network)?
-		(port = Port)?
+		(port=Port)?
 		(properties+=Property)*
 	'}'
 ;
