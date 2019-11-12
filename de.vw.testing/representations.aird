@@ -7,5 +7,4 @@
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
-  <semanticResources>test.tdl</semanticResources>
 </viewpoint:DAnalysis>
