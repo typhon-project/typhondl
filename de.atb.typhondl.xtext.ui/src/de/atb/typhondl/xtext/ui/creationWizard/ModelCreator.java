@@ -227,15 +227,9 @@ public class ModelCreator {
 		/*
 		 * save main model file
 		 */
-		URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(DLmodelName + ".tdl").toString(), true);
-		Resource DLmodelResource = resourceSet.createResource(DLmodelURI);
-		DLmodelResource.getContents().add(DLmodel);
-		try {
-			DLmodelResource.save(SavingOptions.getTDLoptions());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		String filename = DLmodelName + ".tdl";
+		save(DLmodel, filename);
+		URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
 		// return main model file to be opened in editor
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}

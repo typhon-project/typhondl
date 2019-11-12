@@ -3,8 +3,8 @@
   <semanticResources>weather_warning_ML.tml</semanticResources>
   <semanticResources>w_w_ML_custom_datatypes.tml</semanticResources>
   <semanticResources>weather_warning_DL.tdl</semanticResources>
+  <semanticResources>weather_warning_DL/weather_warning_DL.xmi</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
-  <semanticResources>weather_warning_DL/weather_warning_DL.xmi</semanticResources>
 </viewpoint:DAnalysis>
