@@ -34,6 +34,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
+import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
@@ -208,14 +209,18 @@ public class ModelCreator {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
+			
+			Ports db_ports = TyphonDLFactory.eINSTANCE.createPorts();
 			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			db_port.setName("port");
 			db_port.setValue(getStandardPort(db.getType().getName())); //TODO can be removed later
-			container.getProperties().add(db_port);
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("publishedPort");
 			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName())); //TODO can be removed later
-			container.getProperties().add(publishedDB_port);
+			db_ports.getKey_values().add(db_port);
+			db_ports.getKey_values().add(publishedDB_port);
+			container.setPorts(db_ports);
+			
 			application.getContainers().add(container);
 		}
 
