@@ -1,5 +1,2 @@
 database AppData : mariadb {
-	environment {
-		MYSQL_ROOT_PASSWORD = example ;
-	}
 }
