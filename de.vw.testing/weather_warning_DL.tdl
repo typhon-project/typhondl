@@ -10,11 +10,17 @@ platform platformName : local {
 		application Polystore {
 			container AppData : Docker {
 				deploys AppData
-				ports { target = 3306 ; published = 3306 ; }
+				ports {
+					target = 3306 ;
+					published = 3306 ;
+				}
 			}
 			container TextWarningData : Docker {
 				deploys TextWarningData
-				ports { target = 27017 ; published = 27018 ; }
+				ports {
+					target = 27017 ;
+					published = 27018 ;
+				}
 			}
 		}
 	}
