@@ -22,5 +22,5 @@ aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='Do
 /]
 
 [query public isKubernetes(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(self = 'Kubernetes') <> null
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='Kubernetes') <> null
 /]

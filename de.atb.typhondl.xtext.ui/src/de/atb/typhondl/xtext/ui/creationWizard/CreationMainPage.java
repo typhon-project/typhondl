@@ -31,10 +31,15 @@ public class CreationMainPage extends MyWizardPage {
 	private Text fileText;
 	private Combo templateCombo;
 	private int chosenTemplate;
+	private String templateName;
 	private String DLmodelName;
 	private Properties properties;
 	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
 
+	private Button checkbox;
+	private Text hostText;
+	private Text portText;
+	
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
 		this.MLmodelPath = MLmodelPath;
@@ -111,6 +116,25 @@ public class CreationMainPage extends MyWizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				chosenTemplate = templateCombo.getSelectionIndex();
+				templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
+				if (templateName.equals("Kubernetes")) {
+					checkbox.setEnabled(false);
+					checkbox.setSelection(false);
+					properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
+					properties.setProperty("ui.environment.API_HOST", "192.168.99.101");
+					properties.setProperty("ui.environment.API_PORT", "30061");
+					properties.setProperty("api.publishedPort", "30061");
+					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
+					portText.setText(properties.getProperty("ui.environment.API_PORT"));
+				} else {
+					checkbox.setEnabled(true);
+					properties.setProperty("ui.environment.API_HOST", "localhost");
+					properties.setProperty("ui.environment.API_PORT", "8080");
+					properties.setProperty("api.publishedPort", "8080");
+					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
+					portText.setText(properties.getProperty("ui.environment.API_PORT"));
+					
+				}
 			}
 		});
 	}
@@ -123,7 +147,7 @@ public class CreationMainPage extends MyWizardPage {
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
 
-		Button checkbox = new Button(main, SWT.CHECK);
+		checkbox = new Button(main, SWT.CHECK);
 		checkbox.setText("Use Typhon Data Analytics");
 		checkbox.setSelection(false);
 		checkbox.setLayoutData(gridData);
@@ -146,14 +170,14 @@ public class CreationMainPage extends MyWizardPage {
 
 		Label hostLabel = new Label(main, SWT.NONE);
 		hostLabel.setText("Api Host: ");
-		Text hostText = new Text(main, SWT.BORDER);
+		hostText = new Text(main, SWT.BORDER);
 		hostText.setLayoutData(gridData);
 		hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 		hostText.addModifyListener(e -> properties.setProperty("ui.environment.API_HOST", hostText.getText()));
 
 		Label portLabel = new Label(main, SWT.NONE);
 		portLabel.setText("Api Port: ");
-		Text portText = new Text(main, SWT.BORDER);
+		portText = new Text(main, SWT.BORDER);
 		portText.setLayoutData(gridData);
 		portText.setText(properties.getProperty("ui.environment.API_PORT"));
 		portText.addModifyListener(e -> {

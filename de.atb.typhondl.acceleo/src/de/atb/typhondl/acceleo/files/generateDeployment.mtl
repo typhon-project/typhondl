@@ -3,6 +3,53 @@
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
+[template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isKubernetes()) post (trim())]
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[for (aApplication : Application | aCluster.getAllApplications())]
+
+[file (aApplication.name + '/polystore.yaml', false, 'UTF-8')]
+[for (aContainer : Container | aApplication.containers)]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-api-deployment
+  labels:
+    app: polystore-api-pod
+spec:
+  selector:
+    matchLabels:
+      app: polystore-api-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-api-pod
+    spec:
+      containers:
+        - name: typhon-polystore-service
+          image: clms/typhon-polystore-api:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polystore-api
+  labels:
+    name: polystore-api
+spec:
+  type: NodePort
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+      nodePort: 30061
+  selector:
+    app: polystore-api-pod
+[/for]
+
+[/file]
+[/for]
+[/for]
+[/template]
+
 [template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isDockerCompose()) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
