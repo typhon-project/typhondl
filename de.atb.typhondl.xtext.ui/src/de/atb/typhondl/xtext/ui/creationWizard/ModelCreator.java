@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.internal.resources.File;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -272,7 +271,6 @@ public class ModelCreator {
 				e.printStackTrace();
 			}
 		}
-		File file;
 		Resource resource = resourceSet.createResource(uri);
 		resource.getContents().add(model);
 		try {
