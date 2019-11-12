@@ -33,6 +33,9 @@ services:
 [/if]
 [if (aContainer.networks <> null)]
     [aContainer.networks.print()/]
+[/if]
+[if (aContainer.ports <> null)]
+    [aContainer.ports.print()/]
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
@@ -43,6 +46,17 @@ services:
 [/file]
 [/for]
 [/for]
+[/template]
+
+[template public print(aPorts : Ports) post (trim())]
+ports:
+[if (aPorts.port <> null)]
+  - [aPorts.port/] 
+[else] 
+  - [for (aKey_Values : Key_Values | aPorts.key_values)]
+    [aKey_Values.name/]: [aKey_Values.value/]
+[/for]
+[/if]
 [/template]
 
 [template public print(aNetwork : Cluster_Network) post (trim())]

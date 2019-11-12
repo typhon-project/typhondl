@@ -4,13 +4,13 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"MariaDB"};
+			return new String[] {"MariaDB", "MySQL"};
 		}
 	},
 	graphdb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"ArangoDB", "Neo4j"};
+			return new String[] {"not supported yet"};
 		}
 	},
 	documentdb(){
@@ -22,7 +22,7 @@ public enum SupportedDBMS {
 	keyvaluedb(){
 		@Override
 		public String[] getPossibleDBMSs(){
-			return new String[] {"ArangoDB", "Redis"};
+			return new String[] {"not supported yet"};
 		}
 	};
 	

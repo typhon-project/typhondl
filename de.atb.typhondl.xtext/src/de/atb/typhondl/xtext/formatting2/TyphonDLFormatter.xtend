@@ -24,6 +24,7 @@ import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.ClusterType
+import de.atb.typhondl.xtext.typhonDL.Ports
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -65,6 +66,17 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		for (property : db.parameters) {
 			property.format
 			property.append[newLine]
+		}
+	}
+	
+	def dispatch void format(Ports ports, extension IFormattableDocument document) {
+		interior(
+			ports.regionFor.keyword('{').append[newLine],
+			ports.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (port : ports.key_values) {
+			port.format
 		}
 	}
 
@@ -156,6 +168,7 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		}
 		container.deploys.append[newLine]
 		container.networks.append[newLine]
+		container.ports.format
 		
 		for (property : container.properties) {
 			property.format

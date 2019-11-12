@@ -3,23 +3,55 @@
  */
 package de.atb.typhondl.xtext.validation
 
+import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.DBType
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
+import de.atb.typhondl.xtext.typhonDL.Key_Values
+import de.atb.typhondl.xtext.typhonDL.Ports
+import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class TyphonDLValidator extends AbstractTyphonDLValidator {
-	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					TyphonDLPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
-	
+
+	public static val INVALID_PORT = 'invalidPort'
+
+	@Check
+	def checkPorts(Key_Values key_values) {
+		if (key_values.name.contains("port") || key_values.name.contains("Port")) {
+			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+		}
+	}
+
+	@Check
+	def checkPorts(Key_KeyValueList key_keyValueList) {
+		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
+			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+		}
+	}
+
+	@Check
+	def checkPorts(Ports ports) {
+		val cluster = ports.eContainer.eContainer.eContainer as Cluster
+		if (cluster.type.name.equals("DockerCompose")) {
+			for (port : ports.key_values) {
+				if (!(port.name.equals("target") || port.name.equals("published"))) {
+					error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
+				}
+			}
+		}
+	}
+
+	@Check
+	def checkImage(DBType dbType) {
+		if (!dbType.image.value.contains(dbType.name)) {
+			warning("This image does not contain the name of the DB, are you sure it is the right image?",
+				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
+		}
+	}
+
 }
