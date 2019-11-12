@@ -22,35 +22,35 @@ import de.atb.typhondl.xtext.typhonDL.Container
  */
 class TyphonDLQuickfixProvider extends DefaultQuickfixProvider {
 
-	@Fix(TyphonDLValidator.COLON_IN_PORTS)
-	def splitPortInList(Issue issue, IssueResolutionAcceptor acceptor) {
-		acceptor.accept(issue, "Split port", "Split port into internal and published", null,
-			new ISemanticModification() {
-				override apply(EObject element, IModificationContext context) throws Exception {
-					// retrieve
-					val keyValue = element as Key_Values
-					val container = keyValue.eContainer as Container
-					// split
-					val value = keyValue.value.split(':')
-					val published = TyphonDLFactory.eINSTANCE.createKey_Values
-					published.name = "publishedPort"
-					published.value = value.get(0)
-					val internal = TyphonDLFactory.eINSTANCE.createKey_Values
-					internal.name = "containerPort"
-					internal.value = value.get(1)
-
-					// new Key_KeyValueList
-					val list = TyphonDLFactory.eINSTANCE.createKey_KeyValueList
-					list.name = "ports"
-					list.key_Values.add(internal)
-					list.key_Values.add(published)
-
-					// add to model remove old Key_Values
-					container.properties.add(list)
-					container.properties.remove(keyValue)
-				}
-			})
-	}
+//	@Fix(TyphonDLValidator.COLON_IN_PORTS)
+//	def splitPortInList(Issue issue, IssueResolutionAcceptor acceptor) {
+//		acceptor.accept(issue, "Split port", "Split port into internal and published", null,
+//			new ISemanticModification() {
+//				override apply(EObject element, IModificationContext context) throws Exception {
+//					// retrieve
+//					val keyValue = element as Key_Values
+//					val container = keyValue.eContainer as Container
+//					// split
+//					val value = keyValue.value.split(':')
+//					val published = TyphonDLFactory.eINSTANCE.createKey_Values
+//					published.name = "publishedPort"
+//					published.value = value.get(0)
+//					val internal = TyphonDLFactory.eINSTANCE.createKey_Values
+//					internal.name = "containerPort"
+//					internal.value = value.get(1)
+//
+//					// new Key_KeyValueList
+//					val list = TyphonDLFactory.eINSTANCE.createKey_KeyValueList
+//					list.name = "ports"
+//					list.key_Values.add(internal)
+//					list.key_Values.add(published)
+//
+//					// add to model remove old Key_Values
+//					container.properties.add(list)
+//					container.properties.remove(keyValue)
+//				}
+//			})
+//	}
 
 //	@Fix(TyphonDLValidator.INVALID_NAME)
 //	def capitalizeName(Issue issue, IssueResolutionAcceptor acceptor) {
