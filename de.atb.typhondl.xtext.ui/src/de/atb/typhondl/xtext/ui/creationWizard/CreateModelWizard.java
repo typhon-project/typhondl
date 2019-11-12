@@ -42,6 +42,11 @@ public class CreateModelWizard extends Wizard {
 				return false;
 			}
 		}
+		if (mainPage.getMessage() != null) {
+			if (!MessageDialog.openConfirm(this.getShell(), "Wizard", mainPage.getMessage())) {
+				return false;
+			} 
+		}
 		Properties properties;
 		if (mainPage.getUseAnalytics()) {
 			properties = this.analyticsPage.getProperties();

@@ -171,8 +171,8 @@ public class CreationMainPage extends MyWizardPage {
 		IFile file = ResourcesPlugin.getWorkspace().getRoot()
 				.getFile(new Path(getFolder() + "/" + fileText.getText() + ".tdl"));
 		if (file.exists()) {
-			setStatus(new Status(IStatus.ERROR, "NewFileWizard", //$NON-NLS-1$
-					"File '" + fileText.getText() + ".tdl" + "' already exists."));
+			setStatus(new Status(IStatus.WARNING, "NewFileWizard", //$NON-NLS-1$
+					"File '" + fileText.getText() + ".tdl" + "' already exists and will be overwritten if you continue."));
 			return;
 		}
 	}
