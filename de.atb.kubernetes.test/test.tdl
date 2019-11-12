@@ -4,25 +4,25 @@ import AppData.tdl
 import dbTypes.tdl
 platformtype localhost
 containertype Docker
-clustertype Kubernetes
+clustertype DockerCompose
 platform platformName : localhost {
-	cluster clusterName : Kubernetes {
+	cluster clusterName : DockerCompose {
 		application Polystore {
 			container TextWarningData : Docker {
 				deploys TextWarningData
 				ports {
-					targetPort= 27017 ;
+					target = 27017 ;
 					published = 27018 ;
 				}
-				hostname = 192.168.99.101 ;
+				hostname = localhost ;
 			}
 			container AppData : Docker {
 				deploys AppData
 				ports {
-					targetPort = 3306 ;
+					target = 3306 ;
 					published = 3306 ;
 				}
-				hostname = 192.168.99.101 ;
+				hostname = localhost ;
 			}
 		}
 	}
