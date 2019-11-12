@@ -212,10 +212,10 @@ public class ModelCreator {
 			
 			Ports db_ports = TyphonDLFactory.eINSTANCE.createPorts();
 			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-			db_port.setName("port");
+			db_port.setName("target");
 			db_port.setValue(getStandardPort(db.getType().getName())); //TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-			publishedDB_port.setName("publishedPort");
+			publishedDB_port.setName("published");
 			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName())); //TODO can be removed later
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);

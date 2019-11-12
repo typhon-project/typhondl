@@ -219,10 +219,10 @@ public class Services {
 		polystoredb_container.getProperties().add(polystoredb_container_hostname);
 		
 		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports1.setName("publishedPort");
+		polystoredb_container_ports1.setName("published");
 		polystoredb_container_ports1.setValue(properties.getProperty("db.publishedPort"));
 		Key_Values polystoredb_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports2.setName("containerPort");
+		polystoredb_container_ports2.setName("target");
 		polystoredb_container_ports2.setValue(properties.getProperty("db.port"));
 		Ports polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports1);
@@ -257,11 +257,11 @@ public class Services {
 		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
 		polystore_api_container.getProperties().add(polystore_api_hostname);
 		Key_Values polystore_api_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports1.setName("publishedPort");
-		polystore_api_container_ports1.setValue(properties.getProperty(properties.getProperty("api.publishedPort")));
+		polystore_api_container_ports1.setName("published");
+		polystore_api_container_ports1.setValue(properties.getProperty("api.publishedPort"));
 		Key_Values polystore_api_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports2.setName("containerPort");
-		polystore_api_container_ports2.setValue(properties.getProperty(properties.getProperty("api.port")));
+		polystore_api_container_ports2.setName("target");
+		polystore_api_container_ports2.setValue(properties.getProperty("api.port"));
 		Ports polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports1);
 		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports2);
@@ -297,10 +297,10 @@ public class Services {
 		polystore_ui_container.setDeploys(polystore_ui_reference);
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
 		Key_Values polystore_ui_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports1.setName("publishedPort");
+		polystore_ui_container_ports1.setName("published");
 		polystore_ui_container_ports1.setValue(properties.getProperty("ui.publishedPort"));
 		Key_Values polystore_ui_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports2.setName("containerPort");
+		polystore_ui_container_ports2.setName("target");
 		polystore_ui_container_ports2.setValue(properties.getProperty("ui.port"));
 		Ports polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports1);
@@ -354,10 +354,10 @@ public class Services {
 			zookeeper_container.setType(containerType);
 			zookeeper_container.setDeploys(zookeeper_reference);
 			Key_Values zookeeper_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			zookeeper_container_ports1.setName("publishedPort");
+			zookeeper_container_ports1.setName("published");
 			zookeeper_container_ports1.setValue(zookeeperPort);
 			Key_Values zookeeper_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			zookeeper_container_ports2.setName("containerPort");
+			zookeeper_container_ports2.setName("target");
 			zookeeper_container_ports2.setValue(properties.getProperty("analytics.zookeeper.port"));
 			Ports zookeeper_container_port = TyphonDLFactory.eINSTANCE.createPorts();
 			zookeeper_container_port.getKey_values().add(zookeeper_container_ports1);
@@ -378,10 +378,10 @@ public class Services {
 			kafka_container.getProperties().add(kafka_container_build);
 			kafka_container.getDepends_on().add(zookeeper_dependency);
 			Key_Values kafka_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			kafka_container_ports1.setName("publishedPort");
+			kafka_container_ports1.setName("published");
 			kafka_container_ports1.setValue(kafkaPort);
 			Key_Values kafka_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-			kafka_container_ports2.setName("containerPort");
+			kafka_container_ports2.setName("target");
 			kafka_container_ports2.setValue(properties.getProperty("analytics.kafka.port"));
 			Ports kafka_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 			kafka_container_ports.getKey_values().add(kafka_container_ports1);

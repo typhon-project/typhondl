@@ -152,7 +152,7 @@ public class CreationMainPage extends MyWizardPage {
 		hostText.addModifyListener(e -> properties.setProperty("ui.environment.API_HOST", hostText.getText()));
 
 		Label portLabel = new Label(main, SWT.NONE);
-		portLabel.setText("Api Host: ");
+		portLabel.setText("Api Port: ");
 		Text portText = new Text(main, SWT.BORDER);
 		portText.setLayoutData(gridData);
 		portText.setText(properties.getProperty("ui.environment.API_PORT"));
