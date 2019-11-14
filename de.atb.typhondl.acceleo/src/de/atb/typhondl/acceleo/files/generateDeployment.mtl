@@ -7,46 +7,99 @@
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [for (aApplication : Application | aCluster.getAllApplications())]
 
-[file (aApplication.name + '/polystore.yaml', false, 'UTF-8')]
+[file (aApplication.name + '/polystore.yml', false, 'UTF-8')]
 [for (aContainer : Container | aApplication.containers)]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: polystore-api-deployment
+  name: [aContainer.name/]-deployment
   labels:
-    app: polystore-api-pod
+    app: [aContainer.name/]-pod
 spec:
+[if (aContainer.findReplicas() <> null)]
+  replicas: [aContainer.findReplicas().value/]
+[/if]
   selector:
     matchLabels:
-      app: polystore-api-pod
+      app: [aContainer.name/]-pod
   template:
     metadata:
       labels:
-        app: polystore-api-pod
+        app: [aContainer.name/]-pod
     spec:
       containers:
-        - name: typhon-polystore-service
-          image: clms/typhon-polystore-api:latest
+        - name: [aContainer.name/]
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+[if (aContainer.properties <> null)]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: polystore-api
+  name: [aContainer.name/]
   labels:
-    name: polystore-api
+    name: [aContainer.name/]
 spec:
   type: NodePort
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
-      nodePort: 30061
+    - name: "[aContainer.ports.getTargetPort().value/]"
+      port: [aContainer.ports.getTargetPort().value/]
+      targetPort: [aContainer.ports.getTargetPort().value/]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
   selector:
-    app: polystore-api-pod
+    app: [aContainer.name/]-pod
+---
 [/for]
 
 [/file]
 [/for]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Property) post (trim())]
+something went wrong with a Property
+[/template]
+
+[template public printKubernetes(arg : Key_Values) post (trim())]
+[if (arg.name.equalsIgnoreCase('hostname')._or(arg.name.equalsIgnoreCase('replicas')))][else]
+[arg.name/]: [arg.value/]
+[/if]
+[/template]
+
+[template public printKubernetes(arg : Key_KeyValueList) post (trim())]
+[if (arg.name.equalsIgnoreCase('environment')._or(arg.name.equalsIgnoreCase('env')))]
+env:
+[for (aKey_Values : Key_Values | arg.key_Values)]
+  - name: [aKey_Values.name/]
+    value: [aKey_Values.value/]
+[/for]
+[/if]
+[/template]
+
+[template public printKubernetes(arg : Key_ValueArray) post (trim())]
+TODO
+[/template]
+
+
+
+[template public printImage(aService : Services) post (trim())]
+	template_expression
+[/template]
+
+[template public printImage(aSoftware : Software) post (trim())]
+image: [aSoftware.image.value/]
+[for (aProperty : Property | aSoftware.parameters)]
+[aProperty.printKubernetes()/]
+[/for]
+[/template]
+
+[template public printImage(aDB : DB) post (trim())]
+image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
+[for (aProperty : Property | aDB.parameters)]
+[aProperty.printKubernetes()/]
 [/for]
 [/template]
 

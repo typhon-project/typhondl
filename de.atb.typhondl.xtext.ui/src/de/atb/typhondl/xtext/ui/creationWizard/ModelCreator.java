@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -92,12 +93,6 @@ public class ModelCreator {
 		MLmodelImport.setRelativePath(this.MLmodel.getName());
 		DLmodel.getGuiMetaInformation().add(MLmodelImport);
 
-		// create platform type from API HOST
-		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-		platformType.setName("localhost");
-		//platformType.setName(properties.getProperty("ui.environment.API_HOST"));
-		DLmodel.getElements().add(platformType);
-
 		// Add selected container type (chosen template in wizard)
 		ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
 		containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
@@ -107,6 +102,23 @@ public class ModelCreator {
 		ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
 		clusterType.setName(SupportedTechnologies.values()[chosenTemplate].getClusterType());
 		DLmodel.getElements().add(clusterType);
+
+		// create platform type from API HOST
+		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
+		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+		case "DockerCompose":
+			platformType.setName("localhost");
+			break;
+		case "Kubernetes":
+			platformType.setName("minikube");
+			break;
+		default:
+			platformType.setName("localhost");
+			break;
+		}
+//		platformType.setName("localhost");
+//		platformType.setName(properties.getProperty("ui.environment.API_HOST"));
+		DLmodel.getElements().add(platformType);
 
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
@@ -217,11 +229,11 @@ public class ModelCreator {
 			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("published");
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName())); // TODO can be removed later
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be removed later
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
-			
+
 			Key_Values hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
 			hostname.setName("hostname");
 			hostname.setValue(properties.getProperty("ui.environment.API_HOST"));
@@ -257,17 +269,22 @@ public class ModelCreator {
 
 	// TODO This should not be needed, since the databases should only be reachable
 	// inside the same network/cluster
-	private String getStandardPublishedPort(String name) {
-		switch (name) {
-		case "mariadb":
-			return "3306";
-		case "mysql":
-			return "3306";
-		case "mongo":
-			return "27018"; // 27017 is occupied by polystoredb
-		default:
-			return "0:0";
+	private String getStandardPublishedPort(String name, ClusterType type) {
+		if (type.getName().equals("Kubernetes")) {
+			return "" + (31000 + ThreadLocalRandom.current().nextInt(1, 100));
+		} else {
+			switch (name) {
+			case "mariadb":
+				return "3306";
+			case "mysql":
+				return "3306";
+			case "mongo":
+				return "27018"; // 27017 is occupied by polystoredb
+			default:
+				return "0:0";
+			}
 		}
+
 	}
 
 	private void save(DeploymentModel model, String filename) {

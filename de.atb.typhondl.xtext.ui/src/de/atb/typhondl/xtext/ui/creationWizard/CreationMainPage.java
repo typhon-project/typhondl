@@ -124,6 +124,11 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_HOST", "192.168.99.101");
 					properties.setProperty("ui.environment.API_PORT", "30061");
 					properties.setProperty("api.publishedPort", "30061");
+					properties.setProperty("ui.publishedPort", "30075");
+					properties.setProperty("db.publishedPort", "30064");
+					properties.setProperty("db.hostname", "192.168.99.101");
+					properties.setProperty("api.hostname", "192.168.99.101");
+					properties.setProperty("ui.hostname", "192.168.99.101");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
 				} else {
@@ -131,6 +136,11 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_HOST", "localhost");
 					properties.setProperty("ui.environment.API_PORT", "8080");
 					properties.setProperty("api.publishedPort", "8080");
+					properties.setProperty("ui.publishedPort", "4200");
+					properties.setProperty("db.publishedPort", "27017");
+					properties.setProperty("db.hostname", "localhost");
+					properties.setProperty("api.hostname", "localhost");
+					properties.setProperty("ui.hostname", "localhost");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
 					

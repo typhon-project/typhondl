@@ -3,7 +3,6 @@
  */
 package de.atb.typhondl.xtext.validation
 
-import de.atb.typhondl.xtext.typhonDL.Cluster
 import de.atb.typhondl.xtext.typhonDL.DBType
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_Values
@@ -37,24 +36,24 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	@Check
 	def checkPorts(Ports ports) {
-		val cluster = ports.eContainer.eContainer.eContainer as Cluster
-		if (cluster.type.name.equals("DockerCompose")) {
+//		val cluster = ports.eContainer.eContainer.eContainer as Cluster
+//		if (cluster.type.name.equals("DockerCompose")) {
 			for (port : ports.key_values) {
 				if (!(port.name.equals("target") || port.name.equals("published"))) {
 					error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
 				}
 			}
-		}
-		if (cluster.type.name.equals("Kubernetes")) {
-			for (port : ports.key_values) {
-				if (!(port.name.equals("targetPort") || port.name.equals("port") || port.name.equals("nodePort"))) {
-					error("Use \"targetPort\" and/or \"port\" and/or \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
-				}
-				if (port.name.contains("pub")) {
-					error("To publish this container use \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
-				}
-			}
-		}
+//		}
+//		if (cluster.type.name.equals("Kubernetes")) {
+//			for (port : ports.key_values) {
+//				if (!(port.name.equals("targetPort") || port.name.equals("port") || port.name.equals("nodePort"))) {
+//					error("Use \"targetPort\" and/or \"port\" and/or \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
+//				}
+//				if (port.name.contains("pub")) {
+//					error("To publish this container use \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
+//				}
+//			}
+//		}
 	}
 
 	@Check
