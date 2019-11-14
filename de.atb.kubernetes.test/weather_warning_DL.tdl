@@ -2,25 +2,25 @@ import weather_warning_ML.xmi
 import TextWarningData.tdl
 import AppData.tdl
 import dbTypes.tdl
-platformtype localhost
 containertype Docker
 clustertype Kubernetes
-platform platformName : localhost {
+platformtype minikube
+platform platformName : minikube {
 	cluster clusterName : Kubernetes {
 		application Polystore {
 			container TextWarningData : Docker {
 				deploys TextWarningData
 				ports {
-					targetPort= 27017 ;
-					published = 27018 ;
+					target = 27017 ;
+					published = 31040 ;
 				}
 				hostname = 192.168.99.101 ;
 			}
 			container AppData : Docker {
 				deploys AppData
 				ports {
-					targetPort = 3306 ;
-					published = 3306 ;
+					target = 3306 ;
+					published = 31042 ;
 				}
 				hostname = 192.168.99.101 ;
 			}
