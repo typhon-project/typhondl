@@ -12,23 +12,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [aContainer.name/]-deployment
+  name: [aContainer.name.toLower()/]-deployment
   labels:
-    app: [aContainer.name/]-pod
+    app: [aContainer.name.toLower()/]-pod
 spec:
 [if (aContainer.findReplicas() <> null)]
   replicas: [aContainer.findReplicas().value/]
 [/if]
   selector:
     matchLabels:
-      app: [aContainer.name/]-pod
+      app: [aContainer.name.toLower()/]-pod
   template:
     metadata:
       labels:
-        app: [aContainer.name/]-pod
+        app: [aContainer.name.toLower()/]-pod
     spec:
       containers:
-        - name: [aContainer.name/]
+        - name: [aContainer.name.toLower()/]
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
@@ -39,9 +39,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: [aContainer.name/]
+  name: [aContainer.name.toLower()/]
   labels:
-    name: [aContainer.name/]
+    name: [aContainer.name.toLower()/]
 spec:
   type: NodePort
   ports:
@@ -50,7 +50,7 @@ spec:
       targetPort: [aContainer.ports.getTargetPort().value/]
       nodePort: [aContainer.ports.getPublishedPort().value/]
   selector:
-    app: [aContainer.name/]-pod
+    app: [aContainer.name.toLower()/]-pod
 ---
 [/for]
 
@@ -118,10 +118,10 @@ version: '3.7'
 [/if]
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
-[if (aContainer.name = 'kafka')]
+[if (aContainer.name.toLower() = 'kafka')]
 [aApplication.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name/]:
+  [aContainer.name.toLower()/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.printFeature()/]
 [/if]

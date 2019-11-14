@@ -121,8 +121,8 @@ public class CreationMainPage extends MyWizardPage {
 					checkbox.setEnabled(false);
 					checkbox.setSelection(false);
 					properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
-					properties.setProperty("ui.environment.API_HOST", "192.168.99.101");
-					properties.setProperty("ui.environment.API_PORT", "30061");
+					properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
+					properties.setProperty("ui.environment.API_PORT", "\"30061\"");
 					properties.setProperty("api.publishedPort", "30061");
 					properties.setProperty("ui.publishedPort", "30075");
 					properties.setProperty("db.publishedPort", "30064");
@@ -192,7 +192,7 @@ public class CreationMainPage extends MyWizardPage {
 		portText.setText(properties.getProperty("ui.environment.API_PORT"));
 		portText.addModifyListener(e -> {
 			properties.setProperty("ui.environment.API_PORT", portText.getText());
-			properties.setProperty("api.publishedPort", portText.getText());
+			properties.setProperty("api.publishedPort", portText.getText().replaceAll("\"", ""));
 		});
 	}
 
