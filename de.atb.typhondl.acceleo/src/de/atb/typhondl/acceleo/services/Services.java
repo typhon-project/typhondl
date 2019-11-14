@@ -62,8 +62,8 @@ public class Services {
 			for (File subFile : folder.listFiles()) {
 				if (subFile.isDirectory()) {
 					for (File subSubFile : subFile.listFiles()) {
-						if (subSubFile.getName().equals("docker-compose.yml")) { // TODO horrible
-							return "Docker Compose File generated";
+						if (subSubFile.getName().contains("yml")) { // TODO horrible
+							return "Deployment script generated";
 						}
 					}
 				}
@@ -248,10 +248,6 @@ public class Services {
 		polystore_api_container.setType(containerType);
 		polystore_api_container.setDeploys(polystore_api_reference);
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
-		Key_Values polystore_api_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_restart.setName("restart");
-		polystore_api_restart.setValue(properties.getProperty("api.restart"));
-		polystore_api_container.getProperties().add(polystore_api_restart);
 		Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_api_hostname.setName("hostname");
 		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
@@ -306,10 +302,6 @@ public class Services {
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports1);
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports2);
 		polystore_ui_container.setPorts(polystore_ui_container_ports);
-		Key_Values polystore_ui_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_restart.setName("restart");
-		polystore_ui_restart.setValue(properties.getProperty("ui.restart"));
-		polystore_ui_container.getProperties().add(polystore_ui_restart);
 		Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_hostname.setName("hostname");
 		polystore_ui_hostname.setValue(properties.getProperty("ui.hostname"));

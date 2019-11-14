@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -51,6 +52,7 @@ public class ModelCreator {
 	// path to folder in which to save all model files
 	private IPath folder;
 	private String DLmodelName;
+	private final String PATH_TO_PROPERTIES = "de/atb/typhondl/xtext/ui/properties/";
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -82,7 +84,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(ArrayList<Database> databases, int chosenTemplate) {
+	public IFile createDLmodel(ArrayList<Database> databases, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -90,11 +92,6 @@ public class ModelCreator {
 		Import MLmodelImport = TyphonDLFactory.eINSTANCE.createImport();
 		MLmodelImport.setRelativePath(this.MLmodel.getName());
 		DLmodel.getGuiMetaInformation().add(MLmodelImport);
-
-		// create dummy platform type
-		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-		platformType.setName("local");
-		DLmodel.getElements().add(platformType);
 
 		// Add selected container type (chosen template in wizard)
 		ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
@@ -105,6 +102,23 @@ public class ModelCreator {
 		ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
 		clusterType.setName(SupportedTechnologies.values()[chosenTemplate].getClusterType());
 		DLmodel.getElements().add(clusterType);
+
+		// create platform type from API HOST
+		PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
+		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+		case "DockerCompose":
+			platformType.setName("localhost");
+			break;
+		case "Kubernetes":
+			platformType.setName("minikube");
+			break;
+		default:
+			platformType.setName("localhost");
+			break;
+		}
+//		platformType.setName("localhost");
+//		platformType.setName(properties.getProperty("ui.environment.API_HOST"));
+		DLmodel.getElements().add(platformType);
 
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
@@ -121,9 +135,8 @@ public class ModelCreator {
 				importedDB.setRelativePath(database.getPathToDBModelFile());
 			} else {
 				Properties dbProperties = new Properties();
-				InputStream inStream = ModelCreator.class.getClassLoader()
-						.getResourceAsStream("de/atb/typhondl/xtext/ui/properties/"
-								+ database.getDbms().getName().toLowerCase() + ".properties");
+				InputStream inStream = ModelCreator.class.getClassLoader().getResourceAsStream(
+						PATH_TO_PROPERTIES + database.getDbms().getName().toLowerCase() + ".properties");
 				try {
 					dbProperties.load(inStream);
 				} catch (IOException e) {
@@ -145,7 +158,7 @@ public class ModelCreator {
 					environment.setName("environment");
 					environmentKeys.forEach(key -> {
 						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key.substring(key.lastIndexOf('.')+1));
+						key_value.setName(key.substring(key.lastIndexOf('.') + 1));
 						key_value.setValue((String) dbProperties.get(key));
 						environment.getKey_Values().add(key_value);
 					});
@@ -164,7 +177,7 @@ public class ModelCreator {
 				dbTypes.add(db.getType());
 			}
 		}
-		
+
 		for (DB db : dbs) { // types need to be the same instance
 			for (DBType dbtype : dbTypes) {
 				if (dbtype.getName().equals(db.getType().getName())) {
@@ -209,18 +222,23 @@ public class ModelCreator {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
-			
+
 			Ports db_ports = TyphonDLFactory.eINSTANCE.createPorts();
 			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			db_port.setName("target");
-			db_port.setValue(getStandardPort(db.getType().getName())); //TODO can be removed later
+			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("published");
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName())); //TODO can be removed later
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be removed later
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
-			
+
+			Key_Values hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+			hostname.setName("hostname");
+			hostname.setValue(properties.getProperty("ui.environment.API_HOST"));
+			container.getProperties().add(hostname);
+
 			application.getContainers().add(container);
 		}
 
@@ -233,8 +251,9 @@ public class ModelCreator {
 		// return main model file to be opened in editor
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
-	
-	// TODO This should not be needed, since the databases should only be reachable inside the same network/cluster
+
+	// TODO This should not be needed, since the databases should only be reachable
+	// inside the same network/cluster
 	private String getStandardPort(String name) {
 		switch (name) {
 		case "mariadb":
@@ -247,8 +266,13 @@ public class ModelCreator {
 			return "0:0";
 		}
 	}
-	// TODO This should not be needed, since the databases should only be reachable inside the same network/cluster
-		private String getStandardPublishedPort(String name) {
+
+	// TODO This should not be needed, since the databases should only be reachable
+	// inside the same network/cluster
+	private String getStandardPublishedPort(String name, ClusterType type) {
+		if (type.getName().equals("Kubernetes")) {
+			return "" + (31000 + ThreadLocalRandom.current().nextInt(1, 100));
+		} else {
 			switch (name) {
 			case "mariadb":
 				return "3306";
@@ -260,8 +284,9 @@ public class ModelCreator {
 				return "0:0";
 			}
 		}
-	
-	
+
+	}
+
 	private void save(DeploymentModel model, String filename) {
 		URI uri = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
 		if (checkExist(uri)) {
@@ -278,7 +303,7 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	private boolean checkExist(URI servicesURI) {

@@ -55,7 +55,7 @@ public class CreateModelWizard extends Wizard {
 		}
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		IFile file = modelCreator.createDLmodel(dbmsPage.getDatabases(), chosenTemplate);
+		IFile file = modelCreator.createDLmodel(dbmsPage.getDatabases(), chosenTemplate, properties);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);

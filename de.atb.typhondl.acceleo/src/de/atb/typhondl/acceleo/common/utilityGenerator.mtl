@@ -22,5 +22,17 @@ aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='Do
 /]
 
 [query public isKubernetes(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(self = 'Kubernetes') <> null
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='Kubernetes') <> null
+/]
+
+[query public getPublishedPort(aPorts : Ports) : Key_Values = 
+aPorts.key_values->any(key | key.name='published')
+/]
+
+[query public getTargetPort(aPorts : Ports) : Key_Values = 
+aPorts.key_values->any(key | key.name='target') 
+/]
+
+[query public findReplicas(aContainer : Container) : Key_Values =
+aContainer.properties->any(key | key.name='replicas')
 /]
