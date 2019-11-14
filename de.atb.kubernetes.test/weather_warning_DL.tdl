@@ -12,17 +12,17 @@ platform platformName : minikube {
 				deploys TextWarningData
 				ports {
 					target = 27017 ;
-					published = 31040 ;
+					published = 31074 ;
 				}
-				hostname = 192.168.99.101 ;
+				hostname = "192.168.99.101" ;
 			}
 			container AppData : Docker {
 				deploys AppData
 				ports {
 					target = 3306 ;
-					published = 31042 ;
+					published = 31090 ;
 				}
-				hostname = 192.168.99.101 ;
+				hostname = "192.168.99.101" ;
 			}
 		}
 	}

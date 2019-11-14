@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: TextWarningData-deployment
+  name: textwarningdata-deployment
   labels:
-    app: TextWarningData-pod
+    app: textwarningdata-pod
 spec:
   selector:
     matchLabels:
-      app: TextWarningData-pod
+      app: textwarningdata-pod
   template:
     metadata:
       labels:
-        app: TextWarningData-pod
+        app: textwarningdata-pod
     spec:
       containers:
-        - name: TextWarningData
+        - name: textwarningdata
           image: mongo:latest
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
@@ -26,54 +26,57 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: TextWarningData
+  name: textwarningdata
   labels:
-    name: TextWarningData
+    name: textwarningdata
 spec:
   type: NodePort
   ports:
     - name: "27017"
       port: 27017
       targetPort: 27017
-      nodePort: 31040
+      nodePort: 31074
   selector:
-    app: TextWarningData-pod
+    app: textwarningdata-pod
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: AppData-deployment
+  name: appdata-deployment
   labels:
-    app: AppData-pod
+    app: appdata-pod
 spec:
   selector:
     matchLabels:
-      app: AppData-pod
+      app: appdata-pod
   template:
     metadata:
       labels:
-        app: AppData-pod
+        app: appdata-pod
     spec:
       containers:
-        - name: AppData
+        - name: appdata
           image: mariadb:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: example
           
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: AppData
+  name: appdata
   labels:
-    name: AppData
+    name: appdata
 spec:
   type: NodePort
   ports:
     - name: "3306"
       port: 3306
       targetPort: 3306
-      nodePort: 31042
+      nodePort: 31090
   selector:
-    app: AppData-pod
+    app: appdata-pod
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -172,9 +175,9 @@ spec:
           image: clms/typhon-polystore-ui:latest
           env:
             - name: API_PORT
-              value: 30061
+              value: "30061"
             - name: API_HOST
-              value: 192.168.99.101
+              value: "192.168.99.101"
           
 ---
 apiVersion: v1

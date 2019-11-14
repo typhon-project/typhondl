@@ -14,17 +14,17 @@
           <deploys reference="//@elements.4"/>
           <ports>
             <key_values name="target" value="27017"/>
-            <key_values name="published" value="31040"/>
+            <key_values name="published" value="31074"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="192.168.99.101"/>
+          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="&quot;192.168.99.101&quot;"/>
         </containers>
         <containers name="AppData" type="//@elements.0">
           <deploys reference="//@elements.5"/>
           <ports>
             <key_values name="target" value="3306"/>
-            <key_values name="published" value="31042"/>
+            <key_values name="published" value="31090"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="192.168.99.101"/>
+          <properties xsi:type="typhonDL:Key_Values" name="hostname" value="&quot;192.168.99.101&quot;"/>
         </containers>
         <containers name="polystore-mongo" type="//@elements.0">
           <deploys reference="//@elements.8"/>
@@ -61,7 +61,11 @@
       <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.7"/>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.7">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <key_Values name="MYSQL_ROOT_PASSWORD" value="example"/>
+    </parameters>
+  </elements>
   <elements xsi:type="typhonDL:DBType" name="mongo">
     <image value="mongo:latest"/>
   </elements>
@@ -80,8 +84,8 @@
   <elements xsi:type="typhonDL:Software" name="polystore_ui">
     <image value="clms/typhon-polystore-ui:latest"/>
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-      <key_Values name="API_PORT" value="30061"/>
-      <key_Values name="API_HOST" value="192.168.99.101"/>
+      <key_Values name="API_PORT" value="&quot;30061&quot;"/>
+      <key_Values name="API_HOST" value="&quot;192.168.99.101&quot;"/>
     </parameters>
   </elements>
 </typhonDL:DeploymentModel>
