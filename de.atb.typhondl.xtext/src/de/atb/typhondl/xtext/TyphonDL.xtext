@@ -94,12 +94,8 @@ Container:
 Ports:
 	{Ports}
 	'ports' '{'
-	(((port=Port) ';') | (key_values+=Key_Values)+)
+	(key_values+=Key_Values)+
 	'}';
-
-Port:
-	{Port}
-	INT;
 
 Dependency:
 	'depends_on' reference=[Container];
