@@ -25,7 +25,7 @@
           </ports>
         </containers>
         <containers name="polystore-mongo" type="//@elements.1">
-          <deploys reference="//@elements.10"/>
+          <deploys reference="//@elements.8"/>
           <ports>
             <key_values name="published" value="27017"/>
             <key_values name="target" value="27017"/>
@@ -33,29 +33,31 @@
           <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-mongo"/>
         </containers>
         <containers name="typhon-polystore-service" type="//@elements.1">
-          <deploys reference="//@elements.11"/>
+          <deploys reference="//@elements.9"/>
           <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.2"/>
           <ports>
             <key_values name="published" value="8080"/>
             <key_values name="target" value="8080"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
           <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-api"/>
         </containers>
         <containers name="polystore-ui" type="//@elements.1">
-          <deploys reference="//@elements.12"/>
+          <deploys reference="//@elements.10"/>
           <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.3"/>
           <ports>
             <key_values name="published" value="4200"/>
             <key_values name="target" value="4200"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
           <properties xsi:type="typhonDL:Key_Values" name="hostname" value="polystore-ui"/>
         </containers>
       </applications>
     </clusters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.6"/>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.6">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <key_Values name="MYSQL_ROOT_PASSWORD" value="example"/>
+    </parameters>
+  </elements>
   <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.7">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
@@ -67,15 +69,6 @@
   </elements>
   <elements xsi:type="typhonDL:DBType" name="mongo">
     <image value="mongo:latest"/>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.7">
-    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-      <key_Values name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
-      <key_Values name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
-    </parameters>
-  </elements>
-  <elements xsi:type="typhonDL:Software" name="polystore_api">
-    <image value="clms/typhon-polystore-api:latest"/>
   </elements>
   <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.7">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">

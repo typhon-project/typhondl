@@ -1,18 +1,20 @@
 version: '3.7'
 
 services:
-  AppData:
+  appdata:
     image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: example
     ports:
-      -     target: 3306
+      - target: 3306
         published: 3306
-  TextWarningData:
+  textwarningdata:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-      -     target: 27017
+      - target: 27017
         published: 27018
   polystore-mongo:
     image: mongo:latest
@@ -20,7 +22,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-      -     published: 27017
+      - published: 27017
         target: 27017
     hostname: polystore-mongo
   typhon-polystore-service:
@@ -28,9 +30,8 @@ services:
     depends_on: 
       - polystore-mongo
     ports:
-      -     published: 8080
+      - published: 8080
         target: 8080
-    restart: always
     hostname: polystore-api
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
@@ -40,7 +41,6 @@ services:
     depends_on: 
       - typhon-polystore-service
     ports:
-      -     published: 4200
+      - published: 4200
         target: 4200
-    restart: always
     hostname: polystore-ui
