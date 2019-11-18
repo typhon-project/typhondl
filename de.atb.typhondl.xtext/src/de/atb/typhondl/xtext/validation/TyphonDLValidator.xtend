@@ -20,14 +20,6 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	public static val INVALID_PORT = 'invalidPort'
 
 	@Check
-	def checkPorts(Key_Values key_values) {
-		if (key_values.name.contains("port") || key_values.name.contains("Port")) {
-			//if (!key_values.eContainer.instanceOf(Ports))
-			//error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
-		}
-	}
-
-	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
 		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
 			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
@@ -36,24 +28,11 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	@Check
 	def checkPorts(Ports ports) {
-//		val cluster = ports.eContainer.eContainer.eContainer as Cluster
-//		if (cluster.type.name.equals("DockerCompose")) {
-			for (port : ports.key_values) {
-				if (!(port.name.equals("target") || port.name.equals("published"))) {
-					error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
-				}
+		for (port : ports.key_values) {
+			if (!(port.name.equals("target") || port.name.equals("published"))) {
+				error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
 			}
-//		}
-//		if (cluster.type.name.equals("Kubernetes")) {
-//			for (port : ports.key_values) {
-//				if (!(port.name.equals("targetPort") || port.name.equals("port") || port.name.equals("nodePort"))) {
-//					error("Use \"targetPort\" and/or \"port\" and/or \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
-//				}
-//				if (port.name.contains("pub")) {
-//					error("To publish this container use \"nodePort\"", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
-//				}
-//			}
-//		}
+		}
 	}
 
 	@Check
