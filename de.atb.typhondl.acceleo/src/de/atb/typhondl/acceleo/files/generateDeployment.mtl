@@ -146,6 +146,7 @@ services:
 [/file]
 [/for]
 [/for]
+[/template]
 
 [template public print(aPorts : Ports) post (trim())]
 ports:
