@@ -68,10 +68,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Ports">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/port"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/key_values"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Port"/>
     <genClasses ecoreClass="TyphonDL.ecore#//Dependency">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Dependency/reference"/>
     </genClasses>

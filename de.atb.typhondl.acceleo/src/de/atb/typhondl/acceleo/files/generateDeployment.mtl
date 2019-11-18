@@ -150,13 +150,10 @@ services:
 
 [template public print(aPorts : Ports) post (trim())]
 ports:
-[if (aPorts.port <> null)]
-  - [aPorts.port/] 
-[else] 
-  - [for (aKey_Values : Key_Values | aPorts.key_values)]
+  - [aPorts.key_values->first().name/]: [aPorts.key_values->first().value/]
+[for (aKey_Values : Key_Values | aPorts.getKey_ValuesWithoutFirst())]
     [aKey_Values.name/]: [aKey_Values.value/]
 [/for]
-[/if]
 [/template]
 
 [template public print(aNetwork : Cluster_Network) post (trim())]

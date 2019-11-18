@@ -12,7 +12,7 @@ platform platformName : minikube {
 				deploys TextWarningData
 				ports {
 					target = 27017 ;
-					published = 31074 ;
+					published = 31025 ;
 				}
 				hostname = "192.168.99.101" ;
 			}
@@ -20,7 +20,7 @@ platform platformName : minikube {
 				deploys AppData
 				ports {
 					target = 3306 ;
-					published = 31090 ;
+					published = 31091 ;
 				}
 				hostname = "192.168.99.101" ;
 			}
