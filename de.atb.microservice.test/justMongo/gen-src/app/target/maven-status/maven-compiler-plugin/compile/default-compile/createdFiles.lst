@@ -1,5 +1,0 @@
-org/typhon/app/model/repository/AppRepository.class
-org/typhon/app/model/App.class
-org/typhon/app/configuration/RepositoryConfig.class
-org/typhon/app/AppApplication.class
-org/typhon/app/configuration/SwaggerConfig.class

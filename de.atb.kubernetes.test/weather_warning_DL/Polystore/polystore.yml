@@ -1,0 +1,199 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: textwarningdata-deployment
+  labels:
+    app: textwarningdata-pod
+spec:
+  selector:
+    matchLabels:
+      app: textwarningdata-pod
+  template:
+    metadata:
+      labels:
+        app: textwarningdata-pod
+    spec:
+      containers:
+        - name: textwarningdata
+          image: mongo:latest
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: admin
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: textwarningdata
+  labels:
+    name: textwarningdata
+spec:
+  type: NodePort
+  ports:
+    - name: "27017"
+      port: 27017
+      targetPort: 27017
+      nodePort: 31074
+  selector:
+    app: textwarningdata-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appdata-deployment
+  labels:
+    app: appdata-pod
+spec:
+  selector:
+    matchLabels:
+      app: appdata-pod
+  template:
+    metadata:
+      labels:
+        app: appdata-pod
+    spec:
+      containers:
+        - name: appdata
+          image: mariadb:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: example
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appdata
+  labels:
+    name: appdata
+spec:
+  type: NodePort
+  ports:
+    - name: "3306"
+      port: 3306
+      targetPort: 3306
+      nodePort: 31090
+  selector:
+    app: appdata-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-mongo-deployment
+  labels:
+    app: polystore-mongo-pod
+spec:
+  selector:
+    matchLabels:
+      app: polystore-mongo-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-mongo-pod
+    spec:
+      containers:
+        - name: polystore-mongo
+          image: mongo:latest
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: admin
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polystore-mongo
+  labels:
+    name: polystore-mongo
+spec:
+  type: NodePort
+  ports:
+    - name: "27017"
+      port: 27017
+      targetPort: 27017
+      nodePort: 30064
+  selector:
+    app: polystore-mongo-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: typhon-polystore-service-deployment
+  labels:
+    app: typhon-polystore-service-pod
+spec:
+  selector:
+    matchLabels:
+      app: typhon-polystore-service-pod
+  template:
+    metadata:
+      labels:
+        app: typhon-polystore-service-pod
+    spec:
+      containers:
+        - name: typhon-polystore-service
+          image: clms/typhon-polystore-api:latest
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: typhon-polystore-service
+  labels:
+    name: typhon-polystore-service
+spec:
+  type: NodePort
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+      nodePort: 30061
+  selector:
+    app: typhon-polystore-service-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-ui-deployment
+  labels:
+    app: polystore-ui-pod
+spec:
+  selector:
+    matchLabels:
+      app: polystore-ui-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-ui-pod
+    spec:
+      containers:
+        - name: polystore-ui
+          image: clms/typhon-polystore-ui:latest
+          env:
+            - name: API_PORT
+              value: "30061"
+            - name: API_HOST
+              value: "192.168.99.101"
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polystore-ui
+  labels:
+    name: polystore-ui
+spec:
+  type: NodePort
+  ports:
+    - name: "4200"
+      port: 4200
+      targetPort: 4200
+      nodePort: 30075
+  selector:
+    app: polystore-ui-pod
+---
+

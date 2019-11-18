@@ -17,14 +17,26 @@
  aApplication.containers 
 /]
 
-[query public isDocker(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(str | str='Docker')<>null
+[query public isDockerCompose(aDeploymentModel : DeploymentModel) : Boolean = 
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='DockerCompose')<>null
 /]
 
 [query public isKubernetes(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(self = 'Kubernetes') <> null
+aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='Kubernetes') <> null
 /]
 
-[query public isRocket(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ContainerType).name->any(self = 'Rocket') <> null
+[query public getPublishedPort(aPorts : Ports) : Key_Values = 
+aPorts.key_values->any(key | key.name='published')
+/]
+
+[query public getTargetPort(aPorts : Ports) : Key_Values = 
+aPorts.key_values->any(key | key.name='target') 
+/]
+
+[query public findReplicas(aContainer : Container) : Key_Values =
+aContainer.properties->any(key | key.name='replicas')
+/]
+
+[query public getKey_ValuesWithoutFirst(aPort : Ports) : OrderedSet(Key_Values) = 
+aPort.key_values->removeAll(aPort.key_values->first()->asOrderedSet())
 /]

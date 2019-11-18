@@ -1,8 +1,11 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,12 +31,30 @@ public class CreationMainPage extends MyWizardPage {
 	private Text fileText;
 	private Combo templateCombo;
 	private int chosenTemplate;
-	private boolean useAnalytics;
+	private String templateName;
 	private String DLmodelName;
+	private Properties properties;
+	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
 
+	private Button checkbox;
+	private Text hostText;
+	private Text portText;
+	
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
 		this.MLmodelPath = MLmodelPath;
+		this.properties = new Properties();
+		loadProperties();
+	}
+
+	private void loadProperties() {
+		InputStream input = CreationMainPage.class.getClassLoader()
+				.getResourceAsStream(PROPERTIES_PATH);
+		try {
+			this.properties.load(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -44,6 +65,7 @@ public class CreationMainPage extends MyWizardPage {
 		createHeader(main);
 		createCombo(main);
 		createAdditions(main);
+		createPolystoreSpecs(main);
 		setControl(main);
 	}
 
@@ -60,7 +82,7 @@ public class CreationMainPage extends MyWizardPage {
 		Label folderText = new Label(main, SWT.NONE);
 		folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
 		folderText.setText(getFolder());
-		
+
 		Label fileLabel = new Label(main, SWT.NONE);
 		fileLabel.setText("Name: ");
 		fileText = new Text(main, SWT.BORDER);
@@ -84,7 +106,8 @@ public class CreationMainPage extends MyWizardPage {
 		List<String> itemList = new ArrayList<String>();
 		for (SupportedTechnologies tech : SupportedTechnologies.values()) {
 			itemList.add(tech.getDisplayedName());
-			//templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow doesn't work
+			// templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow
+			// doesn't work
 		}
 		templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
 		templateCombo.setText(templateCombo.getItem(0));
@@ -93,6 +116,35 @@ public class CreationMainPage extends MyWizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				chosenTemplate = templateCombo.getSelectionIndex();
+				templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
+				if (templateName.equals("Kubernetes")) {
+					checkbox.setEnabled(false);
+					checkbox.setSelection(false);
+					properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
+					properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
+					properties.setProperty("ui.environment.API_PORT", "\"30061\"");
+					properties.setProperty("api.publishedPort", "30061");
+					properties.setProperty("ui.publishedPort", "30075");
+					properties.setProperty("db.publishedPort", "30064");
+					properties.setProperty("db.hostname", "192.168.99.101");
+					properties.setProperty("api.hostname", "192.168.99.101");
+					properties.setProperty("ui.hostname", "192.168.99.101");
+					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
+					portText.setText(properties.getProperty("ui.environment.API_PORT"));
+				} else {
+					checkbox.setEnabled(true);
+					properties.setProperty("ui.environment.API_HOST", "localhost");
+					properties.setProperty("ui.environment.API_PORT", "8080");
+					properties.setProperty("api.publishedPort", "8080");
+					properties.setProperty("ui.publishedPort", "4200");
+					properties.setProperty("db.publishedPort", "27017");
+					properties.setProperty("db.hostname", "localhost");
+					properties.setProperty("api.hostname", "localhost");
+					properties.setProperty("ui.hostname", "localhost");
+					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
+					portText.setText(properties.getProperty("ui.environment.API_PORT"));
+					
+				}
 			}
 		});
 	}
@@ -101,23 +153,47 @@ public class CreationMainPage extends MyWizardPage {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
 		main.setLayout(layout);
-		
+
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
-		
-		Button checkbox = new Button(main, SWT.CHECK);
+
+		checkbox = new Button(main, SWT.CHECK);
 		checkbox.setText("Use Typhon Data Analytics");
 		checkbox.setSelection(false);
-		this.useAnalytics = false;
 		checkbox.setLayoutData(gridData);
 		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
 		checkbox.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				useAnalytics = checkbox.getSelection();
+				properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
 			}
 		});
 
+	}
+
+	private void createPolystoreSpecs(Composite main) {
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		main.setLayout(layout);
+
+		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+
+		Label hostLabel = new Label(main, SWT.NONE);
+		hostLabel.setText("Api Host: ");
+		hostText = new Text(main, SWT.BORDER);
+		hostText.setLayoutData(gridData);
+		hostText.setText(properties.getProperty("ui.environment.API_HOST"));
+		hostText.addModifyListener(e -> properties.setProperty("ui.environment.API_HOST", hostText.getText()));
+
+		Label portLabel = new Label(main, SWT.NONE);
+		portLabel.setText("Api Port: ");
+		portText = new Text(main, SWT.BORDER);
+		portText.setLayoutData(gridData);
+		portText.setText(properties.getProperty("ui.environment.API_PORT"));
+		portText.addModifyListener(e -> {
+			properties.setProperty("ui.environment.API_PORT", portText.getText());
+			properties.setProperty("api.publishedPort", portText.getText().replaceAll("\"", ""));
+		});
 	}
 
 	private void validate() {
@@ -129,13 +205,11 @@ public class CreationMainPage extends MyWizardPage {
 		IFile file = ResourcesPlugin.getWorkspace().getRoot()
 				.getFile(new Path(getFolder() + "/" + fileText.getText() + ".tdl"));
 		if (file.exists()) {
-			setStatus(new Status(IStatus.ERROR, "NewFileWizard", //$NON-NLS-1$
-					"File '" + fileText.getText() + ".tdl"
-							+ "' already exists."));
+			setStatus(new Status(IStatus.WARNING, "NewFileWizard", //$NON-NLS-1$
+					"File '" + fileText.getText() + ".tdl" + "' already exists and will be overwritten if you continue."));
 			return;
 		}
 	}
-
 
 	private String getFolder() {
 		String path = MLmodelPath.toString();
@@ -146,17 +220,25 @@ public class CreationMainPage extends MyWizardPage {
 	public int getChosenTemplate() {
 		return chosenTemplate;
 	}
-	
+
 	public boolean getUseAnalytics() {
-		return useAnalytics;
+		return Boolean.parseBoolean((String) properties.get("polystore.useAnalytics"));
 	}
-	
+
 	public String getModelName() {
 		return fileText.getText() + ".tdl";
 	}
 
 	public String getDLmodelName() {
 		return DLmodelName;
+	}
+	
+	public Properties getProperties() {
+		return properties;
+	}
+
+	public String getPROPERTIES_PATH() {
+		return PROPERTIES_PATH;
 	}
 
 }

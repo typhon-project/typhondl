@@ -3,7 +3,107 @@
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
-[template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isDocker()) post (trim())]
+[template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isKubernetes()) post (trim())]
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[for (aApplication : Application | aCluster.getAllApplications())]
+
+[file (aApplication.name + '/polystore.yml', false, 'UTF-8')]
+[for (aContainer : Container | aApplication.containers)]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name.toLower()/]-deployment
+  labels:
+    app: [aContainer.name.toLower()/]-pod
+spec:
+[if (aContainer.findReplicas() <> null)]
+  replicas: [aContainer.findReplicas().value/]
+[/if]
+  selector:
+    matchLabels:
+      app: [aContainer.name.toLower()/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name.toLower()/]-pod
+    spec:
+      containers:
+        - name: [aContainer.name.toLower()/]
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+[if (aContainer.properties <> null)]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: [aContainer.name.toLower()/]
+  labels:
+    name: [aContainer.name.toLower()/]
+spec:
+  type: NodePort
+  ports:
+    - name: "[aContainer.ports.getTargetPort().value/]"
+      port: [aContainer.ports.getTargetPort().value/]
+      targetPort: [aContainer.ports.getTargetPort().value/]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+  selector:
+    app: [aContainer.name.toLower()/]-pod
+---
+[/for]
+
+[/file]
+[/for]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Property) post (trim())]
+something went wrong with a Property
+[/template]
+
+[template public printKubernetes(arg : Key_Values) post (trim())]
+[if (arg.name.equalsIgnoreCase('hostname')._or(arg.name.equalsIgnoreCase('replicas')))][else]
+[arg.name/]: [arg.value/]
+[/if]
+[/template]
+
+[template public printKubernetes(arg : Key_KeyValueList) post (trim())]
+[if (arg.name.equalsIgnoreCase('environment')._or(arg.name.equalsIgnoreCase('env')))]
+env:
+[for (aKey_Values : Key_Values | arg.key_Values)]
+  - name: [aKey_Values.name/]
+    value: [aKey_Values.value/]
+[/for]
+[/if]
+[/template]
+
+[template public printKubernetes(arg : Key_ValueArray) post (trim())]
+TODO
+[/template]
+
+
+
+[template public printImage(aService : Services) post (trim())]
+	template_expression
+[/template]
+
+[template public printImage(aSoftware : Software) post (trim())]
+image: [aSoftware.image.value/]
+[for (aProperty : Property | aSoftware.parameters)]
+[aProperty.printKubernetes()/]
+[/for]
+[/template]
+
+[template public printImage(aDB : DB) post (trim())]
+image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
+[for (aProperty : Property | aDB.parameters)]
+[aProperty.printKubernetes()/]
+[/for]
+[/template]
+
+[template public generateDeployment(aDeploymentModel : DeploymentModel)? (aDeploymentModel.isDockerCompose()) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [for (aApplication : Application | aCluster.getAllApplications())]
@@ -18,10 +118,10 @@ version: '3.7'
 [/if]
 services:
 [for (aContainer : Container | aApplication.getAllContainers())]
-[if (aContainer.name = 'kafka')]
+[if (aContainer.name.toLower() = 'kafka')]
 [aApplication.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name/]:
+  [aContainer.name.toLower()/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.printFeature()/]
 [/if]
@@ -33,6 +133,9 @@ services:
 [/if]
 [if (aContainer.networks <> null)]
     [aContainer.networks.print()/]
+[/if]
+[if (aContainer.ports <> null)]
+    [aContainer.ports.print()/]
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
@@ -42,6 +145,14 @@ services:
 [/for]
 [/file]
 [/for]
+[/for]
+[/template]
+
+[template public print(aPorts : Ports) post (trim())]
+ports:
+  - [aPorts.key_values->first().name/]: [aPorts.key_values->first().value/]
+[for (aKey_Values : Key_Values | aPorts.getKey_ValuesWithoutFirst())]
+    [aKey_Values.name/]: [aKey_Values.value/]
 [/for]
 [/template]
 
@@ -412,5 +523,3 @@ echo "Removing 'listeners' from server.properties pre-bootstrap"
 sed -i -e '/^listeners=/d' "$KAFKA_HOME/config/server.properties"
 [/file]
 [/template]
-
-

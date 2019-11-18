@@ -1,141 +1,125 @@
 grammar de.atb.typhondl.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
 
 //import "http://www.eclipse.org/emf/2002/Ecore" as ecore
-
 generate typhonDL "http://www.typhon.org/dsls/xtext/TyphonDL"
 
 DeploymentModel:
-    (guiMetaInformation+=MetaModel)*
-    (elements+=Model)*
-;
+	(guiMetaInformation+=MetaModel)*
+	(elements+=Model)*;
 
 MetaModel:
-    Import
-;
+	Import;
 
-Model: 
-    Platform | Type | Services
-;
+Model:
+	Platform | Type | Services;
 
 Import:
-    'import' relativePath=Value
-;
-
+	'import' relativePath=Value;
 
 Services:
-	DB | Software
-;
+	DB | Software;
 
 Software:
 	'software' name=ID '{'
 	(image=IMAGE)
 	(parameters+=Property)*
-	'}'
-;
-   
+	'}';
+
 Type:
-    PlatformType | ContainerType | DBType
-;
+	PlatformType | ClusterType | ContainerType | DBType;
 
 DB:
 	'database' name=ID ':' type=[DBType] '{'
 	(image=IMAGE)?
 	(parameters+=Property)*
-	'}'
-;
+	'}';
 
 PlatformType:
-	'platformtype' name=ID
-;
-	
+	'platformtype' name=ID;
+
+ClusterType:
+	'clustertype' name=ID;
+
 ContainerType:
-	'containertype' name=ID
-;
-	
+	'containertype' name=ID;
+
 DBType:
 	'dbtype' name=ID '{'
-		'default' (image=IMAGE)
-		(images+=IMAGE)*
-	'}'
-;
+	'default' (image=IMAGE)
+	(images+=IMAGE)*
+	'}';
 
 IMAGE:
-	'image' '=' value=Value ';'
-;
+	'image' '=' value=Value ';';
 
-Platform :
+Platform:
 	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
-     (clusters+=Cluster)* 
-     '}'
-;
+	(clusters+=Cluster)*
+	'}';
 
-Cluster :
+Cluster:
 	{Cluster}
-	'cluster' name=ID '{'
-		(networks+=Cluster_Network)*
-		(properties+=Property)*
-		(applications+=Application)*		
-     '}'
-;
+	'cluster' name=ID ':' type=[ClusterType] '{'
+	(networks+=Cluster_Network)*
+	(properties+=Property)*
+	(applications+=Application)*
+	'}';
 
 Cluster_Network:
-	'network' name=ID 
-		('{'
-		(key_values+=Key_Values)* 
-		'}')?
-;
+	'network' name=ID
+	('{'
+	(key_values+=Key_Values)*
+	'}')?;
 
 Container_Network:
-	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*
-;
+	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
 
-Application :
+Application:
 	{Application}
 	'application' name=ID '{'
-		(containers+=Container)*     
-     '}'
-;
+	(containers+=Container)*
+	'}';
 
-Container :
+Container:
 	{Container}
-	'container' name=ID ':' type=[ContainerType]'{'
-		(deploys=Reference)?
-		(depends_on+=Dependency)*
-		(networks=Container_Network)?
-		(properties+=Property)*
-	'}'
-;
+	'container' name=ID ':' (type=[ContainerType])? '{'
+	(deploys=Reference)?
+	(depends_on+=Dependency)*
+	(networks=Container_Network)?
+	(ports=Ports)?
+	(properties+=Property)*
+	'}';
+
+Ports:
+	{Ports}
+	'ports' '{'
+	(key_values+=Key_Values)+
+	'}';
 
 Dependency:
-	'depends_on' reference=[Container]
-;
+	'depends_on' reference=[Container];
 
 Reference:
-	'deploys' reference=[Services]
-;
+	'deploys' reference=[Services];
 
-Property :
-	Key_Values | Key_ValueArray | Key_KeyValueList 
-;
+Property:
+	Key_Values | Key_ValueArray | Key_KeyValueList;
 
-Key_Values : 
-	name=ID '=' value=Value(','values+=Value)* ';'
-;
+Key_Values:
+	name=ID '=' value=Value (',' values+=Value)* ';';
 
 Key_KeyValueList:
-	name=ID '{' (key_Values+=Key_Values)+ '}'
-;
+	name=ID '{' (key_Values+=Key_Values)+ '}';
 
-Key_ValueArray : 
+Key_ValueArray:
 	name=ID ('[')
-		(values+=Value)(','values+=Value)*
-	(']')
-;
+	(values+=Value) (',' values+=Value)*
+	(']');
 
-Value : 
-	(STRING|ID|INT|'/'|':'|'-'|'.'|'='|'//')+
-;
+Value:
+	(STRING | ID | INT | '/' | ':' | '-' | '.' | '=' | '//')+;
 
-@Override 
-terminal SL_COMMENT: '#' !('\n'|'\r')* ('\r'? '\n')?;
+@Override
+terminal SL_COMMENT:
+	'#' !('\n' | '\r')* ('\r'? '\n')?;
