@@ -3,12 +3,18 @@
  */
 package de.atb.typhondl.xtext.validation
 
+import de.atb.typhondl.xtext.typhonDL.Cluster
 import de.atb.typhondl.xtext.typhonDL.DBType
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
-import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.Ports
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
+import de.atb.typhondl.xtext.typhonDL.Property
+import java.io.FileReader
 import org.eclipse.xtext.validation.Check
+
+import static extension com.google.common.io.CharStreams.*
+import de.atb.typhondl.xtext.typhonDL.Container
+import de.atb.typhondl.xtext.typhonDL.Key_Values
 
 /**
  * This class contains custom validation rules. 
@@ -18,11 +24,13 @@ import org.eclipse.xtext.validation.Check
 class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	public static val INVALID_PORT = 'invalidPort'
+	public static val INVALID_DOCKER_KEY = 'invalidDockerKey'
 
 	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
 		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
-			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_KEY_VALUE_LIST__KEY_VALUES,
+				INVALID_PORT)
 		}
 	}
 
@@ -31,6 +39,26 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 		for (port : ports.key_values) {
 			if (!(port.name.equals("target") || port.name.equals("published"))) {
 				error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
+			}
+		}
+	}
+
+	def checkComposeKeys(Cluster cluster) {
+		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
+			println("test1")
+			val keys = new FileReader('docker-compose_3.7.txt').readLines
+
+			val containers = <Container>newArrayList
+			cluster.applications.forEach[app | containers.addAll(app.containers)]
+			val properties = <Property>newArrayList
+			containers.forEach[container | properties.addAll(container.properties)]
+			for (property : properties) {
+				if (property instanceof Key_Values) {
+					if (!keys.contains((property as Key_Values).name)){
+						error("Only use Docker Compose keywords", TyphonDLPackage.Literals.KEY_VALUES__VALUE,
+							INVALID_DOCKER_KEY)
+					}
+				}
 			}
 		}
 	}
