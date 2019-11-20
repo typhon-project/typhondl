@@ -43,9 +43,10 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 		}
 	}
 
+	@Check
 	def checkComposeKeys(Cluster cluster) {
 		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
-			println("test1")
+			val path = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
 			val keys = new FileReader('docker-compose_3.7.txt').readLines
 
 			val containers = <Container>newArrayList
