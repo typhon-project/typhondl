@@ -42,26 +42,32 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			}
 		}
 	}
-	
+
 	// the file is read every time a character is typed, maybe not the best approach.
-	@Check//(CheckType.NORMAL) // for checking only on save or request only
+	@Check // (CheckType.NORMAL) // for checking only on save or request only
 	def checkComposeKeys(Cluster cluster) {
+		val containers = <Container>newArrayList
+		cluster.applications.forEach[app|containers.addAll(app.containers)]
+		val properties = <Property>newArrayList
+		containers.forEach[container|properties.addAll(container.properties)]
+		var path = ""
 		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
-			val path = "de/atb/typhondl/xtext/validation/docker-compose_3.7.txt";
-			val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
+			path = "de/atb/typhondl/xtext/validation/docker-compose_3.7.txt";
+		} else if (cluster.type.name.equalsIgnoreCase("Kubernetes")) {
+			path = "de/atb/typhondl/xtext/validation/kubernetes_v1.txt"
+		}
+		val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
 			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
 			val keys = bufferedReader.readLines
-			val containers = <Container>newArrayList
-			cluster.applications.forEach[app|containers.addAll(app.containers)]
-			val properties = <Property>newArrayList
-			containers.forEach[container|properties.addAll(container.properties)]
 			for (property : properties) {
 				if (!keys.contains(property.name)) {
-					error("\"" + property.name + "\" is not a Docker Compose keyword",
+					error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
 						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
 				}
 			}
-		}
+
+
+
 	}
 
 	@Check
