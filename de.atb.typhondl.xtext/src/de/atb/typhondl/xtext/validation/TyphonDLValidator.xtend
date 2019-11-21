@@ -4,17 +4,17 @@
 package de.atb.typhondl.xtext.validation
 
 import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.DBType
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Ports
-import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 import de.atb.typhondl.xtext.typhonDL.Property
-import java.io.FileReader
+import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
-import de.atb.typhondl.xtext.typhonDL.Container
-import de.atb.typhondl.xtext.typhonDL.Key_Values
 
 /**
  * This class contains custom validation rules. 
@@ -46,19 +46,18 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	@Check
 	def checkComposeKeys(Cluster cluster) {
 		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
-			val path = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
-			val keys = new FileReader('docker-compose_3.7.txt').readLines
-
+			val path = "de/atb/typhondl/xtext/validation/docker-compose_3.7.txt";
+			val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
+			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+			val keys = bufferedReader.readLines
 			val containers = <Container>newArrayList
-			cluster.applications.forEach[app | containers.addAll(app.containers)]
+			cluster.applications.forEach[app|containers.addAll(app.containers)]
 			val properties = <Property>newArrayList
-			containers.forEach[container | properties.addAll(container.properties)]
+			containers.forEach[container|properties.addAll(container.properties)]
 			for (property : properties) {
-				if (property instanceof Key_Values) {
-					if (!keys.contains((property as Key_Values).name)){
-						error("Only use Docker Compose keywords", TyphonDLPackage.Literals.KEY_VALUES__VALUE,
-							INVALID_DOCKER_KEY)
-					}
+				if (!keys.contains(property.name)) {
+					error("\"" + property.name + "\" is not a Docker Compose keyword",
+						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
 				}
 			}
 		}
