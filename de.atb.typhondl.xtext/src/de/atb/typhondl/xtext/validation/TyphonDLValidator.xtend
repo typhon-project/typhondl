@@ -42,8 +42,9 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			}
 		}
 	}
-
-	@Check
+	
+	// the file is read every time a character is typed, maybe not the best approach.
+	@Check//(CheckType.NORMAL) // for checking only on save or request only
 	def checkComposeKeys(Cluster cluster) {
 		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
 			val path = "de/atb/typhondl/xtext/validation/docker-compose_3.7.txt";
