@@ -164,6 +164,17 @@ public class ModelCreator {
 					});
 					db.getParameters().add(environment);
 				}
+				// add other key-values:
+				List<String> keys = dbProperties.keySet().stream().map(key -> (String) key)
+						.filter(key -> key.contains("key")).collect(Collectors.toList());
+				if (!keys.isEmpty()) {
+					for (String key : keys) {
+						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
+						key_value.setName(key.substring(key.lastIndexOf('.') +1));
+						key_value.setValue((String) dbProperties.get(key));
+						db.getParameters().add(key_value);
+					}
+				}
 			}
 			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -229,7 +240,8 @@ public class ModelCreator {
 			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("published");
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be removed later
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be
+																										// removed later
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
