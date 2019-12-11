@@ -511,22 +511,29 @@
                 label="Create TyphonDL model"
                 style="push"
                 tooltip="Opens a Wizard to create a TyphonDL Files">
-             <visibleWhen
-                   checkEnabled="false">
-                <with
-                      variable="activeMenuSelection">
-                   <iterate
-                         ifEmpty="false">
-                      <adapt
-                            type="org.eclipse.core.resources.IResource">
-                         <test
-                               property="org.eclipse.core.resources.extension"
-                               value="xmi">
-                         </test>
-                      </adapt>
-                   </iterate>
-                </with>
-             </visibleWhen>
+           <visibleWhen
+                 checkEnabled="false">
+              <with
+                    variable="selection">
+                 <iterate
+                       ifEmpty="false"
+                       operator="or">
+                    <adapt
+                          type="org.eclipse.core.resources.IResource">
+                       <or>
+                          <test
+                                property="org.eclipse.core.resources.extension"
+                                value="xmi">
+                          </test>
+                          <test
+                                property="org.eclipse.core.resources.extension"
+                                value="tmlx">
+                          </test>
+                       </or>
+                    </adapt>
+                 </iterate>
+              </with>
+           </visibleWhen>
           </command>
        </menu>
     </menuContribution>
