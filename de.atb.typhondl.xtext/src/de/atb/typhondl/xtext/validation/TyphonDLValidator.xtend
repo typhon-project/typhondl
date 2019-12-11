@@ -60,7 +60,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
 			val keys = bufferedReader.readLines
 			for (property : properties) {
-				if (!keys.contains(property.name)) {
+				if (!keys.contains(property.name) && !property.name.equals('hostname')) {
 					error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
 						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
 				}
