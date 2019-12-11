@@ -3,12 +3,18 @@
  */
 package de.atb.typhondl.xtext.validation
 
+import de.atb.typhondl.xtext.typhonDL.Cluster
+import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.DBType
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
-import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.Ports
+import de.atb.typhondl.xtext.typhonDL.Property
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
+
+import static extension com.google.common.io.CharStreams.*
 
 /**
  * This class contains custom validation rules. 
@@ -18,11 +24,13 @@ import org.eclipse.xtext.validation.Check
 class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	public static val INVALID_PORT = 'invalidPort'
+	public static val INVALID_DOCKER_KEY = 'invalidDockerKey'
 
 	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
 		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
-			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_VALUES__VALUE, INVALID_PORT)
+			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_KEY_VALUE_LIST__KEY_VALUES,
+				INVALID_PORT)
 		}
 	}
 
@@ -33,6 +41,33 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 				error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
 			}
 		}
+	}
+
+	// the file is read every time a character is typed, maybe not the best approach.
+	@Check // (CheckType.NORMAL) // for checking only on save or request only
+	def checkComposeKeys(Cluster cluster) {
+		val containers = <Container>newArrayList
+		cluster.applications.forEach[app|containers.addAll(app.containers)]
+		val properties = <Property>newArrayList
+		containers.forEach[container|properties.addAll(container.properties)]
+		var path = ""
+		if (cluster.type.name.equalsIgnoreCase("DockerCompose")) {
+			path = "de/atb/typhondl/xtext/validation/docker-compose_3.7.txt";
+		} else if (cluster.type.name.equalsIgnoreCase("Kubernetes")) {
+			path = "de/atb/typhondl/xtext/validation/kubernetes_v1.txt"
+		}
+		val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
+			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+			val keys = bufferedReader.readLines
+			for (property : properties) {
+				if (!keys.contains(property.name)) {
+					error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
+						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
+				}
+			}
+
+
+
 	}
 
 	@Check
