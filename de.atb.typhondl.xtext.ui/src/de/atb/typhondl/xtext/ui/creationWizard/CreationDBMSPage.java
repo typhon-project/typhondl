@@ -98,7 +98,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			combo.setItems(database.getType().getPossibleDBMSs());
+			combo.setItems(database.getType().getPossibleDBMSs()); //TODO only the activated ones from preferences
 			combo.setText(database.getType().getPossibleDBMSs()[0]);
 			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
 			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
