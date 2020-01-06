@@ -8,10 +8,14 @@
 
 package de.atb.typhondl.xtext.ui.preferences;
 
+import java.util.Iterator;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Composite;
@@ -30,7 +34,8 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
  */
 public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 	@Inject
-	public TyphonDLTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry, TemplateStore templateStore) {
+	public TyphonDLTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
+			TemplateStore templateStore) {
 		setPreferenceStore(preferenceStore);
 		setContextTypeRegistry(registry);
 		setTemplateStore(templateStore);
@@ -40,7 +45,7 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 	protected boolean isShowFormatterSetting() {
 		return false;
 	}
-	
+
 	/**
 	 * @since 2.1
 	 */
@@ -50,7 +55,7 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 		ancestor.layout();
 		return result;
 	}
-	
+
 	/**
 	 * @since 2.1
 	 */
@@ -63,12 +68,18 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 	}
 
 	private void addInitialTemplates() {
-		TableViewer fTableViewer = getTableViewer();
-		Template template= new Template("", "", TyphonDLFactory.eINSTANCE.createDB()., "", true);   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-		Template newTemplate= editTemplate(template, false, true);
-		if (newTemplate != null) {
-			TemplatePersistenceData data= new TemplatePersistenceData(newTemplate, true);
+		CheckboxTableViewer fTableViewer = (CheckboxTableViewer) getTableViewer();
+		// Template template= new Template("", "",
+		// TyphonDLFactory.eINSTANCE.createDB()., "", true); //$NON-NLS-1$ //$NON-NLS-2$
+		// //$NON-NLS-3$
+
+		Iterator<TemplateContextType> it = getContextTypeRegistry().contextTypes();
+		if (it.hasNext()) {
+			Template newTemplate = new Template("TestTemplate", "just testing", it.next().getId(), //$NON-NLS-1$ //$NON-NLS-2$
+					"database Test : mongo", true); //$NON-NLS-1$
+
+			TemplatePersistenceData data = new TemplatePersistenceData(newTemplate, true);
 			getTemplateStore().add(data);
 			fTableViewer.refresh();
 			fTableViewer.setChecked(data, true);
