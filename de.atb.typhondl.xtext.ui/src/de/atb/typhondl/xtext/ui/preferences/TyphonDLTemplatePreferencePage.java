@@ -70,20 +70,16 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 	private void addInitialTemplates() {
 
 		CheckboxTableViewer fTableViewer = (CheckboxTableViewer) getTableViewer();
-		// Template template= new Template("", "",
-		// TyphonDLFactory.eINSTANCE.createDB()., "", true); //$NON-NLS-1$ //$NON-NLS-2$
-		// //$NON-NLS-3$
+		ContextTypeRegistry contextTypeRegistry = getContextTypeRegistry();
+		TemplateContextType contextTypeDB = contextTypeRegistry.getContextType("de.atb.typhondl.xtext.TyphonDL.DB");
+		Template newTemplate = new Template("TestTemplate", "just testing", contextTypeDB.getId(),
+				"database Test : mongo", true);
 
-		Iterator<TemplateContextType> it = getContextTypeRegistry().contextTypes();
-		if (it.hasNext()) {
-			Template newTemplate = new Template("TestTemplate", "just testing", it.next().getId(), //$NON-NLS-1$ //$NON-NLS-2$
-					"database Test : mongo", true); //$NON-NLS-1$
+		TemplatePersistenceData data = new TemplatePersistenceData(newTemplate, true);
+		getTemplateStore().add(data);
+		fTableViewer.refresh();
+		fTableViewer.setChecked(data, true);
+		fTableViewer.setSelection(new StructuredSelection(data));
 
-			TemplatePersistenceData data = new TemplatePersistenceData(newTemplate, true);
-			getTemplateStore().add(data);
-			fTableViewer.refresh();
-			fTableViewer.setChecked(data, true);
-			fTableViewer.setSelection(new StructuredSelection(data));
-		}
 	}
 }
