@@ -440,28 +440,6 @@
              icon="icons/typhon_icon.png"
              label="TyphonDL">
           <command
-                commandId="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel"
-                label="Update DL model"
-                style="push"
-                tooltip="Update DL model after changing ML model">
-                <visibleWhen
-                   checkEnabled="false">
-                <with
-                      variable="activeMenuSelection">
-                   <iterate
-                         ifEmpty="false">
-                      <adapt
-                            type="org.eclipse.core.resources.IResource">
-                         <test
-                               property="org.eclipse.core.resources.extension"
-                               value="tdl">
-                         </test>
-                      </adapt>
-                   </iterate>
-                </with>
-             </visibleWhen>
-          </command>
-          <command
                 commandId="de.atb.typhondl.acceleo.generate"
                 label="Generate Deployment Scripts"
                 style="push"
@@ -477,29 +455,6 @@
                          <test
                                property="org.eclipse.core.resources.extension"
                                value="tdl">
-                         </test>
-                      </adapt>
-                   </iterate>
-                </with>
-             </visibleWhen>
-          </command>
-          <command
-                commandId="de.atb.typhondl.xtext.ui.editor.OpenProperties"
-                helpContextId="Enter additional data in a Graphical User Interface"
-                label="Open Model Editor"
-                style="push"
-                tooltip="Enter additional data in a Graphical User Interface">
-                <visibleWhen
-                   checkEnabled="false">
-                <with
-                      variable="activeMenuSelection">
-                   <iterate
-                         ifEmpty="false">
-                      <adapt
-                            type="org.eclipse.core.resources.IResource">
-                         <test
-                               property="org.eclipse.core.resources.extension"
-                               value="tdlTEST">
                          </test>
                       </adapt>
                    </iterate>
@@ -539,22 +494,10 @@
     </menuContribution>
  </extension>
  <extension
-       point="org.eclipse.ui.commands">
-    <command
-          defaultHandler="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.OpenEditorHandler"
-          id="de.atb.typhondl.xtext.ui.editor.OpenProperties"
-          name="Open Editor">
-    </command>
- </extension>
- <extension
        point="org.eclipse.ui.handlers">
     <handler
           class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.CreateModelHandler"
           commandId="de.atb.typhondl.xtext.ui.creationWizard.CreateModel">
-    </handler>
-    <handler
-          class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.UpdateModelHandler"
-          commandId="de.atb.typhondl.xtext.ui.updateWizard.UpdateModel">
     </handler>
     <handler
           class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.handlers.GenerateScriptsHandler"
