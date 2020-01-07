@@ -39,7 +39,7 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 		setPreferenceStore(preferenceStore);
 		setContextTypeRegistry(registry);
 		setTemplateStore(templateStore);
-		addInitialTemplates();
+		//addInitialTemplates(); TODO somewhere else: in default Preferences?
 	}
 
 	@Override
@@ -69,17 +69,20 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 
 	private void addInitialTemplates() {
 
-		CheckboxTableViewer fTableViewer = (CheckboxTableViewer) getTableViewer();
+//		CheckboxTableViewer fTableViewer = (CheckboxTableViewer) getTableViewer();
 		ContextTypeRegistry contextTypeRegistry = getContextTypeRegistry();
 		TemplateContextType contextTypeDB = contextTypeRegistry.getContextType("de.atb.typhondl.xtext.TyphonDL.DB");
 		Template newTemplate = new Template("TestTemplate", "just testing", contextTypeDB.getId(),
 				"database Test : mongo", true);
 
+		getTemplateStore().restoreDefaults(true);
 		TemplatePersistenceData data = new TemplatePersistenceData(newTemplate, true);
-		getTemplateStore().add(data);
-		fTableViewer.refresh();
-		fTableViewer.setChecked(data, true);
-		fTableViewer.setSelection(new StructuredSelection(data));
+		if (getTemplateStore().findTemplate(newTemplate.getName())!=null){
+			getTemplateStore().add(data);
+		}
+//		fTableViewer.refresh();
+//		fTableViewer.setChecked(data, true);
+//		fTableViewer.setSelection(new StructuredSelection(data));
 
 	}
 }
