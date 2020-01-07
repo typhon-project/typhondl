@@ -28,27 +28,27 @@ import org.xml.sax.SAXException;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.DBMS;
-import de.atb.typhondl.xtext.ui.utilities.Database;
+import de.atb.typhondl.xtext.ui.utilities.AbstractDatabase;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 public class CreationDBMSPage extends MyWizardPage {
 
-	private HashMap<Database, WizardFields> databaseSettings;
+	private HashMap<AbstractDatabase, WizardFields> databaseSettings;
 	private IFile file;
 
 	public CreationDBMSPage(String pageName, IFile file) {
 		this(pageName, file, readModel(file));
 	}
 
-	public CreationDBMSPage(String pageName, IFile file, ArrayList<Database> MLmodel) {
+	public CreationDBMSPage(String pageName, IFile file, ArrayList<AbstractDatabase> MLmodel) {
 		super(pageName);
-		this.databaseSettings = new HashMap<Database, WizardFields>();
+		this.databaseSettings = new HashMap<AbstractDatabase, WizardFields>();
 		MLmodel.forEach(db -> this.databaseSettings.put(db, null));
 		this.file = file;
 	}
 
-	private static ArrayList<Database> readModel(IFile MLmodel) {
+	private static ArrayList<AbstractDatabase> readModel(IFile MLmodel) {
 		try {
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
@@ -66,7 +66,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
 
-		for (Database database : databaseSettings.keySet()) {
+		for (AbstractDatabase database : databaseSettings.keySet()) {
 
 			Group group = new Group(main, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
@@ -99,7 +99,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			String[] DBMSnames = database.getType().getDBMSnames();
+			String[] DBMSnames = database.getType().getDBMStypes();
 			combo.setItems(DBMSnames); //TODO only the activated ones from preferences
 			combo.setText(DBMSnames[0]);
 			DBType type = database.getType().getPossibleDBMSs()[0].getType();
@@ -139,7 +139,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		for (Database database : databaseSettings.keySet()) {
+		for (AbstractDatabase database : databaseSettings.keySet()) {
 			WizardFields fields = databaseSettings.get(database);
 			if (fields.getTextField().isEnabled()) {
 				String pathToDatabaseFile = fields.getTextField().getText();
@@ -177,7 +177,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		return false;
 	}
 
-	public ArrayList<Database> getDatabases() {
-		return new ArrayList<Database>(databaseSettings.keySet());
+	public ArrayList<AbstractDatabase> getDatabases() {
+		return new ArrayList<AbstractDatabase>(databaseSettings.keySet());
 	}
 }

@@ -12,15 +12,25 @@ public class DBMS {
 	
 	private String name;
 	private DBType type;
+	private String abstractType;
 
 	public DBMS(String name) {
 		this.name = name;
-		setDBType();
+	}
+	
+	public DBMS(String name, String abstractType) {
+		this.name = name;
+		this.abstractType = abstractType;
+	}
+	
+	public DBMS(String name, DBType type) {
+		this.name = name;
+		this.type = type;
 	}
 
-	private void setDBType() {
-		type = TyphonDLFactory.eINSTANCE.createDBType();
-		type.setName(name);
+	public void setDBType(String type) {
+		this.type = TyphonDLFactory.eINSTANCE.createDBType();
+		this.type.setName(type);
 	}
 
 	public DBType getType() {

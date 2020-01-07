@@ -39,7 +39,6 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -84,7 +83,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(ArrayList<Database> databases, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(ArrayList<AbstractDatabase> databases, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -123,7 +122,7 @@ public class ModelCreator {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
 
-		for (Database database : databases) {
+		for (AbstractDatabase database : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DB db;
 			DeploymentModel dbModel;

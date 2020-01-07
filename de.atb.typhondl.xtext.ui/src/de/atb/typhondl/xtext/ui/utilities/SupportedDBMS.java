@@ -4,7 +4,7 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
-			return new DBMS[] {new DBMS("MariaDB"), new DBMS("MySQL")};
+			return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
 		}
 	},
 	graphdb(){
@@ -16,7 +16,7 @@ public enum SupportedDBMS {
 	documentdb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
-			return new DBMS[] {new DBMS("Mongo")};
+			return new DBMS[] {new DBMS("", "Mongo")};
 		}
 	},
 	keyvaluedb(){
@@ -28,21 +28,21 @@ public enum SupportedDBMS {
 	
 	public abstract DBMS[] getPossibleDBMSs();
 	
-	public String[] getDBMSnames() {
+	public String[] getDBMStypes() {
 		DBMS[] possibleDBMSs = getPossibleDBMSs();
-		String[] names = new String[possibleDBMSs.length];
+		String[] types = new String[possibleDBMSs.length];
 		for (int i = 0; i < possibleDBMSs.length; i++) {
-			names[i] = possibleDBMSs[i].getName();
+			types[i] = possibleDBMSs[i].getType().getName();
 		}
-		return names;
+		return types;
 	}
 	
-	public DBMS getDBMS(String dbName) {
-		for (DBMS db : getPossibleDBMSs()) {
-			if (db.getName().equalsIgnoreCase(dbName))
-				return db;
-		}
-		throw new RuntimeException("Database " + dbName + " not found");
-	}
+//	public DBMS getDBMS(String dbName) {
+//		for (DBMS db : getPossibleDBMSs()) {
+//			if (db.getName().equalsIgnoreCase(dbName))
+//				return db;
+//		}
+//		throw new RuntimeException("Database " + dbName + " not found");
+//	}
 	
 }
