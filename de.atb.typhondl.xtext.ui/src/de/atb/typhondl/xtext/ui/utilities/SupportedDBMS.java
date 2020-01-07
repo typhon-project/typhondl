@@ -35,14 +35,5 @@ public enum SupportedDBMS {
 			types[i] = possibleDBMSs[i].getType().getName();
 		}
 		return types;
-	}
-	
-//	public DBMS getDBMS(String dbName) {
-//		for (DBMS db : getPossibleDBMSs()) {
-//			if (db.getName().equalsIgnoreCase(dbName))
-//				return db;
-//		}
-//		throw new RuntimeException("Database " + dbName + " not found");
-//	}
-	
+	}	
 }

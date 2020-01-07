@@ -28,28 +28,30 @@ import org.xml.sax.SAXException;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.DBMS;
-import de.atb.typhondl.xtext.ui.utilities.AbstractDatabase;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedDBMS;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 public class CreationDBMSPage extends MyWizardPage {
 
-	private HashMap<AbstractDatabase, WizardFields> databaseSettings;
+	private HashMap<DBMS, WizardFields> databaseSettings;
 	private IFile file;
 
 	public CreationDBMSPage(String pageName, IFile file) {
 		this(pageName, file, readModel(file));
 	}
 
-	public CreationDBMSPage(String pageName, IFile file, ArrayList<AbstractDatabase> MLmodel) {
+	public CreationDBMSPage(String pageName, IFile file, ArrayList<DBMS> MLmodel) {
 		super(pageName);
-		this.databaseSettings = new HashMap<AbstractDatabase, WizardFields>();
+		this.databaseSettings = new HashMap<DBMS, WizardFields>();
 		MLmodel.forEach(db -> this.databaseSettings.put(db, null));
 		this.file = file;
 	}
 
-	private static ArrayList<AbstractDatabase> readModel(IFile MLmodel) {
+	private static ArrayList<DBMS> readModel(IFile MLmodel) {
 		try {
+			// every DBMS in the List has a name and an abstractType, every other value ==
+			// null
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
@@ -66,32 +68,30 @@ public class CreationDBMSPage extends MyWizardPage {
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
 
-		for (AbstractDatabase database : databaseSettings.keySet()) {
+		for (DBMS dbms : databaseSettings.keySet()) {
 
 			Group group = new Group(main, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-			group.setText(database.getName());
+			group.setText(dbms.getName());
 
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing file");
-			checkbox.setSelection(fileExists(database.getName() + ".tdl"));
+			checkbox.setSelection(fileExists(dbms.getName() + ".tdl"));
 			checkbox.setLayoutData(gridData);
-			checkbox.setToolTipText("Check this box if you already have a model file for " + database.getName());
+			checkbox.setToolTipText("Check this box if you already have a model file for " + dbms.getName());
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					WizardFields wizardField = databaseSettings.get(database);
+					WizardFields wizardField = databaseSettings.get(dbms);
 					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 					if (wizardField.getCheckbox().getSelection()) {
-						database.setDbms(null); // delete set DBMS in database if an existing file is used
-						database.setPathToDBModelFile(wizardField.getTextField().getText());
+						dbms.removeDBType(); // delete set DBType in DBMS if an existing file is used
+						dbms.setPathToDBModelFile(wizardField.getTextField().getText());
 					} else {
-						DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-						type.setName(wizardField.getCombo().getText().toLowerCase());
-						database.setDbms(type);
-						database.setPathToDBModelFile(null);
+						dbms.setDBType(wizardField.getCombo().getText().toLowerCase());
+						dbms.setPathToDBModelFile(null);
 					}
 					validate();
 				}
@@ -99,38 +99,39 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			String[] DBMSnames = database.getType().getDBMStypes();
-			combo.setItems(DBMSnames); //TODO only the activated ones from preferences
-			combo.setText(DBMSnames[0]);
-			DBType type = database.getType().getPossibleDBMSs()[0].getType();
+			SupportedDBMS abstractType = SupportedDBMS.valueOf(dbms.getAbstractType());
+			String[] DBMStypes = abstractType.getDBMStypes();
+			combo.setItems(DBMStypes); // TODO only the activated ones from preferences
+			combo.setText(DBMStypes[0]);
+			DBMS[] possibleDBMSs = abstractType.getPossibleDBMSs();
+			DBType type = possibleDBMSs[0].getType();
 			if (!checkbox.getSelection())
-				database.setDbms(type);
+				dbms.setDBType(type);
 			combo.setEnabled(!checkbox.getSelection());
-			combo.setToolTipText(
-					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
+			combo.setToolTipText("Choose specific DBMS for " + dbms.getName() + " of type " + dbms.getAbstractType());
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-					type.setName(databaseSettings.get(database).getCombo().getText().toLowerCase());
-					database.setDbms(type);
+					type.setName(databaseSettings.get(dbms).getCombo().getText().toLowerCase());
+					dbms.setDBType(type);
 					validate();
 				}
 			});
 
 			new Label(group, NONE).setText("Database file: ");
 			Text textField = new Text(group, SWT.BORDER);
-			textField.setText(database.getName() + ".tdl");
+			textField.setText(dbms.getName() + ".tdl");
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
 			if (checkbox.getSelection())
-				database.setPathToDBModelFile(textField.getText());
+				dbms.setPathToDBModelFile(textField.getText());
 			textField.addModifyListener(e -> {
-				database.setPathToDBModelFile(databaseSettings.get(database).getTextField().getText());
+				dbms.setPathToDBModelFile(databaseSettings.get(dbms).getTextField().getText());
 				validate();
 			});
-			databaseSettings.put(database, new WizardFields(checkbox, combo, textField));
+			databaseSettings.put(dbms, new WizardFields(checkbox, combo, textField));
 		}
 		validate();
 		setControl(main);
@@ -139,8 +140,8 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		for (AbstractDatabase database : databaseSettings.keySet()) {
-			WizardFields fields = databaseSettings.get(database);
+		for (DBMS dbms : databaseSettings.keySet()) {
+			WizardFields fields = databaseSettings.get(dbms);
 			if (fields.getTextField().isEnabled()) {
 				String pathToDatabaseFile = fields.getTextField().getText();
 				if (!pathToDatabaseFile.endsWith(".tdl")) {
@@ -153,7 +154,7 @@ public class CreationDBMSPage extends MyWizardPage {
 							"Database file " + pathToDatabaseFile + " doesn't exists.");
 				}
 			} else {
-				String pathToDatabaseFile = database.getName() + ".tdl";
+				String pathToDatabaseFile = dbms.getName() + ".tdl";
 				if (fileExists(pathToDatabaseFile)) {
 					warning.add(pathToDatabaseFile);
 				}
@@ -177,7 +178,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		return false;
 	}
 
-	public ArrayList<AbstractDatabase> getDatabases() {
-		return new ArrayList<AbstractDatabase>(databaseSettings.keySet());
+	public ArrayList<DBMS> getDatabases() {
+		return new ArrayList<DBMS>(databaseSettings.keySet());
 	}
 }

@@ -13,6 +13,7 @@ public class DBMS {
 	private String name;
 	private DBType type;
 	private String abstractType;
+	private String pathToDBModelFile;
 
 	public DBMS(String name) {
 		this.name = name;
@@ -23,11 +24,20 @@ public class DBMS {
 		this.abstractType = abstractType;
 	}
 	
-	public DBMS(String name, DBType type) {
+	public DBMS(String name, DBType type, String abstractType) {
 		this.name = name;
 		this.type = type;
+		this.abstractType = abstractType;
+	}
+	
+	public void removeDBType() {
+		this.type = null;
 	}
 
+	public void setDBType(DBType type) {
+		this.type = type;
+	}
+	
 	public void setDBType(String type) {
 		this.type = TyphonDLFactory.eINSTANCE.createDBType();
 		this.type.setName(type);
@@ -39,6 +49,18 @@ public class DBMS {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getPathToDBModelFile() {
+		return pathToDBModelFile;
+	}
+
+	public void setPathToDBModelFile(String pathToDBModelFile) {
+		this.pathToDBModelFile = pathToDBModelFile;
+	}
+
+	public String getAbstractType() {
+		return abstractType;
 	}
 
 }
