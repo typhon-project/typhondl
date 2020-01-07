@@ -50,8 +50,8 @@ public class CreationDBMSPage extends MyWizardPage {
 
 	private static ArrayList<DBMS> readModel(IFile MLmodel) {
 		try {
-			// every DBMS in the List has a name and an abstractType, every other value ==
-			// null
+			// every DBMS in the List has a name and an abstractType, 
+			// every other value == null
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();

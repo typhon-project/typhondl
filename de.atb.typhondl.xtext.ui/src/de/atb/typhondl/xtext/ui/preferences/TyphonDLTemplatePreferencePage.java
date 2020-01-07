@@ -39,6 +39,7 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 		setPreferenceStore(preferenceStore);
 		setContextTypeRegistry(registry);
 		setTemplateStore(templateStore);
+		addInitialTemplates();
 	}
 
 	@Override
@@ -64,7 +65,6 @@ public class TyphonDLTemplatePreferencePage extends TemplatePreferencePage {
 		super.createControl(parent);
 		// set the with of the leftmost column ('name')
 		getTableViewer().getTable().getColumns()[0].pack();
-		addInitialTemplates();
 	}
 
 	private void addInitialTemplates() {

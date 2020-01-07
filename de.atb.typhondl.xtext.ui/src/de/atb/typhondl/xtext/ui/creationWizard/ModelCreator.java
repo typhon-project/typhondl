@@ -39,6 +39,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.utilities.DBMS;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -83,7 +84,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(ArrayList<AbstractDatabase> databases, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(ArrayList<DBMS> databases, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -122,28 +123,28 @@ public class ModelCreator {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
 
-		for (AbstractDatabase database : databases) {
+		for (DBMS dbms : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DB db;
 			DeploymentModel dbModel;
-			if (database.getPathToDBModelFile() != null) { // use existing .tdl file
+			if (dbms.getPathToDBModelFile() != null) { // use existing .tdl file
 				URI dbURI = URI.createPlatformResourceURI(
-						this.folder.append(database.getPathToDBModelFile()).toString(), true);
+						this.folder.append(dbms.getPathToDBModelFile()).toString(), true);
 				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
 				db = getDB(dbModel);
-				importedDB.setRelativePath(database.getPathToDBModelFile());
+				importedDB.setRelativePath(dbms.getPathToDBModelFile());
 			} else {
 				Properties dbProperties = new Properties();
 				InputStream inStream = ModelCreator.class.getClassLoader().getResourceAsStream(
-						PATH_TO_PROPERTIES + database.getDbms().getName().toLowerCase() + ".properties");
+						PATH_TO_PROPERTIES + dbms.getType().getName().toLowerCase() + ".properties");
 				try {
 					dbProperties.load(inStream);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				db = TyphonDLFactory.eINSTANCE.createDB();
-				db.setName(database.getName());
-				DBType dbType = database.getDbms();
+				db.setName(dbms.getName());
+				DBType dbType = dbms.getType();
 				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
 				image.setValue(dbProperties.getProperty("image"));
 				dbType.setImage(image);
