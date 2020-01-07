@@ -3,6 +3,11 @@ package de.atb.typhondl.xtext.ui.utilities;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 
+/**
+ * This class is for internal data transfer between plugin parts, can be replaced by DBMS (WIP)
+ * @author flug
+ *
+ */
 public class Database {
 
 	private String name;

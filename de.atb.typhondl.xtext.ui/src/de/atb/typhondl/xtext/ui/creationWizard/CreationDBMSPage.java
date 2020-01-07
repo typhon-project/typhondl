@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.DBMS;
 import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
@@ -98,10 +99,10 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			combo.setItems(database.getType().getPossibleDBMSs()); //TODO only the activated ones from preferences
-			combo.setText(database.getType().getPossibleDBMSs()[0]);
-			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
+			String[] DBMSnames = database.getType().getDBMSnames();
+			combo.setItems(DBMSnames); //TODO only the activated ones from preferences
+			combo.setText(DBMSnames[0]);
+			DBType type = database.getType().getPossibleDBMSs()[0].getType();
 			if (!checkbox.getSelection())
 				database.setDbms(type);
 			combo.setEnabled(!checkbox.getSelection());
