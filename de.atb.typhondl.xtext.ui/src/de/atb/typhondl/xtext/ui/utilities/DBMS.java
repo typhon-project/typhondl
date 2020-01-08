@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
-import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
@@ -15,7 +14,6 @@ public class DBMS {
 	private DBType type;
 	private String abstractType;
 	private String pathToDBModelFile;
-	private DB databaseModel;
 
 	public DBMS(String name) {
 		this.name = name;
