@@ -85,7 +85,7 @@
 		</page>
 		<page
 			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.preferences.TyphonDLTemplatePreferencePage"
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
 			id="de.atb.typhondl.xtext.TyphonDL.templates"
 			name="Templates">
 			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
