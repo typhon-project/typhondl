@@ -1,5 +1,25 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="testingTemplates" enabled="true" name="Test" id="1">database ${databaseName} : mariadb {
-	environment {
-		MYSQL_ROOT_PASSWORD = example ;
-	}
-}</template></templates>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<templates>
+	<template autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for MariaDB" enabled="true" name="MariaDB" id="1">
+	database ${databaseName} : mariadb {
+		environment {
+			MYSQL_ROOT_PASSWORD = example ;
+			}
+		}	
+	</template>
+	<template autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for Mongo" enabled="true" name="Mongo" id="2">
+	database ${databaseName} : mongo {
+		environment {
+			MONGO_INITDB_ROOT_USERNAME = admin ;
+			MONGO_INITDB_ROOT_PASSWORD = admin ;
+			}
+		}	
+	</template>
+	<template autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for MySQL" enabled="true" name="MySQL" id="3">
+	database ${databaseName} : mysql {
+		environment {
+			MYSQL_ROOT_PASSWORD = example ;
+			}
+		}	
+	</template>
+</templates>
