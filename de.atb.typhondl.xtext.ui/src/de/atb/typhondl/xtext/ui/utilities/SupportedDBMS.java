@@ -5,7 +5,8 @@ public enum SupportedDBMS {
 		@Override
 		public DBMS[] getPossibleDBMSs(){
 			//return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
-			return PreferenceReader.readDBs("relationaldb");
+			DBMS[] readDBs = PreferenceReader.readDBs("relationaldb");
+			return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
 		}
 	},
 	graphdb(){
@@ -33,7 +34,7 @@ public enum SupportedDBMS {
 		DBMS[] possibleDBMSs = getPossibleDBMSs();
 		String[] types = new String[possibleDBMSs.length];
 		for (int i = 0; i < possibleDBMSs.length; i++) {
-			types[i] = possibleDBMSs[i].getType().getName();
+			types[i] = possibleDBMSs[i].getAbstractType();
 		}
 		return types;
 	}	
