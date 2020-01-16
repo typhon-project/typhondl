@@ -4,7 +4,8 @@ public enum SupportedDBMS {
 	relationaldb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
-			return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
+			//return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
+			return PreferenceReader.readDBs("relationaldb");
 		}
 	},
 	graphdb(){
