@@ -1,4 +1,4 @@
-[![Build Status](http://typhon.clmsuk.com:8081/buildStatus/icon?job=TyphonDL)](http://typhon.clmsuk.com:8081/job/TyphonDL/)
+[![Build Status](http://typhon.clmsuk.com:8080/buildStatus/icon?job=TyphonDL)](http://typhon.clmsuk.com:8080/job/TyphonDL/)
 
 # TyphonDL
 > Eclipse Xtext plugin
