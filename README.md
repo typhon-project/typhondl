@@ -40,3 +40,44 @@
 - Analytics support for Kubernetes
 - Directly start Docker containers out of eclipse
 - Include TyphonMLs [requirements annotations](https://github.com/typhon-project/internal-material/blob/master/Contract/Submitted%20Deliverables/D3.3%20TyphonML%20to%20TyphonDL%20Model%20Transformation%20Tools.pdf) in model generation process
+
+## Example
+This example is very similar to the one given [here](https://github.com/typhon-project/typhondl/wiki/Guide).
+
+
+```
+import Test.tmlx
+import DocumentDatabase.tdl
+import dbTypes.tdl
+containertype Docker
+clustertype DockerCompose
+platformtype localhost
+platform platformName : localhost {
+	cluster clusterName : DockerCompose {
+		application Polystore {
+			container DocumentDatabase : Docker {
+				deploys DocumentDatabase
+				ports {
+					target = 27017 ;
+					published = 27018 ;
+				}
+				hostname = localhost ;
+                restart = always;
+                stop_grace_period: 1m30s;
+			}
+		}
+	}
+}
+
+dbtype mongo {
+	default image = mongo:latest ;
+}
+
+database DocumentDatabase : mongo {
+	environment {
+		MONGO_INITDB_ROOT_USERNAME = admin ;
+		MONGO_INITDB_ROOT_PASSWORD = admin ;
+	}
+    command = --serviceExecutor adaptive;
+}
+```
