@@ -12,7 +12,6 @@
   4. A container for the Typhon API
   5. A container for metadata (mongodb)
 - Generate polystore.yaml to run on a kubernetes cluster including deployment and service definitions for 
-  to run on a kubernetes cluster including
   1. A pod for each database
   2. A pod for the Typhon UI
   3. A pod for the Typhon API
@@ -23,7 +22,7 @@
   3. MongoDB
 
 ## Features
-- TyphonDL Creation Wizard to create a TyphonDL model from a ML-model. Files created:
+- TyphonDL Creation Wizard to create a TyphonDL model from a ML model. Files created:
   1. mainModelFile.tdl (named on the first page of the wizard)
   2. dbTypes.tdl (containes all used dbTypes, here the **image** has to be given)
   3. One databaseName.tdl model file for each database (here the environment and other database specific configurations are added)
@@ -33,7 +32,7 @@
 ## In Developement
 - Support for volumes either in TyphonDL grammar or generator
 - Smoke tests after build process
-- Allow nested `Key_KeyValueList`s
+- Allow nested `Key_KeyValueList`
 - Have database configuration templates in persistend preference storage of eclipse. There is a default configuration (compare to [wiki](https://github.com/typhon-project/typhondl/wiki/Guide)) that can be altered before generating the DL model. So company specific database properties can be configured and stored without much effort.
 
 ## Future Functions and Features
