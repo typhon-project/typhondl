@@ -1,10 +1,7 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
-import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
-import org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage;
 
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
@@ -19,16 +16,16 @@ public class PreferenceReader {
 		Template[] templates = templateStore.getTemplates();
 		DBMS[] dbmss = new DBMS[templates.length];
 		for (int i = 0; i < templates.length; i++) {
-			DBMS dbms = new DBMS(templates[i].getName(), getAbstractType(templates[i]));
+			dbmss[i] = new DBMS(templates[i].getName(), getAbstractType(templates[i]));
 		}
-		// TODO Auto-generated method stub
-		return null;
+		return dbmss;
 	}
 
 	private static String getAbstractType(Template template) {
-		template.getPattern();//serialize?
-		// TODO Auto-generated method stub
-		return null;
+		String pattern = template.getPattern();// serialize?
+		String dbtype = pattern.substring(pattern.indexOf(':'), pattern.indexOf('{') - 1);
+		dbtype.replaceAll(" ", "");
+		return dbtype;
 	}
 
 }

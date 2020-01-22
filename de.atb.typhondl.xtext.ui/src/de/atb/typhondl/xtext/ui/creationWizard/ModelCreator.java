@@ -240,8 +240,8 @@ public class ModelCreator {
 			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("published");
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be
-																										// removed later
+			// TODO can be removed later
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); 
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
