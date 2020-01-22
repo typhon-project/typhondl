@@ -10,6 +10,8 @@ import java.util.Properties;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 
+import de.atb.typhondl.xtext.typhonDL.DBType;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.creationWizard.ModelCreator;
 
@@ -34,24 +36,24 @@ public class PreferenceReader {
 		supportedTypes = Arrays.asList(((String) properties.get(metatype)).split(" "));
 		ArrayList<DBMS> dbmss = new ArrayList<>();
 		for (int i = 0; i < templates.length; i++) {
-			String abstractType = getAbstractType(templates[i]);
-			if (abstractType == null || !supportedTypes.contains(abstractType)) { //TODO test
-				i++;
-			} else {
-				dbmss.add(new DBMS(templates[i].getName(), abstractType));
-			}
+			String type = getType(templates[i]);
+			if (type != null && supportedTypes.contains(type)) { //TODO test
+				DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
+				dbType.setName(type);
+				dbmss.add(new DBMS(templates[i].getName(), dbType, metatype));
+			} 
 		}
 		return dbmss.toArray(new DBMS[0]);
 	}
 
-	private static String getAbstractType(Template template) {
+	private static String getType(Template template) {
 		String pattern = template.getPattern();
 		int indexOfColon = pattern.indexOf(':');
 		if (indexOfColon == -1) { // the template not valid
 			return null;
 		}
 		String dbtype = pattern.substring(indexOfColon+1, pattern.indexOf('{', indexOfColon));
-		dbtype.replaceAll(" ", "");
+		dbtype = dbtype.replaceAll("\\s", "");
 		return dbtype;
 	}
 

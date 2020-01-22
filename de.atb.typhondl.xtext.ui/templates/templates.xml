@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <templates>
 <template autoinsert="true" type="relationaldb" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for MariaDB" enabled="true" name="MariaDB" id="1">
-database ${databaseName} : mariadb {
+database ${databaseName} : MariaDB {
 	environment {
 		MYSQL_ROOT_PASSWORD = example ;
 		}
 	}	
 </template>
 <template autoinsert="true" type="documentdb" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for Mongo" enabled="true" name="Mongo" id="2">
-database ${databaseName} : mongo {
+database ${databaseName} : Mongo {
 	environment {
 		MONGO_INITDB_ROOT_USERNAME = admin ;
 		MONGO_INITDB_ROOT_PASSWORD = admin ;
@@ -16,7 +16,7 @@ database ${databaseName} : mongo {
 	}	
 </template>
 <template autoinsert="true" type="relationaldb" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="basic template for MySQL" enabled="false" name="MySQL" id="3">
-database ${databaseName} : mysql {
+database ${databaseName} : MySQL {
 	environment {
 		MYSQL_ROOT_PASSWORD = example ;
 		}
