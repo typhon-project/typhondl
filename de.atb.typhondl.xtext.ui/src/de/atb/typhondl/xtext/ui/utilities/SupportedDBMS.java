@@ -6,24 +6,31 @@ public enum SupportedDBMS {
 		public DBMS[] getPossibleDBMSs(){
 			//return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
 			DBMS[] readDBs = PreferenceReader.readDBs("relationaldb");
+			String[] supportedDBMS = new String[] {"MariaDB", "MySQL"};
 			return new DBMS[] {new DBMS("", "MariaDB"), new DBMS("", "MySQL")};
 		}
 	},
 	graphdb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
+			DBMS[] readDBs = PreferenceReader.readDBs("graphdb");
+			String[] supportedDBMS = new String[] {"MariaDB", "MySQL"};
 			return new DBMS[] {null};
 		}
 	},
 	documentdb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
+			DBMS[] readDBs = PreferenceReader.readDBs("documentdb");
+			String[] supportedDBMS = new String[] {"MariaDB", "MySQL"};
 			return new DBMS[] {new DBMS("", "Mongo")};
 		}
 	},
 	keyvaluedb(){
 		@Override
 		public DBMS[] getPossibleDBMSs(){
+			DBMS[] readDBs = PreferenceReader.readDBs("keyvaluedb");
+			String[] supportedDBMS = new String[] {"MariaDB", "MySQL"};
 			return new DBMS[] {null};
 		}
 	};
