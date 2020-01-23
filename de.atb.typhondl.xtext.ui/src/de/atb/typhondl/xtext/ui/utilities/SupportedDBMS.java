@@ -39,22 +39,22 @@ public enum SupportedDBMS {
 		return types;
 	}	
 	
-	public DBType getTypeByDBMSName(String name) {
+	public DBType getTypeByTemplateName(String name) {
 		DBMS[] possibleDBMSs = getPossibleDBMSs();
 		for (int i = 0; i < possibleDBMSs.length; i++) {
-			if (name.equalsIgnoreCase(possibleDBMSs[i].getName())) {
+			if (name.equalsIgnoreCase(possibleDBMSs[i].getTemplateName())) {
 				return possibleDBMSs[i].getType();
 			}
 		}
 		return null;
 	}
 	
-	public String[] getDBMSnames() {
+	public String[] getDBMSTemplateNames() {
 		DBMS[] possibleDBMSs = getPossibleDBMSs();
-		String[] names = new String[possibleDBMSs.length];
+		String[] templateNames = new String[possibleDBMSs.length];
 		for (int i = 0; i < possibleDBMSs.length; i++) {
-			names[i] = possibleDBMSs[i].getName();
+			templateNames[i] = possibleDBMSs[i].getTemplateName();
 		}
-		return names;
+		return templateNames;
 	}
 }

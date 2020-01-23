@@ -122,7 +122,7 @@ public class ModelCreator {
 
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-
+		// translate each dbms into TyphonDL model entity DB
 		for (DBMS dbms : databases) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DB db;

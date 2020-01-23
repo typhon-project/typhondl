@@ -90,7 +90,7 @@ public class CreationDBMSPage extends MyWizardPage {
 						dbms.setPathToDBModelFile(wizardField.getTextField().getText());
 					} else {
 						dbms.setDBType(SupportedDBMS.valueOf(dbms.getAbstractType())
-								.getTypeByDBMSName(wizardField.getCombo().getText()));
+								.getTypeByTemplateName(wizardField.getCombo().getText()));
 						dbms.setPathToDBModelFile(null);
 					}
 					validate();
@@ -100,9 +100,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			SupportedDBMS abstractType = SupportedDBMS.valueOf(dbms.getAbstractType());
-			String[] DBMStypes = abstractType.getDBMSnames();
-			combo.setItems(DBMStypes);
-			combo.setText(DBMStypes[0]);
+			String[] DBMSTemplateNames = abstractType.getDBMSTemplateNames();
+			combo.setItems(DBMSTemplateNames);
+			combo.setText(DBMSTemplateNames[0]);
 			DBMS[] possibleDBMSs = abstractType.getPossibleDBMSs();
 			DBType type = possibleDBMSs[0].getType();
 			if (!checkbox.getSelection()) {
@@ -113,7 +113,7 @@ public class CreationDBMSPage extends MyWizardPage {
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					dbms.setDBType(abstractType.getTypeByDBMSName(databaseSettings.get(dbms).getCombo().getText()));
+					dbms.setDBType(abstractType.getTypeByTemplateName(databaseSettings.get(dbms).getCombo().getText()));
 					validate();
 				}
 			});
