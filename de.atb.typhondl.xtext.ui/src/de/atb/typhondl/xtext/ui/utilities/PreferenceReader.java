@@ -37,11 +37,17 @@ public class PreferenceReader {
 		ArrayList<DBMS> dbmss = new ArrayList<>();
 		for (int i = 0; i < templates.length; i++) {
 			String type = getType(templates[i]);
-			if (type != null && supportedTypes.contains(type)) { //TODO test
-				DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
-				dbType.setName(type);
-				dbmss.add(new DBMS(dbType, metatype, templates[i].getName()));
-			} 
+			if (type != null) {
+				if (supportedTypes.contains(type)) {
+					DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
+					dbType.setName(type);
+					dbmss.add(new DBMS(dbType, metatype, templates[i].getName()));
+				} else {
+					// TODO error message, template is not well defined, only supported DBMS can be used
+				}
+			} else {
+				// TODO error message, template is not well defined, each database must have a type
+			}
 		}
 		return dbmss.toArray(new DBMS[0]);
 	}
@@ -52,7 +58,7 @@ public class PreferenceReader {
 		if (indexOfColon == -1) { // the template is not valid
 			return null;
 		}
-		String dbtype = pattern.substring(indexOfColon+1, pattern.indexOf('{', indexOfColon));
+		String dbtype = pattern.substring(indexOfColon + 1, pattern.indexOf('{', indexOfColon));
 		dbtype = dbtype.replaceAll("\\s", "");
 		return dbtype;
 	}
