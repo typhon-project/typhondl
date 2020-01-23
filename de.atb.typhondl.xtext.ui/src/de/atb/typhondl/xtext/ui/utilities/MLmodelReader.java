@@ -25,8 +25,8 @@ public class MLmodelReader {
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 	               Element eElement = (Element) node;
 	               String name = eElement.getAttribute("name");
-	               String dbType = eElement.getAttribute("xsi:type").split(":")[1].toLowerCase();
-	               dbsMap.add(new DBMS(name, dbType));
+	               String abstractType = eElement.getAttribute("xsi:type").split(":")[1].toLowerCase();
+	               dbsMap.add(new DBMS(name, abstractType));
 			}
 		}
 		return dbsMap;

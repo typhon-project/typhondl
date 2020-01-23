@@ -40,7 +40,7 @@ public class PreferenceReader {
 			if (type != null && supportedTypes.contains(type)) { //TODO test
 				DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
 				dbType.setName(type);
-				dbmss.add(new DBMS(templates[i].getName(), dbType, metatype));
+				dbmss.add(new DBMS(dbType, metatype, templates[i].getName()));
 			} 
 		}
 		return dbmss.toArray(new DBMS[0]);
@@ -49,7 +49,7 @@ public class PreferenceReader {
 	private static String getType(Template template) {
 		String pattern = template.getPattern();
 		int indexOfColon = pattern.indexOf(':');
-		if (indexOfColon == -1) { // the template not valid
+		if (indexOfColon == -1) { // the template is not valid
 			return null;
 		}
 		String dbtype = pattern.substring(indexOfColon+1, pattern.indexOf('{', indexOfColon));

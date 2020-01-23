@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
+import de.atb.typhondl.xtext.typhonDL.DBType;
+
 public enum SupportedDBMS {
 	relationaldb(){
 		@Override
@@ -28,12 +30,31 @@ public enum SupportedDBMS {
 	
 	public abstract DBMS[] getPossibleDBMSs();
 	
-	public String[] getDBMStypes() {
+	public DBType[] getDBMStypes() {
 		DBMS[] possibleDBMSs = getPossibleDBMSs();
-		String[] types = new String[possibleDBMSs.length];
+		DBType[] types = new DBType[possibleDBMSs.length];
 		for (int i = 0; i < possibleDBMSs.length; i++) {
-			types[i] = possibleDBMSs[i].getName();
+			types[i] = possibleDBMSs[i].getType();
 		}
 		return types;
 	}	
+	
+	public DBType getTypeByDBMSName(String name) {
+		DBMS[] possibleDBMSs = getPossibleDBMSs();
+		for (int i = 0; i < possibleDBMSs.length; i++) {
+			if (name.equalsIgnoreCase(possibleDBMSs[i].getName())) {
+				return possibleDBMSs[i].getType();
+			}
+		}
+		return null;
+	}
+	
+	public String[] getDBMSnames() {
+		DBMS[] possibleDBMSs = getPossibleDBMSs();
+		String[] names = new String[possibleDBMSs.length];
+		for (int i = 0; i < possibleDBMSs.length; i++) {
+			names[i] = possibleDBMSs[i].getName();
+		}
+		return names;
+	}
 }

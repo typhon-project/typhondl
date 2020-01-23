@@ -14,6 +14,7 @@ public class DBMS {
 	private DBType type;
 	private String abstractType;
 	private String pathToDBModelFile;
+	private String templateName;
 
 	public DBMS(String name) {
 		this.name = name;
@@ -24,8 +25,8 @@ public class DBMS {
 		this.abstractType = abstractType;
 	}
 	
-	public DBMS(String name, DBType type, String abstractType) {
-		this.name = name;
+	public DBMS(DBType type, String abstractType, String templateName) {
+		this.templateName = templateName;
 		this.type = type;
 		this.abstractType = abstractType;
 	}
@@ -61,6 +62,10 @@ public class DBMS {
 
 	public String getAbstractType() {
 		return abstractType;
+	}
+
+	public String getTemplateName() {
+		return templateName;
 	}
 
 }

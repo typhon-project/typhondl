@@ -315,7 +315,6 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private boolean checkExist(URI servicesURI) {

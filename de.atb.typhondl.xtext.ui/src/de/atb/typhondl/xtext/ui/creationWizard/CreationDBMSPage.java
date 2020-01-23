@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Text;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DBType;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.DBMS;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedDBMS;
@@ -50,7 +49,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
 	private static ArrayList<DBMS> readModel(IFile MLmodel) {
 		try {
-			// every DBMS in the List has a name and an abstractType, 
+			// every DBMS in the List has a name and an abstractType
 			// every other value == null
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
@@ -90,7 +89,8 @@ public class CreationDBMSPage extends MyWizardPage {
 						dbms.removeDBType(); // delete set DBType in DBMS if an existing file is used
 						dbms.setPathToDBModelFile(wizardField.getTextField().getText());
 					} else {
-						dbms.setDBType(wizardField.getCombo().getText().toLowerCase());
+						dbms.setDBType(SupportedDBMS.valueOf(dbms.getAbstractType())
+								.getTypeByDBMSName(wizardField.getCombo().getText()));
 						dbms.setPathToDBModelFile(null);
 					}
 					validate();
@@ -100,21 +100,20 @@ public class CreationDBMSPage extends MyWizardPage {
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			SupportedDBMS abstractType = SupportedDBMS.valueOf(dbms.getAbstractType());
-			String[] DBMStypes = abstractType.getDBMStypes();
-			combo.setItems(DBMStypes); // TODO only the activated ones from preferences
+			String[] DBMStypes = abstractType.getDBMSnames();
+			combo.setItems(DBMStypes);
 			combo.setText(DBMStypes[0]);
 			DBMS[] possibleDBMSs = abstractType.getPossibleDBMSs();
 			DBType type = possibleDBMSs[0].getType();
-			if (!checkbox.getSelection())
+			if (!checkbox.getSelection()) {
 				dbms.setDBType(type);
+			}
 			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText("Choose specific DBMS for " + dbms.getName() + " of type " + dbms.getAbstractType());
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-					type.setName(databaseSettings.get(dbms).getCombo().getText().toLowerCase());
-					dbms.setDBType(type);
+					dbms.setDBType(abstractType.getTypeByDBMSName(databaseSettings.get(dbms).getCombo().getText()));
 					validate();
 				}
 			});
@@ -125,8 +124,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			textField.setEnabled(checkbox.getSelection());
 			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 			textField.setToolTipText("Give the path to your database configuration file");
-			if (checkbox.getSelection())
+			if (checkbox.getSelection()) {
 				dbms.setPathToDBModelFile(textField.getText());
+			}
 			textField.addModifyListener(e -> {
 				dbms.setPathToDBModelFile(databaseSettings.get(dbms).getTextField().getText());
 				validate();
@@ -172,10 +172,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
 		String path = pathWithFolder + fileName;
 		File file = new File(URI.create(path));
-		if (file.exists()) {
-			return true;
-		}
-		return false;
+		return file.exists();
 	}
 
 	public ArrayList<DBMS> getDatabases() {
