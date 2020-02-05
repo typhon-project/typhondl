@@ -6,22 +6,24 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.TemplateBuffer;
+import org.eclipse.jface.text.templates.TemplateContext;
+import org.eclipse.jface.text.templates.TemplateException;
+import org.eclipse.jface.text.templates.TemplateTranslator;
+import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
-import org.eclipse.xtext.RuleCall;
-import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.resource.XtextResourceFactory;
-import org.eclipse.xtext.xtext.RuleNames;
+import org.eclipse.xtext.ui.editor.templates.CrossReferenceTemplateVariableResolver;
+import org.eclipse.xtext.ui.editor.templates.XtextTemplateContext;
 
+import de.atb.typhondl.xtext.services.TyphonDLGrammarAccess;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
@@ -34,14 +36,13 @@ public class PreferenceReader {
 	/**
 	 * @param metatype \in {relationaldb, documentdb, graphdb, keyvaluedb}
 	 */
-	@SuppressWarnings("restriction")
 	public static DBMS[] readDBs(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
-		IValueConverterService valueConverterService = Activator.getDefault()
-				.getInjector("de.atb.typhondl.xtext.TyphonDL").getInstance(IValueConverterService.class);
-		RuleNames ruleNames = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
-				.getInstance(RuleNames.class);
+//		IValueConverterService valueConverterService = Activator.getDefault()
+//				.getInjector("de.atb.typhondl.xtext.TyphonDL").getInstance(IValueConverterService.class);
+//		RuleNames ruleNames = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
+//				.getInstance(RuleNames.class);
 		Template[] templates = templateStore.getTemplates("de.atb.typhondl.xtext.TyphonDL.DB");
 		List<String> supportedTypes = new ArrayList<>();
 		String PATH_TO_PROPERTIES = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
@@ -78,8 +79,22 @@ public class PreferenceReader {
 		String pattern = template.getPattern();
 		IParser parser = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(IParser.class);
-		pattern = pattern.replace("$", "q");
-		IParseResult result = parser.parse(createReader(pattern));
+		TemplateTranslator templateTranslator = new TemplateTranslator();
+		TemplateBuffer buffer = null;
+		try {
+			buffer = templateTranslator.translate(template);
+		} catch (TemplateException e) {
+			e.printStackTrace();
+		}
+		if (buffer == null) {
+			// something went wrong during translation TODO warning
+			return null;
+		}
+		String contextTypeId = template.getContextTypeId();
+		TemplateVariable[] variables = buffer.getVariables();
+		String patternWithoutVariables = buffer.getString();
+		IParseResult result = parser.parse(new StringReader(patternWithoutVariables));
+
 		// TODO dbtype = null after parsing because it's a reference to an object that does not exist
 		int indexOfColon = pattern.indexOf(':');
 		if (indexOfColon == -1) { // the template is not valid TODO warning?
@@ -98,10 +113,6 @@ public class PreferenceReader {
 			db.setType(dbtype);
 		}
 		return db;
-	}
-
-	private static Reader createReader(String pattern) {
-		return new StringReader(pattern);
 	}
 
 }
