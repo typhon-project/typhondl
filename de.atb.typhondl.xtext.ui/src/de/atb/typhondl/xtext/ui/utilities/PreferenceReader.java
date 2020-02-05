@@ -94,13 +94,16 @@ public class PreferenceReader {
 		TemplateVariable[] variables = buffer.getVariables();
 		String patternWithoutVariables = buffer.getString();
 		IParseResult result = parser.parse(new StringReader(patternWithoutVariables));
-
-		// TODO dbtype = null after parsing because it's a reference to an object that does not exist
-		int indexOfColon = pattern.indexOf(':');
-		if (indexOfColon == -1) { // the template is not valid TODO warning?
-			return null;
+		for (int i = 0; i < variables.length; i++)  {
+			if (variables[i].getName().equalsIgnoreCase("password")) {
+				variables[i].setValue("MyPassword");
+				patternWithoutVariables = patternWithoutVariables.replace("password", "MyPassword");
+			}
+			//if (variables[i].getName())
 		}
-		String dbtypeName = pattern.substring(indexOfColon + 1, pattern.indexOf('{', indexOfColon));
+		buffer.setContent(patternWithoutVariables, variables);
+		// TODO dbtype = null after parsing because it's a reference to an object that does not exist
+		String dbtypeName = "";
 		DBType dbtype = TyphonDLFactory.eINSTANCE.createDBType();
 		dbtype.setName(dbtypeName);
 		List<DB> dbs = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
