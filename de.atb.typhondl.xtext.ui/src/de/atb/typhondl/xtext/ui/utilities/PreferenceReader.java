@@ -2,7 +2,6 @@ package de.atb.typhondl.xtext.ui.utilities;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,20 +9,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateBuffer;
-import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateTranslator;
-import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
-import org.eclipse.xtext.ui.editor.templates.CrossReferenceTemplateVariableResolver;
-import org.eclipse.xtext.ui.editor.templates.XtextTemplateContext;
 
-import de.atb.typhondl.xtext.services.TyphonDLGrammarAccess;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
@@ -39,10 +32,6 @@ public class PreferenceReader {
 	public static DBMS[] readDBs(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
-//		IValueConverterService valueConverterService = Activator.getDefault()
-//				.getInjector("de.atb.typhondl.xtext.TyphonDL").getInstance(IValueConverterService.class);
-//		RuleNames ruleNames = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
-//				.getInstance(RuleNames.class);
 		Template[] templates = templateStore.getTemplates("de.atb.typhondl.xtext.TyphonDL.DB");
 		List<String> supportedTypes = new ArrayList<>();
 		String PATH_TO_PROPERTIES = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
@@ -54,31 +43,36 @@ public class PreferenceReader {
 			e.printStackTrace();
 		}
 		supportedTypes = Arrays.asList(((String) properties.get(metatype)).split(" "));
+		IParser parser = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
+				.getInstance(IParser.class);
 		ArrayList<DBMS> dbmss = new ArrayList<>();
 		for (int i = 0; i < templates.length; i++) {
-			DB db = getDB(templates[i]);
+			TemplateBuffer buffer = getTemplateBuffer(templates[i]);
+			// for now the buffer variables do not contain the DBType
+			// parsed like this, the DBType is null
+			DB db = getDB(parser.parse(new StringReader(buffer.getString())));
 			if (db != null) {
-				String type = db.getType().getName();
-				if (supportedTypes.contains(type)) {
-					DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
-					dbType.setName(type);
-					dbmss.add(new DBMS(dbType, metatype, templates[i].getName()));
+				for (String supportedType : supportedTypes) {
+					if (buffer.getString().contains(supportedType)) {
+						DBType dbType = TyphonDLFactory.eINSTANCE.createDBType();
+						dbType.setName(supportedType);
+						db.setType(dbType);
+					}
+				}
+				if (db.getType() != null) {
+					dbmss.add(new DBMS(db.getType(), metatype, templates[i].getName()));
 				} else {
 					// TODO error message, template is not well defined, only supported DBMS can be
-					// used
+					// used and each database must have a type
 				}
 			} else {
-				// TODO error message, template is not well defined, each database must have a
-				// type
+				// TODO error message, db could not be parsed
 			}
 		}
 		return dbmss.toArray(new DBMS[0]);
 	}
 
-	private static DB getDB(Template template) {
-		String pattern = template.getPattern();
-		IParser parser = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
-				.getInstance(IParser.class);
+	private static TemplateBuffer getTemplateBuffer(Template template) {
 		TemplateTranslator templateTranslator = new TemplateTranslator();
 		TemplateBuffer buffer = null;
 		try {
@@ -86,35 +80,17 @@ public class PreferenceReader {
 		} catch (TemplateException e) {
 			e.printStackTrace();
 		}
-		if (buffer == null) {
-			// something went wrong during translation TODO warning
-			return null;
-		}
-		String contextTypeId = template.getContextTypeId();
-		TemplateVariable[] variables = buffer.getVariables();
-		String patternWithoutVariables = buffer.getString();
-		IParseResult result = parser.parse(new StringReader(patternWithoutVariables));
-		for (int i = 0; i < variables.length; i++)  {
-			if (variables[i].getName().equalsIgnoreCase("password")) {
-				variables[i].setValue("MyPassword");
-				patternWithoutVariables = patternWithoutVariables.replace("password", "MyPassword");
-			}
-			//if (variables[i].getName())
-		}
-		buffer.setContent(patternWithoutVariables, variables);
-		// TODO dbtype = null after parsing because it's a reference to an object that does not exist
-		String dbtypeName = "";
-		DBType dbtype = TyphonDLFactory.eINSTANCE.createDBType();
-		dbtype.setName(dbtypeName);
+		return buffer;
+	}
+
+	private static DB getDB(IParseResult result) {
 		List<DB> dbs = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
-				.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element).collect(Collectors.toList());
+				.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
+				.collect(Collectors.toList());
 		if (dbs.size() != 1) {
 			return null; // there should only be one database in a template TODO warning!
 		}
 		DB db = dbs.get(0);
-		if (db.getType() == null) {
-			db.setType(dbtype);
-		}
 		return db;
 	}
 
