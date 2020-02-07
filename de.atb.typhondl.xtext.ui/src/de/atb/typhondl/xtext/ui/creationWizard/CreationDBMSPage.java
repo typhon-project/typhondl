@@ -1,8 +1,10 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -178,28 +180,58 @@ public class CreationDBMSPage extends MyWizardPage {
 		setControl(main);
 	}
 
+	/**
+	 * Adds the DBType and Parameters from the given template DB to the given DB
+	 * @param db The DB that should have all attributes from the template
+	 * @param template The chosen template DB
+	 */
 	protected void useDBTemplateOnDB(DB db, DB template) {
 		db.setType(template.getType());
+		db.getParameters().clear();
 		db.getParameters().addAll(template.getParameters());
 		
 	}
 
+	/**
+	 * Removes DBType and clears Parameter List from DB TODO check if the list is
+	 * supposed to be null
+	 * 
+	 * @param db the DB to clear
+	 */
 	protected void clearDB(DB db) {
 		db.setType(null);
 		db.getParameters().clear();
 	}
 
+	/**
+	 * Finds a template by name in a template list
+	 * 
+	 * @param dbTemplates  the template list
+	 * @param templateName the template to find
+	 * @return the wanted DB template
+	 */
 	protected DB getTemplateByName(DB[] dbTemplates, String templateName) {
 		return Arrays.asList(dbTemplates).stream().filter(template -> template.getName().equalsIgnoreCase(templateName))
 				.findFirst().orElse(null);
 	}
-
+	
+	/**
+	 * Creates a new empty DB with just a name
+	 * 
+	 * @param dbName the name of the DB
+	 * @return a DB with name dbName
+	 */
 	private DB getEmptyDB(String dbName) {
 		DB db = TyphonDLFactory.eINSTANCE.createDB();
 		db.setName(dbName);
 		return db;
 	}
 
+	/**
+	 * Checks if a database file already exists, gives warning if the file exists
+	 * and would be overwritten or error if the file doesn't exist but the
+	 * fileExists checkbox is checked
+	 */
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
@@ -224,14 +256,19 @@ public class CreationDBMSPage extends MyWizardPage {
 		setStatus(status);
 	}
 
+	/**
+	 * utility for checking if a file exists
+	 */
 	private boolean fileExists(String fileName) {
 		URI uri = file.getLocationURI();
-		String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
-		String path = pathWithFolder + fileName;
-		File file = new File(URI.create(path));
-		return file.exists();
+		Path path = Paths.get(uri);
+		Path filePath = path.getParent().resolve(fileName);
+		return Files.exists(filePath);
 	}
 
+	/**
+	 * Get a list of DBs taken from the MLmodel enriched with wizard and template input
+	 */
 	public ArrayList<DB> getDatabases() {
 		return new ArrayList<DB>(databaseSettings.keySet());
 	}
