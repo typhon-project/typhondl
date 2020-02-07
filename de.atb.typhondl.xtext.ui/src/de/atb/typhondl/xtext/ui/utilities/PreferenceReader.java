@@ -38,11 +38,12 @@ public class PreferenceReader {
 
 	/**
 	 * read all DBs fitting the <code>metatype</code> from the Eclipse Preferences
-	 * TyphonDL Template pages. Also adds the fitting DBType (also taken from the templates).
+	 * TyphonDL Template pages. Also adds the fitting DBType (also taken from the
+	 * templates).
 	 * 
 	 * @param metatype \in {relationaldb, documentdb, graphdb, keyvaluedb}
 	 */
-	public static DBMS[] readDBs(String metatype) {
+	public static DB[] readDBs(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
 		// load the DB and DBType templates
@@ -72,7 +73,7 @@ public class PreferenceReader {
 				dbTypes.add(dbtype);
 			}
 		}
-		ArrayList<DBMS> dbmss = new ArrayList<>();
+		ArrayList<DB> dbs = new ArrayList<>();
 		for (int i = 0; i < dbTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
 			// for now the buffer variables do not contain the DBType
@@ -86,7 +87,8 @@ public class PreferenceReader {
 					}
 				}
 				if (db.getType() != null) {
-					dbmss.add(new DBMS(db.getType(), metatype, dbTemplates[i].getName()));
+					db.setName(dbTemplates[i].getName()); //temporary
+					dbs.add(db);
 				} else {
 					// TODO error message, template is not well defined, only supported DBMS can be
 					// used and each database must have a type
@@ -95,7 +97,7 @@ public class PreferenceReader {
 				// TODO error message, db could not be parsed
 			}
 		}
-		return dbmss.toArray(new DBMS[0]);
+		return dbs.toArray(new DB[0]);
 	}
 
 	/**

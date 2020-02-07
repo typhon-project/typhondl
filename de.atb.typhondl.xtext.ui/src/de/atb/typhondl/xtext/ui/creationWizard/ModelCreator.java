@@ -84,7 +84,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(ArrayList<DBMS> databases, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(ArrayList<DB> arrayList, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -123,58 +123,19 @@ public class ModelCreator {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
 		// translate each dbms into TyphonDL model entity DB
-		for (DBMS dbms : databases) {
+		for (DB db : arrayList) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
-			DB db;
 			DeploymentModel dbModel;
-			if (dbms.getPathToDBModelFile() != null) { // use existing .tdl file
+			if (db.getType() == null) { // use existing .tdl file
+				String path = db.getName() + ".tdl";
 				URI dbURI = URI.createPlatformResourceURI(
-						this.folder.append(dbms.getPathToDBModelFile()).toString(), true);
+						this.folder.append(path).toString(), true);
 				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
-				db = getDB(dbModel);
-				importedDB.setRelativePath(dbms.getPathToDBModelFile());
+				addModelToDB(db, dbModel);
+				
+				importedDB.setRelativePath(path);
 			} else {
-				Properties dbProperties = new Properties();
-				InputStream inStream = ModelCreator.class.getClassLoader().getResourceAsStream(
-						PATH_TO_PROPERTIES + dbms.getType().getName().toLowerCase() + ".properties");
-				try {
-					dbProperties.load(inStream);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				db = TyphonDLFactory.eINSTANCE.createDB();
-				db.setName(dbms.getName());
-				DBType dbType = dbms.getType();
-				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(dbProperties.getProperty("image"));
-				dbType.setImage(image);
-				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
-				// add environment:
-				List<String> environmentKeys = dbProperties.keySet().stream().map(key -> (String) key)
-						.filter(key -> key.contains("environment")).collect(Collectors.toList());
-				if (!environmentKeys.isEmpty()) {
-					Key_KeyValueList environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-					environment.setName("environment");
-					environmentKeys.forEach(key -> {
-						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key.substring(key.lastIndexOf('.') + 1));
-						key_value.setValue((String) dbProperties.get(key));
-						environment.getKey_Values().add(key_value);
-					});
-					db.getParameters().add(environment);
-				}
-				// add other key-values:
-				List<String> keys = dbProperties.keySet().stream().map(key -> (String) key)
-						.filter(key -> key.contains("key")).collect(Collectors.toList());
-				if (!keys.isEmpty()) {
-					for (String key : keys) {
-						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key.substring(key.lastIndexOf('.') +1));
-						key_value.setValue((String) dbProperties.get(key));
-						db.getParameters().add(key_value);
-					}
-				}
 			}
 			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
@@ -262,6 +223,11 @@ public class ModelCreator {
 		URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
 		// return main model file to be opened in editor
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
+	}
+
+	private void addModelToDB(DB db, DeploymentModel dbModel) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	// TODO This should not be needed, since the databases should only be reachable

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -22,35 +23,77 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.xml.sax.SAXException;
 
-import de.atb.typhondl.xtext.typhonDL.DBType;
-import de.atb.typhondl.xtext.ui.utilities.DBMS;
+import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
-import de.atb.typhondl.xtext.ui.utilities.SupportedDBMS;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
+import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
+/**
+ * Second page of the TyphonDL Creation Wizard. The ML model gets parsed and for
+ * each needed database a group is created. Here the user can choose the wanted
+ * DBMS. The list of possible DBMSs is taken from the templates.
+ * 
+ * @author flug
+ *
+ */
 public class CreationDBMSPage extends MyWizardPage {
 
-	private HashMap<DBMS, WizardFields> databaseSettings;
+	/**
+	 * Each DB needs WizardFields to get the wanted DBMS or the path to the already
+	 * existing model file
+	 */
+	private HashMap<DB, WizardFields> databaseSettings;
+
+	/**
+	 * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
+	 * where DatabaseAbstractType is in (relationaldb, documentdb, keyvaluedb,
+	 * graphdb) <br>
+	 * firstValue == dbName <br>
+	 * second value == abstractType
+	 */
+	private ArrayList<Pair<String, String>> MLmodel;
+
+	/**
+	 * The ML model file
+	 */
 	private IFile file;
 
+	/**
+	 * Creates a CreationDBMSPage, reading the ML model from the given file.
+	 * 
+	 * @param pageName
+	 * @param file     ML model file
+	 */
 	public CreationDBMSPage(String pageName, IFile file) {
 		this(pageName, file, readModel(file));
 	}
 
-	public CreationDBMSPage(String pageName, IFile file, ArrayList<DBMS> MLmodel) {
+	/**
+	 * Creates a CreationDBMSPage from the given ML model
+	 * 
+	 * @param pageName
+	 * @param file     ML model file
+	 * @param MLmodel  List of Pair(name, abstractType) taken from the ML model file
+	 */
+	public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel) {
 		super(pageName);
-		this.databaseSettings = new HashMap<DBMS, WizardFields>();
-		MLmodel.forEach(db -> this.databaseSettings.put(db, null));
+		this.MLmodel = MLmodel;
 		this.file = file;
+		this.databaseSettings = new HashMap<>();
 	}
 
-	private static ArrayList<DBMS> readModel(IFile MLmodel) {
+	/**
+	 * reads the given ML model, extracts name and abstract type of the databases
+	 * 
+	 * @param MLmodel
+	 * @return a list of Pair(name, abstractType)
+	 */
+	private static ArrayList<Pair<String, String>> readModel(IFile MLmodel) {
 		try {
-			// every DBMS in the List has a name and an abstractType
-			// every other value == null
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
@@ -66,97 +109,111 @@ public class CreationDBMSPage extends MyWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
+		
+		for (Pair<String, String> dbFromML : MLmodel) {
 
-		for (DBMS dbms : databaseSettings.keySet()) {
+			// Create a new DB for each dbFromML
+			DB db = getEmptyDB(dbFromML.firstValue);
 
+			// get templates
+			DB[] dbTemplates = PreferenceReader.readDBs(dbFromML.secondValue);
+			databaseSettings.put(db, new WizardFields(null, null, dbTemplates));
+		}
+		
+		for (DB db : databaseSettings.keySet()) {
+
+			DB[] dbTemplates = databaseSettings.get(db).getDbTemplates();
+			String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
+					.collect(Collectors.toList()).toArray(new String[0]);
+
+			String dbName = db.getName();
+
+			// create a group for each database
 			Group group = new Group(main, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-			group.setText(dbms.getName());
+			group.setText(dbName);
 
 			Button checkbox = new Button(group, SWT.CHECK);
-			checkbox.setText("Use existing file");
-			checkbox.setSelection(fileExists(dbms.getName() + ".tdl"));
+			checkbox.setText("Use existing " + dbName + ".tdl file in this project folder");
+			checkbox.setSelection(fileExists(dbName + ".tdl"));
 			checkbox.setLayoutData(gridData);
-			checkbox.setToolTipText("Check this box if you already have a model file for " + dbms.getName());
+			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					WizardFields wizardField = databaseSettings.get(dbms);
-					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
+					WizardFields wizardField = databaseSettings.get(db);
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 					if (wizardField.getCheckbox().getSelection()) {
-						dbms.removeDBType(); // delete set DBType in DBMS if an existing file is used
-						dbms.setPathToDBModelFile(wizardField.getTextField().getText());
+						clearDB(db); // delete existing db settings
 					} else {
-						dbms.setDBType(SupportedDBMS.valueOf(dbms.getAbstractType())
-								.getTypeByTemplateName(wizardField.getCombo().getText()));
-						dbms.setPathToDBModelFile(null);
+						useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
 					}
 					validate();
 				}
 			});
-
+			databaseSettings.get(db).setCheckbox(checkbox);
+			
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			SupportedDBMS abstractType = SupportedDBMS.valueOf(dbms.getAbstractType());
-			String[] DBMSTemplateNames = abstractType.getDBMSTemplateNames();
-			combo.setItems(DBMSTemplateNames);
-			combo.setText(DBMSTemplateNames[0]);
-			DBMS[] possibleDBMSs = abstractType.getPossibleDBMSs();
-			DBType type = possibleDBMSs[0].getType();
+			combo.setItems(dbTemplateNames);
+			combo.setText(dbTemplateNames[0]);
+			// set initial dbTemplate
 			if (!checkbox.getSelection()) {
-				dbms.setDBType(type);
+				useDBTemplateOnDB(db, dbTemplates[0]);
 			}
 			combo.setEnabled(!checkbox.getSelection());
-			combo.setToolTipText("Choose specific DBMS for " + dbms.getName() + " of type " + dbms.getAbstractType());
+			combo.setToolTipText("Choose specific DBMS Template for " + dbName);
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					dbms.setDBType(abstractType.getTypeByTemplateName(databaseSettings.get(dbms).getCombo().getText()));
+					WizardFields wizardField = databaseSettings.get(db);
+					useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
 					validate();
 				}
 			});
-
-			new Label(group, NONE).setText("Database file: ");
-			Text textField = new Text(group, SWT.BORDER);
-			textField.setText(dbms.getName() + ".tdl");
-			textField.setEnabled(checkbox.getSelection());
-			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-			textField.setToolTipText("Give the path to your database configuration file");
-			if (checkbox.getSelection()) {
-				dbms.setPathToDBModelFile(textField.getText());
-			}
-			textField.addModifyListener(e -> {
-				dbms.setPathToDBModelFile(databaseSettings.get(dbms).getTextField().getText());
-				validate();
-			});
-			databaseSettings.put(dbms, new WizardFields(checkbox, combo, textField));
+			databaseSettings.get(db).setCombo(combo);
 		}
 		validate();
 		setControl(main);
 	}
 
+	protected void useDBTemplateOnDB(DB db, DB template) {
+		db.setType(template.getType());
+		db.getParameters().addAll(template.getParameters());
+		
+	}
+
+	protected void clearDB(DB db) {
+		db.setType(null);
+		db.getParameters().clear();
+	}
+
+	protected DB getTemplateByName(DB[] dbTemplates, String templateName) {
+		return Arrays.asList(dbTemplates).stream().filter(template -> template.getName().equalsIgnoreCase(templateName))
+				.findFirst().orElse(null);
+	}
+
+	private DB getEmptyDB(String dbName) {
+		DB db = TyphonDLFactory.eINSTANCE.createDB();
+		db.setName(dbName);
+		return db;
+	}
+
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		for (DBMS dbms : databaseSettings.keySet()) {
-			WizardFields fields = databaseSettings.get(dbms);
-			if (fields.getTextField().isEnabled()) {
-				String pathToDatabaseFile = fields.getTextField().getText();
-				if (!pathToDatabaseFile.endsWith(".tdl")) {
+		for (DB db : databaseSettings.keySet()) {
+			WizardFields fields = databaseSettings.get(db);
+			String path = db.getName() + ".tdl";
+			if (fields.getCheckbox().getSelection()) {
+				if (!fileExists(path)) {
 					status = new Status(IStatus.ERROR, "Wizard",
-							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
-				}
-
-				if (!fileExists(pathToDatabaseFile)) {
-					status = new Status(IStatus.ERROR, "Wizard",
-							"Database file " + pathToDatabaseFile + " doesn't exists.");
+							"Database file " + path + " doesn't exists.");
 				}
 			} else {
-				String pathToDatabaseFile = dbms.getName() + ".tdl";
-				if (fileExists(pathToDatabaseFile)) {
-					warning.add(pathToDatabaseFile);
+				if (fileExists(path)) {
+					warning.add(path);
 				}
 			}
 		}
@@ -175,7 +232,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		return file.exists();
 	}
 
-	public ArrayList<DBMS> getDatabases() {
-		return new ArrayList<DBMS>(databaseSettings.keySet());
+	public ArrayList<DB> getDatabases() {
+		return new ArrayList<DB>(databaseSettings.keySet());
 	}
 }
