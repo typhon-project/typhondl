@@ -126,6 +126,7 @@ public class PreferenceReader {
 	 *         contain exactly one definition
 	 */
 	private static <T extends EObject> T getModelObject(T modelObject, IParseResult result) {
+		@SuppressWarnings("unchecked")
 		List<T> elements = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
 				.filter(element -> modelObject.getClass().isInstance(element)).map(element -> (T) element)
 				.collect(Collectors.toList());
