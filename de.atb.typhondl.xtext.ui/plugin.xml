@@ -83,11 +83,20 @@
 			name="TyphonDL">
 			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
 		</page>
+  <page
+        category="de.atb.typhondl.xtext.TyphonDL"
+        class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.preferencePages.DBTemplatePreferencePage"
+        id="de.atb.typhondl.xtext.TyphonDL.templates.dbTemplates"
+        name="DB Templates">
+     <keywordReference
+           id="de.atb.typhondl.xtext.ui.keyword_TyphonDL">
+     </keywordReference>
+  </page>
 		<page
 			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.templates"
-			name="Templates">
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.preferencePages.DBTypeTemplatePreferencePage"
+			id="de.atb.typhondl.xtext.TyphonDL.templates.dbtypeTemplates"
+			name="DBType Templates">
 			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
 		</page>
 	</extension>
