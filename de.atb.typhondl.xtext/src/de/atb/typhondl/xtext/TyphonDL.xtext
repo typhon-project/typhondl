@@ -83,7 +83,7 @@ Application:
 
 Container:
 	{Container}
-	'container' name=ID ':' (type=[ContainerType])? '{'
+	'container' name=Value ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
