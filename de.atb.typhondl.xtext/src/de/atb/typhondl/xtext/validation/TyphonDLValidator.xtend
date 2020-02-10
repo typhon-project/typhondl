@@ -16,6 +16,7 @@ import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
+import de.atb.typhondl.xtext.typhonDL.Import
 
 /**
  * This class contains custom validation rules. 
@@ -44,6 +45,11 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 				error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
 			}
 		}
+	}
+	
+	@Check
+	def checkImportExists(Import importedFile) {
+		
 	}
 
 	// the file is read every time a character is typed, maybe not the best approach.
@@ -89,13 +95,13 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
 		}
 	}
-	
-	@Check
-	def checkContainerType(ContainerType containerType) {
-		if (!containerType.name.equalsIgnoreCase("Docker")){
-			error("Only Docker is supported", TyphonDLPackage.Literals.CONTAINER_TYPE,
-					INVALID_CONTAINER_TYPE) //TODO how to do this?
-		}
-	}
+//	
+//	@Check
+//	def checkContainerType(ContainerType containerType) {
+//		if (!containerType.name.equalsIgnoreCase("Docker")){
+//			error("Only Docker is supported", TyphonDLPackage.Literals.CONTAINER_TYPE,
+//					INVALID_CONTAINER_TYPE) //TODO how to do this?
+//		}
+//	}
 
 }
