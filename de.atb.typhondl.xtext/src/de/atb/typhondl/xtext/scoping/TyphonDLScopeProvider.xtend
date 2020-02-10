@@ -3,13 +3,6 @@
  */
 package de.atb.typhondl.xtext.scoping
 
-import org.eclipse.emf.ecore.EReference
-import org.eclipse.emf.ecore.EObject
-import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory
-import de.atb.typhondl.xtext.typhonDL.DBType
-import org.eclipse.xtext.scoping.Scopes
-
 /**
  * This class contains custom scoping description.
  * 
@@ -17,11 +10,5 @@ import org.eclipse.xtext.scoping.Scopes
  * on how and when to use it.
  */
 class TyphonDLScopeProvider extends AbstractTyphonDLScopeProvider {
-	override getScope(EObject object, EReference ref){
-		if (ref == TyphonDLPackage.Literals.DB__TYPE) {
-			val dbtype = TyphonDLFactory.eINSTANCE.createDBType as DBType
-			return super.getScope(object, ref)
-		}
-		return super.getScope(object, ref)
-	}
+	
 }
