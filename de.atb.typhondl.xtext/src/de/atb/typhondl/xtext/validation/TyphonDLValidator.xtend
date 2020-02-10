@@ -5,6 +5,7 @@ package de.atb.typhondl.xtext.validation
 
 import de.atb.typhondl.xtext.typhonDL.Cluster
 import de.atb.typhondl.xtext.typhonDL.Container
+import de.atb.typhondl.xtext.typhonDL.ContainerType
 import de.atb.typhondl.xtext.typhonDL.DBType
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Ports
@@ -26,6 +27,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	public static val INVALID_PORT = 'invalidPort'
 	public static val INVALID_DOCKER_KEY = 'invalidDockerKey'
 	public static val INVALID_KUBERNETES_CONTAINER_NAME = 'invalidKubernetesContainerName'
+	public static val INVALID_CONTAINER_TYPE = 'invalidContainerType'
 
 	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
@@ -85,6 +87,14 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 		if (!dbType.image.value.contains(dbType.name.toLowerCase)) {
 			warning("This image does not contain the name of the DB, are you sure it is the right image?",
 				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
+		}
+	}
+	
+	@Check
+	def checkContainerType(ContainerType containerType) {
+		if (!containerType.name.equalsIgnoreCase("Docker")){
+			error("Only Docker is supported", TyphonDLPackage.Literals.CONTAINER_TYPE,
+					INVALID_CONTAINER_TYPE) //TODO how to do this?
 		}
 	}
 
