@@ -2,18 +2,27 @@ package de.atb.typhondl.xtext.ui.utilities;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Text;
+
+import de.atb.typhondl.xtext.typhonDL.DB;
 
 public class WizardFields {
 
 	private Button checkbox;
 	private Combo combo;
-	private Text textField;
-	
-	public WizardFields(Button checkbox, Combo combo, Text textField) {
+	private DB[] dbTemplates;
+
+	public WizardFields(Button checkbox, Combo combo, DB[] dbTemplates) {
 		this.checkbox = checkbox;
 		this.combo = combo;
-		this.textField = textField;
+		this.dbTemplates = dbTemplates;
+	}
+
+	public void setCheckbox(Button checkbox) {
+		this.checkbox = checkbox;
+	}
+
+	public void setCombo(Combo combo) {
+		this.combo = combo;
 	}
 
 	public Button getCheckbox() {
@@ -24,7 +33,7 @@ public class WizardFields {
 		return combo;
 	}
 
-	public Text getTextField() {
-		return textField;
+	public DB[] getDbTemplates() {
+		return dbTemplates;
 	}
 }

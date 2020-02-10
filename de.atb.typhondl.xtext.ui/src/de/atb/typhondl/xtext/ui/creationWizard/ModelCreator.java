@@ -1,10 +1,8 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -29,9 +27,7 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
@@ -39,7 +35,6 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
-import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -52,7 +47,6 @@ public class ModelCreator {
 	// path to folder in which to save all model files
 	private IPath folder;
 	private String DLmodelName;
-	private final String PATH_TO_PROPERTIES = "de/atb/typhondl/xtext/ui/properties/";
 
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
@@ -84,7 +78,7 @@ public class ModelCreator {
 		}
 	}
 
-	public IFile createDLmodel(ArrayList<Database> databases, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(ArrayList<DB> dbs, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -120,63 +114,20 @@ public class ModelCreator {
 //		platformType.setName(properties.getProperty("ui.environment.API_HOST"));
 		DLmodel.getElements().add(platformType);
 
-		ArrayList<DB> dbs = new ArrayList<DB>();
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-
-		for (Database database : databases) {
+		// create import for each db, use given db or load from file
+		for (DB db : dbs) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
-			DB db;
 			DeploymentModel dbModel;
-			if (database.getPathToDBModelFile() != null) { // use existing .tdl file
-				URI dbURI = URI.createPlatformResourceURI(
-						this.folder.append(database.getPathToDBModelFile()).toString(), true);
+			if (db.getType() == null) { // use existing .tdl file
+				String path = db.getName() + ".tdl";
+				URI dbURI = URI.createPlatformResourceURI(this.folder.append(path).toString(), true);
 				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
-				db = getDB(dbModel);
-				importedDB.setRelativePath(database.getPathToDBModelFile());
+				addModelToDB(db, getDB(dbModel));
+				importedDB.setRelativePath(path);
 			} else {
-				Properties dbProperties = new Properties();
-				InputStream inStream = ModelCreator.class.getClassLoader().getResourceAsStream(
-						PATH_TO_PROPERTIES + database.getDbms().getName().toLowerCase() + ".properties");
-				try {
-					dbProperties.load(inStream);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				db = TyphonDLFactory.eINSTANCE.createDB();
-				db.setName(database.getName());
-				DBType dbType = database.getDbms();
-				IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-				image.setValue(dbProperties.getProperty("image"));
-				dbType.setImage(image);
-				db.setType(dbType);
 				importedDB.setRelativePath(db.getName() + ".tdl");
-				// add environment:
-				List<String> environmentKeys = dbProperties.keySet().stream().map(key -> (String) key)
-						.filter(key -> key.contains("environment")).collect(Collectors.toList());
-				if (!environmentKeys.isEmpty()) {
-					Key_KeyValueList environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-					environment.setName("environment");
-					environmentKeys.forEach(key -> {
-						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key.substring(key.lastIndexOf('.') + 1));
-						key_value.setValue((String) dbProperties.get(key));
-						environment.getKey_Values().add(key_value);
-					});
-					db.getParameters().add(environment);
-				}
-				// add other key-values:
-				List<String> keys = dbProperties.keySet().stream().map(key -> (String) key)
-						.filter(key -> key.contains("key")).collect(Collectors.toList());
-				if (!keys.isEmpty()) {
-					for (String key : keys) {
-						Key_Values key_value = TyphonDLFactory.eINSTANCE.createKey_Values();
-						key_value.setName(key.substring(key.lastIndexOf('.') +1));
-						key_value.setValue((String) dbProperties.get(key));
-						db.getParameters().add(key_value);
-					}
-				}
 			}
-			dbs.add(db);
 			DLmodel.getGuiMetaInformation().add(importedDB);
 			boolean containsType = false;
 			for (DBType dbType : dbTypes) {
@@ -240,8 +191,8 @@ public class ModelCreator {
 			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
 			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 			publishedDB_port.setName("published");
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType)); // TODO can be
-																										// removed later
+			// TODO can be removed later
+			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType));
 			db_ports.getKey_values().add(db_port);
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
@@ -264,16 +215,21 @@ public class ModelCreator {
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
 
+	private void addModelToDB(DB db, DB input) {
+		db.setType(input.getType());
+		db.getParameters().addAll(input.getParameters());
+	}
+
 	// TODO This should not be needed, since the databases should only be reachable
 	// inside the same network/cluster
 	private String getStandardPort(String name) {
-		switch (name) {
+		switch (name.toLowerCase()) {
 		case "mariadb":
 			return "3306";
 		case "mysql":
 			return "3306";
 		case "mongo":
-			return "27017"; // 27017 is occupied by polystoredb
+			return "27017";
 		default:
 			return "0:0";
 		}
@@ -285,7 +241,7 @@ public class ModelCreator {
 		if (type.getName().equals("Kubernetes")) {
 			return "" + (31000 + ThreadLocalRandom.current().nextInt(1, 100));
 		} else {
-			switch (name) {
+			switch (name.toLowerCase()) {
 			case "mariadb":
 				return "3306";
 			case "mysql":
@@ -315,7 +271,6 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private boolean checkExist(URI servicesURI) {

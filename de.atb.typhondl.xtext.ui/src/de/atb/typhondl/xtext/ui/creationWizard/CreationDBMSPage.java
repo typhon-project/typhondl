@@ -1,11 +1,14 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -22,32 +25,76 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.xml.sax.SAXException;
 
-import de.atb.typhondl.xtext.typhonDL.DBType;
+import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.utilities.Database;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
+import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
+/**
+ * Second page of the TyphonDL Creation Wizard. The ML model gets parsed and for
+ * each needed database a group is created. Here the user can choose the wanted
+ * DBMS. The list of possible DBMSs is taken from the templates.
+ * 
+ * @author flug
+ *
+ */
 public class CreationDBMSPage extends MyWizardPage {
 
-	private HashMap<Database, WizardFields> databaseSettings;
+	/**
+	 * Each DB needs WizardFields to get the wanted DBMS or the path to the already
+	 * existing model file
+	 */
+	private HashMap<DB, WizardFields> databaseSettings;
+
+	/**
+	 * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
+	 * where DatabaseAbstractType is in (relationaldb, documentdb, keyvaluedb,
+	 * graphdb) <br>
+	 * firstValue == dbName <br>
+	 * second value == abstractType
+	 */
+	private ArrayList<Pair<String, String>> MLmodel;
+
+	/**
+	 * The ML model file
+	 */
 	private IFile file;
 
+	/**
+	 * Creates a CreationDBMSPage, reading the ML model from the given file.
+	 * 
+	 * @param pageName
+	 * @param file     ML model file
+	 */
 	public CreationDBMSPage(String pageName, IFile file) {
 		this(pageName, file, readModel(file));
 	}
 
-	public CreationDBMSPage(String pageName, IFile file, ArrayList<Database> MLmodel) {
+	/**
+	 * Creates a CreationDBMSPage from the given ML model
+	 * 
+	 * @param pageName
+	 * @param file     ML model file
+	 * @param MLmodel  List of Pair(name, abstractType) taken from the ML model file
+	 */
+	public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel) {
 		super(pageName);
-		this.databaseSettings = new HashMap<Database, WizardFields>();
-		MLmodel.forEach(db -> this.databaseSettings.put(db, null));
+		this.MLmodel = MLmodel;
 		this.file = file;
+		this.databaseSettings = new HashMap<>();
 	}
 
-	private static ArrayList<Database> readModel(IFile MLmodel) {
+	/**
+	 * reads the given ML model, extracts name and abstract type of the databases
+	 * 
+	 * @param MLmodel
+	 * @return a list of Pair(name, abstractType)
+	 */
+	private static ArrayList<Pair<String, String>> readModel(IFile MLmodel) {
 		try {
 			return MLmodelReader.readXMIFile(MLmodel.getLocationURI());
 		} catch (ParserConfigurationException | SAXException | IOException e) {
@@ -64,97 +111,141 @@ public class CreationDBMSPage extends MyWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
+		
+		for (Pair<String, String> dbFromML : MLmodel) {
 
-		for (Database database : databaseSettings.keySet()) {
+			// Create a new DB for each dbFromML
+			DB db = getEmptyDB(dbFromML.firstValue);
 
+			// get templates
+			DB[] dbTemplates = PreferenceReader.readDBs(dbFromML.secondValue);
+			databaseSettings.put(db, new WizardFields(null, null, dbTemplates));
+		}
+		
+		for (DB db : databaseSettings.keySet()) {
+
+			DB[] dbTemplates = databaseSettings.get(db).getDbTemplates();
+			String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
+					.collect(Collectors.toList()).toArray(new String[0]);
+
+			String dbName = db.getName();
+
+			// create a group for each database
 			Group group = new Group(main, SWT.READ_ONLY);
 			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-			group.setText(database.getName());
+			group.setText(dbName);
 
 			Button checkbox = new Button(group, SWT.CHECK);
-			checkbox.setText("Use existing file");
-			checkbox.setSelection(fileExists(database.getName() + ".tdl"));
+			checkbox.setText("Use existing " + dbName + ".tdl file in this project folder");
+			checkbox.setSelection(fileExists(dbName + ".tdl"));
 			checkbox.setLayoutData(gridData);
-			checkbox.setToolTipText("Check this box if you already have a model file for " + database.getName());
+			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					WizardFields wizardField = databaseSettings.get(database);
-					wizardField.getTextField().setEnabled(wizardField.getCheckbox().getSelection());
+					WizardFields wizardField = databaseSettings.get(db);
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
 					if (wizardField.getCheckbox().getSelection()) {
-						database.setDbms(null); // delete set DBMS in database if an existing file is used
-						database.setPathToDBModelFile(wizardField.getTextField().getText());
+						clearDB(db); // delete existing db settings
 					} else {
-						DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-						type.setName(wizardField.getCombo().getText().toLowerCase());
-						database.setDbms(type);
-						database.setPathToDBModelFile(null);
+						useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
 					}
 					validate();
 				}
 			});
-
+			databaseSettings.get(db).setCheckbox(checkbox);
+			
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
-			combo.setItems(database.getType().getPossibleDBMSs());
-			combo.setText(database.getType().getPossibleDBMSs()[0]);
-			DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-			type.setName(database.getType().getPossibleDBMSs()[0].toLowerCase());
-			if (!checkbox.getSelection())
-				database.setDbms(type);
+			combo.setItems(dbTemplateNames);
+			combo.setText(dbTemplateNames[0]);
+			// set initial dbTemplate
+			if (!checkbox.getSelection()) {
+				useDBTemplateOnDB(db, dbTemplates[0]);
+			}
 			combo.setEnabled(!checkbox.getSelection());
-			combo.setToolTipText(
-					"Choose specific DBMS for " + database.getName() + " of type " + database.getType().name());
+			combo.setToolTipText("Choose specific DBMS Template for " + dbName);
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					DBType type = TyphonDLFactory.eINSTANCE.createDBType();
-					type.setName(databaseSettings.get(database).getCombo().getText().toLowerCase());
-					database.setDbms(type);
+					WizardFields wizardField = databaseSettings.get(db);
+					useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
 					validate();
 				}
 			});
-
-			new Label(group, NONE).setText("Database file: ");
-			Text textField = new Text(group, SWT.BORDER);
-			textField.setText(database.getName() + ".tdl");
-			textField.setEnabled(checkbox.getSelection());
-			textField.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-			textField.setToolTipText("Give the path to your database configuration file");
-			if (checkbox.getSelection())
-				database.setPathToDBModelFile(textField.getText());
-			textField.addModifyListener(e -> {
-				database.setPathToDBModelFile(databaseSettings.get(database).getTextField().getText());
-				validate();
-			});
-			databaseSettings.put(database, new WizardFields(checkbox, combo, textField));
+			databaseSettings.get(db).setCombo(combo);
 		}
 		validate();
 		setControl(main);
 	}
 
+	/**
+	 * Adds the DBType and Parameters from the given template DB to the given DB
+	 * @param db The DB that should have all attributes from the template
+	 * @param template The chosen template DB
+	 */
+	protected void useDBTemplateOnDB(DB db, DB template) {
+		db.setType(template.getType());
+		db.getParameters().clear();
+		db.getParameters().addAll(template.getParameters());
+		
+	}
+
+	/**
+	 * Removes DBType and clears Parameter List from DB 
+	 * TODO check if the list is supposed to be null
+	 * 
+	 * @param db the DB to clear
+	 */
+	protected void clearDB(DB db) {
+		db.setType(null);
+		db.getParameters().clear();
+	}
+
+	/**
+	 * Finds a template by name in a template list
+	 * 
+	 * @param dbTemplates  the template list
+	 * @param templateName the template to find
+	 * @return the wanted DB template
+	 */
+	protected DB getTemplateByName(DB[] dbTemplates, String templateName) {
+		return Arrays.asList(dbTemplates).stream().filter(template -> template.getName().equalsIgnoreCase(templateName))
+				.findFirst().orElse(null);
+	}
+	
+	/**
+	 * Creates a new empty DB with just a name
+	 * 
+	 * @param dbName the name of the DB
+	 * @return a DB with name dbName
+	 */
+	private DB getEmptyDB(String dbName) {
+		DB db = TyphonDLFactory.eINSTANCE.createDB();
+		db.setName(dbName);
+		return db;
+	}
+
+	/**
+	 * Checks if a database file already exists, gives warning if the file exists
+	 * and would be overwritten or error if the file doesn't exist but the
+	 * fileExists checkbox is checked
+	 */
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		for (Database database : databaseSettings.keySet()) {
-			WizardFields fields = databaseSettings.get(database);
-			if (fields.getTextField().isEnabled()) {
-				String pathToDatabaseFile = fields.getTextField().getText();
-				if (!pathToDatabaseFile.endsWith(".tdl")) {
+		for (DB db : databaseSettings.keySet()) {
+			WizardFields fields = databaseSettings.get(db);
+			String path = db.getName() + ".tdl";
+			if (fields.getCheckbox().getSelection()) {
+				if (!fileExists(path)) {
 					status = new Status(IStatus.ERROR, "Wizard",
-							"Database file (" + pathToDatabaseFile + ") has to end with .tdl");
-				}
-
-				if (!fileExists(pathToDatabaseFile)) {
-					status = new Status(IStatus.ERROR, "Wizard",
-							"Database file " + pathToDatabaseFile + " doesn't exists.");
+							"Database file " + path + " doesn't exists.");
 				}
 			} else {
-				String pathToDatabaseFile = database.getName() + ".tdl";
-				if (fileExists(pathToDatabaseFile)) {
-					warning.add(pathToDatabaseFile);
+				if (fileExists(path)) {
+					warning.add(path);
 				}
 			}
 		}
@@ -165,18 +256,20 @@ public class CreationDBMSPage extends MyWizardPage {
 		setStatus(status);
 	}
 
+	/**
+	 * utility for checking if a file exists
+	 */
 	private boolean fileExists(String fileName) {
 		URI uri = file.getLocationURI();
-		String pathWithFolder = uri.toString().substring(0, uri.toString().lastIndexOf('/') + 1);
-		String path = pathWithFolder + fileName;
-		File file = new File(URI.create(path));
-		if (file.exists()) {
-			return true;
-		}
-		return false;
+		Path path = Paths.get(uri);
+		Path filePath = path.getParent().resolve(fileName);
+		return Files.exists(filePath);
 	}
 
-	public ArrayList<Database> getDatabases() {
-		return new ArrayList<Database>(databaseSettings.keySet());
+	/**
+	 * Get a list of DBs taken from the MLmodel enriched with wizard and template input
+	 */
+	public ArrayList<DB> getDatabases() {
+		return new ArrayList<DB>(databaseSettings.keySet());
 	}
 }

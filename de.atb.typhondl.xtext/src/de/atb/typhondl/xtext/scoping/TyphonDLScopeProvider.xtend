@@ -3,7 +3,6 @@
  */
 package de.atb.typhondl.xtext.scoping
 
-
 /**
  * This class contains custom scoping description.
  * 
@@ -11,5 +10,5 @@ package de.atb.typhondl.xtext.scoping
  * on how and when to use it.
  */
 class TyphonDLScopeProvider extends AbstractTyphonDLScopeProvider {
-
+	
 }

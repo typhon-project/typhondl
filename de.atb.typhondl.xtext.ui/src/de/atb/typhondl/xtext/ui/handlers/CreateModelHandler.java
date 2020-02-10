@@ -42,7 +42,6 @@ public class CreateModelHandler extends AbstractHandler {
 			Object firstElement = strucSelection.getFirstElement();
 			if (firstElement instanceof IAdaptable) {
 				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
-
 				IProject project = file.getProject();
 				boolean hasXtextNature;
 				try {

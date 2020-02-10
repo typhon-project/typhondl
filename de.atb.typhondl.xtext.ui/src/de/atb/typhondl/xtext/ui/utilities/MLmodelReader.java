@@ -4,6 +4,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -12,8 +13,8 @@ import java.io.*;
 
 public class MLmodelReader {
 
-	public static ArrayList<Database> readXMIFile(URI uri) throws ParserConfigurationException, SAXException, IOException {
-		ArrayList<Database> dbsMap = new ArrayList<Database>();
+	public static ArrayList<Pair<String, String>> readXMIFile(URI uri) throws ParserConfigurationException, SAXException, IOException {
+		ArrayList<Pair<String, String>> dbsMap = new ArrayList<>();
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		byte[] encoded = Files.readAllBytes(Paths.get(uri));
@@ -25,15 +26,10 @@ public class MLmodelReader {
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 	               Element eElement = (Element) node;
 	               String name = eElement.getAttribute("name");
-	               String dbType = eElement.getAttribute("xsi:type").split(":")[1].toLowerCase();
-	               dbsMap.add(new Database(name, convertStringToDBType(dbType)));
+	               String abstractType = eElement.getAttribute("xsi:type").split(":")[1].toLowerCase();
+	               dbsMap.add(new Pair<String, String>(name, abstractType));
 			}
 		}
 		return dbsMap;
 	}
-	
-	private static SupportedDBMS convertStringToDBType (String toConvert) {
-		return SupportedDBMS.valueOf(toConvert);
-	}
-	
 }
