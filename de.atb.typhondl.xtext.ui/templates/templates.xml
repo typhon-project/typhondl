@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<templates>
+<template id="dbType_mariadb" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MariaDB using the latest image from Docker Hub" enabled="true" name="MariaDBType">dbtype MariaDB {
+    default image = mariadb:latest;
+}</template>
+<template id="dbType_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo using the latest image from Docker Hub" enabled="true" name="MongoType">dbtype Mongo {
+    default image = mongo:latest;
+}</template>
+<template id="dbType_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MySQL using the latest image from Docker Hub" enabled="true" name="MySQLType">dbtype MySQL {
+    default image = mysql:latest;
+}</template>
+<template id="db_mariadb" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MariaDB" enabled="true" name="MariaDB">database ${databaseName} : MariaDB {
+    environment {
+        MYSQL_ROOT_PASSWORD = ${password} ;
+    }
+}	
+</template>
+<template id="db_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Mongo" enabled="true" name="Mongo">database ${databaseName} : Mongo {
+    environment {
+        MONGO_INITDB_ROOT_USERNAME = ${username} ;
+        MONGO_INITDB_ROOT_PASSWORD = ${pssword} ;
+    }
+}</template>
+<template id="db_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MySQL" enabled="true" name="MySQL">database ${databaseName} : MySQL {
+    environment {
+        MYSQL_ROOT_PASSWORD = ${password} ;
+    }
+}</template>
+</templates>

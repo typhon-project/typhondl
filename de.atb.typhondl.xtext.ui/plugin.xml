@@ -83,18 +83,20 @@
 			name="TyphonDL">
 			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
 		</page>
+  <page
+        category="de.atb.typhondl.xtext.TyphonDL"
+        class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.preferencePages.DBTemplatePreferencePage"
+        id="de.atb.typhondl.xtext.TyphonDL.templates.dbTemplates"
+        name="DB Templates">
+     <keywordReference
+           id="de.atb.typhondl.xtext.ui.keyword_TyphonDL">
+     </keywordReference>
+  </page>
 		<page
 			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.coloring"
-			name="Syntax Coloring">
-			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
-		</page>
-		<page
-			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.templates"
-			name="Templates">
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.preferencePages.DBTypeTemplatePreferencePage"
+			id="de.atb.typhondl.xtext.TyphonDL.templates.dbtypeTemplates"
+			name="DBType Templates">
 			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
 		</page>
 	</extension>
@@ -249,28 +251,10 @@
 		<super type="org.eclipse.xtext.ui.check.expensive"/>
 		<persistent value="true"/>
 	</extension>
-	<extension point="org.eclipse.ui.preferencePages">
-		<page
-			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.validation.ValidatorPreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.validator.preferencePage"
-			name="Errors/Warnings">
-			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
-		</page>
-	</extension>
 	<extension point="org.eclipse.xtext.builder.participant">
 		<participant
 			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
 			fileExtensions="tdl"/>
-	</extension>
-	<extension point="org.eclipse.ui.preferencePages">
-		<page
-			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.compiler.preferencePage"
-			name="Compiler">
-			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
-		</page>
 	</extension>
 	<extension point="org.eclipse.ui.propertyPages">
 		<page
@@ -391,15 +375,6 @@
 				</visibleWhen>
 			</command>
 		</menuContribution>
-	</extension>
-	<extension point="org.eclipse.ui.preferencePages">
-		<page
-			category="de.atb.typhondl.xtext.TyphonDL"
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
-			id="de.atb.typhondl.xtext.TyphonDL.refactoring"
-			name="Refactoring">
-			<keywordReference id="de.atb.typhondl.xtext.ui.keyword_TyphonDL"/>
-		</page>
 	</extension>
 	<extension point="org.eclipse.compare.contentViewers">
 		<viewer id="de.atb.typhondl.xtext.TyphonDL.compare.contentViewers"
