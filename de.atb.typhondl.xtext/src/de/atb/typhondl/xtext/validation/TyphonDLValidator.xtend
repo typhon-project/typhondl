@@ -72,8 +72,9 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	def checkKubernetesContainerNames(Container container) {
 		val cluster = container.eContainer.eContainer as Cluster
 		if (cluster.type.name.equalsIgnoreCase("Kubernetes")) {
-			if (!container.name.equals(container.name.toLowerCase)) {
-				error("Containernames have to be lower case in Kubernetes", TyphonDLPackage.Literals.CONTAINER__NAME,
+			val pattern = "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+			if (!container.name.matches(pattern)) {
+				error("Containernames in Kubernetes can only contain lower case letters, numbers and '-'", TyphonDLPackage.Literals.CONTAINER__NAME,
 					INVALID_KUBERNETES_CONTAINER_NAME)
 			}
 		}
