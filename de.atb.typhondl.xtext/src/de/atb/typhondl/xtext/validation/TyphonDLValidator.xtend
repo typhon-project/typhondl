@@ -25,6 +25,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	public static val INVALID_PORT = 'invalidPort'
 	public static val INVALID_DOCKER_KEY = 'invalidDockerKey'
+	public static val INVALID_KUBERNETES_CONTAINER_NAME = 'invalidKubernetesContainerName'
 
 	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
@@ -44,7 +45,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	}
 
 	// the file is read every time a character is typed, maybe not the best approach.
-	@Check // (CheckType.NORMAL) // for checking only on save or request only
+	@Check // (CheckType.NORMAL) // for checking on save or request only
 	def checkComposeKeys(Cluster cluster) {
 		val containers = <Container>newArrayList
 		cluster.applications.forEach[app|containers.addAll(app.containers)]
@@ -57,22 +58,30 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			path = "de/atb/typhondl/xtext/validation/kubernetes_v1.txt"
 		}
 		val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
-			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-			val keys = bufferedReader.readLines
-			for (property : properties) {
-				if (!keys.contains(property.name) && !property.name.equals('hostname')) {
-					error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
-						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
-				}
+		val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+		val keys = bufferedReader.readLines
+		for (property : properties) {
+			if (!keys.contains(property.name) && !property.name.equals('hostname')) {
+				error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
+					TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
 			}
+		}
+	}
 
-
-
+	@Check
+	def checkKubernetesContainerNames(Container container) {
+		val cluster = container.eContainer.eContainer as Cluster
+		if (cluster.type.name.equalsIgnoreCase("Kubernetes")) {
+			if (!container.name.equals(container.name.toLowerCase)) {
+				error("Containernames have to be lower case in Kubernetes", TyphonDLPackage.Literals.CONTAINER__NAME,
+					INVALID_KUBERNETES_CONTAINER_NAME)
+			}
+		}
 	}
 
 	@Check
 	def checkImage(DBType dbType) {
-		if (!dbType.image.value.contains(dbType.name)) {
+		if (!dbType.image.value.contains(dbType.name.toLowerCase)) {
 			warning("This image does not contain the name of the DB, are you sure it is the right image?",
 				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
 		}
