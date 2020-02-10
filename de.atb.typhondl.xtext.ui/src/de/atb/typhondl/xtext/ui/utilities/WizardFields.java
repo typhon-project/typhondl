@@ -32,14 +32,6 @@ public class WizardFields {
 	public Combo getCombo() {
 		return combo;
 	}
-//
-//	public DB getChosenTemplate() {
-//		return dbTemplates;
-//	}
-//
-//	public void setChosenTemplate(DB chosenTemplate) {
-//		this.dbTemplates = chosenTemplate;
-//	}
 
 	public DB[] getDbTemplates() {
 		return dbTemplates;

@@ -193,8 +193,8 @@ public class CreationDBMSPage extends MyWizardPage {
 	}
 
 	/**
-	 * Removes DBType and clears Parameter List from DB TODO check if the list is
-	 * supposed to be null
+	 * Removes DBType and clears Parameter List from DB 
+	 * TODO check if the list is supposed to be null
 	 * 
 	 * @param db the DB to clear
 	 */

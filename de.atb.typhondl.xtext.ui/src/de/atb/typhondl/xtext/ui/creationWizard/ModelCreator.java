@@ -115,7 +115,7 @@ public class ModelCreator {
 		DLmodel.getElements().add(platformType);
 
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-		// translate each dbms into TyphonDL model entity DB
+		// create import for each db, use given db or load from file
 		for (DB db : dbs) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
 			DeploymentModel dbModel;
@@ -229,7 +229,7 @@ public class ModelCreator {
 		case "mysql":
 			return "3306";
 		case "mongo":
-			return "27017"; // 27017 is occupied by polystoredb
+			return "27017";
 		default:
 			return "0:0";
 		}
