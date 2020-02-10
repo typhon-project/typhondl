@@ -15,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -111,7 +112,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		gridData.horizontalSpan = 2;
-		
+
 		for (Pair<String, String> dbFromML : MLmodel) {
 
 			// Create a new DB for each dbFromML
@@ -119,9 +120,14 @@ public class CreationDBMSPage extends MyWizardPage {
 
 			// get templates
 			DB[] dbTemplates = PreferenceReader.readDBs(dbFromML.secondValue);
+			// no fitting DB is defined in templates
+			if (dbTemplates.length == 0) {
+				MessageDialog.openError(getShell(), "Template Error", "There is no template for a "
+						+ dbFromML.secondValue + ". Please add or activate a fitting DB template.");
+			}
 			databaseSettings.put(db, new WizardFields(null, null, dbTemplates));
 		}
-		
+
 		for (DB db : databaseSettings.keySet()) {
 
 			DB[] dbTemplates = databaseSettings.get(db).getDbTemplates();
@@ -155,7 +161,7 @@ public class CreationDBMSPage extends MyWizardPage {
 				}
 			});
 			databaseSettings.get(db).setCheckbox(checkbox);
-			
+
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			combo.setItems(dbTemplateNames);
@@ -182,19 +188,20 @@ public class CreationDBMSPage extends MyWizardPage {
 
 	/**
 	 * Adds the DBType and Parameters from the given template DB to the given DB
-	 * @param db The DB that should have all attributes from the template
+	 * 
+	 * @param db       The DB that should have all attributes from the template
 	 * @param template The chosen template DB
 	 */
 	protected void useDBTemplateOnDB(DB db, DB template) {
 		db.setType(template.getType());
 		db.getParameters().clear();
 		db.getParameters().addAll(template.getParameters());
-		
+
 	}
 
 	/**
-	 * Removes DBType and clears Parameter List from DB 
-	 * TODO check if the list is supposed to be null
+	 * Removes DBType and clears Parameter List from DB TODO check if the list is
+	 * supposed to be null
 	 * 
 	 * @param db the DB to clear
 	 */
@@ -214,7 +221,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		return Arrays.asList(dbTemplates).stream().filter(template -> template.getName().equalsIgnoreCase(templateName))
 				.findFirst().orElse(null);
 	}
-	
+
 	/**
 	 * Creates a new empty DB with just a name
 	 * 
@@ -240,8 +247,7 @@ public class CreationDBMSPage extends MyWizardPage {
 			String path = db.getName() + ".tdl";
 			if (fields.getCheckbox().getSelection()) {
 				if (!fileExists(path)) {
-					status = new Status(IStatus.ERROR, "Wizard",
-							"Database file " + path + " doesn't exists.");
+					status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
 				}
 			} else {
 				if (fileExists(path)) {
@@ -267,7 +273,8 @@ public class CreationDBMSPage extends MyWizardPage {
 	}
 
 	/**
-	 * Get a list of DBs taken from the MLmodel enriched with wizard and template input
+	 * Get a list of DBs taken from the MLmodel enriched with wizard and template
+	 * input
 	 */
 	public ArrayList<DB> getDatabases() {
 		return new ArrayList<DB>(databaseSettings.keySet());
