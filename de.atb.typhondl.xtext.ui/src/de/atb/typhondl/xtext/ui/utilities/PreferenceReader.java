@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateTranslator;
+import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
@@ -43,7 +45,7 @@ public class PreferenceReader {
 	 * 
 	 * @param metatype \in {relationaldb, documentdb, graphdb, keyvaluedb}
 	 */
-	public static DB[] readDBs(String metatype) {
+	public static HashMap<DB, TemplateVariable[]> readDBs(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
 		// load the DB and DBType templates
@@ -73,7 +75,7 @@ public class PreferenceReader {
 				dbTypes.add(dbtype);
 			}
 		}
-		ArrayList<DB> dbs = new ArrayList<>();
+		HashMap<DB, TemplateVariable[]> dbs = new HashMap<DB, TemplateVariable[]>();
 		for (int i = 0; i < dbTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
 			// for now the buffer variables do not contain the DBType
@@ -88,7 +90,7 @@ public class PreferenceReader {
 				}
 				if (db.getType() != null) {
 					db.setName(dbTemplates[i].getName()); //temporary
-					dbs.add(db);
+					dbs.put(db, buffer.getVariables());
 				} else {
 					// TODO error message, template is not well defined, only supported DBMS can be
 					// used and each database must have a type
@@ -97,7 +99,7 @@ public class PreferenceReader {
 				// TODO error message, db could not be parsed
 			}
 		}
-		return dbs.toArray(new DB[0]);
+		return dbs;
 	}
 
 	/**

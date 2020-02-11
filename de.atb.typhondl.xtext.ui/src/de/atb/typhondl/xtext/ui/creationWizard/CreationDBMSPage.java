@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -50,6 +51,17 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * existing model file
 	 */
 	private HashMap<DB, WizardFields> databaseSettings;
+
+	/**
+	 * Each DB template has templateVariables
+	 */
+	private HashMap<DB, TemplateVariable[]> templates;
+
+	/**
+	 * Each DB has template variables if created from a template, this is given to
+	 * the wizard to create additional pages
+	 */
+	private HashMap<DB, TemplateVariable[]> result;
 
 	/**
 	 * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
@@ -87,6 +99,8 @@ public class CreationDBMSPage extends MyWizardPage {
 		this.MLmodel = MLmodel;
 		this.file = file;
 		this.databaseSettings = new HashMap<>();
+		this.templates = new HashMap<>();
+		this.result = new HashMap<>();
 	}
 
 	/**
@@ -119,7 +133,8 @@ public class CreationDBMSPage extends MyWizardPage {
 			DB db = getEmptyDB(dbFromML.firstValue);
 
 			// get templates
-			DB[] dbTemplates = PreferenceReader.readDBs(dbFromML.secondValue);
+			this.templates = PreferenceReader.readDBs(dbFromML.secondValue);
+			DB[] dbTemplates = templates.keySet().toArray(new DB[0]);
 			// no fitting DB is defined in templates
 			if (dbTemplates.length == 0) {
 				MessageDialog.openError(getShell(), "Template Error", "There is no template for a "
@@ -193,10 +208,11 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * @param template The chosen template DB
 	 */
 	protected void useDBTemplateOnDB(DB db, DB template) {
+		TemplateVariable[] variables = templates.get(template);
 		db.setType(template.getType());
 		db.getParameters().clear();
 		db.getParameters().addAll(template.getParameters());
-
+		result.put(db, variables);
 	}
 
 	/**
@@ -208,6 +224,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void clearDB(DB db) {
 		db.setType(null);
 		db.getParameters().clear();
+		result.put(db, new TemplateVariable[0]);
 	}
 
 	/**
@@ -274,9 +291,22 @@ public class CreationDBMSPage extends MyWizardPage {
 
 	/**
 	 * Get a list of DBs taken from the MLmodel enriched with wizard and template
-	 * input
+	 * input and the corresponding TemplateVariables
+	 * 
+	 * @return DBs and their TemplateVariable Array
 	 */
-	public ArrayList<DB> getDatabases() {
-		return new ArrayList<DB>(databaseSettings.keySet());
+	public HashMap<DB, TemplateVariable[]> getResult() {
+		return result;
+	}
+
+	/**
+	 * Lets the wizard check if there is the need for additional template variables
+	 * pages
+	 * 
+	 * @return true if there should be additional pages, otherwise false
+	 */
+	public boolean isHasTemplateVariables() {
+		return result.keySet().stream().map(key -> result.get(key)).collect(Collectors.toList()).stream()
+				.anyMatch(array -> array.length != 0);
 	}
 }
