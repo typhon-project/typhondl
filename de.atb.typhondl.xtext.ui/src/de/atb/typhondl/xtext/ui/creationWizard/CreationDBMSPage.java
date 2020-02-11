@@ -133,8 +133,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			DB db = getEmptyDB(dbFromML.firstValue);
 
 			// get templates
-			this.templates = PreferenceReader.readDBs(dbFromML.secondValue);
-			DB[] dbTemplates = templates.keySet().toArray(new DB[0]);
+			HashMap<DB, TemplateVariable[]> readDBs = PreferenceReader.readDBs(dbFromML.secondValue);
+			this.templates.putAll(readDBs);
+			DB[] dbTemplates = readDBs.keySet().toArray(new DB[0]);
 			// no fitting DB is defined in templates
 			if (dbTemplates.length == 0) {
 				MessageDialog.openError(getShell(), "Template Error", "There is no template for a "
@@ -160,6 +161,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing " + dbName + ".tdl file in this project folder");
 			checkbox.setSelection(fileExists(dbName + ".tdl"));
+			if (checkbox.getSelection()) {
+				result.put(db, new TemplateVariable[0]);
+			}
 			checkbox.setLayoutData(gridData);
 			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
 			checkbox.addSelectionListener(new SelectionAdapter() {
@@ -306,6 +310,12 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * @return true if there should be additional pages, otherwise false
 	 */
 	public boolean isHasTemplateVariables() {
+		boolean hasTemplateVariables = false;
+		for (DB key : result.keySet()) {
+			TemplateVariable[] variables = result.get(key);
+			int length = variables.length;
+			String test;
+		}
 		return result.keySet().stream().map(key -> result.get(key)).collect(Collectors.toList()).stream()
 				.anyMatch(array -> array.length != 0);
 	}
