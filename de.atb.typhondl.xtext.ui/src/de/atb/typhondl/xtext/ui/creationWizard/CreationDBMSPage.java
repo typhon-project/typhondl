@@ -195,7 +195,7 @@ public class CreationDBMSPage extends MyWizardPage {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = databaseSettings.get(db);
-					useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
+					useDBTemplateOnDB(db, getTemplateByName(wizardField.getDbTemplates(), wizardField.getCombo().getText()));
 					validate();
 				}
 			});

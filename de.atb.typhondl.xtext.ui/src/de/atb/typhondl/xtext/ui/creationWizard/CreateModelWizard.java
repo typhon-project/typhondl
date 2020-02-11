@@ -58,13 +58,15 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			properties = this.mainPage.getProperties();
 		}
+		ArrayList<DB> dbs = new ArrayList<>();
 		if (dbmsPage.isHasTemplateVariables()) {
-			// TODO
+			dbs = variablePage.getDBs();
+		} else {
+			dbs = new ArrayList<DB>(dbmsPage.getResult().keySet());
 		}
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		HashMap<DB, TemplateVariable[]> result = dbmsPage.getResult();
-		IFile file = modelCreator.createDLmodel(new ArrayList<DB>(result.keySet()), chosenTemplate, properties);
+		IFile file = modelCreator.createDLmodel(dbs, chosenTemplate, properties);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);
