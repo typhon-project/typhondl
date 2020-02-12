@@ -18,7 +18,7 @@
 <template id="db_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Mongo" enabled="true" name="Mongo">database ${databaseName} : Mongo {
     environment {
         MONGO_INITDB_ROOT_USERNAME = ${username} ;
-        MONGO_INITDB_ROOT_PASSWORD = ${pssword} ;
+        MONGO_INITDB_ROOT_PASSWORD = ${password} ;
     }
 }</template>
 <template id="db_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MySQL" enabled="true" name="MySQL">database ${databaseName} : MySQL {

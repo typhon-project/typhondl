@@ -44,7 +44,7 @@ public class PreferenceReader {
 	 * @return A list of valid TemplateBuffers containing the template pattern and
 	 *         the template variables
 	 */
-	public static ArrayList<Pair<String, TemplateBuffer>> getBuffers(String metatype) {
+	public static ArrayList<Pair<DB, TemplateBuffer>> getBuffers(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
 		// load the DB and DBType templates
@@ -69,7 +69,7 @@ public class PreferenceReader {
 				dbTypes.add(dbtype);
 			}
 		}
-		ArrayList<Pair<String, TemplateBuffer>> buffers = new ArrayList<>();
+		ArrayList<Pair<DB, TemplateBuffer>> buffers = new ArrayList<>();
 		for (int i = 0; i < dbTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
 			// for now the buffer variables do not contain the DBType
@@ -78,7 +78,9 @@ public class PreferenceReader {
 			if (db != null) {
 				for (DBType supportedType : dbTypes) {
 					if (buffer.getString().contains(supportedType.getName())) {
-						buffers.add(new Pair<String, TemplateBuffer>(dbTemplates[i].getName(), buffer));
+						db.setName(dbTemplates[i].getName());
+						db.setType(supportedType);
+						buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
 					} else {
 						// TODO warning
 					}

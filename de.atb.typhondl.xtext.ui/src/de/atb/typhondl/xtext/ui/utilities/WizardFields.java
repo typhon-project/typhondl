@@ -6,16 +6,18 @@ import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 
+import de.atb.typhondl.xtext.typhonDL.DB;
+
 public class WizardFields {
 
 	private Button checkbox;
 	private Combo combo;
-	private ArrayList<Pair<String, TemplateBuffer>> templateBuffers;
+	private ArrayList<Pair<DB, TemplateBuffer>> templateBuffers;
 
-	public WizardFields(Button checkbox, Combo combo, ArrayList<Pair<String, TemplateBuffer>> buffers) {
+	public WizardFields(Button checkbox, Combo combo, ArrayList<Pair<DB, TemplateBuffer>> templates) {
 		this.checkbox = checkbox;
 		this.combo = combo;
-		this.templateBuffers = buffers;
+		this.templateBuffers = templates;
 	}
 
 	public void setCheckbox(Button checkbox) {
@@ -34,7 +36,7 @@ public class WizardFields {
 		return combo;
 	}
 
-	public ArrayList<Pair<String, TemplateBuffer>> getTemplateBuffers() {
+	public ArrayList<Pair<DB, TemplateBuffer>> getTemplateBuffers() {
 		return templateBuffers;
 	}
 }

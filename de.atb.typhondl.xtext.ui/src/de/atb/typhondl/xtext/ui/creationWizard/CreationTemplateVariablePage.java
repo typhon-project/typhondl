@@ -49,15 +49,13 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 		for (DB db : result.keySet()) {
 
 			TemplateBuffer templateBuffer = result.get(db);
-			TemplateVariable[] variables = templateBuffer.getVariables();
-			List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(variables));
+			if (templateBuffer != null) {
+				TemplateVariable[] variables = templateBuffer.getVariables();
+				List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(variables));
 
-			if (variables.length != 0) {
 				// this is the database.name:
 				variablesList.removeIf(variable -> (variable.getOffsets()[0] == 9));
-			}
 
-			if (variablesList.size() != 0) {
 				// create a group for each database that has templates
 				Group group = new Group(main, SWT.READ_ONLY);
 				group.setLayout(new GridLayout(2, false));
@@ -78,17 +76,14 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 						// replace old value in template variable
 						templateVariable.setValue(newValue);
 						// replace old value in pattern string
-						String newPattern = templateBuffer.getString().replace(oldValue, newValue);
+						String newPattern = templateBuffer.getString().replace(' ' + oldValue, ' ' + newValue);
 						templateBuffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
 						updateDB(db, templateBuffer);
 					});
 				}
 			}
-
 		}
-
 		setControl(main);
-
 	}
 
 	private void updateDB(DB db, TemplateBuffer templateBuffer) {
