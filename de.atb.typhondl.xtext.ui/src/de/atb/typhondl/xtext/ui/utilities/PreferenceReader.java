@@ -38,12 +38,13 @@ public class PreferenceReader {
 
 	/**
 	 * read all DBs fitting the <code>metatype</code> from the Eclipse Preferences
-	 * TyphonDL Template pages. Also adds the fitting DBType (also taken from the
-	 * templates).
+	 * TyphonDL Template pages. Also checks the dbType
 	 * 
 	 * @param metatype \in {relationaldb, documentdb, graphdb, keyvaluedb}
+	 * @return A list of valid TemplateBuffers containing the template pattern and
+	 *         the template variables
 	 */
-	public static DB[] readDBs(String metatype) {
+	public static ArrayList<Pair<DB, TemplateBuffer>> getBuffers(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
 		// load the DB and DBType templates
@@ -59,45 +60,36 @@ public class PreferenceReader {
 			e.printStackTrace();
 		}
 		List<String> possibleTypes = Arrays.asList(((String) properties.get(metatype)).split(" "));
-		// get the parser to transalte the template pattern into a TyphonDL model
-		// instance
-		IParser parser = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
-				.getInstance(IParser.class);
 		// get all dbTypes that match the metatype
 		ArrayList<DBType> dbTypes = new ArrayList<>();
 		for (int i = 0; i < dbTypeTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTypeTemplates[i]);
-			DBType dbtype = getModelObject(TyphonDLFactory.eINSTANCE.createDBType(),
-					parser.parse(new StringReader(buffer.getString())));
+			DBType dbtype = getModelObject(TyphonDLFactory.eINSTANCE.createDBType(), buffer);
 			if (possibleTypes.contains(dbtype.getName())) {
 				dbTypes.add(dbtype);
 			}
 		}
-		ArrayList<DB> dbs = new ArrayList<>();
+		ArrayList<Pair<DB, TemplateBuffer>> buffers = new ArrayList<>();
 		for (int i = 0; i < dbTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
 			// for now the buffer variables do not contain the DBType
 			// parsed like this, the DBType is null
-			DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(),
-					parser.parse(new StringReader(buffer.getString())));
+			DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), buffer);
 			if (db != null) {
 				for (DBType supportedType : dbTypes) {
 					if (buffer.getString().contains(supportedType.getName())) {
+						db.setName(dbTemplates[i].getName());
 						db.setType(supportedType);
+						buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
+					} else {
+						// TODO warning
 					}
 				}
-				if (db.getType() != null) {
-					db.setName(dbTemplates[i].getName()); //temporary
-					dbs.add(db);
-				} else {
-					// TODO error message, template is not well defined, only supported DBMS can be
-					// used and each database must have a type
-				}
 			} else {
-				// TODO error message, db could not be parsed
+				// TODO warning
 			}
 		}
-		return dbs.toArray(new DB[0]);
+		return buffers;
 	}
 
 	/**
@@ -118,16 +110,37 @@ public class PreferenceReader {
 	}
 
 	/**
-	 * Transforms the parsed <code>result</code> into a model object of given Type
-	 * <code>T</code>
+	 * Transforms a List of TemplateBuffers and their Template names into an Array
+	 * of DBs
+	 * 
+	 * @param buffers the List of TemplateBuffers to transform
+	 * @return an Array of DBs
+	 */
+	public static DB[] getDBs(ArrayList<Pair<String, TemplateBuffer>> buffers) {
+		ArrayList<DB> dbs = new ArrayList<>();
+		for (Pair<String, TemplateBuffer> templateBuffer : buffers) {
+			DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer.secondValue);
+			db.setName(templateBuffer.firstValue);
+			dbs.add(db);
+		}
+		return dbs.toArray(new DB[0]);
+	}
+
+	/**
+	 * Transforms the parsed <code>pattern</code> from the TemplateBuffer into a
+	 * model object of given Type <code>T</code>
 	 * 
 	 * @param <T>         the type of the wanted model object (here DB or DBType)
 	 * @param modelObject a dummy modelObject to pass the wanted Type
-	 * @param result      the parsed template pattern
+	 * @param buffer      the TemplateBuffer
 	 * @return the model object or <code>null</code> if the template does not
 	 *         contain exactly one definition
 	 */
-	private static <T extends EObject> T getModelObject(T modelObject, IParseResult result) {
+	public static <T extends EObject> T getModelObject(T modelObject, TemplateBuffer buffer) {
+		// get the parser to transalte the template pattern into a TyphonDL model
+		// instance
+		IParseResult result = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
+				.getInstance(IParser.class).parse(new StringReader(buffer.getString()));
 		@SuppressWarnings("unchecked")
 		List<T> elements = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
 				.filter(element -> modelObject.getClass().isInstance(element)).map(element -> (T) element)

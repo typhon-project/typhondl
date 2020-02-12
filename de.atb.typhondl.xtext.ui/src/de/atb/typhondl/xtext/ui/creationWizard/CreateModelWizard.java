@@ -3,14 +3,18 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
 
+import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 
 public class CreateModelWizard extends Wizard {
@@ -19,6 +23,7 @@ public class CreateModelWizard extends Wizard {
 	private CreationMainPage mainPage;
 	private CreationDBMSPage dbmsPage;
 	private CreationAnalyticsPage analyticsPage;
+	private CreationTemplateVariablePage variablePage;
 	private int chosenTemplate;
 
 	public CreateModelWizard(IFile MLmodel) {
@@ -45,7 +50,7 @@ public class CreateModelWizard extends Wizard {
 		if (mainPage.getMessage() != null) {
 			if (!MessageDialog.openConfirm(this.getShell(), "Wizard", mainPage.getMessage())) {
 				return false;
-			} 
+			}
 		}
 		Properties properties;
 		if (mainPage.getUseAnalytics()) {
@@ -53,9 +58,15 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			properties = this.mainPage.getProperties();
 		}
+		ArrayList<DB> dbs = new ArrayList<>();
+		if (dbmsPage.hasTemplateVariables()) {
+			dbs = variablePage.getDBs();
+		} else {
+			dbs = new ArrayList<DB>(dbmsPage.getResult().keySet());
+		}
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		IFile file = modelCreator.createDLmodel(dbmsPage.getDatabases(), chosenTemplate, properties);
+		IFile file = modelCreator.createDLmodel(dbs, chosenTemplate, properties);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);
@@ -65,7 +76,7 @@ public class CreateModelWizard extends Wizard {
 		fileOpener.openFileToEdit(this.getShell(), file);
 		// save properties
 		String location = file.getLocation().toString();
-		String pathToProperties = location.substring(0, location.lastIndexOf('/')+1) + "polystore.properties";
+		String pathToProperties = location.substring(0, location.lastIndexOf('/') + 1) + "polystore.properties";
 		try {
 			OutputStream output = new FileOutputStream(pathToProperties);
 			properties.store(output, "Only edit this if you know what you are doing!");
@@ -77,10 +88,15 @@ public class CreateModelWizard extends Wizard {
 
 	@Override
 	public boolean canFinish() {
-		if (this.getContainer().getCurrentPage() instanceof CreationMainPage) {
+		IWizardPage currentPage = this.getContainer().getCurrentPage();
+		if (currentPage instanceof CreationMainPage) {
 			return false;
 		}
-		if (this.getContainer().getCurrentPage() instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
+		if (currentPage instanceof CreationDBMSPage
+				&& (mainPage.getUseAnalytics() || ((CreationDBMSPage) currentPage).hasTemplateVariables())) {
+			return false;
+		}
+		if (currentPage instanceof CreationTemplateVariablePage && mainPage.getUseAnalytics()) {
 			return false;
 		}
 		return super.canFinish();
@@ -91,12 +107,24 @@ public class CreateModelWizard extends Wizard {
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
-		if (page instanceof CreationDBMSPage && mainPage.getUseAnalytics()) {
-			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
-			this.analyticsPage.setWizard(this);
-			return analyticsPage;
+		if (page instanceof CreationDBMSPage && ((CreationDBMSPage) page).hasTemplateVariables()) {
+			this.variablePage = createVariablesPage("Template Variables Page", ((CreationDBMSPage) page).getResult());
+			this.variablePage.setWizard(this);
+			return variablePage;
+		}
+		if (mainPage.getUseAnalytics()) {
+			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).hasTemplateVariables())
+					|| page instanceof CreationTemplateVariablePage) {
+				this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
+				this.analyticsPage.setWizard(this);
+				return analyticsPage;
+			}
 		}
 		return super.getNextPage(page);
+	}
+
+	private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateBuffer> result) {
+		return new CreationTemplateVariablePage(string, result);
 	}
 
 	private CreationAnalyticsPage createAnalyticsPage(String string, Properties properties) {
