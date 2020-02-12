@@ -11,6 +11,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 
@@ -56,12 +58,31 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 				group.setLayout(new GridLayout(2, false));
 				group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 				group.setText(db.getName());
+				
+				GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+				
+				// create a field for each variable:
+				for (TemplateVariable templateVariable : variablesList) {
+					new Label(group, NONE).setText(templateVariable.getName() + ":");
+					Text text = new Text(group, SWT.BORDER);
+					text.setText(templateVariable.getName());
+					text.setLayoutData(gridDataFields);
+					text.addModifyListener(e -> {
+						templateVariable.setValue(text.getText());
+						updateDB(db, templateVariable);
+					});
+				}
 			}
 
 		}
 
 		setControl(main);
 
+	}
+
+	private void updateDB(DB db, TemplateVariable templateVariable) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

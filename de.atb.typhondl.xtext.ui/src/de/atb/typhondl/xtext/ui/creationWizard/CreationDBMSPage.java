@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -133,7 +134,8 @@ public class CreationDBMSPage extends MyWizardPage {
 			DB db = getEmptyDB(dbFromML.firstValue);
 
 			// get templates
-			HashMap<DB, TemplateVariable[]> readDBs = PreferenceReader.readDBs(dbFromML.secondValue);
+			ArrayList<TemplateBuffer> buffers = PreferenceReader.readDBs(dbFromML.secondValue);
+			PreferenceReader.
 			this.templates.putAll(readDBs);
 			DB[] dbTemplates = readDBs.keySet().toArray(new DB[0]);
 			// no fitting DB is defined in templates
