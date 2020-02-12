@@ -44,7 +44,7 @@ public class PreferenceReader {
 	 * @return A list of valid TemplateBuffers containing the template pattern and
 	 *         the template variables
 	 */
-	public static ArrayList<TemplateBuffer> readDBs(String metatype) {
+	public static ArrayList<Pair<String, TemplateBuffer>> getBuffers(String metatype) {
 		TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(TemplateStore.class);
 		// load the DB and DBType templates
@@ -69,7 +69,7 @@ public class PreferenceReader {
 				dbTypes.add(dbtype);
 			}
 		}
-		ArrayList<TemplateBuffer> buffers = new ArrayList<>();
+		ArrayList<Pair<String, TemplateBuffer>> buffers = new ArrayList<>();
 		for (int i = 0; i < dbTemplates.length; i++) {
 			TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
 			// for now the buffer variables do not contain the DBType
@@ -78,7 +78,7 @@ public class PreferenceReader {
 			if (db != null) {
 				for (DBType supportedType : dbTypes) {
 					if (buffer.getString().contains(supportedType.getName())) {
-						buffers.add(buffer);
+						buffers.add(new Pair<String, TemplateBuffer>(dbTemplates[i].getName(), buffer));
 					} else {
 						// TODO warning
 					}
@@ -105,6 +105,23 @@ public class PreferenceReader {
 			e.printStackTrace();
 		}
 		return buffer;
+	}
+
+	/**
+	 * Transforms a List of TemplateBuffers and their Template names into an Array
+	 * of DBs
+	 * 
+	 * @param buffers the List of TemplateBuffers to transform
+	 * @return an Array of DBs
+	 */
+	public static DB[] getDBs(ArrayList<Pair<String, TemplateBuffer>> buffers) {
+		ArrayList<DB> dbs = new ArrayList<>();
+		for (Pair<String, TemplateBuffer> templateBuffer : buffers) {
+			DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer.secondValue);
+			db.setName(templateBuffer.firstValue);
+			dbs.add(db);
+		}
+		return dbs.toArray(new DB[0]);
 	}
 
 	/**

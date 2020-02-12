@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -15,20 +16,23 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
 public class CreationTemplateVariablePage extends MyWizardPage {
 
 	/**
 	 * TODO
 	 */
-	private HashMap<DB, TemplateVariable[]> result;
+	private HashMap<DB, TemplateBuffer> result;
 
 	/**
 	 * TODO
+	 * 
 	 * @param pageName
 	 * @param result
 	 */
-	protected CreationTemplateVariablePage(String pageName, HashMap<DB, TemplateVariable[]> result) {
+	protected CreationTemplateVariablePage(String pageName, HashMap<DB, TemplateBuffer> result) {
 		super(pageName);
 		this.result = result;
 	}
@@ -44,9 +48,10 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 
 		for (DB db : result.keySet()) {
 
-			TemplateVariable[] variables = result.get(db);
+			TemplateBuffer templateBuffer = result.get(db);
+			TemplateVariable[] variables = templateBuffer.getVariables();
 			List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(variables));
-			
+
 			if (variables.length != 0) {
 				// this is the database.name:
 				variablesList.removeIf(variable -> (variable.getOffsets()[0] == 9));
@@ -58,9 +63,9 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 				group.setLayout(new GridLayout(2, false));
 				group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 				group.setText(db.getName());
-				
+
 				GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-				
+
 				// create a field for each variable:
 				for (TemplateVariable templateVariable : variablesList) {
 					new Label(group, NONE).setText(templateVariable.getName() + ":");
@@ -68,8 +73,14 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 					text.setText(templateVariable.getName());
 					text.setLayoutData(gridDataFields);
 					text.addModifyListener(e -> {
-						templateVariable.setValue(text.getText());
-						updateDB(db, templateVariable);
+						String oldValue = templateVariable.getValues()[0];
+						String newValue = text.getText();
+						// replace old value in template variable
+						templateVariable.setValue(newValue);
+						// replace old value in pattern string
+						String newPattern = templateBuffer.getString().replace(oldValue, newValue);
+						templateBuffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
+						updateDB(db, templateBuffer);
 					});
 				}
 			}
@@ -80,13 +91,15 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 
 	}
 
-	private void updateDB(DB db, TemplateVariable templateVariable) {
-		// TODO Auto-generated method stub
-		
+	private void updateDB(DB db, TemplateBuffer templateBuffer) {
+		DB newDB = PreferenceReader.getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer);
+		db.getParameters().clear();
+		db.getParameters().addAll(newDB.getParameters());
 	}
 
 	/**
 	 * TODO
+	 * 
 	 * @return
 	 */
 	public ArrayList<DB> getDBs() {

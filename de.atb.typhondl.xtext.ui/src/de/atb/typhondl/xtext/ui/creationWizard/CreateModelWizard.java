@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.text.templates.TemplateVariable;
+import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
@@ -59,7 +59,7 @@ public class CreateModelWizard extends Wizard {
 			properties = this.mainPage.getProperties();
 		}
 		ArrayList<DB> dbs = new ArrayList<>();
-		if (dbmsPage.isHasTemplateVariables()) {
+		if (dbmsPage.hasTemplateVariables()) {
 			dbs = variablePage.getDBs();
 		} else {
 			dbs = new ArrayList<DB>(dbmsPage.getResult().keySet());
@@ -93,7 +93,7 @@ public class CreateModelWizard extends Wizard {
 			return false;
 		}
 		if (currentPage instanceof CreationDBMSPage
-				&& (mainPage.getUseAnalytics() || ((CreationDBMSPage) currentPage).isHasTemplateVariables())) {
+				&& (mainPage.getUseAnalytics() || ((CreationDBMSPage) currentPage).hasTemplateVariables())) {
 			return false;
 		}
 		if (currentPage instanceof CreationTemplateVariablePage && mainPage.getUseAnalytics()) {
@@ -107,13 +107,13 @@ public class CreateModelWizard extends Wizard {
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
-		if (page instanceof CreationDBMSPage && ((CreationDBMSPage) page).isHasTemplateVariables()) {
+		if (page instanceof CreationDBMSPage && ((CreationDBMSPage) page).hasTemplateVariables()) {
 			this.variablePage = createVariablesPage("Template Variables Page", ((CreationDBMSPage) page).getResult());
 			this.variablePage.setWizard(this);
 			return variablePage;
 		}
 		if (mainPage.getUseAnalytics()) {
-			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).isHasTemplateVariables())
+			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).hasTemplateVariables())
 					|| page instanceof CreationTemplateVariablePage) {
 				this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
 				this.analyticsPage.setWizard(this);
@@ -123,7 +123,7 @@ public class CreateModelWizard extends Wizard {
 		return super.getNextPage(page);
 	}
 
-	private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateVariable[]> result) {
+	private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateBuffer> result) {
 		return new CreationTemplateVariablePage(string, result);
 	}
 

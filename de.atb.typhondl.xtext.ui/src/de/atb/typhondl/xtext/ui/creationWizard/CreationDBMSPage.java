@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.templates.TemplateBuffer;
-import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -54,15 +53,11 @@ public class CreationDBMSPage extends MyWizardPage {
 	private HashMap<DB, WizardFields> databaseSettings;
 
 	/**
-	 * Each DB template has templateVariables
+	 * Each DB has a TemplateBuffer with the pattern and template variables if
+	 * created from a template, this is given to the wizard to create additional
+	 * pages
 	 */
-	private HashMap<DB, TemplateVariable[]> templates;
-
-	/**
-	 * Each DB has template variables if created from a template, this is given to
-	 * the wizard to create additional pages
-	 */
-	private HashMap<DB, TemplateVariable[]> result;
+	private HashMap<DB, TemplateBuffer> result;
 
 	/**
 	 * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
@@ -100,7 +95,6 @@ public class CreationDBMSPage extends MyWizardPage {
 		this.MLmodel = MLmodel;
 		this.file = file;
 		this.databaseSettings = new HashMap<>();
-		this.templates = new HashMap<>();
 		this.result = new HashMap<>();
 	}
 
@@ -130,25 +124,19 @@ public class CreationDBMSPage extends MyWizardPage {
 
 		for (Pair<String, String> dbFromML : MLmodel) {
 
-			// Create a new DB for each dbFromML
 			DB db = getEmptyDB(dbFromML.firstValue);
 
 			// get templates
-			ArrayList<TemplateBuffer> buffers = PreferenceReader.readDBs(dbFromML.secondValue);
-			PreferenceReader.
-			this.templates.putAll(readDBs);
-			DB[] dbTemplates = readDBs.keySet().toArray(new DB[0]);
+			ArrayList<Pair<String, TemplateBuffer>> buffers = PreferenceReader.getBuffers(dbFromML.secondValue);
 			// no fitting DB is defined in templates
-			if (dbTemplates.length == 0) {
+			if (buffers.isEmpty()) {
 				MessageDialog.openError(getShell(), "Template Error", "There is no template for a "
 						+ dbFromML.secondValue + ". Please add or activate a fitting DB template.");
 			}
-			databaseSettings.put(db, new WizardFields(null, null, dbTemplates));
-		}
 
-		for (DB db : databaseSettings.keySet()) {
-
-			DB[] dbTemplates = databaseSettings.get(db).getDbTemplates();
+			// get Templates from buffer. The DBs have the template's name.
+			DB[] dbTemplates = PreferenceReader.getDBs(buffers);
+			databaseSettings.put(db, new WizardFields(null, null, buffers));
 			String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
 					.collect(Collectors.toList()).toArray(new String[0]);
 
@@ -163,8 +151,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			Button checkbox = new Button(group, SWT.CHECK);
 			checkbox.setText("Use existing " + dbName + ".tdl file in this project folder");
 			checkbox.setSelection(fileExists(dbName + ".tdl"));
+			// if an existing file is to be used, there exists no buffer
 			if (checkbox.getSelection()) {
-				result.put(db, new TemplateVariable[0]);
+				result.put(db, null);
 			}
 			checkbox.setLayoutData(gridData);
 			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
@@ -176,7 +165,7 @@ public class CreationDBMSPage extends MyWizardPage {
 					if (wizardField.getCheckbox().getSelection()) {
 						clearDB(db); // delete existing db settings
 					} else {
-						useDBTemplateOnDB(db, getTemplateByName(dbTemplates, wizardField.getCombo().getText()));
+						useBufferOnDB(db, getBufferByName(buffers, wizardField.getCombo().getText()));
 					}
 					validate();
 				}
@@ -189,7 +178,7 @@ public class CreationDBMSPage extends MyWizardPage {
 			combo.setText(dbTemplateNames[0]);
 			// set initial dbTemplate
 			if (!checkbox.getSelection()) {
-				useDBTemplateOnDB(db, dbTemplates[0]);
+				useBufferOnDB(db, buffers.get(0).secondValue);
 			}
 			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText("Choose specific DBMS Template for " + dbName);
@@ -197,7 +186,7 @@ public class CreationDBMSPage extends MyWizardPage {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = databaseSettings.get(db);
-					useDBTemplateOnDB(db, getTemplateByName(wizardField.getDbTemplates(), wizardField.getCombo().getText()));
+					useBufferOnDB(db, getBufferByName(buffers, wizardField.getCombo().getText()));
 					validate();
 				}
 			});
@@ -205,20 +194,6 @@ public class CreationDBMSPage extends MyWizardPage {
 		}
 		validate();
 		setControl(main);
-	}
-
-	/**
-	 * Adds the DBType and Parameters from the given template DB to the given DB
-	 * 
-	 * @param db       The DB that should have all attributes from the template
-	 * @param template The chosen template DB
-	 */
-	protected void useDBTemplateOnDB(DB db, DB template) {
-		TemplateVariable[] variables = templates.get(template);
-		db.setType(template.getType());
-		db.getParameters().clear();
-		db.getParameters().addAll(template.getParameters());
-		result.put(db, variables);
 	}
 
 	/**
@@ -230,19 +205,33 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void clearDB(DB db) {
 		db.setType(null);
 		db.getParameters().clear();
-		result.put(db, new TemplateVariable[0]);
+		result.put(db, null);
 	}
 
 	/**
-	 * Finds a template by name in a template list
+	 * Adds the DBType and Parameters from the given TemplateBuffer to the given DB
 	 * 
-	 * @param dbTemplates  the template list
-	 * @param templateName the template to find
-	 * @return the wanted DB template
+	 * @param db     The DB that should have all attributes from the template
+	 * @param buffer The chosen TemplateBuffer
 	 */
-	protected DB getTemplateByName(DB[] dbTemplates, String templateName) {
-		return Arrays.asList(dbTemplates).stream().filter(template -> template.getName().equalsIgnoreCase(templateName))
-				.findFirst().orElse(null);
+	protected void useBufferOnDB(DB db, TemplateBuffer buffer) {
+		DB template = PreferenceReader.getModelObject(TyphonDLFactory.eINSTANCE.createDB(), buffer);
+		db.setType(template.getType());
+		db.getParameters().clear();
+		db.getParameters().addAll(template.getParameters());
+		result.put(db, buffer);
+	}
+
+	/**
+	 * Finds a TemplateBuffer by name
+	 * 
+	 * @param buffers      the Pair of Template name and TemplateBuffer
+	 * @param templateName the template to find
+	 * @return the wanted TemplateBuffer
+	 */
+	protected TemplateBuffer getBufferByName(ArrayList<Pair<String, TemplateBuffer>> buffers, String templateName) {
+		return buffers.stream().filter(pair -> pair.firstValue.equalsIgnoreCase(templateName)).findFirst()
+				.orElse(null).secondValue;
 	}
 
 	/**
@@ -301,7 +290,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * 
 	 * @return DBs and their TemplateVariable Array
 	 */
-	public HashMap<DB, TemplateVariable[]> getResult() {
+	public HashMap<DB, TemplateBuffer> getResult() {
 		return result;
 	}
 
@@ -311,14 +300,9 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * 
 	 * @return true if there should be additional pages, otherwise false
 	 */
-	public boolean isHasTemplateVariables() {
-		boolean hasTemplateVariables = false;
-		for (DB key : result.keySet()) {
-			TemplateVariable[] variables = result.get(key);
-			int length = variables.length;
-			String test;
-		}
-		return result.keySet().stream().map(key -> result.get(key)).collect(Collectors.toList()).stream()
-				.anyMatch(array -> array.length != 0);
+	public boolean hasTemplateVariables() {
+		TemplateBuffer buffer = result.keySet().stream().map(key -> result.get(key)).filter(value -> value != null)
+				.findFirst().orElse(null);
+		return buffer != null;
 	}
 }
