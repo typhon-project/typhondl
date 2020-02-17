@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -39,8 +40,21 @@ import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
+/**
+ * Utility class for the script generation process
+ * 
+ * @author flug
+ *
+ */
 public class Services {
 
+	/**
+	 * Starts the script generation process, deletes old files
+	 * 
+	 * @param file     The main DL model from which to generate the scripts
+	 * @param provider The injected resourceSetProvider
+	 * @return A result String informing the user whether the generation succeeded
+	 */
 	public static String generateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
 		String result = "";
 		try {
@@ -55,6 +69,12 @@ public class Services {
 		return result;
 	}
 
+	/**
+	 * Checks if a yml file exists in projects subfolders TODO do better
+	 * 
+	 * @param folder the folder to check for yml files
+	 * @return Informative String for the user.
+	 */
 	private static String getResult(File folder) {
 		if (!folder.exists()) {
 			return "Something went wrong";
@@ -62,7 +82,8 @@ public class Services {
 			for (File subFile : folder.listFiles()) {
 				if (subFile.isDirectory()) {
 					for (File subSubFile : subFile.listFiles()) {
-						if (subSubFile.getName().contains("yml")) { // TODO horrible
+						if (subSubFile.getName().contains("yml") || subSubFile.getName().contains("yaml")) { // TODO
+																												// horrible
 							return "Deployment script generated";
 						}
 					}
@@ -72,9 +93,14 @@ public class Services {
 				}
 			}
 		}
-		return null;
+		return "";
 	}
 
+	/**
+	 * Deletes all files and folders in given folder
+	 * 
+	 * @param folder All files an folders in this folder are deleted
+	 */
 	private static void deleteOldGeneratedFiles(File folder) {
 		if (folder.exists()) {
 			for (File subFile : folder.listFiles()) {
@@ -87,6 +113,17 @@ public class Services {
 		}
 	}
 
+	/**
+	 * Reads the TyphonDL model from the given main model, using the
+	 * {@link XtextLiveScopeResourceSetProvider} to find other model files in the
+	 * folder. Also saves the model in a .xmi file.
+	 * 
+	 * @param file     The main TyphonDL model
+	 * @param provider Provides the correct resourceSet for finding other model
+	 *                 files
+	 * @return The TyphonDL model including all information taken from other related
+	 *         model files
+	 */
 	public static DeploymentModel loadXtextModel(IFile file, XtextLiveScopeResourceSetProvider provider) {
 
 		XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
@@ -105,17 +142,24 @@ public class Services {
 				}
 			}
 		}
+		// read DL model
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
-		String location = file.getLocation().toString();
-		String path = location.substring(0, location.lastIndexOf('/') + 1) + "polystore.properties";
+		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
 		model = addDBsToModel(model);
 		model = addPolystoreToModel(path, model);
 		saveModelAsXMI(DLmodelResource);
 		return model;
 	}
 
+	/**
+	 * Finds and adds the DB models from additional files if given as {@link Import}
+	 * in the main model file
+	 * 
+	 * @param model The model to add the DBs to
+	 * @return The model with the DB models added
+	 */
 	private static DeploymentModel addDBsToModel(DeploymentModel model) {
 		Resource resource = model.eResource();
 		URI uri = resource.getURI().trimSegments(1);
@@ -132,6 +176,11 @@ public class Services {
 		return model;
 	}
 
+	/**
+	 * Creates a .xmi file representing the given DL model
+	 * 
+	 * @param DLmodelResource The given DL model
+	 */
 	private static void saveModelAsXMI(Resource DLmodelResource) {
 		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
 		DeploymentModel DLmodel = (DeploymentModel) DLmodelResource.getContents().get(0);
@@ -151,6 +200,14 @@ public class Services {
 		}
 	}
 
+	/**
+	 * Adds the three polystore containers and corresponding {@link Services} to the
+	 * TyphonDL model
+	 * 
+	 * @param path  The path to the polystore.properties
+	 * @param model The given TyphonDL model
+	 * @return The given TyphonDL model plus the polystore component
+	 */
 	private static DeploymentModel addPolystoreToModel(String path, DeploymentModel model) {
 		Properties properties = new Properties();
 		try {
@@ -162,21 +219,19 @@ public class Services {
 
 		List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
 				.map(element -> (DBType) element).collect(Collectors.toList());
-		DBType mongo = null;
-		for (DBType dbType : dbTypes) {
-			if (dbType.getName().equals("mongo")) {
-				mongo = dbType;
-			}
-		}
+		// if Mongo is not allready a DBType, add Mongo
+		DBType mongo = dbTypes.stream().filter(dbType -> dbType.getName().equalsIgnoreCase("mongo")).findFirst()
+				.orElse(null);
 		if (mongo == null) {
 			mongo = TyphonDLFactory.eINSTANCE.createDBType();
-			mongo.setName("mongo");
+			mongo.setName("Mongo");
 			IMAGE mongoImage = TyphonDLFactory.eINSTANCE.createIMAGE();
 			mongoImage.setValue("mongo:latest");
 			mongo.setImage(mongoImage);
 			model.getElements().add(mongo);
 		}
 
+		// will be removed -----------------------------------------v
 		// get Application for polystore containers
 		Application application = null;
 		if (!properties.get("polystore.inApplication").equals("default")) {
@@ -186,6 +241,7 @@ public class Services {
 			application = ((Platform) model.getElements().stream().filter(element -> Platform.class.isInstance(element))
 					.collect(Collectors.toList()).get(0)).getClusters().get(0).getApplications().get(0);
 		}
+		// will be removed -----------------------------------------^
 
 		// get containertype
 		ContainerType containerType = application.getContainers().get(0).getType();
@@ -217,7 +273,7 @@ public class Services {
 		polystoredb_container_hostname.setName("hostname");
 		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
 		polystoredb_container.getProperties().add(polystoredb_container_hostname);
-		
+
 		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_ports1.setName("published");
 		polystoredb_container_ports1.setValue(properties.getProperty("db.publishedPort"));
@@ -228,7 +284,7 @@ public class Services {
 		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports1);
 		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports2);
 		polystoredb_container.setPorts(polystoredb_container_ports);
-		
+
 		Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
 		polystoredb_dependency.setReference(polystoredb_container);
 
@@ -420,6 +476,13 @@ public class Services {
 		return model;
 	}
 
+	/**
+	 * Gets application TODO remove
+	 * 
+	 * @param model   The TyphonDL model
+	 * @param appName The name of the Application to find
+	 * @return The Application to put the polystore in
+	 */
 	private static Application getApplication(DeploymentModel model, String appName) {
 		List<Application> list = new ArrayList<Application>();
 		model.getElements().stream().filter(element -> Platform.class.isInstance(element))

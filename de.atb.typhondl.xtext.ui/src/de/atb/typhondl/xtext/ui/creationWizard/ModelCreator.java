@@ -38,16 +38,45 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * This class creates the new TyphonDL model from the selected ML model and the
+ * given input from the {@link CreateModelWizard}. The following files are
+ * created:
+ * <li>The main model file</li>
+ * <li>A dbtypes.tdl containing all used {@link DBType}s</li>
+ * <li>A model file for each {@link DB} extracted from the ML model</li>
+ * 
+ * @author flug
+ *
+ */
 public class ModelCreator {
 
-	// the source ML model from which a DL model is created
+	/**
+	 * The selected source ML model from which a DL model is created
+	 */
 	private IFile MLmodel;
-	// the resourceSet containing all tdl resources
+
+	/**
+	 * The resourceSet containing all tdl resources
+	 */
 	private XtextResourceSet resourceSet;
-	// path to folder in which to save all model files
+
+	/**
+	 * The path to folder in which to save all model files
+	 */
 	private IPath folder;
+
+	/**
+	 * The DL model name entered on the {@link CreationMainPage}
+	 */
 	private String DLmodelName;
 
+	/**
+	 * Creates an instance of the {@link ModelCreator}
+	 * 
+	 * @param MLmodel     The selected ML model
+	 * @param DLmodelName The entered name for the DL model
+	 */
 	public ModelCreator(IFile MLmodel, String DLmodelName) {
 		this.MLmodel = MLmodel;
 		this.folder = this.MLmodel.getFullPath().removeLastSegments(1);
@@ -55,7 +84,7 @@ public class ModelCreator {
 		addResources();
 	}
 
-	/*
+	/**
 	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
 	 */
 	private void addResources() {
@@ -78,6 +107,15 @@ public class ModelCreator {
 		}
 	}
 
+	/**
+	 * Creates the new DL model
+	 * 
+	 * @param dbs            The DBs to add to the new model
+	 * @param chosenTemplate The int representation of the chosen technology
+	 *                       Template from {@link SupportedTechnologies}
+	 * @param properties     The polystore.properties
+	 * @return The main model file to be opened by the Xtext editor after creation
+	 */
 	public IFile createDLmodel(ArrayList<DB> dbs, int chosenTemplate, Properties properties) {
 
 		// create main model
@@ -215,13 +253,26 @@ public class ModelCreator {
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
 	}
 
+	/**
+	 * Adds the parsed model properties from existing file.tdl to the {@link DB}
+	 * 
+	 * @param db    The DB without information yet
+	 * @param input The parsed DB info from file
+	 */
 	private void addModelToDB(DB db, DB input) {
 		db.setType(input.getType());
 		db.getParameters().addAll(input.getParameters());
 	}
 
-	// TODO This should not be needed, since the databases should only be reachable
-	// inside the same network/cluster
+	/**
+	 * Hardcoded standard ports for {@link DBType}s
+	 * <p>
+	 * TODO This should not be needed, since the databases should only be reachable
+	 * inside the same network/cluster
+	 * 
+	 * @param name The name of the {@link DBType}
+	 * @return The standard Port
+	 */
 	private String getStandardPort(String name) {
 		switch (name.toLowerCase()) {
 		case "mariadb":
@@ -230,13 +281,30 @@ public class ModelCreator {
 			return "3306";
 		case "mongo":
 			return "27017";
+		case "postgres":
+			return "5432";
+		case "couchdb":
+			return "5984";
+		case "arangodb":
+			return "8529";
+		case "neo4j":
+			return "7474";
+		case "redis":
+			return "6379";
 		default:
-			return "0:0";
+			return "";
 		}
 	}
 
-	// TODO This should not be needed, since the databases should only be reachable
-	// inside the same network/cluster
+	/**
+	 * Hardcoded standard ports for {@link DBType}s
+	 * <p>
+	 * TODO This should not be needed, since the databases should only be reachable
+	 * inside the same network/cluster
+	 * 
+	 * @param name The name of the {@link DBType}
+	 * @return The standard Port
+	 */
 	private String getStandardPublishedPort(String name, ClusterType type) {
 		if (type.getName().equals("Kubernetes")) {
 			return "" + (31000 + ThreadLocalRandom.current().nextInt(1, 100));
@@ -248,16 +316,33 @@ public class ModelCreator {
 				return "3306";
 			case "mongo":
 				return "27018"; // 27017 is occupied by polystoredb
+			case "postgres":
+				return "5432";
+			case "couchdb":
+				return "5984";
+			case "arangodb":
+				return "8529";
+			case "neo4j":
+				return "7474";
+			case "redis":
+				return "6379";
 			default:
-				return "0:0";
+				return "";
 			}
 		}
 
 	}
 
+	/**
+	 * Save the given model as {@link Resource}
+	 * 
+	 * @param model    The model to save
+	 * @param filename The name of the file to create
+	 */
 	private void save(DeploymentModel model, String filename) {
 		URI uri = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
-		if (checkExist(uri)) {
+		// delete resource in case it already exists
+		if (resourceSet.getResource(uri, false) != null) {
 			try {
 				resourceSet.getResource(uri, true).delete(Collections.EMPTY_MAP);
 			} catch (IOException e) {
@@ -273,10 +358,12 @@ public class ModelCreator {
 		}
 	}
 
-	private boolean checkExist(URI servicesURI) {
-		return resourceSet.getResource(servicesURI, false) != null;
-	}
-
+	/**
+	 * Filters the {@link DB} from a given {@link DeploymentModel}
+	 * 
+	 * @param model The {@link DeploymentModel} only containing one {@link DB}
+	 * @return The {@link DB}
+	 */
 	private DB getDB(DeploymentModel model) {
 		ArrayList<DB> dbs = new ArrayList<DB>();
 		dbs.addAll(model.getElements().stream().filter(element -> DB.class.isInstance(element))

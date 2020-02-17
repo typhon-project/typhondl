@@ -3,14 +3,14 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,21 +25,75 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * First page of the TyphonDL {@link CreateModelWizard}.
+ * <li>The name of the TyphonDL model to be created is entered,</li>
+ * <li>a technology template (i.e. Docker Compose or Kubernetes) is chosen,</li>
+ * <li>the Typhon Data Analytics component can be activated and</li>
+ * <li>the API IP address and port can be entered.</li>
+ * 
+ * @author flug
+ *
+ */
 public class CreationMainPage extends MyWizardPage {
 
+	/**
+	 * URI to the selected ML model
+	 */
 	private URI MLmodelPath;
+
+	/**
+	 * The textfield to enter the TyphonDL model name
+	 */
 	private Text fileText;
+
+	/**
+	 * The Combo to choose the technology (i.e. Docker Compose or Kubernetes)
+	 */
 	private Combo templateCombo;
+
+	/**
+	 * int representation of the chosen technology template from enum
+	 * {@link SupportedTechnologies}
+	 */
 	private int chosenTemplate;
-	private String templateName;
+
+	/**
+	 * The entered name for the DL model to be created
+	 */
 	private String DLmodelName;
+
+	/**
+	 * The polystore.properties
+	 */
 	private Properties properties;
+
+	/**
+	 * The path to the polystore.properties
+	 */
 	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
 
+	/**
+	 * The checkbox to activate the use of the Typhon Analytics component
+	 */
 	private Button checkbox;
+
+	/**
+	 * The textfield to enter the API IP address
+	 */
 	private Text hostText;
+
+	/**
+	 * The textfield to enter the API port
+	 */
 	private Text portText;
-	
+
+	/**
+	 * Creates an instance of the {@link CreationMainPage}
+	 * 
+	 * @param pageName    the name of the page
+	 * @param MLmodelPath the URI to the selected ML model
+	 */
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
 		this.MLmodelPath = MLmodelPath;
@@ -47,9 +101,11 @@ public class CreationMainPage extends MyWizardPage {
 		loadProperties();
 	}
 
+	/**
+	 * loads polystore.properties to {@link Properties} properties
+	 */
 	private void loadProperties() {
-		InputStream input = CreationMainPage.class.getClassLoader()
-				.getResourceAsStream(PROPERTIES_PATH);
+		InputStream input = CreationMainPage.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH);
 		try {
 			this.properties.load(input);
 		} catch (IOException e) {
@@ -69,6 +125,13 @@ public class CreationMainPage extends MyWizardPage {
 		setControl(main);
 	}
 
+	/**
+	 * Creates the first two rows of the main page:
+	 * <li>The folder label to show where the DL model will be saved.</li>
+	 * <li>The textfield to enter the DL model name</li>
+	 * 
+	 * @param main the composite in which the fields are created
+	 */
 	private void createHeader(Composite main) {
 		setTitle("Create a TyphonDL model");
 		GridLayout layout = new GridLayout();
@@ -81,7 +144,7 @@ public class CreationMainPage extends MyWizardPage {
 		folderLabel.setText("Folder: ");
 		Label folderText = new Label(main, SWT.NONE);
 		folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
-		folderText.setText(getFolder());
+		folderText.setText(Paths.get(MLmodelPath).getParent().toString());
 
 		Label fileLabel = new Label(main, SWT.NONE);
 		fileLabel.setText("Name: ");
@@ -95,6 +158,12 @@ public class CreationMainPage extends MyWizardPage {
 		validate();
 	}
 
+	/**
+	 * Creates technology choosing combo and sets initial polystore.properties. TODO
+	 * change to not hardcoded?
+	 * 
+	 * @param main the composite in which the fields are created
+	 */
 	private void createCombo(Composite main) {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
@@ -116,7 +185,7 @@ public class CreationMainPage extends MyWizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				chosenTemplate = templateCombo.getSelectionIndex();
-				templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
+				String templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
 				if (templateName.equals("Kubernetes")) {
 					checkbox.setEnabled(false);
 					checkbox.setSelection(false);
@@ -143,12 +212,17 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.hostname", "localhost");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
-					
+
 				}
 			}
 		});
 	}
 
+	/**
+	 * Creates the checkbox to select Typhon Analytics component
+	 * 
+	 * @param main the composite in which the fields are created
+	 */
 	private void createAdditions(Composite main) {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
@@ -171,6 +245,11 @@ public class CreationMainPage extends MyWizardPage {
 
 	}
 
+	/**
+	 * Creates fields to enter the API specs
+	 * 
+	 * @param main the composite in which the fields are created
+	 */
 	private void createPolystoreSpecs(Composite main) {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 2;
@@ -196,49 +275,57 @@ public class CreationMainPage extends MyWizardPage {
 		});
 	}
 
+	/**
+	 * Checks if the name for the DL model is correct, i.e. not empty or already
+	 * existent
+	 */
 	private void validate() {
 		setStatus(null);
 		if ("".equals(fileText.getText().trim())) { //$NON-NLS-1$
 			setStatus(new Status(IStatus.ERROR, "NewFileWizard", "Name must not be empty")); //$NON-NLS-1$
 			return;
 		}
-		IFile file = ResourcesPlugin.getWorkspace().getRoot()
-				.getFile(new Path(getFolder() + "/" + fileText.getText() + ".tdl"));
-		if (file.exists()) {
+		Path filePath = Paths.get(MLmodelPath).getParent().resolve(fileText.getText() + ".tdl");
+		if (Files.exists(filePath)) {
 			setStatus(new Status(IStatus.WARNING, "NewFileWizard", //$NON-NLS-1$
-					"File '" + fileText.getText() + ".tdl" + "' already exists and will be overwritten if you continue."));
+					"File '" + fileText.getText() + ".tdl"
+							+ "' already exists and will be overwritten if you continue."));
 			return;
 		}
 	}
 
-	private String getFolder() {
-		String path = MLmodelPath.toString();
-		String pathWithoutFile = path.substring(0, path.lastIndexOf("/"));
-		return pathWithoutFile.substring(pathWithoutFile.lastIndexOf("/") + 1);
-	}
-
+	/**
+	 * 
+	 * @return int representation of the chosen technology from
+	 *         {@link SupportedTechnologies}
+	 */
 	public int getChosenTemplate() {
 		return chosenTemplate;
 	}
 
+	/**
+	 * 
+	 * @return true if the Typhon Analytics component should be used, false
+	 *         otherwise
+	 */
 	public boolean getUseAnalytics() {
 		return Boolean.parseBoolean((String) properties.get("polystore.useAnalytics"));
 	}
 
-	public String getModelName() {
-		return fileText.getText() + ".tdl";
-	}
-
+	/**
+	 * 
+	 * @return the entered DL model name
+	 */
 	public String getDLmodelName() {
 		return DLmodelName;
 	}
-	
+
+	/**
+	 * 
+	 * @return the polystore.properties depending on the chosen technology
+	 */
 	public Properties getProperties() {
 		return properties;
-	}
-
-	public String getPROPERTIES_PATH() {
-		return PROPERTIES_PATH;
 	}
 
 }

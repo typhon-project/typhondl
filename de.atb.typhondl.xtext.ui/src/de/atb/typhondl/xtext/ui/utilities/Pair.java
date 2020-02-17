@@ -1,7 +1,7 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
 /**
- * Util class for reading the ML model
+ * Utility class for reading the ML model
  * 
  * @author flug
  *

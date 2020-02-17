@@ -37,9 +37,10 @@ import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 /**
- * Second page of the TyphonDL Creation Wizard. The ML model gets parsed and for
- * each needed database a group is created. Here the user can choose the wanted
- * DBMS. The list of possible DBMSs is taken from the templates.
+ * Second page of the TyphonDL {@link CreateModelWizard}. The ML model gets
+ * parsed and for each needed database a group is created. Here the user can
+ * choose the wanted DBMS. The list of possible DBMSs is taken from the
+ * templates.
  * 
  * @author flug
  *

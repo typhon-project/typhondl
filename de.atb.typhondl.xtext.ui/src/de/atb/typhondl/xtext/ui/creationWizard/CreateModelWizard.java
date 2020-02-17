@@ -16,21 +16,72 @@ import org.eclipse.xtext.ui.util.FileOpener;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * The TyphonDL Creation Wizard consists of:
+ * <li>A {@link CreationMainPage} to enter the DL model name, select a
+ * technology (i.e. Docker Compose or Kubernetes), and specify API IP and
+ * port.</li>
+ * <li>A {@link CreationDBMSPage} to select the DBMS (i.e. database template)
+ * for each database extracted from the ML model.</li>
+ * <li>An otional {@link CreationTemplateVariablePage} to enter values for
+ * template variables if the previously chosen template contains template
+ * variables.</li>
+ * <li>An otional {@link CreationAnalyticsPage} to enter Kafka and Zookeeper
+ * configuration if the Typhon Analytics component is used.</li>
+ * 
+ * @author flug
+ *
+ */
 public class CreateModelWizard extends Wizard {
 
+	/**
+	 * input ML model
+	 */
 	private IFile MLmodel;
+
+	/**
+	 * The first page of this wizard.
+	 */
 	private CreationMainPage mainPage;
+
+	/**
+	 * The second page of this wizard. A template can be chosen for each Database
+	 */
 	private CreationDBMSPage dbmsPage;
+
+	/**
+	 * An optional page of this wizard. Kafka and Zookeeper settings can be entered
+	 */
 	private CreationAnalyticsPage analyticsPage;
+
+	/**
+	 * An optional page. Values for extracted {@link TemplateVariable}s can be
+	 * entered
+	 */
 	private CreationTemplateVariablePage variablePage;
+
+	/**
+	 * The chosen technology template from {@link SupportedTechnologies}
+	 */
 	private int chosenTemplate;
 
+	/**
+	 * Creates an instance of <code>CreateModelWizard</code>
+	 * 
+	 * @param MLmodel the ML model used as input
+	 */
 	public CreateModelWizard(IFile MLmodel) {
 		super();
 		this.MLmodel = MLmodel;
 	}
 
+	/**
+	 * Two pages are initially added:
+	 * <li>Main Page {@link CreationMainPage}</li>
+	 * <li>DBMS Page {@link CreationDBMSPage}</li>
+	 */
 	@Override
 	public void addPages() {
 		mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
@@ -40,6 +91,13 @@ public class CreateModelWizard extends Wizard {
 		addPage(dbmsPage);
 	}
 
+	/**
+	 * Defines the finish processing of the TyphonDL Creation Wizard. The TyphonDL
+	 * model is created with a {@link ModelCreator} and opened in the Xtext editor.
+	 * The entered properties are also saved in a .properties file in the user's
+	 * project directory
+	 * 
+	 */
 	@Override
 	public boolean performFinish() {
 		if (dbmsPage.getMessage() != null) {
@@ -86,6 +144,16 @@ public class CreateModelWizard extends Wizard {
 		return true;
 	}
 
+	/**
+	 * Checks if the TyphonDL Creation Wizard can finish.
+	 * 
+	 * @return <code>false</code> if
+	 *         <li>the current page is the Main Page or</li>
+	 *         <li>the current page is the DBMSPage and the useAnalytics checkbox is
+	 *         checked</li>
+	 *         <p>
+	 *         Otherwise {@link Wizard#canFinish()}.
+	 */
 	@Override
 	public boolean canFinish() {
 		IWizardPage currentPage = this.getContainer().getCurrentPage();
@@ -102,6 +170,19 @@ public class CreateModelWizard extends Wizard {
 		return super.canFinish();
 	}
 
+	/**
+	 * Returns the next page of the TyphonDL Creation Wizard.
+	 * 
+	 * @return
+	 *         <li>{@link Wizard#getNextPage(IWizardPage)}</li>
+	 *         <li>if the current page is the {@link CreationDBMSPage} and the
+	 *         useAnalytics checkbox is checked, Then a
+	 *         {@link CreationAnalyticsPage} is created and returned.</li>
+	 *         <li>if the current page is the {@link CreationDBMSPage} and a
+	 *         template with {@link TemplateVariable}s is used, a
+	 *         {@link CreationTemplateVariablePage} is created and returned.</li>
+	 * 
+	 */
 	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
 		if (page instanceof CreationMainPage) {
@@ -123,10 +204,24 @@ public class CreateModelWizard extends Wizard {
 		return super.getNextPage(page);
 	}
 
+	/**
+	 * Creates a CreationTemplateVariablePage
+	 * 
+	 * @param string Name of the Page
+	 * @param result Map of {@link DB}s and their {@link TemplateBuffer}
+	 * @return a new {@link CreationTemplateVariablePage}
+	 */
 	private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateBuffer> result) {
 		return new CreationTemplateVariablePage(string, result);
 	}
 
+	/**
+	 * Creates a CreationAnalyticsPage
+	 * 
+	 * @param string     Name of the Page
+	 * @param properties default properties for the polystore
+	 * @return a new {@link CreationAnalyticsPage}
+	 */
 	private CreationAnalyticsPage createAnalyticsPage(String string, Properties properties) {
 		return new CreationAnalyticsPage(string, properties);
 	}
