@@ -23,6 +23,16 @@ import com.google.inject.Inject;
 
 import de.atb.typhondl.acceleo.services.Services;
 
+/**
+ * This Handler is called when clicking "Generate Deployment Scripts" in the
+ * TyphonDL context menu.
+ * {@link Services#generateDeployment(IFile, XtextLiveScopeResourceSetProvider)}
+ * is called. Adds Xtext nature if it's missing from the project in which the
+ * selection (i.e. the Typhon DL model) is contained.
+ * 
+ * @author flug
+ *
+ */
 public class GenerateScriptsHandler extends AbstractHandler {
 
 	@Inject
@@ -58,7 +68,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
 						"Please add Xtext Project Nature to your project");
 				e.printStackTrace();
 			}
-			
+
 			result = Services.generateDeployment(file, provider);
 
 			for (IProject iproject : root.getProjects()) {

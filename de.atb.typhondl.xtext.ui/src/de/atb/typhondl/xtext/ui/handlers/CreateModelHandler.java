@@ -25,6 +25,15 @@ import com.google.inject.Inject;
 
 import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
 
+/**
+ * This handler is called when clicking Create TyphonDL model in the TyphonDL
+ * context menu. The {@link CreateModelWizard} is opened. Adds Xtext nature if
+ * it's missing from the project in which the selection (i.e. the Typhon ML
+ * model) is contained.
+ * 
+ * @author flug
+ *
+ */
 public class CreateModelHandler extends AbstractHandler {
 
 	@Inject

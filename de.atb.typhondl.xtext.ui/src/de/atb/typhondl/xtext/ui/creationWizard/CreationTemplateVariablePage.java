@@ -19,18 +19,29 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
+/**
+ * Optional page for the TyphonDL {@link CreateModelWizard}. If the previously
+ * selected DBMS template contains {@link TemplateVariable}s, they can be edited
+ * here.
+ * 
+ * @author flug
+ *
+ */
 public class CreationTemplateVariablePage extends MyWizardPage {
 
 	/**
-	 * TODO
+	 * A map with all {@link DB}s and their {@link TemplateBuffer} with updated
+	 * {@link TemplateVariable}s
 	 */
 	private HashMap<DB, TemplateBuffer> result;
 
 	/**
-	 * TODO
+	 * Creates instance of {@link CreationTemplateVariablePage}.
 	 * 
-	 * @param pageName
-	 * @param result
+	 * @param pageName the name of the page
+	 * @param result   the map, in which the {@link DB}s and their
+	 *                 {@link TemplateBuffer} with updated {@link TemplateVariable}s
+	 *                 is stored.
 	 */
 	protected CreationTemplateVariablePage(String pageName, HashMap<DB, TemplateBuffer> result) {
 		super(pageName);
@@ -53,7 +64,8 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 				TemplateVariable[] variables = templateBuffer.getVariables();
 				List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(variables));
 
-				// this is the database.name:
+				// this is the database.name, which should not be changed, so it is removed from
+				// the list:
 				variablesList.removeIf(variable -> (variable.getOffsets()[0] == 9));
 
 				// create a group for each database that has templates
@@ -86,6 +98,12 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 		setControl(main);
 	}
 
+	/**
+	 * updates the {@link DB} model entity in the <code>result</code> map
+	 * 
+	 * @param db             The {@link DB} to be updated
+	 * @param templateBuffer The source for the updated {@link TemplateVariable}s
+	 */
 	private void updateDB(DB db, TemplateBuffer templateBuffer) {
 		DB newDB = PreferenceReader.getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer);
 		db.getParameters().clear();
@@ -93,9 +111,9 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 	}
 
 	/**
-	 * TODO
+	 * Get all updated {@link DB}s
 	 * 
-	 * @return
+	 * @return A List of all {@link DB}s with updated {@link TemplateVariable}s
 	 */
 	public ArrayList<DB> getDBs() {
 		return new ArrayList<>(result.keySet());
