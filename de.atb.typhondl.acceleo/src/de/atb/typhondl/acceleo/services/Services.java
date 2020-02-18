@@ -373,6 +373,24 @@ public class Services {
 		application.getContainers().add(polystore_api_container);
 		application.getContainers().add(polystore_ui_container);
 
+		// QL server
+		Software qlserver = TyphonDLFactory.eINSTANCE.createSoftware();
+		qlserver.setName("QLServer");
+		IMAGE qlserver_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+		qlserver_image.setValue("swatengineering/typhonql-server");
+		qlserver.setImage(qlserver_image);
+		Reference qlserver_reference = TyphonDLFactory.eINSTANCE.createReference();
+		qlserver_reference.setReference(qlserver);
+		model.getElements().add(qlserver);
+		Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
+		qlserver_container.setName("typhonql-server");
+		Key_Values qlserver_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		qlserver_container_hostname.setName("hostname");
+		qlserver_container_hostname.setValue("typhonql-server");
+		qlserver_container.getProperties().add(qlserver_container_hostname);
+		qlserver_container.setDeploys(qlserver_reference);
+		application.getContainers().add(qlserver_container);
+
 		// Analytics, see https://github.com/typhon-project/typhondl/issues/6
 		if (properties.get("polystore.useAnalytics").equals("true")) {
 			String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
