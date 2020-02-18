@@ -1,0 +1,29 @@
+import MLmodel.tmlx
+import RelationalDatabase.tdl
+import DocumentDatabase.tdl
+import dbTypes.tdl
+containertype Docker
+clustertype DockerCompose
+platformtype localhost
+platform platformName : localhost {
+	cluster clusterName : DockerCompose {
+		application Polystore {
+			container RelationalDatabase : Docker {
+				deploys RelationalDatabase
+				ports {
+					target = 3306 ;
+					published = 3306 ;
+				}
+				hostname = localhost ;
+			}
+			container DocumentDatabase : Docker {
+				deploys DocumentDatabase
+				ports {
+					target = 27017 ;
+					published = 27018 ;
+				}
+				hostname = localhost ;
+			}
+		}
+	}
+}

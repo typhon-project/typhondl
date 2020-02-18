@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  relationaldatabase:
+    image: mysql:latest
+    examplenvironment:
+      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - target: 3306
+        published: 3306
+    hostname: localhost
+  documentdatabase:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - target: 27017
+        published: 27018
+    hostname: localhost
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - published: 27017
+        target: 27017
+    hostname: polystore-mongo
+  typhon-polystore-service:
+    image: clms/typhon-polystore-api:latest
+    depends_on: 
+      - polystore-mongo
+    ports:
+      - published: 8080
+        target: 8080
+    hostname: polystore-api
+  polystore-ui:
+    image: clms/typhon-polystore-ui:latest
+    environment:
+      API_PORT: 8080
+      API_HOST: localhost
+    depends_on: 
+      - typhon-polystore-service
+    ports:
+      - published: 4200
+        target: 4200
+    hostname: polystore-ui

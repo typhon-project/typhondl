@@ -1,0 +1,5 @@
+database RelationalDatabase : MySQL {
+	examplenvironment {
+		MYSQL_ROOT_PASSWORD = example ;
+	}
+}
