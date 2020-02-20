@@ -217,7 +217,7 @@ public class ModelCreator {
 
 		for (DB db : dbs) {
 			Container container = TyphonDLFactory.eINSTANCE.createContainer();
-			container.setName(db.getName());
+			container.setName(db.getName().toLowerCase());
 			container.setType(containerType);
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
@@ -237,7 +237,7 @@ public class ModelCreator {
 
 			Key_Values hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
 			hostname.setName("hostname");
-			hostname.setValue(properties.getProperty("ui.environment.API_HOST"));
+			hostname.setValue(container.getName());
 			container.getProperties().add(hostname);
 
 			application.getContainers().add(container);
