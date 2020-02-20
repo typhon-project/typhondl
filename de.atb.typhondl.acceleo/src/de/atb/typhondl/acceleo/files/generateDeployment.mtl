@@ -121,7 +121,7 @@ services:
 [if (aContainer.name.toLower() = 'kafka')]
 [aApplication.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name.toLower()/]:
+  [aContainer.name/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.printFeature()/]
 [/if]
@@ -141,6 +141,7 @@ services:
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
+    container_name : [aContainer.name/]
 [/if]
 [/for]
 [/file]

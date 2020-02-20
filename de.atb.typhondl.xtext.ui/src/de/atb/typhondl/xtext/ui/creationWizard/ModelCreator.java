@@ -217,7 +217,7 @@ public class ModelCreator {
 
 		for (DB db : dbs) {
 			Container container = TyphonDLFactory.eINSTANCE.createContainer();
-			container.setName(db.getName().toLowerCase());
+			container.setName(db.getName());
 			container.setType(containerType);
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
