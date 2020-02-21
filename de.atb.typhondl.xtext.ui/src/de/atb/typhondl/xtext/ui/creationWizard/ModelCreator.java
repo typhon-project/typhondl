@@ -235,11 +235,6 @@ public class ModelCreator {
 			db_ports.getKey_values().add(publishedDB_port);
 			container.setPorts(db_ports);
 
-			Key_Values hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-			hostname.setName("hostname");
-			hostname.setValue(container.getName());
-			container.getProperties().add(hostname);
-
 			application.getContainers().add(container);
 		}
 

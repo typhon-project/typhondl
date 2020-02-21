@@ -57,17 +57,19 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 			path = "de/atb/typhondl/xtext/validation/kubernetes_v1.txt"
 		}
 		val inputStream = TyphonDLValidator.classLoader.getResourceAsStream(path)
-			val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-			val keys = bufferedReader.readLines
-			for (property : properties) {
-				if (!keys.contains(property.name) && !property.name.equals('hostname')) {
+		val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+		val keys = bufferedReader.readLines
+		for (property : properties) {
+			if (!keys.contains(property.name)) {
+				if (property.name.equals('hostname') || property.name.equals('container_name')) {
+					error("\"" + property.name + "\" is an internal polystore keyword and can't be defined by the user",
+						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
+				} else {
 					error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
 						TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
 				}
 			}
-
-
-
+		}
 	}
 
 	@Check
