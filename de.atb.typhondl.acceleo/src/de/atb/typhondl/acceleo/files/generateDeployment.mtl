@@ -142,7 +142,6 @@ services:
     [aProperty.printProperties()/]
 [/for]
     container_name : [aContainer.name/]
-    hostname : [aContainer.name/]
 [/if]
 [/for]
 [/file]

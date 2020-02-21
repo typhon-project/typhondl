@@ -148,8 +148,32 @@ public class Services {
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
 		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
 		model = addDBsToModel(model);
+		model = addHostnamesToModel(model);
 		model = addPolystoreToModel(path, model);
 		saveModelAsXMI(DLmodelResource);
+		return model;
+	}
+
+	/**
+	 * Adds Key_Value named "hostname" with value container.name to each container
+	 * of the polystore
+	 * 
+	 * @param model
+	 * @return The Deployment model with every db container having the Key_Value
+	 *         hostname
+	 */
+	private static DeploymentModel addHostnamesToModel(DeploymentModel model) {
+		ArrayList<Container> containers = new ArrayList<>();
+		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
+				.map(element -> (Platform) element)
+				.forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications()
+						.forEach(application -> containers.addAll(application.getContainers()))));
+		for (Container container : containers) {
+			Key_Values db_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+			db_hostname.setName("hostname");
+			db_hostname.setValue(container.getName());
+			container.getProperties().add(db_hostname);
+		}
 		return model;
 	}
 
@@ -269,6 +293,10 @@ public class Services {
 		polystoredb_container.setName(properties.getProperty("db.containername"));
 		polystoredb_container.setType(containerType);
 		polystoredb_container.setDeploys(poystoredbReference);
+		Key_Values polystoredb_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_hostname.setName("hostname");
+		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
+		polystoredb_container.getProperties().add(polystoredb_container_hostname);
 
 		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_ports1.setName("published");
@@ -300,6 +328,10 @@ public class Services {
 		polystore_api_container.setType(containerType);
 		polystore_api_container.setDeploys(polystore_api_reference);
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
+		Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_hostname.setName("hostname");
+		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
+		polystore_api_container.getProperties().add(polystore_api_hostname);
 		Key_Values polystore_api_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_api_container_ports1.setName("published");
 		polystore_api_container_ports1.setValue(properties.getProperty("api.publishedPort"));
@@ -350,6 +382,10 @@ public class Services {
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports1);
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports2);
 		polystore_ui_container.setPorts(polystore_ui_container_ports);
+		Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_hostname.setName("hostname");
+		polystore_ui_hostname.setValue(properties.getProperty("ui.hostname"));
+		polystore_ui_container.getProperties().add(polystore_ui_hostname);
 		Key_KeyValueList polystore_ui_container_build = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 		polystore_ui_container_build.setName("build");
 		Key_Values polystore_ui_container_build_context = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -372,6 +408,10 @@ public class Services {
 		model.getElements().add(qlserver);
 		Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
 		qlserver_container.setName("typhonql-server");
+		Key_Values qlserver_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
+		qlserver_container_hostname.setName("hostname");
+		qlserver_container_hostname.setValue("typhonql-server");
+		qlserver_container.getProperties().add(qlserver_container_hostname);
 		qlserver_container.setDeploys(qlserver_reference);
 		application.getContainers().add(qlserver_container);
 
