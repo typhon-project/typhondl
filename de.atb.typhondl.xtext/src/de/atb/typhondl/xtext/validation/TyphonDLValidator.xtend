@@ -74,7 +74,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 
 	@Check
 	def checkImage(DBType dbType) {
-		if (!dbType.image.value.contains(dbType.name)) {
+		if (!dbType.image.value.toLowerCase.contains(dbType.name.toLowerCase)) {
 			warning("This image does not contain the name of the DB, are you sure it is the right image?",
 				TyphonDLPackage.Literals.DB_TYPE__IMAGE, 'dbNameDiffersImage')
 		}
