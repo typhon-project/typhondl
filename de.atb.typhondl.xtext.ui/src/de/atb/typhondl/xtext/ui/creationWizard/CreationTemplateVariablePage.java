@@ -58,7 +58,6 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 		gridData.horizontalSpan = 2;
 
 		for (DB db : result.keySet()) {
-
 			TemplateBuffer templateBuffer = result.get(db);
 			if (templateBuffer != null) {
 				TemplateVariable[] variables = templateBuffer.getVariables();
@@ -83,12 +82,11 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 					text.setText(templateVariable.getName());
 					text.setLayoutData(gridDataFields);
 					text.addModifyListener(e -> {
-						String oldValue = templateVariable.getValues()[0];
-						String newValue = text.getText();
+						int oldLenght = templateVariable.getLength();
 						// replace old value in template variable
-						templateVariable.setValue(newValue);
+						templateVariable.setValue(text.getText());
 						// replace old value in pattern string
-						String newPattern = templateBuffer.getString().replace(' ' + oldValue, ' ' + newValue);
+						String newPattern = updatePattern(templateVariable, templateBuffer.getString(), oldLenght);
 						templateBuffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
 						updateDB(db, templateBuffer);
 					});
@@ -96,6 +94,20 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 			}
 		}
 		setControl(main);
+	}
+
+	/**
+	 * Replaces old variable value with new one
+	 * 
+	 * @param templateVariable The TemplateVariable with the new value
+	 * @param oldPattern       The old Pattern
+	 * @param oldLength        The length of the old variable value
+	 * @return The updated Pattern
+	 */
+	private String updatePattern(TemplateVariable templateVariable, String oldPattern, int oldLength) {
+		int offset = templateVariable.getOffsets()[0];
+		return oldPattern.substring(0, offset) + templateVariable.getValues()[0]
+				+ oldPattern.substring(offset + oldLength);
 	}
 
 	/**
