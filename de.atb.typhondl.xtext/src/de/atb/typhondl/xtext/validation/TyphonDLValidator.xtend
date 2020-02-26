@@ -15,6 +15,8 @@ import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
+import de.atb.typhondl.xtext.typhonDL.Platform
+import de.atb.typhondl.xtext.typhonDL.Application
 
 /**
  * This class contains custom validation rules. 
@@ -39,6 +41,34 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 		for (port : ports.key_values) {
 			if (!(port.name.equals("target") || port.name.equals("published"))) {
 				error("Use \"target\" and/or \"published\" port", TyphonDLPackage.Literals.PORTS__KEY_VALUES)
+			}
+		}
+	}
+
+	@Check
+	def checkPublishedPortUniqueness(Platform platform) {
+		val apps = <Application>newArrayList
+		platform.clusters.forEach[cluster|apps.addAll(cluster.applications)]
+		val containers = <Container>newArrayList
+		apps.forEach[app|containers.addAll(app.containers)]
+		val portsList = <Ports>newArrayList
+		containers.forEach[container|portsList.addAll(container.ports)]
+		val publishedPorts = <String>newArrayList
+		for (ports : portsList) {
+			val publishedPort = ports.publishedPort
+			if (publishedPorts.contains(publishedPort)) {
+				error("Published port " + publishedPort + " is appearing more than once, please change port",
+					TyphonDLPackage.Literals.PLATFORM__TYPE)
+			} else {
+				publishedPorts.add(publishedPort)
+			}
+		}
+	}
+
+	def String getPublishedPort(Ports ports) {
+		for (port : ports.key_values) {
+			if (port.name.equals("published")) {
+				return port.value
 			}
 		}
 	}
