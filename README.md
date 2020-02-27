@@ -3,7 +3,8 @@
 # TyphonDL
 
 ## Functions
-- Create a TyphonDL model from a TyphonML model
+- Create and edit database templates
+- Create a TyphonDL model from a TyphonML model and the database queries
 - Edit TyphonDL model in textual editor
 - Generate docker-compose.yaml including
   1. A container for each database
@@ -11,7 +12,7 @@
   3. A container for the Typhon UI
   4. A container for the Typhon API
   5. A container for metadata (mongodb)
-- Generate polystore.yaml to run on a kubernetes cluster including deployment and service definitions for 
+- Generate polystore.yaml to run on a local minicube cluster (just a testbed) including deployment and service definitions for 
   1. A pod for each database
   2. A pod for the Typhon UI
   3. A pod for the Typhon API
@@ -22,23 +23,25 @@
   3. MongoDB
 
 ## Features
+- Database configuration templates in persistend preference storage of eclipse. There is a default configuration (compare to [wiki](https://github.com/typhon-project/typhondl/wiki/Guide)) that can be altered before generating the DL model. So company specific database properties can be configured and stored without much effort.
 - TyphonDL Creation Wizard to create a TyphonDL model from a ML model. Files created:
   1. mainModelFile.tdl (named on the first page of the wizard)
   2. dbTypes.tdl (containes all used dbTypes, here the **image** has to be given)
   3. One databaseName.tdl model file for each database (here the environment and other database specific configurations are added)
   4. polystore.properties (input given while using the wizard is stored here, only alter if you know what you are doing)
-- Generator for Docker Compose and Kubernetes Scripts
+- Generator for Docker Compose and minikube scripts
 
 ## In Developement
-- Support for volumes either in TyphonDL grammar or generator
-- Smoke tests after build process
+- Support volumes both in TyphonDL grammar and generator
 - Allow nested `Key_KeyValueList`
-- Have database configuration templates in persistend preference storage of eclipse. There is a default configuration (compare to [wiki](https://github.com/typhon-project/typhondl/wiki/Guide)) that can be altered before generating the DL model. So company specific database properties can be configured and stored without much effort.
 
 ## Future Functions and Features
-- Analytics support for Kubernetes
+- Put first version of ML and DL model in metadata container
+- Support for Kubernetes
+- Scaling possibilities
 - Directly start Docker containers out of eclipse
 - Include TyphonMLs [requirements annotations](https://github.com/typhon-project/internal-material/blob/master/Contract/Submitted%20Deliverables/D3.3%20TyphonML%20to%20TyphonDL%20Model%20Transformation%20Tools.pdf) in model generation process
+- Smoke tests after build process
 
 ## Example
 This example is very similar to the one given [here](https://github.com/typhon-project/typhondl/wiki/Guide).
