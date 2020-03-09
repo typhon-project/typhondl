@@ -82,11 +82,20 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 					text.setText(templateVariable.getName());
 					text.setLayoutData(gridDataFields);
 					text.addModifyListener(e -> {
+						int variableIndex = variablesList.indexOf(templateVariable);
 						int oldLenght = templateVariable.getLength();
 						// replace old value in template variable
 						templateVariable.setValue(text.getText());
+						int newLength = templateVariable.getLength();
 						// replace old value in pattern string
 						String newPattern = updatePattern(templateVariable, templateBuffer.getString(), oldLenght);
+						// correct offset of other variables if this variable is not the last one
+						if (variableIndex != variablesList.size() - 1) {
+							for (int i = variableIndex + 1; i < variablesList.size(); i++) {
+								variablesList.get(i).setOffsets(
+										new int[] { variablesList.get(i).getOffsets()[0] + newLength - oldLenght });
+							}
+						}
 						templateBuffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
 						updateDB(db, templateBuffer);
 					});
