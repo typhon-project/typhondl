@@ -110,7 +110,7 @@ Key_Values:
 	name=ID '=' value=Value (',' values+=Value)* ';';
 
 Key_KeyValueList:
-	name=ID '{' (key_Values+=Key_Values)+ '}';
+	name=ID '{' (properties+=Property)+ '}';
 
 Key_ValueArray:
 	name=ID ('[')

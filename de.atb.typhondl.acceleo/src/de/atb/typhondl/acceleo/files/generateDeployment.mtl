@@ -72,9 +72,9 @@ something went wrong with a Property
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
 [if (arg.name.equalsIgnoreCase('environment')._or(arg.name.equalsIgnoreCase('env')))]
 env:
-[for (aKey_Values : Key_Values | arg.key_Values)]
-  - name: [aKey_Values.name/]
-    value: [aKey_Values.value/]
+[for (aKey_Values : Property | arg.properties)]
+  - name: [aKey_Values.oclAsType(Key_Values).name/]
+    value: [aKey_Values.oclAsType(Key_Values).value/]
 [/for]
 [/if]
 [/template]
@@ -183,7 +183,7 @@ networks:
 
 [template public printProperties(aProperty : Key_KeyValueList)  post (trim())]
 [aProperty.name/]:
-[for (aVar : Key_Values | aProperty.key_Values)]
+[for (aVar : Property | aProperty.properties)]
   [aVar.printProperties()/]
 [/for][/template]
 

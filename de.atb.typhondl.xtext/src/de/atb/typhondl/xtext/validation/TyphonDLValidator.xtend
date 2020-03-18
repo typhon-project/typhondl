@@ -31,7 +31,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 	@Check
 	def checkPorts(Key_KeyValueList key_keyValueList) {
 		if (key_keyValueList.name.contains("port") || key_keyValueList.name.contains("Port")) {
-			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_KEY_VALUE_LIST__KEY_VALUES,
+			error("Use keyword \"ports\" to define ports", TyphonDLPackage.Literals.KEY_KEY_VALUE_LIST__PROPERTIES,
 				INVALID_PORT)
 		}
 	}
