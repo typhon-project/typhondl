@@ -189,8 +189,8 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			key_keyValueList.regionFor.keyword('}').prepend[newLine].append[newLine],
 			[indent]
 		)
-		for (key_values : key_keyValueList.key_Values) {
-			key_values.append[newLine]
+		for (propertiy : key_keyValueList.properties) {
+			propertiy.format
 		}
 	}
 

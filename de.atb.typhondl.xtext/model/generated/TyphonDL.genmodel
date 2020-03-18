@@ -84,7 +84,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Key_Values/values"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Key_KeyValueList">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Key_KeyValueList/key_Values"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Key_KeyValueList/properties"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Key_ValueArray">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Key_ValueArray/values"/>
