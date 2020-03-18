@@ -5,7 +5,7 @@ import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage;
+import org.eclipse.xtext.ui.codetemplates.ui.preferences.AdvancedTemplatesPreferencePage;
 
 import com.google.inject.Inject;
 
@@ -20,7 +20,7 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
  * @author flug
  *
  */
-public class DBTemplatePreferencePage extends XtextTemplatePreferencePage {
+public class DBTemplatePreferencePage extends AdvancedTemplatesPreferencePage {
 
 	@Inject
 	public DBTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
@@ -32,7 +32,7 @@ public class DBTemplatePreferencePage extends XtextTemplatePreferencePage {
 	protected Control createContents(Composite ancestor) {
 		Control result = super.createContents(ancestor);
 		ancestor.layout();
-		super.getTableViewer().setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DB"));
+		getTableViewer().setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DB"));
 		return result;
 	}
 

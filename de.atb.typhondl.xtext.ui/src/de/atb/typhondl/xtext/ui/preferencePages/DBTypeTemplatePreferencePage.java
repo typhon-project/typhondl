@@ -5,7 +5,7 @@ import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage;
+import org.eclipse.xtext.ui.codetemplates.ui.preferences.AdvancedTemplatesPreferencePage;
 
 import com.google.inject.Inject;
 
@@ -20,7 +20,7 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
  * @author flug
  *
  */
-public class DBTypeTemplatePreferencePage extends XtextTemplatePreferencePage {
+public class DBTypeTemplatePreferencePage extends AdvancedTemplatesPreferencePage {
 
 	@Inject
 	public DBTypeTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
