@@ -20,7 +20,7 @@ Services:
 	DB | Software;
 
 Software:
-	'software' name=ID '{'
+	'software' name= '{'
 	(image=IMAGE)
 	(parameters+=Property)*
 	'}';
@@ -55,7 +55,7 @@ IMAGE:
 Platform:
 	{Platform}
 	'platform' name=ID ':' type=[PlatformType] '{'
-	(clusters+=Cluster)*
+	(clusters+=Cluster)+
 	'}';
 
 Cluster:
@@ -83,7 +83,7 @@ Application:
 
 Container:
 	{Container}
-	'container' name=ID ':' (type=[ContainerType])? '{'
+	'container' name=Value ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
@@ -118,7 +118,8 @@ Key_ValueArray:
 	(']');
 
 Value:
-	(STRING | ID | INT | '/' | ':' | '-' | '.' | '=' | '//')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//')+;
+
 
 @Override
 terminal SL_COMMENT:
