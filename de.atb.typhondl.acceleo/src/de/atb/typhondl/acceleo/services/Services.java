@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -83,13 +84,8 @@ public class Services {
 			return "Something went wrong";
 		} else {
 			for (File subFile : folder.listFiles()) {
-				if (subFile.isDirectory()) {
-					for (File subSubFile : subFile.listFiles()) {
-						if (subSubFile.getName().contains("yml") || subSubFile.getName().contains("yaml")) { // TODO
-																												// horrible
-							return "Deployment script generated";
-						}
-					}
+				if (subFile.getName().contains("yml") || subFile.getName().contains("yaml")) { // TODO horrible
+					return "Deployment script generated";
 				}
 				if (subFile.getName().endsWith("xmi")) {
 					return "Only the model to export was generated";
@@ -187,6 +183,20 @@ public class Services {
 				+ "false, \"initializedConnections\": false, \"contents\": \"" + MLmodelContent
 				+ "\", \"type\": \"DL\", \"dateReceived\": { \"$date\": { \"$numberLong\": \"" + unixTime + "\" } }, "
 				+ "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(), "models");
+		String path = folder + File.separator + "addModels.js";
+		if (!Files.exists(Paths.get(folder))) {
+			try {
+				Files.createDirectory(Paths.get(folder));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			Files.write(Paths.get(path), (mongoDL + mongoML).getBytes(), StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static String getMLmodelURI(DeploymentModel model) {
