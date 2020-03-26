@@ -284,6 +284,10 @@ public class Services {
 		polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
 		polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
 		polystoredb_environment.getProperties().add(polystoredb_environment_2);
+		Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
+		polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+		polystoredb_environment.getProperties().add(polystoredb_environment_3);
 		polystoredb.getParameters().add(polystoredb_environment);
 		model.getElements().add(polystoredb);
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -297,6 +301,11 @@ public class Services {
 		polystoredb_container_hostname.setName("hostname");
 		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
 		polystoredb_container.getProperties().add(polystoredb_container_hostname);
+		Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+		polystoredb_container_volume.setName("volumes");
+		polystoredb_container_volume.getValues()
+				.add(properties.getProperty("db.volume") + ":/docker-entrypoint-initdb.d");
+		polystoredb_container.getProperties().add(polystoredb_container_volume);
 
 		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_ports1.setName("published");
