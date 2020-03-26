@@ -6,9 +6,8 @@
 [template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
-[for (aApplication : Application | aCluster.getAllApplications())]
 	
-[file (aApplication.name + '/docker-compose.yml', false, 'UTF-8')]
+[file ('docker-compose.yml', false, 'UTF-8')]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
@@ -17,9 +16,9 @@ version: '3.7'
 [/for]
 [/if]
 services:
-[for (aContainer : Container | aApplication.getAllContainers())]
+[for (aContainer : Container | aCluster.applications.containers)]
 [if (aContainer.name.toLower() = 'kafka')]
-[aApplication.generateAnalyticsFiles()/]
+[aCluster.generateAnalyticsFiles()/]
 [/if]
   [aContainer.name/]:
 [if (aContainer.deploys <> null)]
@@ -45,7 +44,6 @@ services:
 [/if]
 [/for]
 [/file]
-[/for]
 [/for]
 [/template]
 
@@ -121,8 +119,8 @@ image: [db.type.image.value/]
 [/if]
 [/template]
 
-[template public generateAnalyticsFiles(aApplication : Application)]
-[file (aApplication.name + '/Dockerfile', false, 'UTF-8')]
+[template public generateAnalyticsFiles(aCluster : Cluster)]
+[file ('Dockerfile', false, 'UTF-8')]
 FROM openjdk:8u212-jre-alpine
 
 ARG kafka_version=2.3.0
@@ -169,7 +167,7 @@ VOLUME ['['/]"/kafka"[']'/]
 # Use "exec" form so that it runs as PID 1 (useful for graceful shutdown)
 CMD ['['/]"start-kafka.sh"[']'/] 
 [/file]
-[file (aApplication.name + '/download-kafka.sh', false, 'UTF-8')]
+[file ('download-kafka.sh', false, 'UTF-8')]
 #!/bin/sh -e
 
 # shellcheck disable=SC1091
@@ -189,7 +187,7 @@ fi
 echo "Downloading Kafka from $url"
 wget "${url}" -O "/tmp/${FILENAME}"
 [/file]
-[file (aApplication.name + '/start-kafka.sh', false, 'UTF-8')]
+[file ('start-kafka.sh', false, 'UTF-8')]
 #!/bin/bash -e
 
 # Allow specific kafka versions to perform any unique bootstrap operations
@@ -340,14 +338,14 @@ fi
 
 exec "$KAFKA_HOME/bin/kafka-server-start.sh" "$KAFKA_HOME/config/server.properties"
 [/file]
-[file (aApplication.name + '/broker-list.sh', false, 'UTF-8')]
+[file ('/broker-list.sh', false, 'UTF-8')]
 #!/bin/bash
 
 CONTAINERS=$(docker ps | grep 9092 | awk '{print $1}')
 BROKERS=$(for CONTAINER in ${CONTAINERS}; do docker port "$CONTAINER" 9092 | sed -e "s/0.0.0.0:/$HOST_IP:/g"; done)
 echo "${BROKERS/$'\n'/,}"
 [/file]
-[file (aApplication.name + '/create-topics.sh', false, 'UTF-8')]
+[file ('/create-topics.sh', false, 'UTF-8')]
 #!/bin/bash
 
 if ['[['/] -z "$KAFKA_CREATE_TOPICS" [']]'/]; then
@@ -406,7 +404,7 @@ done
 
 wait
 [/file]
-[file (aApplication.name + '/versions.sh', false, 'UTF-8')]
+[file ('/versions.sh', false, 'UTF-8')]
 #!/bin/bash -e
 
 MAJOR_VERSION=$(echo "$KAFKA_VERSION" | cut -d. -f1)
@@ -415,7 +413,7 @@ export MAJOR_VERSION
 MINOR_VERSION=$(echo "$KAFKA_VERSION" | cut -d. -f2)
 export MINOR_VERSION
 [/file]
-[file (aApplication.name + '/overrides/0.9.0.1.sh', false, 'UTF-8')]
+[file ('/overrides/0.9.0.1.sh', false, 'UTF-8')]
 #!/bin/bash -e
 
 # Kafka 0.9.x.x has a 'listeners' config by default. We need to remove this
