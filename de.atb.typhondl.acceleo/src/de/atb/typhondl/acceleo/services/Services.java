@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -150,8 +153,47 @@ public class Services {
 		model = addDBsToModel(model);
 		model = addHostnamesToModel(model);
 		model = addPolystoreToModel(path, model);
-		saveModelAsXMI(DLmodelResource);
+		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
+		createMongoCommands(
+				Paths.get(file.getLocation().toOSString().replace(file.getName(),
+						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
+				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelURI(model))));
 		return model;
+	}
+
+	private static void createMongoCommands(Path DLmodel, Path MLmodel) {
+		String DLmodelContent = "";
+		String MLmodelContent = "";
+		try {
+			DLmodelContent = String.join("", Files.readAllLines(DLmodel));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			MLmodelContent = String.join("", Files.readAllLines(MLmodel));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String DLUUID = UUID.randomUUID().toString();
+		String MLUUID = UUID.randomUUID().toString();
+		long unixTime = System.currentTimeMillis() / 1000L;
+		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID
+				+ "\", \"version\": { \"$numberInt\": \"1\" }, \"initializedDatabases\": "
+				+ "false, \"initializedConnections\": true, \"contents\": \"" + DLmodelContent
+				+ ",\"type\": \"DL\", \"dateReceived\": { \"$date\": { \"$numberLong\": \"" + unixTime + "\" } }, "
+				+ "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID
+				+ "\", \"version\": { \"$numberInt\": \"1\" }, \"initializedDatabases\": "
+				+ "false, \"initializedConnections\": false, \"contents\": \"" + MLmodelContent
+				+ "\", \"type\": \"DL\", \"dateReceived\": { \"$date\": { \"$numberLong\": \"" + unixTime + "\" } }, "
+				+ "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+	}
+
+	private static String getMLmodelURI(DeploymentModel model) {
+		return model.getGuiMetaInformation().stream().filter(imortedModel -> Import.class.isInstance(imortedModel))
+				.map(importedModel -> (Import) importedModel)
+				.filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
+				.map(info -> info.getRelativePath()).collect(Collectors.toList()).get(0);
 	}
 
 	/**
@@ -204,8 +246,9 @@ public class Services {
 	 * Creates a .xmi file representing the given DL model
 	 * 
 	 * @param DLmodelResource The given DL model
+	 * @return
 	 */
-	private static void saveModelAsXMI(Resource DLmodelResource) {
+	private static URI saveModelAsXMI(Resource DLmodelResource) {
 		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
 		DeploymentModel DLmodel = (DeploymentModel) DLmodelResource.getContents().get(0);
 		URI folder = DLmodelResource.getURI().trimFileExtension();
@@ -222,6 +265,7 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return xmiResource.getURI();
 	}
 
 	/**
