@@ -172,19 +172,15 @@ public class Services {
 		}
 		String DLUUID = UUID.randomUUID().toString();
 		String MLUUID = UUID.randomUUID().toString();
-		long unixTime = System.currentTimeMillis() / 1000L;
-		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID
-				+ "\", \"version\": { \"$numberInt\": \"1\" }, \"initializedDatabases\": "
+		long unixTime = System.currentTimeMillis();
+		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID + "\", \"version\": 1, \"initializedDatabases\": "
 				+ "false, \"initializedConnections\": true, \"contents\": \""
-				+ DLmodelContent.replaceAll("\"", "\\\\\"")
-				+ "\",\"type\": \"DL\", \"dateReceived\": { \"$date\": { \"$numberLong\": \"" + unixTime + "\" } }, "
-				+ "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
-		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID
-				+ "\", \"version\": { \"$numberInt\": \"1\" }, \"initializedDatabases\": "
+				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
+				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID + "\", \"version\": 1, \"initializedDatabases\": "
 				+ "false, \"initializedConnections\": false, \"contents\": \""
-				+ MLmodelContent.replaceAll("\"", "\\\\\"")
-				+ "\", \"type\": \"DL\", \"dateReceived\": { \"$date\": { \"$numberLong\": \"" + unixTime + "\" } }, "
-				+ "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
+				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
 		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(), "models");
 		String path = folder + File.separator + "addModels.js";
 		if (!Files.exists(Paths.get(folder))) {
