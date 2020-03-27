@@ -366,25 +366,17 @@ public class Services {
 		polystoredb_container.setName(properties.getProperty("db.containername"));
 		polystoredb_container.setType(containerType);
 		polystoredb_container.setDeploys(poystoredbReference);
-		Key_Values polystoredb_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_hostname.setName("hostname");
-		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
-		polystoredb_container.getProperties().add(polystoredb_container_hostname);
 		Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		polystoredb_container_volume.setName("volumes");
 		polystoredb_container_volume.getValues()
 				.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
 		polystoredb_container.getProperties().add(polystoredb_container_volume);
 
-		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports1.setName("published");
-		polystoredb_container_ports1.setValue(properties.getProperty("db.publishedPort"));
-		Key_Values polystoredb_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports2.setName("target");
-		polystoredb_container_ports2.setValue(properties.getProperty("db.port"));
+		Key_Values polystoredb_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_port.setName("target");
+		polystoredb_container_port.setValue(properties.getProperty("db.port"));
 		Ports polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports1);
-		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports2);
+		polystoredb_container_ports.getKey_values().add(polystoredb_container_port);
 		polystoredb_container.setPorts(polystoredb_container_ports);
 
 		Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
@@ -406,19 +398,11 @@ public class Services {
 		polystore_api_container.setType(containerType);
 		polystore_api_container.setDeploys(polystore_api_reference);
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
-		Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_hostname.setName("hostname");
-		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
-		polystore_api_container.getProperties().add(polystore_api_hostname);
-		Key_Values polystore_api_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports1.setName("published");
-		polystore_api_container_ports1.setValue(properties.getProperty("api.publishedPort"));
-		Key_Values polystore_api_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports2.setName("target");
-		polystore_api_container_ports2.setValue(properties.getProperty("api.port"));
+		Key_Values polystore_api_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_port.setName("target");
+		polystore_api_container_port.setValue(properties.getProperty("api.port"));
 		Ports polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports1);
-		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports2);
+		polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
 		polystore_api_container.setPorts(polystore_api_container_ports);
 
 		Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
@@ -450,20 +434,12 @@ public class Services {
 		polystore_ui_container.setType(containerType);
 		polystore_ui_container.setDeploys(polystore_ui_reference);
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
-		Key_Values polystore_ui_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports1.setName("published");
-		polystore_ui_container_ports1.setValue(properties.getProperty("ui.publishedPort"));
-		Key_Values polystore_ui_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports2.setName("target");
-		polystore_ui_container_ports2.setValue(properties.getProperty("ui.port"));
+		Key_Values polystore_ui_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_container_port.setName("target");
+		polystore_ui_container_port.setValue(properties.getProperty("ui.port"));
 		Ports polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports1);
-		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports2);
+		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_port);
 		polystore_ui_container.setPorts(polystore_ui_container_ports);
-		Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_hostname.setName("hostname");
-		polystore_ui_hostname.setValue(properties.getProperty("ui.hostname"));
-		polystore_ui_container.getProperties().add(polystore_ui_hostname);
 		Key_KeyValueList polystore_ui_container_build = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 		polystore_ui_container_build.setName("build");
 		Key_Values polystore_ui_container_build_context = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -477,19 +453,15 @@ public class Services {
 
 		// QL server
 		Software qlserver = TyphonDLFactory.eINSTANCE.createSoftware();
-		qlserver.setName("QLServer");
+		qlserver.setName(properties.getProperty("qlserver.name"));
 		IMAGE qlserver_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-		qlserver_image.setValue("swatengineering/typhonql-server");
+		qlserver_image.setValue(properties.getProperty("qlserver.image"));
 		qlserver.setImage(qlserver_image);
 		Reference qlserver_reference = TyphonDLFactory.eINSTANCE.createReference();
 		qlserver_reference.setReference(qlserver);
 		model.getElements().add(qlserver);
 		Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
-		qlserver_container.setName("typhonql-server");
-		Key_Values qlserver_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		qlserver_container_hostname.setName("hostname");
-		qlserver_container_hostname.setValue("typhonql-server");
-		qlserver_container.getProperties().add(qlserver_container_hostname);
+		qlserver_container.setName(properties.getProperty("qlserver.containername"));
 		qlserver_container.setDeploys(qlserver_reference);
 		application.getContainers().add(qlserver_container);
 
