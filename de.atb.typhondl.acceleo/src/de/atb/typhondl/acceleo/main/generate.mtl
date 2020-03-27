@@ -1,10 +1,17 @@
 [comment encoding = UTF-8 /]
 [module generate('http://www.typhon.org/dsls/xtext/TyphonDL')]
 
-[import de::atb::typhondl::acceleo::files::generateDeployment/]
+[import de::atb::typhondl::acceleo::files::generateKubernetesDeployment/]
+[import de::atb::typhondl::acceleo::files::generateDockerComposeDeployment/]
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
 [template public generate(aDeploymentModel : DeploymentModel)]
 [comment @main/]
-	[generateDeployment(aDeploymentModel)/]
+	[if (aDeploymentModel.isKubernetes())]
+		[generateKubernetesDeployment(aDeploymentModel)/]
+	[/if]
+	[if (aDeploymentModel.isDockerCompose())]
+		[generateDockerComposeDeployment(aDeploymentModel)/]
+	[/if]
 [/template]
 

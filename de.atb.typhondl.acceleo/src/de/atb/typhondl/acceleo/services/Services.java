@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -80,13 +84,8 @@ public class Services {
 			return "Something went wrong";
 		} else {
 			for (File subFile : folder.listFiles()) {
-				if (subFile.isDirectory()) {
-					for (File subSubFile : subFile.listFiles()) {
-						if (subSubFile.getName().contains("yml") || subSubFile.getName().contains("yaml")) { // TODO
-																												// horrible
-							return "Deployment script generated";
-						}
-					}
+				if (subFile.getName().contains("yml") || subFile.getName().contains("yaml")) { // TODO horrible
+					return "Deployment script generated";
 				}
 				if (subFile.getName().endsWith("xmi")) {
 					return "Only the model to export was generated";
@@ -149,9 +148,83 @@ public class Services {
 		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
 		model = addDBsToModel(model);
 		model = addHostnamesToModel(model);
-		model = addPolystoreToModel(path, model);
-		saveModelAsXMI(DLmodelResource);
+		Properties properties = new Properties();
+		try {
+			InputStream input = new FileInputStream(path);
+			properties.load(input);
+		} catch (IOException e) {
+			e.printStackTrace();// TODO popup if nonexistent
+		}
+		model = addPolystoreToModel(path, model, properties);
+		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
+		createMongoCommands(
+				Paths.get(file.getLocation().toOSString().replace(file.getName(),
+						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
+				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))), properties);
 		return model;
+	}
+
+	/**
+	 * Creates a "addModels.js" file inside the db.volume directory. This script is
+	 * executed the first time the polystore-mongo container is started and adds
+	 * both the ML and DL model to the database db.environment.MONGO_INITDB_DATABASE
+	 * 
+	 * @param DLmodel    The path to the newly created DLmodel.xmi
+	 * @param MLmodel    The path to the source MLmodel.xmi
+	 * @param properties The polystore.properties saved in the project folder
+	 */
+	private static void createMongoCommands(Path DLmodel, Path MLmodel, Properties properties) {
+		String DLmodelContent = "";
+		String MLmodelContent = "";
+		try {
+			DLmodelContent = String.join("", Files.readAllLines(DLmodel));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			MLmodelContent = String.join("", Files.readAllLines(MLmodel));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String DLUUID = UUID.randomUUID().toString();
+		String MLUUID = UUID.randomUUID().toString();
+		long unixTime = System.currentTimeMillis();
+		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID + "\", \"version\": 1, \"initializedDatabases\": "
+				+ "false, \"initializedConnections\": true, \"contents\": \""
+				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
+				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID + "\", \"version\": 1, \"initializedDatabases\": "
+				+ "false, \"initializedConnections\": false, \"contents\": \""
+				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
+				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(),
+				properties.getProperty("db.volume"));
+		String path = folder + File.separator + "addModels.js";
+		if (!Files.exists(Paths.get(folder))) {
+			try {
+				Files.createDirectory(Paths.get(folder));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			Files.write(Paths.get(path), (mongoDL + mongoML).getBytes(), StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Reads the relative MLmodel path from the Import section of the DL model
+	 * 
+	 * @param model the DL model
+	 * @return The relative MLmodel path as a String
+	 */
+	private static String getMLmodelPath(DeploymentModel model) {
+		return model.getGuiMetaInformation().stream().filter(imortedModel -> Import.class.isInstance(imortedModel))
+				.map(importedModel -> (Import) importedModel)
+				.filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
+				.map(info -> info.getRelativePath()).collect(Collectors.toList()).get(0);
 	}
 
 	/**
@@ -204,8 +277,9 @@ public class Services {
 	 * Creates a .xmi file representing the given DL model
 	 * 
 	 * @param DLmodelResource The given DL model
+	 * @return
 	 */
-	private static void saveModelAsXMI(Resource DLmodelResource) {
+	private static URI saveModelAsXMI(Resource DLmodelResource) {
 		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
 		DeploymentModel DLmodel = (DeploymentModel) DLmodelResource.getContents().get(0);
 		URI folder = DLmodelResource.getURI().trimFileExtension();
@@ -222,24 +296,19 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return xmiResource.getURI();
 	}
 
 	/**
 	 * Adds the three polystore containers and corresponding {@link Services} to the
 	 * TyphonDL model
 	 * 
-	 * @param path  The path to the polystore.properties
-	 * @param model The given TyphonDL model
+	 * @param path       The path to the polystore.properties
+	 * @param model      The given TyphonDL model
+	 * @param properties The polystore.properties saved in the project folder
 	 * @return The given TyphonDL model plus the polystore component
 	 */
-	private static DeploymentModel addPolystoreToModel(String path, DeploymentModel model) {
-		Properties properties = new Properties();
-		try {
-			InputStream input = new FileInputStream(path);
-			properties.load(input);
-		} catch (IOException e) {
-			e.printStackTrace();// TODO popup if nonexistent
-		}
+	private static DeploymentModel addPolystoreToModel(String path, DeploymentModel model, Properties properties) {
 
 		List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
 				.map(element -> (DBType) element).collect(Collectors.toList());
@@ -284,6 +353,10 @@ public class Services {
 		polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
 		polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
 		polystoredb_environment.getProperties().add(polystoredb_environment_2);
+		Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
+		polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+		polystoredb_environment.getProperties().add(polystoredb_environment_3);
 		polystoredb.getParameters().add(polystoredb_environment);
 		model.getElements().add(polystoredb);
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -297,6 +370,11 @@ public class Services {
 		polystoredb_container_hostname.setName("hostname");
 		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
 		polystoredb_container.getProperties().add(polystoredb_container_hostname);
+		Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+		polystoredb_container_volume.setName("volumes");
+		polystoredb_container_volume.getValues()
+				.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
+		polystoredb_container.getProperties().add(polystoredb_container_volume);
 
 		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_ports1.setName("published");
