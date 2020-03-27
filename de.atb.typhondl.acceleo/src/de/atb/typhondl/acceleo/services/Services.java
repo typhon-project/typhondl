@@ -147,7 +147,6 @@ public class Services {
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
 		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
 		model = addDBsToModel(model);
-		model = addHostnamesToModel(model);
 		Properties properties = new Properties();
 		try {
 			InputStream input = new FileInputStream(path);
@@ -225,29 +224,6 @@ public class Services {
 				.map(importedModel -> (Import) importedModel)
 				.filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
 				.map(info -> info.getRelativePath()).collect(Collectors.toList()).get(0);
-	}
-
-	/**
-	 * Adds Key_Value named "hostname" with value container.name to each container
-	 * of the polystore
-	 * 
-	 * @param model
-	 * @return The Deployment model with every db container having the Key_Value
-	 *         hostname
-	 */
-	private static DeploymentModel addHostnamesToModel(DeploymentModel model) {
-		ArrayList<Container> containers = new ArrayList<>();
-		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
-				.map(element -> (Platform) element)
-				.forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications()
-						.forEach(application -> containers.addAll(application.getContainers()))));
-		for (Container container : containers) {
-			Key_Values db_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-			db_hostname.setName("hostname");
-			db_hostname.setValue(container.getName());
-			container.getProperties().add(db_hostname);
-		}
-		return model;
 	}
 
 	/**
