@@ -68,6 +68,11 @@ public class CreateModelWizard extends Wizard {
 	private int chosenTemplate;
 
 	/**
+	 * A page to define container specifications
+	 */
+	private CreationContainerPage containerPage;
+
+	/**
 	 * Creates an instance of <code>CreateModelWizard</code>
 	 * 
 	 * @param MLmodel the ML model used as input
@@ -193,6 +198,12 @@ public class CreateModelWizard extends Wizard {
 			this.variablePage.setWizard(this);
 			return variablePage;
 		}
+		if (page instanceof CreationTemplateVariablePage) {
+			this.containerPage = createContainerPage("Container Definition Page",
+					((CreationTemplateVariablePage) page).getDBs());
+			this.containerPage.setWizard(this);
+			return containerPage;
+		}
 		if (mainPage.getUseAnalytics()) {
 			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).hasTemplateVariables())
 					|| page instanceof CreationTemplateVariablePage) {
@@ -202,6 +213,10 @@ public class CreateModelWizard extends Wizard {
 			}
 		}
 		return super.getNextPage(page);
+	}
+
+	private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs) {
+		return new CreationContainerPage(string, dbs);
 	}
 
 	/**
