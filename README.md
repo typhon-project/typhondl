@@ -33,11 +33,10 @@
 
 ## In Developement
 - Support volumes both in TyphonDL grammar and generator
-- Allow nested `Key_KeyValueList`
+- Support for Kubernetes
 
 ## Future Functions and Features
 - Put first version of ML and DL model in metadata container
-- Support for Kubernetes
 - Scaling possibilities
 - Directly start Docker containers out of eclipse
 - Include TyphonMLs [requirements annotations](https://github.com/typhon-project/internal-material/blob/master/Contract/Submitted%20Deliverables/D3.3%20TyphonML%20to%20TyphonDL%20Model%20Transformation%20Tools.pdf) in model generation process
