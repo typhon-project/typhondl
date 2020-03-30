@@ -154,22 +154,21 @@ public class CreateModelWizard extends Wizard {
 	 * 
 	 * @return <code>false</code> if
 	 *         <li>the current page is the Main Page or</li>
-	 *         <li>the current page is the DBMSPage and the useAnalytics checkbox is
-	 *         checked</li>
+	 *         <li>the current page is the DBMSPage or</li>
+	 *         <li>the current page is the TemplateVariablePage or</li>
+	 *         <li>the current page is the ContainerPage and the useAnalytics
+	 *         checkbox is checked</li>
 	 *         <p>
 	 *         Otherwise {@link Wizard#canFinish()}.
 	 */
 	@Override
 	public boolean canFinish() {
 		IWizardPage currentPage = this.getContainer().getCurrentPage();
-		if (currentPage instanceof CreationMainPage) {
+		if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
+				|| currentPage instanceof CreationTemplateVariablePage) {
 			return false;
 		}
-		if (currentPage instanceof CreationDBMSPage
-				&& (mainPage.getUseAnalytics() || ((CreationDBMSPage) currentPage).hasTemplateVariables())) {
-			return false;
-		}
-		if (currentPage instanceof CreationTemplateVariablePage && mainPage.getUseAnalytics()) {
+		if (currentPage instanceof CreationContainerPage && mainPage.getUseAnalytics()) {
 			return false;
 		}
 		return super.canFinish();
@@ -185,18 +184,28 @@ public class CreateModelWizard extends Wizard {
 	 *         {@link CreationAnalyticsPage} is created and returned.</li>
 	 *         <li>if the current page is the {@link CreationDBMSPage} and a
 	 *         template with {@link TemplateVariable}s is used, a
-	 *         {@link CreationTemplateVariablePage} is created and returned.</li>
-	 * 
+	 *         {@link CreationTemplateVariablePage} is created and returned,
+	 *         otherwise a {@link CreationContainerPage} is returned.</li>
+	 *         <li>if the current page is the {@link CreationTemplateVariablePage} a
+	 *         {@link CreationContainerPage} is returned.</li>
 	 */
 	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
-		if (page instanceof CreationDBMSPage && ((CreationDBMSPage) page).hasTemplateVariables()) {
-			this.variablePage = createVariablesPage("Template Variables Page", ((CreationDBMSPage) page).getResult());
-			this.variablePage.setWizard(this);
-			return variablePage;
+		if (page instanceof CreationDBMSPage) {
+			if (((CreationDBMSPage) page).hasTemplateVariables()) {
+				this.variablePage = createVariablesPage("Template Variables Page",
+						((CreationDBMSPage) page).getResult());
+				this.variablePage.setWizard(this);
+				return variablePage;
+			} else {
+				this.containerPage = createContainerPage("Container Definition Page",
+						new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()));
+				this.containerPage.setWizard(this);
+				return containerPage;
+			}
 		}
 		if (page instanceof CreationTemplateVariablePage) {
 			this.containerPage = createContainerPage("Container Definition Page",

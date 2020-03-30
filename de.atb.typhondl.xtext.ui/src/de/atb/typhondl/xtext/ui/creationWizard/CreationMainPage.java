@@ -1,7 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -69,11 +69,6 @@ public class CreationMainPage extends MyWizardPage {
 	private Properties properties;
 
 	/**
-	 * The path to the polystore.properties
-	 */
-	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
-
-	/**
 	 * The checkbox to activate the use of the Typhon Analytics component
 	 */
 	private Button checkbox;
@@ -97,17 +92,8 @@ public class CreationMainPage extends MyWizardPage {
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
 		this.MLmodelPath = MLmodelPath;
-		this.properties = new Properties();
-		loadProperties();
-	}
-
-	/**
-	 * loads polystore.properties to {@link Properties} properties
-	 */
-	private void loadProperties() {
-		InputStream input = CreationMainPage.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH);
 		try {
-			this.properties.load(input);
+			this.properties = PropertiesLoader.loadProperties();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
