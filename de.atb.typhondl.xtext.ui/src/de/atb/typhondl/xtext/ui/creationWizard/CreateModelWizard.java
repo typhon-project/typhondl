@@ -202,14 +202,14 @@ public class CreateModelWizard extends Wizard {
 				return variablePage;
 			} else {
 				this.containerPage = createContainerPage("Container Definition Page",
-						new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()));
+						new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()), this.chosenTemplate);
 				this.containerPage.setWizard(this);
 				return containerPage;
 			}
 		}
 		if (page instanceof CreationTemplateVariablePage) {
 			this.containerPage = createContainerPage("Container Definition Page",
-					((CreationTemplateVariablePage) page).getDBs());
+					((CreationTemplateVariablePage) page).getDBs(), this.chosenTemplate);
 			this.containerPage.setWizard(this);
 			return containerPage;
 		}
@@ -224,8 +224,8 @@ public class CreateModelWizard extends Wizard {
 		return super.getNextPage(page);
 	}
 
-	private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs) {
-		return new CreationContainerPage(string, dbs);
+	private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs, int chosenTemplate) {
+		return new CreationContainerPage(string, dbs, chosenTemplate);
 	}
 
 	/**
