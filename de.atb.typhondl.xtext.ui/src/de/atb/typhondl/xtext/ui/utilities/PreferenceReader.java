@@ -137,7 +137,7 @@ public class PreferenceReader {
 	 *         contain exactly one definition
 	 */
 	public static <T extends EObject> T getModelObject(T modelObject, TemplateBuffer buffer) {
-		// get the parser to transalte the template pattern into a TyphonDL model
+		// get the parser to translate the template pattern into a TyphonDL model
 		// instance
 		IParseResult result = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(IParser.class).parse(new StringReader(buffer.getString()));

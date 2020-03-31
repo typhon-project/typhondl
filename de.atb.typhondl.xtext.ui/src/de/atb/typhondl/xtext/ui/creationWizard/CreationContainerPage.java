@@ -94,17 +94,33 @@ public class CreationContainerPage extends MyWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		String reservationWord;
 		String cpuText;
+		String limMem;
+		String limCPU;
+		String resMem;
+		String resCPU;
 		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
 		case "DockerCompose":
 			reservationWord = "reservations";
 			cpuText = "cpus:";
+			limMem = "50M";
+			limCPU = "'0.25'";
+			resMem = "20M";
+			resCPU = "'0.1'";
 			break;
 		case "Kubernetes":
 			reservationWord = "requests";
 			cpuText = "cpu:";
+			limMem = "\"128Mi\"";
+			limCPU = "\"500m\"";
+			resMem = "\"64Mi\"";
+			resCPU = "\"250m\"";
 		default:
 			reservationWord = "error";
 			cpuText = "error";
+			limMem = "error";
+			limCPU = "error";
+			resMem = "error";
+			resCPU = "error";
 			break;
 		}
 
@@ -152,47 +168,45 @@ public class CreationContainerPage extends MyWizardPage {
 			Composite resourceComposite = new Composite(group, NONE);
 			resourceComposite.setLayout(new GridLayout(1, false));
 			resourceComposite.setLayoutData(resourceGridData);
+
 			// Resources
+			// TODO here model objects
+
 			Button limitCheck = new Button(resourceComposite, SWT.CHECK);
 			limitCheck.setText("Set resource limits");
 			limitCheck.setLayoutData(gridDataChecks);
-
 			Composite limitComposite = new Composite(resourceComposite, NONE);
 			limitComposite.setLayout(new GridLayout(2, false));
 			GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			limitData.exclude = true;
 			limitComposite.setLayoutData(limitData);
-
 			Label limMemLabel = new Label(limitComposite, NONE);
 			limMemLabel.setText("memory:");
 			Text limMemText = new Text(limitComposite, SWT.BORDER);
-			limMemText.setText("\"128Mi\"");
+			limMemText.setText(limMem);
 			limMemText.setLayoutData(gridDataFields);
 			Label limCPULabel = new Label(limitComposite, NONE);
 			limCPULabel.setText(cpuText);
 			Text limCPUText = new Text(limitComposite, SWT.BORDER);
-			limCPUText.setText("\"500m\"");
+			limCPUText.setText(limCPU);
 			limCPUText.setLayoutData(gridDataFields);
-
 			Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
 			reservationCheck.setText("Set resource " + reservationWord);
 			reservationCheck.setLayoutData(gridDataChecks);
-
 			Composite reservationComposite = new Composite(resourceComposite, NONE);
 			reservationComposite.setLayout(new GridLayout(2, false));
 			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			reservationData.exclude = true;
 			reservationComposite.setLayoutData(reservationData);
-
 			Label resMemLabel = new Label(reservationComposite, NONE);
 			resMemLabel.setText("memory:");
 			Text resMemText = new Text(reservationComposite, SWT.BORDER);
-			resMemText.setText("\"64Mi\"");
+			resMemText.setText(resMem);
 			resMemText.setLayoutData(gridDataFields);
 			Label resCPULabel = new Label(reservationComposite, NONE);
 			resCPULabel.setText(cpuText);
 			Text resCPUText = new Text(reservationComposite, SWT.BORDER);
-			resCPUText.setText("\"250m\"");
+			resCPUText.setText(resCPU);
 			resCPUText.setLayoutData(gridDataFields);
 
 			limitCheck.addSelectionListener(new SelectionAdapter() {
@@ -213,12 +227,6 @@ public class CreationContainerPage extends MyWizardPage {
 					scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 				}
 			});
-
-			/**
-			 * Kubernetes: resources: limits: memory: "128Mi" cpu: "500m" requests, Docker
-			 * Compose: deploy: resources: limits: cpus: '0.50' memory: 50M reservations:
-			 * cpus: '0.25' memory: 20M
-			 */
 			result.put(db, container);
 		}
 		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));

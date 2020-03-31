@@ -145,8 +145,8 @@ public class CreationMainPage extends MyWizardPage {
 	}
 
 	/**
-	 * Creates technology choosing combo and sets initial polystore.properties. TODO
-	 * change to not hardcoded?
+	 * Creates technology choosing combo and sets initial polystore.properties.<br>
+	 * TODO change to not hardcoded?
 	 * 
 	 * @param main the composite in which the fields are created
 	 */
