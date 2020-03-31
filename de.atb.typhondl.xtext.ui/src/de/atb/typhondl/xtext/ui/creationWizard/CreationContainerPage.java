@@ -91,11 +91,11 @@ public class CreationContainerPage extends MyWizardPage {
 		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
 		case "DockerCompose":
 			reservationWord = "reservations";
-			cpuText = "cpus";
+			cpuText = "cpus:";
 			break;
 		case "Kubernetes":
 			reservationWord = "requests";
-			cpuText = "cpu";
+			cpuText = "cpu:";
 		default:
 			reservationWord = "error";
 			cpuText = "error";
@@ -158,7 +158,7 @@ public class CreationContainerPage extends MyWizardPage {
 			limitComposite.setLayoutData(limitData);
 
 			Label limMemLabel = new Label(limitComposite, NONE);
-			limMemLabel.setText("memory");
+			limMemLabel.setText("memory:");
 			Text limMemText = new Text(limitComposite, SWT.BORDER);
 			limMemText.setText("\"128Mi\"");
 			limMemText.setLayoutData(gridDataFields);
@@ -179,7 +179,7 @@ public class CreationContainerPage extends MyWizardPage {
 			reservationComposite.setLayoutData(reservationData);
 
 			Label resMemLabel = new Label(reservationComposite, NONE);
-			resMemLabel.setText("memory");
+			resMemLabel.setText("memory:");
 			Text resMemText = new Text(reservationComposite, SWT.BORDER);
 			resMemText.setText("\"64Mi\"");
 			resMemText.setLayoutData(gridDataFields);
@@ -194,9 +194,8 @@ public class CreationContainerPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					limitData.exclude = !limitCheck.getSelection();
 					limitComposite.setVisible(limitCheck.getSelection());
-					main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
 					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-					// main.layout();
 				}
 			});
 			reservationCheck.addSelectionListener(new SelectionAdapter() {
@@ -204,9 +203,8 @@ public class CreationContainerPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					reservationData.exclude = !reservationCheck.getSelection();
 					reservationComposite.setVisible(reservationCheck.getSelection());
-					main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
 					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-					// main.layout();
 				}
 			});
 
@@ -218,7 +216,7 @@ public class CreationContainerPage extends MyWizardPage {
 
 			result.put(db, container);
 		}
-		main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
 		scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		setControl(scrolling);
 	}
