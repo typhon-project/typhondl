@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -22,6 +21,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Page for the TyphonDL {@link CreateModelWizard}. Container specific
@@ -75,6 +75,7 @@ public class CreationContainerPage extends MyWizardPage {
 	@Override
 	public void createControl(Composite parent) {
 		setTitle("Configure database containers");
+		setDescription("The container port has to be exposed in the Dockerfile, here the default ports are used.");
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));
@@ -93,9 +94,9 @@ public class CreationContainerPage extends MyWizardPage {
 			// create a Container Model Object
 			Container container = TyphonDLFactory.eINSTANCE.createContainer();
 			container.setName(db.getName());
-			ContainerType docker = TyphonDLFactory.eINSTANCE.createContainerType();
-			docker.setName("Docker");
-			container.setType(docker);
+			ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
+			containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
+			container.setType(containerType);
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
@@ -105,20 +106,26 @@ public class CreationContainerPage extends MyWizardPage {
 			String targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
 			port.setValue(targetPort);
 			ports.getKey_values().add(port);
+			container.setPorts(ports);
+			result.put(db, container);
 
 			new Label(group, NONE).setText("Container port: ");
 			Text portText = new Text(group, SWT.BORDER);
 			portText.setText(targetPort);
 			portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
 			portText.setLayoutData(gridDataFields);
-			portText.addModifyListener(e -> {
-				container.getPorts().getKey_values().stream().filter(test -> test.getName().equalsIgnoreCase("target"))
-						.collect(Collectors.toList()).get(0).setValue(((Text) e.widget).getText());
+			portText.addModifyListener(e -> { // TODO
+				port.setValue(portText.getText());
 			});
 		}
 		setControl(main);
 	}
 
+	/**
+	 * Get pairs of DB and Container with input from wizard
+	 * 
+	 * @return A map with a Container for every DB
+	 */
 	public HashMap<DB, Container> getResult() {
 		return result;
 	}

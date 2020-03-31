@@ -14,6 +14,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
 
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -121,15 +122,10 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			properties = this.mainPage.getProperties();
 		}
-		ArrayList<DB> dbs = new ArrayList<>();
-		if (dbmsPage.hasTemplateVariables()) {
-			dbs = variablePage.getDBs();
-		} else {
-			dbs = new ArrayList<DB>(dbmsPage.getResult().keySet());
-		}
+		HashMap<DB, Container> result = containerPage.getResult();
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		IFile file = modelCreator.createDLmodel(dbs, chosenTemplate, properties);
+		IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);

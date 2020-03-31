@@ -3,8 +3,8 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -21,6 +21,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
@@ -105,13 +106,13 @@ public class ModelCreator {
 	/**
 	 * Creates the new DL model
 	 * 
-	 * @param dbs            The DBs to add to the new model
+	 * @param result         The DBs and Containers to add to the new model
 	 * @param chosenTemplate The int representation of the chosen technology
 	 *                       Template from {@link SupportedTechnologies}
 	 * @param properties     The polystore.properties
 	 * @return The main model file to be opened by the Xtext editor after creation
 	 */
-	public IFile createDLmodel(ArrayList<DB> dbs, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(HashMap<DB, Container> result, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -143,29 +144,21 @@ public class ModelCreator {
 			platformType.setName("localhost");
 			break;
 		}
-//		platformType.setName("localhost");
-//		platformType.setName(properties.getProperty("ui.environment.API_HOST"));
 		DLmodel.getElements().add(platformType);
 
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-		// create import for each db, use given db or load from file
-		for (DB db : dbs) {
+		// create import for each db
+		for (DB db : result.keySet()) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
-			DeploymentModel dbModel;
-			if (db.getType() == null) { // use existing .tdl file
-				String path = db.getName() + ".tdl";
-				URI dbURI = URI.createPlatformResourceURI(this.folder.append(path).toString(), true);
-				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
-				addModelToDB(db, getDB(dbModel));
-				importedDB.setRelativePath(path);
-			} else {
-				importedDB.setRelativePath(db.getName() + ".tdl");
-			}
+			importedDB.setRelativePath(db.getName() + ".tdl");
 			DLmodel.getGuiMetaInformation().add(importedDB);
+
+			// types need to be the same instance
 			boolean containsType = false;
 			for (DBType dbType : dbTypes) {
 				if (dbType.getName().equals(db.getType().getName())) {
 					containsType = true;
+					db.setType(dbType);
 				}
 			}
 			if (!containsType) {
@@ -173,13 +166,7 @@ public class ModelCreator {
 			}
 		}
 
-		for (DB db : dbs) { // types need to be the same instance
-			for (DBType dbtype : dbTypes) {
-				if (dbtype.getName().equals(db.getType().getName())) {
-					db.setType(dbtype);
-				}
-			}
-		}
+		// save dbTypes in file
 		DeploymentModel dbTypesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 		for (DBType dbType : dbTypes) {
 			dbTypesModel.getElements().add(dbType);
@@ -188,11 +175,14 @@ public class ModelCreator {
 		Import dbTypesImport = TyphonDLFactory.eINSTANCE.createImport();
 		dbTypesImport.setRelativePath("dbTypes.tdl");
 		DLmodel.getGuiMetaInformation().add(dbTypesImport);
-		for (DB db : dbs) {
+
+		// save DBs in file
+		for (DB db : result.keySet()) {
 			DeploymentModel dbModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			dbModel.getElements().add(db);
 			save(dbModel, db.getName() + ".tdl");
 		}
+
 		/*
 		 * start container structure
 		 */
@@ -210,9 +200,10 @@ public class ModelCreator {
 		application.setName("Polystore");
 		cluster.getApplications().add(application);
 
-		for (DB db : dbs) {
-
-			application.getContainers().add(container);
+		for (DB db : result.keySet()) {
+			Container containerToAdd = result.get(db);
+			containerToAdd.setType(containerType);
+			application.getContainers().add(containerToAdd);
 		}
 
 		/*
@@ -248,16 +239,5 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Filters the {@link DB} from a given {@link DeploymentModel}
-	 * 
-	 * @param model The {@link DeploymentModel} only containing one {@link DB}
-	 * @return The {@link DB}
-	 */
-	private DB getDB(DeploymentModel model) {
-		return model.getElements().stream().filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
-				.collect(Collectors.toList()).get(0);
 	}
 }
