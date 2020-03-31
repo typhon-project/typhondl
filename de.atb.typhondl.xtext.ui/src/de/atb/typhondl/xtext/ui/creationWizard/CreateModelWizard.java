@@ -209,13 +209,10 @@ public class CreateModelWizard extends Wizard {
 			this.containerPage.setWizard(this);
 			return containerPage;
 		}
-		if (mainPage.getUseAnalytics()) {
-			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).hasTemplateVariables())
-					|| page instanceof CreationTemplateVariablePage) {
-				this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
-				this.analyticsPage.setWizard(this);
-				return analyticsPage;
-			}
+		if (mainPage.getUseAnalytics() && page instanceof CreationContainerPage) {
+			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
+			this.analyticsPage.setWizard(this);
+			return analyticsPage;
 		}
 		return super.getNextPage(page);
 	}
