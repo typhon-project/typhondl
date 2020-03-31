@@ -37,6 +37,12 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 public class CreationContainerPage extends MyWizardPage {
 
 	/**
+	 * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
+	 * always 607, independent of what's given here
+	 */
+	private static final int WIDTH = 607;
+
+	/**
 	 * list of DBs taken from the MLmodel enriched with wizard and template input
 	 * and the corresponding TemplateVariables
 	 */
@@ -137,15 +143,15 @@ public class CreationContainerPage extends MyWizardPage {
 			portText.setText(targetPort);
 			portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
 			portText.setLayoutData(gridDataFields);
-			portText.addModifyListener(e -> { // TODO
+			portText.addModifyListener(e -> {
 				port.setValue(portText.getText());
 			});
 
-			GridData test = new GridData(SWT.FILL, SWT.FILL, true, false);
-			test.horizontalSpan = 2;
+			GridData resourceGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+			resourceGridData.horizontalSpan = 2;
 			Composite resourceComposite = new Composite(group, NONE);
 			resourceComposite.setLayout(new GridLayout(1, false));
-			resourceComposite.setLayoutData(test);
+			resourceComposite.setLayoutData(resourceGridData);
 			// Resources
 			Button limitCheck = new Button(resourceComposite, SWT.CHECK);
 			limitCheck.setText("Set resource limits");
@@ -194,8 +200,8 @@ public class CreationContainerPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					limitData.exclude = !limitCheck.getSelection();
 					limitComposite.setVisible(limitCheck.getSelection());
-					main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
-					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+					scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 				}
 			});
 			reservationCheck.addSelectionListener(new SelectionAdapter() {
@@ -203,8 +209,8 @@ public class CreationContainerPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					reservationData.exclude = !reservationCheck.getSelection();
 					reservationComposite.setVisible(reservationCheck.getSelection());
-					main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
-					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+					scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 				}
 			});
 
@@ -213,11 +219,10 @@ public class CreationContainerPage extends MyWizardPage {
 			 * Compose: deploy: resources: limits: cpus: '0.50' memory: 50M reservations:
 			 * cpus: '0.25' memory: 20M
 			 */
-
 			result.put(db, container);
 		}
-		main.setSize(main.computeSize(parent.getClientArea().width, SWT.DEFAULT));
-		scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+		scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		setControl(scrolling);
 	}
 
