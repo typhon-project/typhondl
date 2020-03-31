@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -79,10 +80,12 @@ public class CreationContainerPage extends MyWizardPage {
 	public void createControl(Composite parent) {
 		setTitle("Configure database containers");
 		setDescription("The container port has to be exposed in the Dockerfile, here the default ports are used.");
-		Composite main = new Composite(parent, SWT.NONE);
+		ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
+		Composite main = new Composite(scrolling, SWT.NONE);
+		scrolling.setContent(main);
+		scrolling.setExpandVertical(true);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));
-
 		String reservationWord;
 		String cpuText;
 		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
@@ -138,43 +141,62 @@ public class CreationContainerPage extends MyWizardPage {
 				port.setValue(portText.getText());
 			});
 
+			GridData test = new GridData(SWT.FILL, SWT.FILL, true, false);
+			test.horizontalSpan = 2;
+			Composite resourceComposite = new Composite(group, NONE);
+			resourceComposite.setLayout(new GridLayout(1, false));
+			resourceComposite.setLayoutData(test);
 			// Resources
-			Button limitCheck = new Button(group, SWT.CHECK);
+			Button limitCheck = new Button(resourceComposite, SWT.CHECK);
 			limitCheck.setText("Set resource limits");
 			limitCheck.setLayoutData(gridDataChecks);
 
-			Composite limitComposite = new Composite(group, NONE);
-			limitComposite.setLayout(new GridLayout(2, true));
+			Composite limitComposite = new Composite(resourceComposite, NONE);
+			limitComposite.setLayout(new GridLayout(2, false));
 			GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			limitData.exclude = true;
 			limitComposite.setLayoutData(limitData);
 
 			Label limMemLabel = new Label(limitComposite, NONE);
 			limMemLabel.setText("memory");
+			Text limMemText = new Text(limitComposite, SWT.BORDER);
+			limMemText.setText("\"128Mi\"");
+			limMemText.setLayoutData(gridDataFields);
 			Label limCPULabel = new Label(limitComposite, NONE);
 			limCPULabel.setText(cpuText);
+			Text limCPUText = new Text(limitComposite, SWT.BORDER);
+			limCPUText.setText("\"500m\"");
+			limCPUText.setLayoutData(gridDataFields);
 
-			Button reservationCheck = new Button(group, SWT.CHECK);
+			Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
 			reservationCheck.setText("Set resource " + reservationWord);
 			reservationCheck.setLayoutData(gridDataChecks);
 
-			Composite reservationComposite = new Composite(group, NONE);
-			reservationComposite.setLayout(new GridLayout(2, true));
+			Composite reservationComposite = new Composite(resourceComposite, NONE);
+			reservationComposite.setLayout(new GridLayout(2, false));
 			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			reservationData.exclude = true;
 			reservationComposite.setLayoutData(reservationData);
 
 			Label resMemLabel = new Label(reservationComposite, NONE);
 			resMemLabel.setText("memory");
+			Text resMemText = new Text(reservationComposite, SWT.BORDER);
+			resMemText.setText("\"64Mi\"");
+			resMemText.setLayoutData(gridDataFields);
 			Label resCPULabel = new Label(reservationComposite, NONE);
 			resCPULabel.setText(cpuText);
+			Text resCPUText = new Text(reservationComposite, SWT.BORDER);
+			resCPUText.setText("\"250m\"");
+			resCPUText.setLayoutData(gridDataFields);
 
 			limitCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					limitData.exclude = !limitCheck.getSelection();
 					limitComposite.setVisible(limitCheck.getSelection());
-					main.pack();
+					main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					// main.layout();
 				}
 			});
 			reservationCheck.addSelectionListener(new SelectionAdapter() {
@@ -182,7 +204,9 @@ public class CreationContainerPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					reservationData.exclude = !reservationCheck.getSelection();
 					reservationComposite.setVisible(reservationCheck.getSelection());
-					main.pack();
+					main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					// main.layout();
 				}
 			});
 
@@ -194,8 +218,9 @@ public class CreationContainerPage extends MyWizardPage {
 
 			result.put(db, container);
 		}
-		setControl(main);
-
+		main.setSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		scrolling.setMinSize(main.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		setControl(scrolling);
 	}
 
 	/**
