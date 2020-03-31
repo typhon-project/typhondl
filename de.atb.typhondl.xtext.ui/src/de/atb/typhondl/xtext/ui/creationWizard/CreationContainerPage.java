@@ -82,8 +82,6 @@ public class CreationContainerPage extends MyWizardPage {
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		main.setLayout(new GridLayout(1, false));
-		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-		gridData.horizontalSpan = 2;
 
 		String reservationWord;
 		String cpuText;
@@ -104,12 +102,11 @@ public class CreationContainerPage extends MyWizardPage {
 		for (DB db : dbs) {
 			// create a group for each database
 			Group group = new Group(main, SWT.READ_ONLY);
-			group.setLayout(new GridLayout(4, false));
+			group.setLayout(new GridLayout(2, false));
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			group.setText(db.getName());
 
 			GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-			gridDataFields.horizontalSpan = 3;
 			GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 			gridDataChecks.horizontalSpan = 2;
 
@@ -145,28 +142,28 @@ public class CreationContainerPage extends MyWizardPage {
 			Button limitCheck = new Button(group, SWT.CHECK);
 			limitCheck.setText("Set resource limits");
 			limitCheck.setLayoutData(gridDataChecks);
-			Button reservationCheck = new Button(group, SWT.CHECK);
-			reservationCheck.setText("Set resource " + reservationWord);
-			reservationCheck.setLayoutData(gridDataChecks);
 
 			Composite limitComposite = new Composite(group, NONE);
 			limitComposite.setLayout(new GridLayout(2, true));
 			GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			limitData.exclude = true;
-			limitData.horizontalSpan = 2;
 			limitComposite.setLayoutData(limitData);
-
-			Composite reservationComposite = new Composite(group, NONE);
-			reservationComposite.setLayout(new GridLayout(2, true));
-			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
-			reservationData.exclude = true;
-			reservationData.horizontalSpan = 2;
-			reservationComposite.setLayoutData(reservationData);
 
 			Label limMemLabel = new Label(limitComposite, NONE);
 			limMemLabel.setText("memory");
 			Label limCPULabel = new Label(limitComposite, NONE);
 			limCPULabel.setText(cpuText);
+
+			Button reservationCheck = new Button(group, SWT.CHECK);
+			reservationCheck.setText("Set resource " + reservationWord);
+			reservationCheck.setLayoutData(gridDataChecks);
+
+			Composite reservationComposite = new Composite(group, NONE);
+			reservationComposite.setLayout(new GridLayout(2, true));
+			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
+			reservationData.exclude = true;
+			reservationComposite.setLayoutData(reservationData);
+
 			Label resMemLabel = new Label(reservationComposite, NONE);
 			resMemLabel.setText("memory");
 			Label resCPULabel = new Label(reservationComposite, NONE);
@@ -197,7 +194,6 @@ public class CreationContainerPage extends MyWizardPage {
 
 			result.put(db, container);
 		}
-		// main.pack();
 		setControl(main);
 
 	}
