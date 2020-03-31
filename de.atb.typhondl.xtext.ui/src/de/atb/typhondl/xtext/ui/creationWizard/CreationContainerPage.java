@@ -149,41 +149,43 @@ public class CreationContainerPage extends MyWizardPage {
 			reservationCheck.setText("Set resource " + reservationWord);
 			reservationCheck.setLayoutData(gridDataChecks);
 
-			Composite hideThis1 = new Composite(group, NONE);
-			hideThis1.setLayout(new GridLayout(2, true));
+			Composite limitComposite = new Composite(group, NONE);
+			limitComposite.setLayout(new GridLayout(2, true));
+			GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
+			limitData.exclude = true;
+			limitData.horizontalSpan = 2;
+			limitComposite.setLayoutData(limitData);
 
-			GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-			hideThis1.setLayoutData(data);
+			Composite reservationComposite = new Composite(group, NONE);
+			reservationComposite.setLayout(new GridLayout(2, true));
+			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
+			reservationData.exclude = true;
+			reservationData.horizontalSpan = 2;
+			reservationComposite.setLayoutData(reservationData);
 
-			Composite hideThis2 = new Composite(group, NONE);
-			hideThis2.setLayout(new GridLayout(2, true));
-			hideThis2.setLayoutData(data);
-
-			Label limMemLabel = new Label(hideThis1, NONE);
+			Label limMemLabel = new Label(limitComposite, NONE);
 			limMemLabel.setText("memory");
-			limMemLabel.setVisible(limitCheck.getSelection());
-			Label limCPULabel = new Label(hideThis1, NONE);
+			Label limCPULabel = new Label(limitComposite, NONE);
 			limCPULabel.setText(cpuText);
-			limCPULabel.setVisible(limitCheck.getSelection());
-			Label resMemLabel = new Label(hideThis2, NONE);
+			Label resMemLabel = new Label(reservationComposite, NONE);
 			resMemLabel.setText("memory");
-			resMemLabel.setVisible(limitCheck.getSelection());
-			Label resCPULabel = new Label(hideThis2, NONE);
+			Label resCPULabel = new Label(reservationComposite, NONE);
 			resCPULabel.setText(cpuText);
-			resCPULabel.setVisible(limitCheck.getSelection());
 
 			limitCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					hideThis1.setVisible(limitCheck.getSelection());
-					hideThis1.getParent().pack();
+					limitData.exclude = !limitCheck.getSelection();
+					limitComposite.setVisible(limitCheck.getSelection());
+					main.pack();
 				}
 			});
 			reservationCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					hideThis2.setVisible(reservationCheck.getSelection());
-					hideThis2.getParent().pack();
+					reservationData.exclude = !reservationCheck.getSelection();
+					reservationComposite.setVisible(reservationCheck.getSelection());
+					main.pack();
 				}
 			});
 
@@ -195,8 +197,7 @@ public class CreationContainerPage extends MyWizardPage {
 
 			result.put(db, container);
 		}
-		main.pack();
-		// main.layout();
+		// main.pack();
 		setControl(main);
 
 	}
