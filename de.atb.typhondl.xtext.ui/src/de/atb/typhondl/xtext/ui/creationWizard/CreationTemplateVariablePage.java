@@ -85,7 +85,7 @@ public class CreationTemplateVariablePage extends MyWizardPage {
 						int variableIndex = variablesList.indexOf(templateVariable);
 						int oldLenght = templateVariable.getLength();
 						// replace old value in template variable
-						templateVariable.setValue(text.getText());
+						templateVariable.setValue(((Text) e.getSource()).getText());
 						int newLength = templateVariable.getLength();
 						// replace old value in pattern string
 						String newPattern = updatePattern(templateVariable, templateBuffer.getString(), oldLenght);

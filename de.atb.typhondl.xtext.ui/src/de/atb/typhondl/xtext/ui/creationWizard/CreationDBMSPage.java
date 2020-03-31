@@ -1,10 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,8 +9,11 @@ import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.swt.SWT;
@@ -27,10 +26,15 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
@@ -51,7 +55,7 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * Each DB needs WizardFields to get the wanted DBMS or the path to the already
 	 * existing model file
 	 */
-	private HashMap<DB, WizardFields> databaseSettings;
+	private HashMap<String, WizardFields> databaseSettings;
 
 	/**
 	 * Each DB has a TemplateBuffer with the pattern and template variables if
@@ -73,6 +77,8 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * The ML model file
 	 */
 	private IFile file;
+
+	private XtextResourceSet resourceSet;
 
 	/**
 	 * Creates a CreationDBMSPage, reading the ML model from the given file.
@@ -97,6 +103,30 @@ public class CreationDBMSPage extends MyWizardPage {
 		this.file = file;
 		this.databaseSettings = new HashMap<>();
 		this.result = new HashMap<>();
+		addResources();
+	}
+
+	/**
+	 * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
+	 */
+	private void addResources() {
+		this.resourceSet = (XtextResourceSet) Activator.getInstance()
+				.getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+				.getInstance(XtextLiveScopeResourceSetProvider.class).get(this.file.getProject());
+		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		IResource members[] = null;
+		try {
+			members = this.file.getProject().members();
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		for (IResource member : members) {
+			if (member instanceof IFile) {
+				if (((IFile) member).getFileExtension().equals("tdl")) {
+					resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+				}
+			}
+		}
 	}
 
 	/**
@@ -125,6 +155,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
 		for (Pair<String, String> dbFromML : MLmodel) {
 
+			// empty DB model object with the name taken from the ML model
 			DB db = getEmptyDB(dbFromML.firstValue);
 
 			// get templates
@@ -135,14 +166,14 @@ public class CreationDBMSPage extends MyWizardPage {
 						+ dbFromML.secondValue + ". Please add or activate a fitting DB template.");
 			}
 
+			String dbName = db.getName();
+
 			// get Templates from buffer. The DBs have the template's name.
 			DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
 					.toArray(new DB[0]);
-			databaseSettings.put(db, new WizardFields(null, null, templates));
+			databaseSettings.put(dbName, new WizardFields(null, null, templates));
 			String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
 					.collect(Collectors.toList()).toArray(new String[0]);
-
-			String dbName = db.getName();
 
 			// create a group for each database
 			Group group = new Group(main, SWT.READ_ONLY);
@@ -155,24 +186,27 @@ public class CreationDBMSPage extends MyWizardPage {
 			checkbox.setSelection(fileExists(dbName + ".tdl"));
 			// if an existing file is to be used, there exists no buffer
 			if (checkbox.getSelection()) {
-				result.put(db, null);
+				result.put(readExistingFile(dbName), null);
 			}
 			checkbox.setLayoutData(gridData);
 			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
 			checkbox.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					WizardFields wizardField = databaseSettings.get(db);
+					WizardFields wizardField = databaseSettings.get(dbName);
 					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
+					removeDBfromResult(dbName);
 					if (wizardField.getCheckbox().getSelection()) {
-						clearDB(db); // delete existing db settings
+						result.put(readExistingFile(dbName), null);
 					} else {
-						useBufferOnDB(db, getDBTemplateByName(templates, wizardField.getCombo().getText()));
+						Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
+								wizardField.getCombo().getText());
+						result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
 					}
 					validate();
 				}
 			});
-			databaseSettings.get(db).setCheckbox(checkbox);
+			databaseSettings.get(dbName).setCheckbox(checkbox);
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
@@ -180,34 +214,62 @@ public class CreationDBMSPage extends MyWizardPage {
 			combo.setText(dbTemplateNames[0]);
 			// set initial dbTemplate
 			if (!checkbox.getSelection()) {
-				useBufferOnDB(db, templates.get(0));
+				Pair<DB, TemplateBuffer> template = templates.get(0);
+				result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
 			}
 			combo.setEnabled(!checkbox.getSelection());
 			combo.setToolTipText("Choose specific DBMS Template for " + dbName);
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					WizardFields wizardField = databaseSettings.get(db);
-					useBufferOnDB(db, getDBTemplateByName(templates, wizardField.getCombo().getText()));
+					WizardFields wizardField = databaseSettings.get(dbName);
+					removeDBfromResult(dbName);
+					Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
+							wizardField.getCombo().getText());
+					result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
 					validate();
 				}
 			});
-			databaseSettings.get(db).setCombo(combo);
+			databaseSettings.get(dbName).setCombo(combo);
 		}
 		validate();
 		setControl(main);
 	}
 
 	/**
-	 * Removes DBType and clears Parameter List from DB TODO check if the list is
-	 * supposed to be null
+	 * Removes DB with dbName from the result map
 	 * 
-	 * @param db the DB to clear
+	 * @param dbName The name of the DB to delete from result map
 	 */
-	protected void clearDB(DB db) {
-		db.setType(null);
-		db.getParameters().clear();
-		result.put(db, null);
+	protected void removeDBfromResult(String dbName) {
+		DB dbToRemove = null;
+		for (DB db : result.keySet()) {
+			if (db.getName().equalsIgnoreCase(dbName)) {
+				dbToRemove = db;
+			}
+		}
+		if (dbToRemove != null) {
+			result.remove(dbToRemove);
+		}
+	}
+
+	/**
+	 * Reads model from file
+	 * 
+	 * @param dbName Name of the DB to read
+	 * @return The DB read from file, or an empty DB if file doesn't exist
+	 */
+	private DB readExistingFile(String dbName) {
+		String path = dbName + ".tdl";
+		if (fileExists(path)) {
+			URI dbURI = URI.createPlatformResourceURI(
+					this.file.getFullPath().removeLastSegments(1).append(path).toString(), true);
+			return ((DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0)).getElements().stream()
+					.filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
+					.collect(Collectors.toList()).get(0);
+		} else {
+			return getEmptyDB(dbName);
+		}
 	}
 
 	/**
@@ -216,12 +278,11 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * @param db     The DB that should have all attributes from the template
 	 * @param buffer The chosen TemplateBuffer
 	 */
-	protected void useBufferOnDB(DB db, Pair<DB, TemplateBuffer> template) {
-		DB templateDB = template.firstValue;
+	protected DB useBufferOnDB(DB db, DB templateDB) {
 		db.setType(templateDB.getType());
 		db.getParameters().clear();
 		db.getParameters().addAll(templateDB.getParameters());
-		result.put(db, template.secondValue);
+		return db;
 	}
 
 	/**
@@ -257,9 +318,9 @@ public class CreationDBMSPage extends MyWizardPage {
 	protected void validate() {
 		Status status = null;
 		ArrayList<String> warning = new ArrayList<String>();
-		for (DB db : databaseSettings.keySet()) {
-			WizardFields fields = databaseSettings.get(db);
-			String path = db.getName() + ".tdl";
+		for (String dbName : databaseSettings.keySet()) {
+			WizardFields fields = databaseSettings.get(dbName);
+			String path = dbName + ".tdl";
 			if (fields.getCheckbox().getSelection()) {
 				if (!fileExists(path)) {
 					status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
@@ -281,10 +342,9 @@ public class CreationDBMSPage extends MyWizardPage {
 	 * utility for checking if a file exists
 	 */
 	private boolean fileExists(String fileName) {
-		URI uri = file.getLocationURI();
-		Path path = Paths.get(uri);
-		Path filePath = path.getParent().resolve(fileName);
-		return Files.exists(filePath);
+		URI uri = URI.createPlatformResourceURI(
+				this.file.getFullPath().removeLastSegments(1).append(fileName).toString(), true);
+		return resourceSet.getResource(uri, false) != null;
 	}
 
 	/**
