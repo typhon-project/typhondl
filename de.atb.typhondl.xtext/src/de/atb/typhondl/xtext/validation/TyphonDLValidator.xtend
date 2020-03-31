@@ -56,7 +56,7 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
 		val publishedPorts = <String>newArrayList
 		for (ports : portsList) {
 			val publishedPort = ports.publishedPort
-			if (publishedPorts.contains(publishedPort)) {
+			if (publishedPorts.contains(publishedPort) && publishedPort !== null) {
 				error("Published port " + publishedPort + " is appearing more than once, please change port",
 					TyphonDLPackage.Literals.PLATFORM__TYPE)
 			} else {
