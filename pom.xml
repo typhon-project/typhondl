@@ -41,12 +41,6 @@
 			<url>http://download.eclipse.org/modeling/emf/emf/builds/release</url>
 			<layout>p2</layout>
 		</repository>
-		<repository>
-			<id>xpand</id>
-			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/xpand/</url>
-			<layout>p2</layout>
-		</repository>
-
 	</repositories>
 
 	<build>
