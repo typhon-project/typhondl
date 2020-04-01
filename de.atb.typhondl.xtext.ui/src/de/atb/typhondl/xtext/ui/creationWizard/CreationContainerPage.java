@@ -3,7 +3,9 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -23,6 +25,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
+import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
@@ -102,7 +105,7 @@ public class CreationContainerPage extends MyWizardPage {
 		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
 		case "DockerCompose":
 			reservationWord = "reservations";
-			cpuText = "cpus:";
+			cpuText = "cpus";
 			limMem = "50M";
 			limCPU = "'0.25'";
 			resMem = "20M";
@@ -110,7 +113,7 @@ public class CreationContainerPage extends MyWizardPage {
 			break;
 		case "Kubernetes":
 			reservationWord = "requests";
-			cpuText = "cpu:";
+			cpuText = "cpu";
 			limMem = "\"128Mi\"";
 			limCPU = "\"500m\"";
 			resMem = "\"64Mi\"";
@@ -256,6 +259,25 @@ public class CreationContainerPage extends MyWizardPage {
 						default:
 							break;
 						}
+					} else {
+						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						case "DockerCompose":
+							removeFromList(resourceList, limitList);
+							if (resourceList.getProperties().isEmpty()) {
+								removeFromList(deployList, resourceList);
+								if (deployList.getProperties().isEmpty()) {
+									removeFromContainer(container, deployList);
+								}
+							}
+							break;
+						case "Kubernetes":
+							removeFromList(resourceList, limitList);
+							if (resourceList.getProperties().isEmpty()) {
+								removeFromContainer(container, resourceList);
+							}
+						default:
+							break;
+						}
 					}
 				}
 			});
@@ -281,6 +303,24 @@ public class CreationContainerPage extends MyWizardPage {
 							break;
 						}
 					} else {
+						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						case "DockerCompose":
+							removeFromList(resourceList, reservationList);
+							if (resourceList.getProperties().isEmpty()) {
+								removeFromList(deployList, resourceList);
+								if (deployList.getProperties().isEmpty()) {
+									removeFromContainer(container, deployList);
+								}
+							}
+							break;
+						case "Kubernetes":
+							removeFromList(resourceList, reservationList);
+							if (resourceList.getProperties().isEmpty()) {
+								removeFromContainer(container, resourceList);
+							} // TODO now nullpointer in ModelCreator.save(ModelCreator.java:238)
+						default:
+							break;
+						}
 					}
 				}
 			});
@@ -291,14 +331,40 @@ public class CreationContainerPage extends MyWizardPage {
 		setControl(scrolling);
 	}
 
-	protected void addListToContainer(Container container, Key_KeyValueList listToBeAdded) {
-		// TODO Auto-generated method stub
+	protected void removeFromContainer(Container container, Key_KeyValueList listToBeRemoved) {
+		container.getProperties()
+				.remove(container.getProperties().stream()
+						.filter(property -> property.getName().equalsIgnoreCase(listToBeRemoved.getName()))
+						.collect(Collectors.toList()).get(0));
+	}
 
+	protected void removeFromList(Key_KeyValueList listToRemoveFrom, Key_KeyValueList listToBeRemoved) {
+		listToRemoveFrom.getProperties()
+				.remove(listToRemoveFrom.getProperties().stream()
+						.filter(property -> property.getName().equalsIgnoreCase(listToBeRemoved.getName()))
+						.collect(Collectors.toList()).get(0));
+	}
+
+	protected void addListToContainer(Container container, Key_KeyValueList listToBeAdded) {
+		List<Property> list = container.getProperties().stream()
+				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
+				.collect(Collectors.toList());
+		if (!list.isEmpty()) {
+			((Key_KeyValueList) list.get(0)).getProperties().addAll(listToBeAdded.getProperties());
+		} else {
+			container.getProperties().add(listToBeAdded);
+		}
 	}
 
 	protected void addListToList(Key_KeyValueList listToAddTo, Key_KeyValueList listToBeAdded) {
-		// TODO Auto-generated method stub
-
+		List<Property> list = listToAddTo.getProperties().stream()
+				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
+				.collect(Collectors.toList());
+		if (list.size() == 1) {
+			((Key_KeyValueList) list.get(0)).getProperties().addAll(listToBeAdded.getProperties());
+		} else {
+			listToAddTo.getProperties().add(listToBeAdded);
+		}
 	}
 
 	/**
