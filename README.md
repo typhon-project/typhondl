@@ -21,6 +21,7 @@
   1. MariaDB
   2. MySQL
   3. MongoDB
+- Upload first version of ML and DL model in metadata container
 
 ## Features
 - Database configuration templates in persistend preference storage of eclipse. There is a default configuration (compare to [wiki](https://github.com/typhon-project/typhondl/wiki/Guide)) that can be altered before generating the DL model. So company specific database properties can be configured and stored without much effort.
@@ -36,7 +37,6 @@
 - Support for Kubernetes
 
 ## Future Functions and Features
-- Put first version of ML and DL model in metadata container
 - Scaling possibilities
 - Directly start Docker containers out of eclipse
 - Include TyphonMLs [requirements annotations](https://github.com/typhon-project/internal-material/blob/master/Contract/Submitted%20Deliverables/D3.3%20TyphonML%20to%20TyphonDL%20Model%20Transformation%20Tools.pdf) in model generation process
