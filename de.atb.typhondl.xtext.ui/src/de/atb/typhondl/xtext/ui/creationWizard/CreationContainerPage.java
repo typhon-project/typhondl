@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
@@ -145,6 +146,10 @@ public class CreationContainerPage extends MyWizardPage {
 			reference.setReference(db);
 			container.setDeploys(reference);
 
+			// deploy for docker swarm
+			Key_KeyValueList deployList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			deployList.setName("deploy");
+
 			// Ports
 			Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
 			Key_Values port = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -170,10 +175,31 @@ public class CreationContainerPage extends MyWizardPage {
 			resourceComposite.setLayoutData(resourceGridData);
 
 			// Resources
-			// TODO here model objects
+			Key_KeyValueList resourceList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			resourceList.setName("resources");
+			Key_KeyValueList limitList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			limitList.setName("limits");
+			Key_Values limMemKeyValue = TyphonDLFactory.eINSTANCE.createKey_Values();
+			limMemKeyValue.setName("memory");
+			limMemKeyValue.setValue(limMem);
+			Key_Values limCPUKeyValue = TyphonDLFactory.eINSTANCE.createKey_Values();
+			limCPUKeyValue.setName(cpuText);
+			limCPUKeyValue.setValue(limCPU);
+			limitList.getProperties().add(limMemKeyValue);
+			limitList.getProperties().add(limCPUKeyValue);
+			Key_KeyValueList reservationList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+			reservationList.setName(reservationWord);
+			Key_Values resMemKeyValue = TyphonDLFactory.eINSTANCE.createKey_Values();
+			resMemKeyValue.setName("memory");
+			resMemKeyValue.setValue(resMem);
+			Key_Values resCPUKeyValue = TyphonDLFactory.eINSTANCE.createKey_Values();
+			resCPUKeyValue.setName(cpuText);
+			resCPUKeyValue.setValue(resCPU);
+			reservationList.getProperties().add(resMemKeyValue);
+			reservationList.getProperties().add(resCPUKeyValue);
 
 			Button limitCheck = new Button(resourceComposite, SWT.CHECK);
-			limitCheck.setText("Set resource limits");
+			limitCheck.setText("Set resource " + limitList.getName());
 			limitCheck.setLayoutData(gridDataChecks);
 			Composite limitComposite = new Composite(resourceComposite, NONE);
 			limitComposite.setLayout(new GridLayout(2, false));
@@ -181,17 +207,17 @@ public class CreationContainerPage extends MyWizardPage {
 			limitData.exclude = true;
 			limitComposite.setLayoutData(limitData);
 			Label limMemLabel = new Label(limitComposite, NONE);
-			limMemLabel.setText("memory:");
+			limMemLabel.setText(limMemKeyValue.getName());
 			Text limMemText = new Text(limitComposite, SWT.BORDER);
-			limMemText.setText(limMem);
+			limMemText.setText(limMemKeyValue.getValue());
 			limMemText.setLayoutData(gridDataFields);
 			Label limCPULabel = new Label(limitComposite, NONE);
-			limCPULabel.setText(cpuText);
+			limCPULabel.setText(limCPUKeyValue.getName());
 			Text limCPUText = new Text(limitComposite, SWT.BORDER);
-			limCPUText.setText(limCPU);
+			limCPUText.setText(limCPUKeyValue.getValue());
 			limCPUText.setLayoutData(gridDataFields);
 			Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
-			reservationCheck.setText("Set resource " + reservationWord);
+			reservationCheck.setText("Set resource " + reservationList.getName());
 			reservationCheck.setLayoutData(gridDataChecks);
 			Composite reservationComposite = new Composite(resourceComposite, NONE);
 			reservationComposite.setLayout(new GridLayout(2, false));
@@ -199,32 +225,63 @@ public class CreationContainerPage extends MyWizardPage {
 			reservationData.exclude = true;
 			reservationComposite.setLayoutData(reservationData);
 			Label resMemLabel = new Label(reservationComposite, NONE);
-			resMemLabel.setText("memory:");
+			resMemLabel.setText(resMemKeyValue.getName());
 			Text resMemText = new Text(reservationComposite, SWT.BORDER);
-			resMemText.setText(resMem);
+			resMemText.setText(resMemKeyValue.getValue());
 			resMemText.setLayoutData(gridDataFields);
 			Label resCPULabel = new Label(reservationComposite, NONE);
-			resCPULabel.setText(cpuText);
+			resCPULabel.setText(resCPUKeyValue.getName());
 			Text resCPUText = new Text(reservationComposite, SWT.BORDER);
-			resCPUText.setText(resCPU);
+			resCPUText.setText(resCPUKeyValue.getValue());
 			resCPUText.setLayoutData(gridDataFields);
 
 			limitCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
+					// set the textfields visible, resize window
 					limitData.exclude = !limitCheck.getSelection();
 					limitComposite.setVisible(limitCheck.getSelection());
 					main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 					scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+					// add or remove objects from model
+					if (limitCheck.getSelection()) {
+						resourceList.getProperties().add(limitList);
+						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						case "DockerCompose":
+							addListToList(deployList, resourceList);
+							addListToContainer(container, deployList);
+							break;
+						case "Kubernetes":
+							addListToContainer(container, resourceList);
+						default:
+							break;
+						}
+					}
 				}
 			});
 			reservationCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
+					// set the textfields visible, resize window
 					reservationData.exclude = !reservationCheck.getSelection();
 					reservationComposite.setVisible(reservationCheck.getSelection());
 					main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 					scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+					// add or remove objects from model
+					if (reservationCheck.getSelection()) {
+						resourceList.getProperties().add(reservationList);
+						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						case "DockerCompose":
+							addListToList(deployList, resourceList);
+							addListToContainer(container, deployList);
+							break;
+						case "Kubernetes":
+							addListToContainer(container, resourceList);
+						default:
+							break;
+						}
+					} else {
+					}
 				}
 			});
 			result.put(db, container);
@@ -232,6 +289,16 @@ public class CreationContainerPage extends MyWizardPage {
 		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		setControl(scrolling);
+	}
+
+	protected void addListToContainer(Container container, Key_KeyValueList listToBeAdded) {
+		// TODO Auto-generated method stub
+
+	}
+
+	protected void addListToList(Key_KeyValueList listToAddTo, Key_KeyValueList listToBeAdded) {
+		// TODO Auto-generated method stub
+
 	}
 
 	/**
