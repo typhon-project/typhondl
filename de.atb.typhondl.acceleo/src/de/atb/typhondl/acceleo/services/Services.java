@@ -377,8 +377,12 @@ public class Services {
 		Key_Values polystore_api_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_api_container_port.setName("target");
 		polystore_api_container_port.setValue(properties.getProperty("api.port"));
+		Key_Values polystore_api_container_publishedPort = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_publishedPort.setName("published");
+		polystore_api_container_publishedPort.setValue(properties.getProperty("api.publishedPort"));
 		Ports polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 		polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
+		polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
 		polystore_api_container.setPorts(polystore_api_container_ports);
 
 		Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
@@ -438,7 +442,14 @@ public class Services {
 		model.getElements().add(qlserver);
 		Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
 		qlserver_container.setName(properties.getProperty("qlserver.containername"));
+		Key_Values qlserver_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		qlserver_container_port.setName("target");
+		qlserver_container_port.setValue(properties.getProperty("qlserver.port"));
+		Ports qlserver_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
+		qlserver_container_ports.getKey_values().add(qlserver_container_port);
+		qlserver_container.setPorts(qlserver_container_ports);
 		qlserver_container.setDeploys(qlserver_reference);
+
 		application.getContainers().add(qlserver_container);
 
 		// Analytics, see https://github.com/typhon-project/typhondl/issues/6
