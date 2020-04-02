@@ -11,21 +11,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [aContainer.name.toLower()/]
+  name: [aContainer.name.toLower()/]-deployment
 spec:
 [if (aContainer.findReplicas() <> null)]
   replicas: [aContainer.findReplicas().value/]
 [/if]
   selector:
     matchLabels:
-      app: [aContainer.name.toLower()/]
+      app: [aContainer.name.toLower()/]-pod
   template:
     metadata:
       labels:
         app: [aContainer.name.toLower()/]-pod
     spec:
       containers:
-        - name: [aContainer.name.toLower()/]
+        - name: [aContainer.name.toLower()/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
 		  [aContainer.ports.printPorts()/]
 [if (aContainer.properties <> null)]
@@ -34,17 +34,17 @@ spec:
 [/for]
 [/if]
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
   name: [aContainer.name.toLower()/]
 spec:
+[if (aContainer.ports.getPublishedPort()<>null)]
   type: NodePort
+[/if] 
   ports:
-    - name: "[aContainer.ports.getTargetPort().value/]"
-      port: [aContainer.ports.getTargetPort().value/]
+    - port: [aContainer.ports.getTargetPort().value/]
       targetPort: [aContainer.ports.getTargetPort().value/]
-      nodePort: [aContainer.ports.getPublishedPort().value/]
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---
@@ -60,7 +60,7 @@ spec:
 
 [template public printPorts(aPorts : Ports)]
 ports:
-  - containerPort: [aPorts.getTargetPort()/] 
+  - containerPort: [aPorts.getTargetPort().value/] 
 [/template]
 
 [template public printKubernetes(arg : Property) post (trim())]

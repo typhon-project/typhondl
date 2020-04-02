@@ -36,10 +36,3 @@ aPorts.key_values->any(key | key.name='target')
 [query public findReplicas(aContainer : Container) : Key_Values =
 aContainer.properties->any(key | key.name='replicas')
 /]
-
-[query public getKey_ValuesWithoutFirst(aPort : Ports) : OrderedSet(Key_Values) = 
-aPort.key_values->removeAll(aPort.key_values->first()->asOrderedSet())
-/]
-
-[query public getContainerPort(aContainer : Container) : String = aContainer.ports.getTargetPort().value/]
-
