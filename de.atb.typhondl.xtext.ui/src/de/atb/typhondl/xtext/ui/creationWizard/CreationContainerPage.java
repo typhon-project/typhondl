@@ -118,6 +118,7 @@ public class CreationContainerPage extends MyWizardPage {
 			limCPU = "\"500m\"";
 			resMem = "\"64Mi\"";
 			resCPU = "\"250m\"";
+			break;
 		default:
 			reservationWord = "error";
 			cpuText = "error";
@@ -171,11 +172,43 @@ public class CreationContainerPage extends MyWizardPage {
 				port.setValue(portText.getText());
 			});
 
-			GridData resourceGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-			resourceGridData.horizontalSpan = 2;
-			Composite resourceComposite = new Composite(group, NONE);
-			resourceComposite.setLayout(new GridLayout(1, false));
-			resourceComposite.setLayoutData(resourceGridData);
+			// Replicas
+			Key_Values replicas = TyphonDLFactory.eINSTANCE.createKey_Values();
+			replicas.setName("replicas");
+			replicas.setValue("1");
+
+			new Label(group, NONE).setText(replicas.getName() + ": ");
+			Text replicasText = new Text(group, SWT.BORDER);
+			replicasText.setText(replicas.getValue());
+			replicasText.setLayoutData(gridDataFields);
+			replicasText.addModifyListener(e -> {
+				replicas.setValue(replicasText.getText());
+				if (replicas.getValue().equals("1")) {
+					switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+					case "DockerCompose":
+						removePropertyFromList(deployList, replicas);
+						if (deployList.getProperties().isEmpty()) {
+							removePropertyFromContainer(container, deployList);
+						}
+						break;
+					case "Kubernetes":
+						removePropertyFromContainer(container, replicas);
+					default:
+						break;
+					}
+				} else {
+					switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+					case "DockerCompose":
+						addKeyValueToList(deployList, replicas);
+						addListToContainer(container, deployList);
+						break;
+					case "Kubernetes":
+						addKeyValueToContainer(container, replicas);
+					default:
+						break;
+					}
+				}
+			});
 
 			// Resources
 			Key_KeyValueList resourceList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
@@ -201,39 +234,49 @@ public class CreationContainerPage extends MyWizardPage {
 			reservationList.getProperties().add(resMemKeyValue);
 			reservationList.getProperties().add(resCPUKeyValue);
 
+			// create Resource composite in each group
+			GridData resourceGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+			resourceGridData.horizontalSpan = 2;
+			Composite resourceComposite = new Composite(group, NONE);
+			resourceComposite.setLayout(new GridLayout(1, false));
+			resourceComposite.setLayoutData(resourceGridData);
+
 			Button limitCheck = new Button(resourceComposite, SWT.CHECK);
 			limitCheck.setText("Set resource " + limitList.getName());
 			limitCheck.setLayoutData(gridDataChecks);
+			// create invisible Limit Composite in each resource composite
 			Composite limitComposite = new Composite(resourceComposite, NONE);
 			limitComposite.setLayout(new GridLayout(2, false));
 			GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			limitData.exclude = true;
 			limitComposite.setLayoutData(limitData);
 			Label limMemLabel = new Label(limitComposite, NONE);
-			limMemLabel.setText(limMemKeyValue.getName());
+			limMemLabel.setText(limMemKeyValue.getName() + ": ");
 			Text limMemText = new Text(limitComposite, SWT.BORDER);
 			limMemText.setText(limMemKeyValue.getValue());
 			limMemText.setLayoutData(gridDataFields);
 			Label limCPULabel = new Label(limitComposite, NONE);
-			limCPULabel.setText(limCPUKeyValue.getName());
+			limCPULabel.setText(limCPUKeyValue.getName() + ": ");
 			Text limCPUText = new Text(limitComposite, SWT.BORDER);
 			limCPUText.setText(limCPUKeyValue.getValue());
 			limCPUText.setLayoutData(gridDataFields);
+
 			Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
 			reservationCheck.setText("Set resource " + reservationList.getName());
 			reservationCheck.setLayoutData(gridDataChecks);
+			// create invisible Reservation Composite in each resource composite
 			Composite reservationComposite = new Composite(resourceComposite, NONE);
 			reservationComposite.setLayout(new GridLayout(2, false));
 			GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			reservationData.exclude = true;
 			reservationComposite.setLayoutData(reservationData);
 			Label resMemLabel = new Label(reservationComposite, NONE);
-			resMemLabel.setText(resMemKeyValue.getName());
+			resMemLabel.setText(resMemKeyValue.getName() + ": ");
 			Text resMemText = new Text(reservationComposite, SWT.BORDER);
 			resMemText.setText(resMemKeyValue.getValue());
 			resMemText.setLayoutData(gridDataFields);
 			Label resCPULabel = new Label(reservationComposite, NONE);
-			resCPULabel.setText(resCPUKeyValue.getName());
+			resCPULabel.setText(resCPUKeyValue.getName() + ": ");
 			Text resCPUText = new Text(reservationComposite, SWT.BORDER);
 			resCPUText.setText(resCPUKeyValue.getValue());
 			resCPUText.setLayoutData(gridDataFields);
@@ -262,18 +305,18 @@ public class CreationContainerPage extends MyWizardPage {
 					} else {
 						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
 						case "DockerCompose":
-							removeFromList(resourceList, limitList);
+							removePropertyFromList(resourceList, limitList);
 							if (resourceList.getProperties().isEmpty()) {
-								removeFromList(deployList, resourceList);
+								removePropertyFromList(deployList, resourceList);
 								if (deployList.getProperties().isEmpty()) {
-									removeFromContainer(container, deployList);
+									removePropertyFromContainer(container, deployList);
 								}
 							}
 							break;
 						case "Kubernetes":
-							removeFromList(resourceList, limitList);
+							removePropertyFromList(resourceList, limitList);
 							if (resourceList.getProperties().isEmpty()) {
-								removeFromContainer(container, resourceList);
+								removePropertyFromContainer(container, resourceList);
 							}
 						default:
 							break;
@@ -305,19 +348,19 @@ public class CreationContainerPage extends MyWizardPage {
 					} else {
 						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
 						case "DockerCompose":
-							removeFromList(resourceList, reservationList);
+							removePropertyFromList(resourceList, reservationList);
 							if (resourceList.getProperties().isEmpty()) {
-								removeFromList(deployList, resourceList);
+								removePropertyFromList(deployList, resourceList);
 								if (deployList.getProperties().isEmpty()) {
-									removeFromContainer(container, deployList);
+									removePropertyFromContainer(container, deployList);
 								}
 							}
 							break;
 						case "Kubernetes":
-							removeFromList(resourceList, reservationList);
+							removePropertyFromList(resourceList, reservationList);
 							if (resourceList.getProperties().isEmpty()) {
-								removeFromContainer(container, resourceList);
-							} // TODO now nullpointer in ModelCreator.save(ModelCreator.java:238)
+								removePropertyFromContainer(container, resourceList);
+							}
 						default:
 							break;
 						}
@@ -331,20 +374,78 @@ public class CreationContainerPage extends MyWizardPage {
 		setControl(scrolling);
 	}
 
-	protected void removeFromContainer(Container container, Key_KeyValueList listToBeRemoved) {
-		container.getProperties()
-				.remove(container.getProperties().stream()
-						.filter(property -> property.getName().equalsIgnoreCase(listToBeRemoved.getName()))
-						.collect(Collectors.toList()).get(0));
+	/**
+	 * Adds a {@link Key_Values} to a {@link Key_KeyValueList}. If the key already
+	 * exists, only the value is added.
+	 * 
+	 * @param Key_KeyValueList The list to which the keyValue pair shall be added
+	 * @param key_values       The keyValue pair to be added to the list
+	 */
+	private void addKeyValueToList(Key_KeyValueList listToAddTo, Key_Values key_values) {
+		List<Property> list = listToAddTo.getProperties().stream()
+				.filter(property -> property.getName().equalsIgnoreCase(key_values.getName()))
+				.collect(Collectors.toList());
+		if (list.size() == 1) {
+			((Key_Values) list.get(0)).setValue(key_values.getValue());
+		} else {
+			listToAddTo.getProperties().add(key_values);
+		}
 	}
 
-	protected void removeFromList(Key_KeyValueList listToRemoveFrom, Key_KeyValueList listToBeRemoved) {
-		listToRemoveFrom.getProperties()
-				.remove(listToRemoveFrom.getProperties().stream()
-						.filter(property -> property.getName().equalsIgnoreCase(listToBeRemoved.getName()))
-						.collect(Collectors.toList()).get(0));
+	/**
+	 * Adds a {@link Key_Values} to a {@link Container}. If the key already exists,
+	 * only the value is added.
+	 * 
+	 * @param container  The Container to which the keyValue pair shall be added
+	 * @param key_values The keyValue pair to be added to the Container
+	 */
+	private void addKeyValueToContainer(Container container, Key_Values key_values) {
+		List<Property> temp = container.getProperties().stream()
+				.filter(property -> property.getName().equalsIgnoreCase(key_values.getName()))
+				.collect(Collectors.toList());
+		if (temp.isEmpty()) {
+			container.getProperties().add(key_values);
+		} else {
+			((Key_Values) temp.get(0)).setValue(key_values.getValue());
+		}
 	}
 
+	/**
+	 * Removes a {@link Property} from a {@link Container} if it exists.
+	 * 
+	 * @param container The Container from which the Property shall be removed
+	 * @param property  The Property to be removed from the Container
+	 */
+	private void removePropertyFromContainer(Container container, Property property) {
+		List<Property> temp = container.getProperties().stream()
+				.filter(prop -> prop.getName().equalsIgnoreCase(property.getName())).collect(Collectors.toList());
+		if (!temp.isEmpty()) {
+			container.getProperties().remove(temp.get(0));
+		}
+	}
+
+	/**
+	 * Removes a {@link Property} from a {@link Key_KeyValueList}
+	 * 
+	 * @param listToRemoveFrom
+	 * @param propertyToBeRemoved
+	 */
+	protected void removePropertyFromList(Key_KeyValueList listToRemoveFrom, Property propertyToBeRemoved) {
+		List<Property> temp = listToRemoveFrom.getProperties().stream()
+				.filter(property -> property.getName().equalsIgnoreCase(propertyToBeRemoved.getName()))
+				.collect(Collectors.toList());
+		if (!temp.isEmpty()) {
+			listToRemoveFrom.getProperties().remove(temp.get(0));
+		}
+	}
+
+	/**
+	 * Adds a {@link Key_KeyValueList} to a {@link Container}. If the list already
+	 * exists, just the list's content is added.
+	 * 
+	 * @param container     The Container to which the list shall be added
+	 * @param listToBeAdded The List to be added to the Container
+	 */
 	protected void addListToContainer(Container container, Key_KeyValueList listToBeAdded) {
 		List<Property> list = container.getProperties().stream()
 				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
@@ -356,6 +457,13 @@ public class CreationContainerPage extends MyWizardPage {
 		}
 	}
 
+	/**
+	 * Adds a {@link Key_KeyValueList} to another {@link Key_KeyValueList}. If the
+	 * list already exists, just the list's content is added.
+	 * 
+	 * @param listToAddTo   The list to which the other list shall be added
+	 * @param listToBeAdded The list to be added to the other list
+	 */
 	protected void addListToList(Key_KeyValueList listToAddTo, Key_KeyValueList listToBeAdded) {
 		List<Property> list = listToAddTo.getProperties().stream()
 				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
