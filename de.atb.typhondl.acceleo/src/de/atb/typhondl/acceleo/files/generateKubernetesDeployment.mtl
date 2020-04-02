@@ -5,23 +5,20 @@
 
 [template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
-[for (aApplication : Application | aCluster.getAllApplications())]
 
-[file (aApplication.name + '/polystore.yml', false, 'UTF-8')]
-[for (aContainer : Container | aApplication.containers)]
+[file ('polystore.yml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [aContainer.name.toLower()/]-deployment
-  labels:
-    app: [aContainer.name.toLower()/]-pod
+  name: [aContainer.name.toLower()/]
 spec:
 [if (aContainer.findReplicas() <> null)]
   replicas: [aContainer.findReplicas().value/]
 [/if]
   selector:
     matchLabels:
-      app: [aContainer.name.toLower()/]-pod
+      app: [aContainer.name.toLower()/]
   template:
     metadata:
       labels:
@@ -30,6 +27,7 @@ spec:
       containers:
         - name: [aContainer.name.toLower()/]
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+		  [aContainer.ports.printPorts()/]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
@@ -40,8 +38,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: [aContainer.name.toLower()/]
-  labels:
-    name: [aContainer.name.toLower()/]
 spec:
   type: NodePort
   ports:
@@ -56,7 +52,15 @@ spec:
 
 [/file]
 [/for]
-[/for]
+[/template]
+
+[template public printPublishedPorts(aPorts : Ports)]
+	template_expression
+[/template]
+
+[template public printPorts(aPorts : Ports)]
+ports:
+  - containerPort: [aPorts.getTargetPort()/] 
 [/template]
 
 [template public printKubernetes(arg : Property) post (trim())]
@@ -64,7 +68,7 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[if (arg.name.equalsIgnoreCase('hostname')._or(arg.name.equalsIgnoreCase('replicas')))][else]
+[if (arg.name.equalsIgnoreCase('replicas'))][else]
 [arg.name/]: [arg.value/]
 [/if]
 [/template]
