@@ -40,7 +40,6 @@ services:
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.printProperties()/]
 [/for]
-    container_name : [aContainer.name/]
 [/if]
 [/for]
 [/file]
