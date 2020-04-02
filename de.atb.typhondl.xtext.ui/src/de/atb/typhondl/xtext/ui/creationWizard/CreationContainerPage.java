@@ -447,11 +447,11 @@ public class CreationContainerPage extends MyWizardPage {
 	 * @param listToBeAdded The List to be added to the Container
 	 */
 	protected void addListToContainer(Container container, Key_KeyValueList listToBeAdded) {
-		List<Property> list = container.getProperties().stream()
+		List<Property> temp = container.getProperties().stream()
 				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
 				.collect(Collectors.toList());
-		if (!list.isEmpty()) {
-			((Key_KeyValueList) list.get(0)).getProperties().addAll(listToBeAdded.getProperties());
+		if (!temp.isEmpty()) {
+			((Key_KeyValueList) temp.get(0)).getProperties().addAll(listToBeAdded.getProperties());
 		} else {
 			container.getProperties().add(listToBeAdded);
 		}
@@ -465,11 +465,11 @@ public class CreationContainerPage extends MyWizardPage {
 	 * @param listToBeAdded The list to be added to the other list
 	 */
 	protected void addListToList(Key_KeyValueList listToAddTo, Key_KeyValueList listToBeAdded) {
-		List<Property> list = listToAddTo.getProperties().stream()
+		List<Property> temp = listToAddTo.getProperties().stream()
 				.filter(property -> property.getName().equalsIgnoreCase(listToBeAdded.getName()))
 				.collect(Collectors.toList());
-		if (list.size() == 1) {
-			((Key_KeyValueList) list.get(0)).getProperties().addAll(listToBeAdded.getProperties());
+		if (temp.size() == 1) {
+			((Key_KeyValueList) temp.get(0)).getProperties().addAll(listToBeAdded.getProperties());
 		} else {
 			listToAddTo.getProperties().add(listToBeAdded);
 		}
