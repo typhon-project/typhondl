@@ -54,7 +54,7 @@ function merge() {
 	zipper.sync.unzip(acceleoJar).save(tempAccel);
 
 	const genPath = "de/atb/typhondl/acceleo";
-	const mtlFIles = ["common/utilityGenerator", "files/generateDeployment", "main/generate"];
+	const mtlFIles = ["common/utilityGenerator", "files/generateKubernetesDeployment", "files/generateDockerComposeDeployment", "main/generate"];
 	
 	for (let j = 0; j < mtlFIles.length; j++) {
 		fs.copyFileSync(path.join(tempAccel, genPath, mtlFIles[j] + ".emtl"), path.join(tempPlugin, genPath, mtlFIles[j] + ".emtl"));
