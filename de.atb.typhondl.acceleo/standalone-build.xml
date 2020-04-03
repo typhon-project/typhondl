@@ -41,7 +41,7 @@
         <pathelement location="${PLUGINS}/com.google.inject_3.0.0.v201312141243.jar"/>
         <pathelement location="${PLUGINS}/com.google.inject.multibindings_3.0.0.v201402270930.jar"/>
         <pathelement location="${PLUGINS}/org.eclipse.emf.mwe.utils_1.4.0.jar"/>
-
+    	<pathelement location="${PLUGINS}/org.eclipse.core.resources_3.13.600.v20191122-2104.jar"/>
         <pathelement location="../de.atb.typhondl.xtext/target/classes"/>
         <!--
         <pathelement location="../it.univaq.disim.typhonml.xtext/target/classes"/>
