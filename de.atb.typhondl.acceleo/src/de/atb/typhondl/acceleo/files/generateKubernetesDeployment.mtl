@@ -8,6 +8,35 @@
 
 [file ('polystore.yml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: polystore-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "./models"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: polystore-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+---
+[/if]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,6 +61,12 @@ spec:
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
 [/for]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+      volumes:
+        - name: polystore-model-storage
+          persistentVolumeClaim:
+            claimName: polystore-pv-claim
+[/if]
 [/if]
 ---
 kind: Service
@@ -84,7 +119,11 @@ env:
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-TODO
+[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))]
+volumeMounts:
+  - name: polystore-model-storage
+    mountPath: /docker-entrypoint-initdb.d
+[/if]
 [/template]
 
 
