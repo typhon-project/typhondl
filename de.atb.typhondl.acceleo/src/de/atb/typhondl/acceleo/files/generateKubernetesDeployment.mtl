@@ -56,7 +56,7 @@ spec:
       containers:
         - name: [aContainer.name.toLower()/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
-		  [aContainer.ports.printPorts()/]
+          [aContainer.ports.printPorts()/]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
