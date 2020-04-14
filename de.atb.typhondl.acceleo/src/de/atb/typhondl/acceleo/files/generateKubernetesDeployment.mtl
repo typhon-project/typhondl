@@ -65,6 +65,7 @@ spec:
             - sleep 20; 
               [aContainer.printPolystoreMongo()/]
       restartPolicy: Never
+---
 [/if]
 [/for]
 
@@ -73,32 +74,8 @@ spec:
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container)]
-mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u admin -p admin admin --eval [aContainer.getMongoInsert()/]
+mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser()/] -p [aContainer.getMongoRootPassword()/] admin --eval [aContainer.getMongoPrint()/]
 [/template]
-
-[template public getMongoInsert(aContainer : Container)]
-[for (aProperty : Property | aContainer.properties)]
-[if (aProperty.name.equalsIgnoreCase('print'))]
-[aProperty.printPrint()/][/if][/for]
-[/template]
-
-[template public printPrint(arg : Property) ]
-ERROR
-[/template]
-
-[template public printPrint(arg : Key_Values) ]
-[arg.value/]
-[/template]
-
-[template public printPrint(arg : Key_KeyValueList) ]
-ERROR
-[/template]
-
-[template public printPrint(arg : Key_ValueArray) ]
-ERROR
-[/template]
-
-
 
 [template public printPublishedPorts(aPorts : Ports)]
 	template_expression

@@ -36,3 +36,15 @@ aPorts.key_values->any(key | key.name='target')
 [query public findReplicas(aContainer : Container) : Key_Values =
 aContainer.properties->any(key | key.name='replicas')
 /]
+
+[query public getMongoPrint(aContainer : Container) : String =
+aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
+/]
+
+[query public getMongoRootUser(aContainer : Container) : Key_Values =
+aContainer.properties->any(key | (key.name='env')._or(key.name='environment')).oclAsType(Key_KeyValueList).properties->any(key | key.name='MONGO_INITDB_ROOT_USERNAME')
+/]
+
+[query public getMongoRootPassword(aContainer : Container) : Key_Values =
+aContainer.properties->any(key | (key.name='env')._or(key.name='environment')).oclAsType(Key_KeyValueList).properties->any(key | key.name='MONGO_INITDB_ROOT_PASSWORD')
+/]

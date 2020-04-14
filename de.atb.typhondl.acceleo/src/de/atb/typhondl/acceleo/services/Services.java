@@ -155,10 +155,11 @@ public class Services {
 		}
 		model = addPolystoreToModel(path, model, properties);
 		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
+		String replace = file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model));
 		String addToMongoContainer = createMongoCommands(
 				Paths.get(file.getLocation().toOSString().replace(file.getName(),
 						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
-				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))), properties);
+				Paths.get(replace), properties);
 		// to be able to add the models to the kubernetes job, the
 		// mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
 		// can access it. It's not nice, maybe we should think about a different plugin
@@ -169,13 +170,16 @@ public class Services {
 
 	private static DeploymentModel addInsertStatementToPolystoreMongoContainer(DeploymentModel model,
 			String addToMongoContainer, Properties properties) {
-		Container polystoreMongoContainer = model.getElements().stream()
-				.filter(element -> Platform.class.isInstance(element)).map(element -> (Platform) element)
-				.map(element -> element.getClusters()).map(element -> (Cluster) element)
-				.map(element -> element.getApplications()).map(element -> (Application) element)
-				.map(element -> element.getContainers()).map(element -> (Container) element)
-				.filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
-				.collect(Collectors.toList()).get(0);
+		List<Container> polystoreMongoContainerList = new ArrayList<>();
+		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
+				.map(element -> (Platform) element).forEach(element -> element.getClusters()
+						.forEach(cluster -> cluster.getApplications().forEach(application -> {
+							polystoreMongoContainerList.addAll(application.getContainers().stream()
+									.filter(container -> container.getName()
+											.equalsIgnoreCase(properties.getProperty("db.containername")))
+									.collect(Collectors.toList()));
+						})));
+		Container polystoreMongoContainer = polystoreMongoContainerList.get(0);
 		Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
 		print.setName("print");
 		print.setValue(addToMongoContainer);
@@ -320,6 +324,9 @@ public class Services {
 		// get containertype
 		ContainerType containerType = application.getContainers().get(0).getType();
 
+		// get clustertype
+		String clusterType = ((Cluster) application.eContainer()).getType().getName();
+
 		// polystore_db
 		DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 		polystoredb.setName(properties.getProperty("db.name"));
@@ -334,10 +341,12 @@ public class Services {
 		polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
 		polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
 		polystoredb_environment.getProperties().add(polystoredb_environment_2);
-		Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
-		polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
-		polystoredb_environment.getProperties().add(polystoredb_environment_3);
+		if (clusterType.equalsIgnoreCase("DockerCompose")) {
+			Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
+			polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+			polystoredb_environment.getProperties().add(polystoredb_environment_3);
+		}
 		polystoredb.getParameters().add(polystoredb_environment);
 		model.getElements().add(polystoredb);
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -347,11 +356,13 @@ public class Services {
 		polystoredb_container.setName(properties.getProperty("db.containername"));
 		polystoredb_container.setType(containerType);
 		polystoredb_container.setDeploys(poystoredbReference);
-		Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		polystoredb_container_volume.setName("volumes");
-		polystoredb_container_volume.getValues()
-				.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
-		polystoredb_container.getProperties().add(polystoredb_container_volume);
+		if (clusterType.equalsIgnoreCase("DockerCompose")) {
+			Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			polystoredb_container_volume.setName("volumes");
+			polystoredb_container_volume.getValues()
+					.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
+			polystoredb_container.getProperties().add(polystoredb_container_volume);
+		}
 
 		Key_Values polystoredb_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystoredb_container_port.setName("target");
