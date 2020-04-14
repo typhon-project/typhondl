@@ -8,35 +8,6 @@
 
 [file ('polystore.yml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: polystore-pv-volume
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 200Mi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "./models"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: polystore-pv-claim
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Mi
----
-[/if]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -61,12 +32,6 @@ spec:
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
 [/for]
-[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
-      volumes:
-        - name: polystore-model-storage
-          persistentVolumeClaim:
-            claimName: polystore-pv-claim
-[/if]
 [/if]
 ---
 kind: Service
@@ -83,11 +48,59 @@ spec:
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+[/if]
 [/for]
 
 [/file]
 [/for]
 [/template]
+
+[template public printPolystoreMongo(aContainer : Container)]
+mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u admin -p admin admin --eval [aContainer.getMongoInsert()/]
+[/template]
+
+[template public getMongoInsert(aContainer : Container)]
+[for (aProperty : Property | aContainer.properties)]
+[if (aProperty.name.equalsIgnoreCase('print'))]
+[aProperty.printPrint()/]
+[/if]
+[/for]
+[/template]
+
+[template public printPrint(arg : Property) ]
+ERROR
+[/template]
+
+[template public printPrint(arg : Key_Values) ]
+[arg.value/]
+[/template]
+
+[template public printPrint(arg : Key_KeyValueList) ]
+ERROR
+[/template]
+
+[template public printPrint(arg : Key_ValueArray) ]
+ERROR
+[/template]
+
+
 
 [template public printPublishedPorts(aPorts : Ports)]
 	template_expression
