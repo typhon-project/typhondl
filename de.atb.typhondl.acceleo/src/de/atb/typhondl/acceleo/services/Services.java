@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +25,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -155,10 +155,31 @@ public class Services {
 		}
 		model = addPolystoreToModel(path, model, properties);
 		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
-		createMongoCommands(
+		String addToMongoContainer = createMongoCommands(
 				Paths.get(file.getLocation().toOSString().replace(file.getName(),
 						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
 				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))), properties);
+		// to be able to add the models to the kubernetes job, the
+		// mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
+		// can access it. It's not nice, maybe we should think about a different plugin
+		// to generate our scripts
+		model = addInsertStatementToPolystoreMongoContainer(model, addToMongoContainer, properties);
+		return model;
+	}
+
+	private static DeploymentModel addInsertStatementToPolystoreMongoContainer(DeploymentModel model,
+			String addToMongoContainer, Properties properties) {
+		Container polystoreMongoContainer = model.getElements().stream()
+				.filter(element -> Platform.class.isInstance(element)).map(element -> (Platform) element)
+				.map(element -> element.getClusters()).map(element -> (Cluster) element)
+				.map(element -> element.getApplications()).map(element -> (Application) element)
+				.map(element -> element.getContainers()).map(element -> (Container) element)
+				.filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
+				.collect(Collectors.toList()).get(0);
+		Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
+		print.setName("print");
+		print.setValue(addToMongoContainer);
+		polystoreMongoContainer.getProperties().add(print);
 		return model;
 	}
 
@@ -171,7 +192,7 @@ public class Services {
 	 * @param MLmodel    The path to the source MLmodel.xmi
 	 * @param properties The polystore.properties saved in the project folder
 	 */
-	private static void createMongoCommands(Path DLmodel, Path MLmodel, Properties properties) {
+	private static String createMongoCommands(Path DLmodel, Path MLmodel, Properties properties) {
 		String DLmodelContent = "";
 		String MLmodelContent = "";
 		try {
@@ -187,7 +208,7 @@ public class Services {
 		// String DLUUID = UUID.randomUUID().toString();
 		// String MLUUID = UUID.randomUUID().toString();
 		long unixTime = System.currentTimeMillis();
-		String mongo = "db.models.insert([{\"version\": 1, \"initializedDatabases\": "
+		return "db.models.insert([{\"version\": 1, \"initializedDatabases\": "
 				+ "false, \"initializedConnections\": true, \"contents\": \""
 				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
 				+ unixTime + "), "
@@ -195,21 +216,6 @@ public class Services {
 				+ "false, \"initializedConnections\": false, \"contents\": \""
 				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
 				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" }])";
-		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(),
-				properties.getProperty("db.volume"));
-		String path = folder + File.separator + "addModels.js";
-		if (!Files.exists(Paths.get(folder))) {
-			try {
-				Files.createDirectory(Paths.get(folder));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		try {
-			Files.write(Paths.get(path), (mongo).getBytes(), StandardOpenOption.CREATE);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
