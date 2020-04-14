@@ -168,6 +168,17 @@ public class Services {
 		return model;
 	}
 
+	/**
+	 * Finds the polystore-mongo container and adds the models to it
+	 * 
+	 * @param model               The DeploymentModel
+	 * @param addToMongoContainer The String containing the
+	 *                            mongo.insert(DLmodel,MLmodel) statement
+	 * @param properties          The polystore.properties saved in the project
+	 *                            folder
+	 * @return The input model now with the "print" Property in the polystore-mongo
+	 *         container
+	 */
 	private static DeploymentModel addInsertStatementToPolystoreMongoContainer(DeploymentModel model,
 			String addToMongoContainer, Properties properties) {
 		List<Container> polystoreMongoContainerList = new ArrayList<>();
@@ -209,9 +220,6 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// String DLUUID = UUID.randomUUID().toString();
-		// String MLUUID = UUID.randomUUID().toString();
-//		long unixTime = System.currentTimeMillis();
 		return "db.models.insert([{\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
 				+ "false, \"initializedConnections\":true, \"contents\":\"" + DLmodelContent.replaceAll("\"", "\\\\\"")
 				+ "\", \"type\":\"DL\", \"dateReceived\":ISODate(), "
@@ -261,7 +269,7 @@ public class Services {
 	 * Creates a .xmi file representing the given DL model
 	 * 
 	 * @param DLmodelResource The given DL model
-	 * @return
+	 * @return URI to the saved DL model
 	 */
 	private static URI saveModelAsXMI(Resource DLmodelResource) {
 		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
