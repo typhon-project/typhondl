@@ -74,8 +74,9 @@ networks:
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
+[if (aProperty.name.equalsIgnoreCase('print'))][else]
 [aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
-[/if]
+[/if][/if]
 [/template]
 
 [template public print(aProperty : Key_KeyValueList)  post (trim())]
