@@ -79,9 +79,7 @@ mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/]
 [template public getMongoInsert(aContainer : Container)]
 [for (aProperty : Property | aContainer.properties)]
 [if (aProperty.name.equalsIgnoreCase('print'))]
-[aProperty.printPrint()/]
-[/if]
-[/for]
+[aProperty.printPrint()/][/if][/for]
 [/template]
 
 [template public printPrint(arg : Property) ]
@@ -116,7 +114,7 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[if (arg.name.equalsIgnoreCase('replicas'))][else]
+[if (arg.name.equalsIgnoreCase('replicas')._or(arg.name.equalsIgnoreCase('print')))][else]
 [arg.name/]: [arg.value/]
 [/if]
 [/template]
@@ -132,10 +130,8 @@ env:
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))]
-volumeMounts:
-  - name: polystore-model-storage
-    mountPath: /docker-entrypoint-initdb.d
+[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))][else]
+Arrays not defined yet
 [/if]
 [/template]
 
