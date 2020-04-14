@@ -11,7 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -185,17 +184,17 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		String DLUUID = UUID.randomUUID().toString();
-		String MLUUID = UUID.randomUUID().toString();
+		// String DLUUID = UUID.randomUUID().toString();
+		// String MLUUID = UUID.randomUUID().toString();
 		long unixTime = System.currentTimeMillis();
-		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID + "\", \"version\": 1, \"initializedDatabases\": "
+		String mongo = "db.models.insert([{\"version\": 1, \"initializedDatabases\": "
 				+ "false, \"initializedConnections\": true, \"contents\": \""
 				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
-				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
-		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID + "\", \"version\": 1, \"initializedDatabases\": "
+				+ unixTime + "), "
+				+ "\"_class\": \"com.clms.typhonapi.models.Model\" }, {\"version\": 1, \"initializedDatabases\": "
 				+ "false, \"initializedConnections\": false, \"contents\": \""
 				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
-				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
+				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" }])";
 		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(),
 				properties.getProperty("db.volume"));
 		String path = folder + File.separator + "addModels.js";
@@ -207,7 +206,7 @@ public class Services {
 			}
 		}
 		try {
-			Files.write(Paths.get(path), (mongoDL + mongoML).getBytes(), StandardOpenOption.CREATE);
+			Files.write(Paths.get(path), (mongo).getBytes(), StandardOpenOption.CREATE);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
