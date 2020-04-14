@@ -211,15 +211,14 @@ public class Services {
 		}
 		// String DLUUID = UUID.randomUUID().toString();
 		// String MLUUID = UUID.randomUUID().toString();
-		long unixTime = System.currentTimeMillis();
-		return "db.models.insert([{\"version\": 1, \"initializedDatabases\": "
-				+ "false, \"initializedConnections\": true, \"contents\": \""
-				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
-				+ unixTime + "), "
-				+ "\"_class\": \"com.clms.typhonapi.models.Model\" }, {\"version\": 1, \"initializedDatabases\": "
-				+ "false, \"initializedConnections\": false, \"contents\": \""
-				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
-				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" }])";
+//		long unixTime = System.currentTimeMillis();
+		return "db.models.insert([{\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+				+ "false, \"initializedConnections\":true, \"contents\":\"" + DLmodelContent.replaceAll("\"", "\\\\\"")
+				+ "\", \"type\":\"DL\", \"dateReceived\":ISODate(), "
+				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }, {\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+				+ "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
+				+ "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
+				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }])";
 	}
 
 	/**

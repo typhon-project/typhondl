@@ -74,7 +74,7 @@ spec:
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container)]
-mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser()/] -p [aContainer.getMongoRootPassword()/] admin --eval [aContainer.getMongoPrint()/]
+mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser().value/] -p [aContainer.getMongoRootPassword().value/] admin --eval '[aContainer.getMongoPrint()/];';
 [/template]
 
 [template public printPublishedPorts(aPorts : Ports)]
