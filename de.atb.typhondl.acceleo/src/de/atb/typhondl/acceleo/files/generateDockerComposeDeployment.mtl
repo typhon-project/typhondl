@@ -50,7 +50,7 @@ services:
 ports:
   - target: [aPorts.getTargetPort().value/]
 	[if (aPorts.getPublishedPort() <> null)]
-	published: [aPorts.getPublishedPort().value/]
+    published: [aPorts.getPublishedPort().value/]
 	[/if]
 [/template]
 

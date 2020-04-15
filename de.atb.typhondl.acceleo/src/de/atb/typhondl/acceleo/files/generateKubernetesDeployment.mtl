@@ -45,6 +45,9 @@ spec:
   ports:
     - port: [aContainer.ports.getTargetPort().value/]
       targetPort: [aContainer.ports.getTargetPort().value/]
+[if (aContainer.name.equalsIgnoreCase('typhon-polystore-service'))]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if]
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---

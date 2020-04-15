@@ -476,7 +476,7 @@ public class Services {
 		polystore_ui_environment.setName("environment");
 		Key_Values polystore_ui_environment1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment1.setName("API_PORT");
-		polystore_ui_environment1.setValue(properties.getProperty("ui.environment.API_PORT"));
+		polystore_ui_environment1.setValue(properties.getProperty("api.publishedPort"));
 		polystore_ui_environment.getProperties().add(polystore_ui_environment1);
 		Key_Values polystore_ui_environment2 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment2.setName("API_HOST");
@@ -497,6 +497,10 @@ public class Services {
 		polystore_ui_container_port.setValue(properties.getProperty("ui.port"));
 		Ports polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
 		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_port);
+		Key_Values polystore_ui_published_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_published_port.setName("published");
+		polystore_ui_published_port.setValue(properties.getProperty("ui.publishedPort"));
+		polystore_ui_container_ports.getKey_values().add(polystore_ui_published_port);
 		polystore_ui_container.setPorts(polystore_ui_container_ports);
 		Key_KeyValueList polystore_ui_container_build = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 		polystore_ui_container_build.setName("build");
