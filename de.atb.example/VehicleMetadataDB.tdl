@@ -1,0 +1,5 @@
+database VehicleMetadataDB : MySQL {
+	environment {
+		MYSQL_ROOT_PASSWORD = password ;
+	}
+}

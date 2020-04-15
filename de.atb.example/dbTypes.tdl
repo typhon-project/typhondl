@@ -1,0 +1,6 @@
+dbtype Mongo {
+	default image = mongo:latest;
+}
+dbtype MySQL {
+	default image = mysql:latest;
+}
