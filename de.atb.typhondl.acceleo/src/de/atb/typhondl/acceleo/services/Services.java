@@ -11,7 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -27,6 +26,8 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -147,7 +148,6 @@ public class Services {
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
 		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
 		model = addDBsToModel(model);
-		model = addHostnamesToModel(model);
 		Properties properties = new Properties();
 		try {
 			InputStream input = new FileInputStream(path);
@@ -156,11 +156,27 @@ public class Services {
 			e.printStackTrace();// TODO popup if nonexistent
 		}
 		model = addPolystoreToModel(path, model, properties);
+		Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
+		String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer);
 		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
-		createMongoCommands(
-				Paths.get(file.getLocation().toOSString().replace(file.getName(),
-						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
-				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))), properties);
+		Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(),
+				DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
+		String mongoInsertStatement = createMongoCommands(DLPath,
+				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))));
+		switch (clusterType) {
+		case "Kubernetes":
+			// to be able to add the models to the kubernetes job, the
+			// mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
+			// can access it. It's not nice, maybe we should think about a different plugin
+			// to generate our scripts
+			addInsertStatementToPolystoreMongoContainer(polystoreMongoContainer, mongoInsertStatement, properties);
+			break;
+		case "DockerCompose":
+			writeInsertStatementToJavaScriptFile(DLPath, mongoInsertStatement, properties);
+			break;
+		default:
+			break;
+		}
 		return model;
 	}
 
@@ -169,11 +185,84 @@ public class Services {
 	 * executed the first time the polystore-mongo container is started and adds
 	 * both the ML and DL model to the database db.environment.MONGO_INITDB_DATABASE
 	 * 
-	 * @param DLmodel    The path to the newly created DLmodel.xmi
-	 * @param MLmodel    The path to the source MLmodel.xmi
-	 * @param properties The polystore.properties saved in the project folder
+	 * @param DLPath
+	 * @param mongoInsertStatement
+	 * @param properties
 	 */
-	private static void createMongoCommands(Path DLmodel, Path MLmodel, Properties properties) {
+	private static void writeInsertStatementToJavaScriptFile(Path DLPath, String mongoInsertStatement,
+			Properties properties) {
+		String folder = DLPath.toString().replace(DLPath.getFileName().toString(), properties.getProperty("db.volume"));
+		String path = folder + File.separator + "addModels.js";
+		if (!Files.exists(Paths.get(folder))) {
+			try {
+				Files.createDirectory(Paths.get(folder));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Gets the {@link ClusterType} of the given Container
+	 * 
+	 * @param polystoreMongoContaier
+	 * @return The ClusterType of the containing Cluster
+	 */
+	private static String getClusterTypeOfPolystore(Container polystoreMongoContaier) {
+		return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType().getName();
+	}
+
+	/**
+	 * Searches for the polystore-mongo container in the given model
+	 * 
+	 * @param model
+	 * @param properties
+	 * @return A container named "polystore-mongo"
+	 */
+	private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
+		List<Container> polystoreMongoContainerList = new ArrayList<>();
+		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
+				.map(element -> (Platform) element).forEach(element -> element.getClusters()
+						.forEach(cluster -> cluster.getApplications().forEach(application -> {
+							polystoreMongoContainerList.addAll(application.getContainers().stream()
+									.filter(container -> container.getName()
+											.equalsIgnoreCase(properties.getProperty("db.containername")))
+									.collect(Collectors.toList()));
+						})));
+		return polystoreMongoContainerList.isEmpty() ? null : polystoreMongoContainerList.get(0);
+	}
+
+	/**
+	 * Adds the mongo insert statement to the polystoreMongoContainer
+	 * 
+	 * @param polystoreMongoContainer The polystore-mongo container
+	 * @param addToMongoContainer     The String containing the
+	 *                                mongo.insert(DLmodel,MLmodel) statement
+	 * @param properties              The polystore.properties saved in the project
+	 *                                folder
+	 */
+	private static void addInsertStatementToPolystoreMongoContainer(Container polystoreMongoContainer,
+			String addToMongoContainer, Properties properties) {
+		Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
+		print.setName("print");
+		print.setValue(addToMongoContainer);
+		polystoreMongoContainer.getProperties().add(print);
+	}
+
+	/**
+	 * Creates a mongo insert statement containing the DL and ML model in a JSON
+	 * field fitting the API
+	 * 
+	 * @param DLmodel The path to the newly created DLmodel.xmi
+	 * @param MLmodel The path to the source MLmodel.xmi
+	 * @return The mongo insert statement containing both models
+	 */
+	private static String createMongoCommands(Path DLmodel, Path MLmodel) {
 		String DLmodelContent = "";
 		String MLmodelContent = "";
 		try {
@@ -186,32 +275,13 @@ public class Services {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		String DLUUID = UUID.randomUUID().toString();
-		String MLUUID = UUID.randomUUID().toString();
-		long unixTime = System.currentTimeMillis();
-		String mongoDL = "db.models.insert({ \"_id\": \"" + DLUUID + "\", \"version\": 1, \"initializedDatabases\": "
-				+ "false, \"initializedConnections\": true, \"contents\": \""
-				+ DLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"DL\", \"dateReceived\": new Date("
-				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
-		String mongoML = "db.models.insert({ \"_id\": \"" + MLUUID + "\", \"version\": 1, \"initializedDatabases\": "
-				+ "false, \"initializedConnections\": false, \"contents\": \""
-				+ MLmodelContent.replaceAll("\"", "\\\\\"") + "\", \"type\": \"ML\", \"dateReceived\": new Date("
-				+ unixTime + "), " + "\"_class\": \"com.clms.typhonapi.models.Model\" });\r\n";
-		String folder = DLmodel.toString().replace(DLmodel.getFileName().toString(),
-				properties.getProperty("db.volume"));
-		String path = folder + File.separator + "addModels.js";
-		if (!Files.exists(Paths.get(folder))) {
-			try {
-				Files.createDirectory(Paths.get(folder));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		try {
-			Files.write(Paths.get(path), (mongoDL + mongoML).getBytes(), StandardOpenOption.CREATE);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		return "db.models.insert([{\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+				+ "false, \"initializedConnections\":true, \"contents\":\"" + DLmodelContent.replaceAll("\"", "\\\\\"")
+				+ "\", \"type\":\"DL\", \"dateReceived\":ISODate(), "
+				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }, {\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+				+ "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
+				+ "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
+				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }]);";
 	}
 
 	/**
@@ -225,29 +295,6 @@ public class Services {
 				.map(importedModel -> (Import) importedModel)
 				.filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
 				.map(info -> info.getRelativePath()).collect(Collectors.toList()).get(0);
-	}
-
-	/**
-	 * Adds Key_Value named "hostname" with value container.name to each container
-	 * of the polystore
-	 * 
-	 * @param model
-	 * @return The Deployment model with every db container having the Key_Value
-	 *         hostname
-	 */
-	private static DeploymentModel addHostnamesToModel(DeploymentModel model) {
-		ArrayList<Container> containers = new ArrayList<>();
-		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
-				.map(element -> (Platform) element)
-				.forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications()
-						.forEach(application -> containers.addAll(application.getContainers()))));
-		for (Container container : containers) {
-			Key_Values db_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-			db_hostname.setName("hostname");
-			db_hostname.setValue(container.getName());
-			container.getProperties().add(db_hostname);
-		}
-		return model;
 	}
 
 	/**
@@ -277,7 +324,7 @@ public class Services {
 	 * Creates a .xmi file representing the given DL model
 	 * 
 	 * @param DLmodelResource The given DL model
-	 * @return
+	 * @return URI to the saved DL model
 	 */
 	private static URI saveModelAsXMI(Resource DLmodelResource) {
 		XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
@@ -339,6 +386,9 @@ public class Services {
 		// get containertype
 		ContainerType containerType = application.getContainers().get(0).getType();
 
+		// get clustertype
+		String clusterType = ((Cluster) application.eContainer()).getType().getName();
+
 		// polystore_db
 		DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
 		polystoredb.setName(properties.getProperty("db.name"));
@@ -353,10 +403,12 @@ public class Services {
 		polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
 		polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
 		polystoredb_environment.getProperties().add(polystoredb_environment_2);
-		Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
-		polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
-		polystoredb_environment.getProperties().add(polystoredb_environment_3);
+		if (clusterType.equalsIgnoreCase("DockerCompose")) {
+			Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
+			polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
+			polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+			polystoredb_environment.getProperties().add(polystoredb_environment_3);
+		}
 		polystoredb.getParameters().add(polystoredb_environment);
 		model.getElements().add(polystoredb);
 		Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
@@ -366,25 +418,19 @@ public class Services {
 		polystoredb_container.setName(properties.getProperty("db.containername"));
 		polystoredb_container.setType(containerType);
 		polystoredb_container.setDeploys(poystoredbReference);
-		Key_Values polystoredb_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_hostname.setName("hostname");
-		polystoredb_container_hostname.setValue(properties.getProperty("db.hostname"));
-		polystoredb_container.getProperties().add(polystoredb_container_hostname);
-		Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		polystoredb_container_volume.setName("volumes");
-		polystoredb_container_volume.getValues()
-				.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
-		polystoredb_container.getProperties().add(polystoredb_container_volume);
+		if (clusterType.equalsIgnoreCase("DockerCompose")) {
+			Key_ValueArray polystoredb_container_volume = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+			polystoredb_container_volume.setName("volumes");
+			polystoredb_container_volume.getValues()
+					.add("./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d");
+			polystoredb_container.getProperties().add(polystoredb_container_volume);
+		}
 
-		Key_Values polystoredb_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports1.setName("published");
-		polystoredb_container_ports1.setValue(properties.getProperty("db.publishedPort"));
-		Key_Values polystoredb_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystoredb_container_ports2.setName("target");
-		polystoredb_container_ports2.setValue(properties.getProperty("db.port"));
+		Key_Values polystoredb_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystoredb_container_port.setName("target");
+		polystoredb_container_port.setValue(properties.getProperty("db.port"));
 		Ports polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports1);
-		polystoredb_container_ports.getKey_values().add(polystoredb_container_ports2);
+		polystoredb_container_ports.getKey_values().add(polystoredb_container_port);
 		polystoredb_container.setPorts(polystoredb_container_ports);
 
 		Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
@@ -406,19 +452,15 @@ public class Services {
 		polystore_api_container.setType(containerType);
 		polystore_api_container.setDeploys(polystore_api_reference);
 		polystore_api_container.getDepends_on().add(polystoredb_dependency);
-		Key_Values polystore_api_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_hostname.setName("hostname");
-		polystore_api_hostname.setValue(properties.getProperty("api.hostname"));
-		polystore_api_container.getProperties().add(polystore_api_hostname);
-		Key_Values polystore_api_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports1.setName("published");
-		polystore_api_container_ports1.setValue(properties.getProperty("api.publishedPort"));
-		Key_Values polystore_api_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_api_container_ports2.setName("target");
-		polystore_api_container_ports2.setValue(properties.getProperty("api.port"));
+		Key_Values polystore_api_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_port.setName("target");
+		polystore_api_container_port.setValue(properties.getProperty("api.port"));
+		Key_Values polystore_api_container_publishedPort = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_api_container_publishedPort.setName("published");
+		polystore_api_container_publishedPort.setValue(properties.getProperty("api.publishedPort"));
 		Ports polystore_api_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports1);
-		polystore_api_container_ports.getKey_values().add(polystore_api_container_ports2);
+		polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
+		polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
 		polystore_api_container.setPorts(polystore_api_container_ports);
 
 		Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
@@ -434,7 +476,7 @@ public class Services {
 		polystore_ui_environment.setName("environment");
 		Key_Values polystore_ui_environment1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment1.setName("API_PORT");
-		polystore_ui_environment1.setValue(properties.getProperty("ui.environment.API_PORT"));
+		polystore_ui_environment1.setValue(properties.getProperty("api.publishedPort"));
 		polystore_ui_environment.getProperties().add(polystore_ui_environment1);
 		Key_Values polystore_ui_environment2 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment2.setName("API_HOST");
@@ -450,20 +492,16 @@ public class Services {
 		polystore_ui_container.setType(containerType);
 		polystore_ui_container.setDeploys(polystore_ui_reference);
 		polystore_ui_container.getDepends_on().add(polystore_api_dependency);
-		Key_Values polystore_ui_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports1.setName("published");
-		polystore_ui_container_ports1.setValue(properties.getProperty("ui.publishedPort"));
-		Key_Values polystore_ui_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_container_ports2.setName("target");
-		polystore_ui_container_ports2.setValue(properties.getProperty("ui.port"));
+		Key_Values polystore_ui_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_container_port.setName("target");
+		polystore_ui_container_port.setValue(properties.getProperty("ui.port"));
 		Ports polystore_ui_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports1);
-		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_ports2);
+		polystore_ui_container_ports.getKey_values().add(polystore_ui_container_port);
+		Key_Values polystore_ui_published_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		polystore_ui_published_port.setName("published");
+		polystore_ui_published_port.setValue(properties.getProperty("ui.publishedPort"));
+		polystore_ui_container_ports.getKey_values().add(polystore_ui_published_port);
 		polystore_ui_container.setPorts(polystore_ui_container_ports);
-		Key_Values polystore_ui_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		polystore_ui_hostname.setName("hostname");
-		polystore_ui_hostname.setValue(properties.getProperty("ui.hostname"));
-		polystore_ui_container.getProperties().add(polystore_ui_hostname);
 		Key_KeyValueList polystore_ui_container_build = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
 		polystore_ui_container_build.setName("build");
 		Key_Values polystore_ui_container_build_context = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -477,20 +515,23 @@ public class Services {
 
 		// QL server
 		Software qlserver = TyphonDLFactory.eINSTANCE.createSoftware();
-		qlserver.setName("QLServer");
+		qlserver.setName(properties.getProperty("qlserver.name"));
 		IMAGE qlserver_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-		qlserver_image.setValue("swatengineering/typhonql-server");
+		qlserver_image.setValue(properties.getProperty("qlserver.image"));
 		qlserver.setImage(qlserver_image);
 		Reference qlserver_reference = TyphonDLFactory.eINSTANCE.createReference();
 		qlserver_reference.setReference(qlserver);
 		model.getElements().add(qlserver);
 		Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
-		qlserver_container.setName("typhonql-server");
-		Key_Values qlserver_container_hostname = TyphonDLFactory.eINSTANCE.createKey_Values();
-		qlserver_container_hostname.setName("hostname");
-		qlserver_container_hostname.setValue("typhonql-server");
-		qlserver_container.getProperties().add(qlserver_container_hostname);
+		qlserver_container.setName(properties.getProperty("qlserver.containername"));
+		Key_Values qlserver_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
+		qlserver_container_port.setName("target");
+		qlserver_container_port.setValue(properties.getProperty("qlserver.port"));
+		Ports qlserver_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
+		qlserver_container_ports.getKey_values().add(qlserver_container_port);
+		qlserver_container.setPorts(qlserver_container_ports);
 		qlserver_container.setDeploys(qlserver_reference);
+
 		application.getContainers().add(qlserver_container);
 
 		// Analytics, see https://github.com/typhon-project/typhondl/issues/6

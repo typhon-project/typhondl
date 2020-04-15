@@ -51,4 +51,8 @@ cassandra.port = 7001
 relationaldb = MariaDB MySQL Postgres
 documentdb = Mongo CouchDB
 graphdb = ArangoDB Neo4j
+<<<<<<< HEAD
 keyvaluedb = Redis ArangoDB Cassandra
+=======
+keyvaluedb = Redis ArangoDB Cassandra
+>>>>>>> master

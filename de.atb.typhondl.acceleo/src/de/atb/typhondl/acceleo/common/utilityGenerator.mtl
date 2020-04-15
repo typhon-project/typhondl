@@ -37,6 +37,18 @@ aPorts.key_values->any(key | key.name='target')
 aContainer.properties->any(key | key.name='replicas')
 /]
 
-[query public getKey_ValuesWithoutFirst(aPort : Ports) : OrderedSet(Key_Values) = 
-aPort.key_values->removeAll(aPort.key_values->first()->asOrderedSet())
+[query public getMongoPrint(aContainer : Container) : String =
+aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
+/]
+
+[query public getEnvironmentList(aContainer : Container) : Key_KeyValueList = 
+aContainer.deploys.reference.parameters->any(key | (key.name='env')._or(key.name='environment'))
+/]
+
+[query public getMongoRootUser(aContainer : Container) : Key_Values =
+aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_USERNAME')
+/]
+
+[query public getMongoRootPassword(aContainer : Container) : Key_Values =
+aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_PASSWORD')
 /]

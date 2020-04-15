@@ -83,7 +83,7 @@ Application:
 
 Container:
 	{Container}
-	'container' name=Name ':' (type=[ContainerType])? '{'
+	(external?='external')? 'container' name=Name ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
