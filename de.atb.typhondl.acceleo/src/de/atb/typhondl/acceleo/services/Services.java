@@ -281,7 +281,7 @@ public class Services {
 				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }, {\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
 				+ "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
 				+ "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
-				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }])";
+				+ "\"_class\":\"com.clms.typhonapi.models.Model\" }]);";
 	}
 
 	/**
