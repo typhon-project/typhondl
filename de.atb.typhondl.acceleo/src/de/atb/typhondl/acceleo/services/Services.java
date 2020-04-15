@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +27,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import de.atb.typhondl.acceleo.main.Generate;
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
+import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -154,33 +156,75 @@ public class Services {
 			e.printStackTrace();// TODO popup if nonexistent
 		}
 		model = addPolystoreToModel(path, model, properties);
+		Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
+		String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer);
 		URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
-		String replace = file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model));
-		String addToMongoContainer = createMongoCommands(
-				Paths.get(file.getLocation().toOSString().replace(file.getName(),
-						DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment())),
-				Paths.get(replace), properties);
-		// to be able to add the models to the kubernetes job, the
-		// mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
-		// can access it. It's not nice, maybe we should think about a different plugin
-		// to generate our scripts
-		model = addInsertStatementToPolystoreMongoContainer(model, addToMongoContainer, properties);
+		Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(),
+				DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
+		String mongoInsertStatement = createMongoCommands(DLPath,
+				Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))));
+		switch (clusterType) {
+		case "Kubernetes":
+			// to be able to add the models to the kubernetes job, the
+			// mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
+			// can access it. It's not nice, maybe we should think about a different plugin
+			// to generate our scripts
+			addInsertStatementToPolystoreMongoContainer(polystoreMongoContainer, mongoInsertStatement, properties);
+			break;
+		case "DockerCompose":
+			writeInsertStatementToJavaScriptFile(DLPath, mongoInsertStatement, properties);
+			break;
+		default:
+			break;
+		}
 		return model;
 	}
 
 	/**
-	 * Finds the polystore-mongo container and adds the models to it
+	 * Creates a "addModels.js" file inside the db.volume directory. This script is
+	 * executed the first time the polystore-mongo container is started and adds
+	 * both the ML and DL model to the database db.environment.MONGO_INITDB_DATABASE
 	 * 
-	 * @param model               The DeploymentModel
-	 * @param addToMongoContainer The String containing the
-	 *                            mongo.insert(DLmodel,MLmodel) statement
-	 * @param properties          The polystore.properties saved in the project
-	 *                            folder
-	 * @return The input model now with the "print" Property in the polystore-mongo
-	 *         container
+	 * @param DLPath
+	 * @param mongoInsertStatement
+	 * @param properties
 	 */
-	private static DeploymentModel addInsertStatementToPolystoreMongoContainer(DeploymentModel model,
-			String addToMongoContainer, Properties properties) {
+	private static void writeInsertStatementToJavaScriptFile(Path DLPath, String mongoInsertStatement,
+			Properties properties) {
+		String folder = DLPath.toString().replace(DLPath.getFileName().toString(), properties.getProperty("db.volume"));
+		String path = folder + File.separator + "addModels.js";
+		if (!Files.exists(Paths.get(folder))) {
+			try {
+				Files.createDirectory(Paths.get(folder));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Gets the {@link ClusterType} of the given Container
+	 * 
+	 * @param polystoreMongoContaier
+	 * @return The ClusterType of the containing Cluster
+	 */
+	private static String getClusterTypeOfPolystore(Container polystoreMongoContaier) {
+		return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType().getName();
+	}
+
+	/**
+	 * Searches for the polystore-mongo container in the given model
+	 * 
+	 * @param model
+	 * @param properties
+	 * @return A container named "polystore-mongo"
+	 */
+	private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
 		List<Container> polystoreMongoContainerList = new ArrayList<>();
 		model.getElements().stream().filter(element -> Platform.class.isInstance(element))
 				.map(element -> (Platform) element).forEach(element -> element.getClusters()
@@ -190,24 +234,35 @@ public class Services {
 											.equalsIgnoreCase(properties.getProperty("db.containername")))
 									.collect(Collectors.toList()));
 						})));
-		Container polystoreMongoContainer = polystoreMongoContainerList.get(0);
+		return polystoreMongoContainerList.isEmpty() ? null : polystoreMongoContainerList.get(0);
+	}
+
+	/**
+	 * Adds the mongo insert statement to the polystoreMongoContainer
+	 * 
+	 * @param polystoreMongoContainer The polystore-mongo container
+	 * @param addToMongoContainer     The String containing the
+	 *                                mongo.insert(DLmodel,MLmodel) statement
+	 * @param properties              The polystore.properties saved in the project
+	 *                                folder
+	 */
+	private static void addInsertStatementToPolystoreMongoContainer(Container polystoreMongoContainer,
+			String addToMongoContainer, Properties properties) {
 		Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
 		print.setName("print");
 		print.setValue(addToMongoContainer);
 		polystoreMongoContainer.getProperties().add(print);
-		return model;
 	}
 
 	/**
-	 * Creates a "addModels.js" file inside the db.volume directory. This script is
-	 * executed the first time the polystore-mongo container is started and adds
-	 * both the ML and DL model to the database db.environment.MONGO_INITDB_DATABASE
+	 * Creates a mongo insert statement containing the DL and ML model in a JSON
+	 * field fitting the API
 	 * 
-	 * @param DLmodel    The path to the newly created DLmodel.xmi
-	 * @param MLmodel    The path to the source MLmodel.xmi
-	 * @param properties The polystore.properties saved in the project folder
+	 * @param DLmodel The path to the newly created DLmodel.xmi
+	 * @param MLmodel The path to the source MLmodel.xmi
+	 * @return The mongo insert statement containing both models
 	 */
-	private static String createMongoCommands(Path DLmodel, Path MLmodel, Properties properties) {
+	private static String createMongoCommands(Path DLmodel, Path MLmodel) {
 		String DLmodelContent = "";
 		String MLmodelContent = "";
 		try {
