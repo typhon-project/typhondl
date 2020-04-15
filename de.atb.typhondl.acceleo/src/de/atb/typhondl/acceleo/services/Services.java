@@ -146,7 +146,7 @@ public class Services {
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
-		String path = Paths.get(file.getLocationURI()).getParent().resolve("polystore.properties").toString();
+		String path = Paths.get(file.getLocationURI()).getParent().resolve(file.getName() + ".properties").toString();
 		model = addDBsToModel(model);
 		Properties properties = new Properties();
 		try {

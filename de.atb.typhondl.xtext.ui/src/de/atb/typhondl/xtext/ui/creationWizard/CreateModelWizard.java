@@ -135,7 +135,7 @@ public class CreateModelWizard extends Wizard {
 		fileOpener.openFileToEdit(this.getShell(), file);
 		// save properties
 		String location = file.getLocation().toString();
-		String pathToProperties = location.substring(0, location.lastIndexOf('/') + 1) + "polystore.properties";
+		String pathToProperties = location.substring(0, location.lastIndexOf('/') + 1) + file.getName() + ".properties";
 		try {
 			OutputStream output = new FileOutputStream(pathToProperties);
 			properties.store(output, "Only edit this if you know what you are doing!");
