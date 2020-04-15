@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Automatic-Module-Name: de.atb.typhondl.xtext
 Bundle-ManifestVersion: 2
 Bundle-Name: de.atb.typhondl.xtext
-Bundle-Vendor: My Company
+Bundle-Vendor: ATB
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: de.atb.typhondl.xtext; singleton:=true
 Bundle-ActivationPolicy: lazy

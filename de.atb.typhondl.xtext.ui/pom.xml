@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>de.atb.typhondl.xtext.TyphonDL</groupId>
-		<artifactId>typhondl</artifactId>
+		<groupId>de.atb.typhondl</groupId>
+		<artifactId>typhondl-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
@@ -16,7 +16,7 @@
 			<resource>
 				<directory>icons</directory>
 			</resource>
-		</resources>
+   		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -42,22 +42,6 @@
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 				<version>2.17.0</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-			</plugin>
-           <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-compiler-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<excludes>
-						<exclude>**/de/atb/typhondl/xtext/ui/editor/*</exclude>
-						<exclude>**/de/atb/typhondl/xtext/ui/editor/pages/*</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
