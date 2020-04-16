@@ -54,7 +54,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>add-source</id>
@@ -74,7 +74,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
+				<version>1.6.0</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -87,6 +87,7 @@
 					<includeProjectDependencies>false</includeProjectDependencies>
 					<includePluginDependencies>true</includePluginDependencies>
 					<mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
+					<cleanupDaemonThreads>false</cleanupDaemonThreads>
 					<arguments>
 						<argument>file://${project.basedir}/src/de/atb/typhondl/xtext/GenerateTyphonDL.mwe2</argument>
 						<argument>
@@ -151,7 +152,7 @@
 											exec-maven-plugin
 										</artifactId>
 										<versionRange>
-											[1.2.1,)
+											[1.6.0,)
 										</versionRange>
 										<goals>
 											<goal>java</goal>
