@@ -17,12 +17,24 @@
     </modules>
 
     <properties>
-        <acceleo-version>3.3.0</acceleo-version>
-        <tycho-version>1.6.0</tycho-version>
-        <xtext-version>2.16.0</xtext-version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <acceleo-version>3.7.8</acceleo-version>
+        <tycho-version>1.6.0</tycho-version>
+        <xtext-version>2.20.0</xtext-version>
+        <xtext-antlr-generator-version>2.1.1</xtext-antlr-generator-version>
+        <xtend-maven-plugin-version>2.21.0</xtend-maven-plugin-version>
+        <org.eclipse.acceleo.maven-version>3.6.4</org.eclipse.acceleo.maven-version>
+        <mwe-version>2.11.1</mwe-version>
+        <equinox-version>3.6.200-v20130402-1505</equinox-version>
+
+        <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
+        <maven-antrun-plugin-version>3.0.0</maven-antrun-plugin-version>
+        <build-helper-maven-plugin-version>3.1.0</build-helper-maven-plugin-version>
+        <maven-clean-plugin-version>3.1.0</maven-clean-plugin-version>
+        <exec-maven-plugin-version>1.6.0</exec-maven-plugin-version>
+        <lifecycle-mapping-version>1.0.0</lifecycle-mapping-version>
     </properties>
 
     <build>
@@ -98,12 +110,12 @@
         </repository>
         <repository>
             <id>xtext</id>
-            <url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.16.0/</url>
+            <url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtext-version}/</url>
             <layout>p2</layout>
         </repository>
         <repository>
             <id>mwe</id>
-            <url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.9.1/</url>
+            <url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/${mwe-version}/</url>
             <layout>p2</layout>
         </repository>
         <repository>
