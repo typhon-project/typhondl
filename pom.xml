@@ -17,7 +17,7 @@
     </modules>
 
     <properties>
-    	<acceleo-version>3.3.0</acceleo-version>
+        <acceleo-version>3.3.0</acceleo-version>
         <tycho-version>1.6.0</tycho-version>
         <xtext-version>2.16.0</xtext-version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -50,40 +50,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.sonatype.tycho</groupId>
+                <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
                     <resolver>p2</resolver>
-                    <target>
-                        <artifact>
-                            <groupId>de.atb.typhondl.xtext.TyphonDL</groupId>
-                            <artifactId>typhondl</artifactId>
-                            <version>1.0.0-SNAPSHOT</version>
-                            <classifier>kepler</classifier>
-                        </artifact>
-                    </target>
                     <configuration>
                         <resolver>p2</resolver>
                         <pomDependencies>consider</pomDependencies>
                     </configuration>
-                    <environments>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                    </environments>
                 </configuration>
             </plugin>
             <plugin>
@@ -130,4 +105,12 @@
             <layout>p2</layout>
         </repository>
     </repositories>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>acceleo</id>
+            <name>Acceleo Maven Repository</name>
+            <url>https://repo.eclipse.org/content/repositories/acceleo/</url>
+        </pluginRepository>
+    </pluginRepositories>    
 </project>
