@@ -28,6 +28,7 @@
         <org.eclipse.acceleo.maven-version>3.6.4</org.eclipse.acceleo.maven-version>
         <mwe-version>2.11.1</mwe-version>
         <equinox-version>3.6.200-v20130402-1505</equinox-version>
+        <eclipse-version>2020-03</eclipse-version>
 
         <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
         <maven-antrun-plugin-version>3.0.0</maven-antrun-plugin-version>
@@ -105,7 +106,7 @@
     <repositories>
         <repository>
             <id>kepler</id>
-            <url>http://download.eclipse.org/releases/2018-12</url>
+            <url>http://download.eclipse.org/releases/${eclipse-version}</url>
             <layout>p2</layout>
         </repository>
         <repository>
