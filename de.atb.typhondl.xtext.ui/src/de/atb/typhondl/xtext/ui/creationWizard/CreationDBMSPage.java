@@ -33,6 +33,7 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
@@ -162,8 +163,9 @@ public class CreationDBMSPage extends MyWizardPage {
 			ArrayList<Pair<DB, TemplateBuffer>> templates = PreferenceReader.getBuffers(dbFromML.secondValue);
 			// no fitting DB is defined in templates
 			if (templates.isEmpty()) {
-				MessageDialog.openError(getShell(), "Template Error", "There is no template for a "
-						+ dbFromML.secondValue + ". Please add or activate a fitting DB template.");
+				MessageDialog.openError(getShell(), "Template Error",
+						"There is no template for a " + dbFromML.secondValue
+								+ ". Please add or activate a fitting DB template in the Eclipse settings.");
 			}
 
 			String dbName = db.getName();
@@ -171,7 +173,7 @@ public class CreationDBMSPage extends MyWizardPage {
 			// get Templates from buffer. The DBs have the template's name.
 			DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
 					.toArray(new DB[0]);
-			databaseSettings.put(dbName, new WizardFields(null, null, templates));
+			databaseSettings.put(dbName, new WizardFields(null, null, null, templates));
 			String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
 					.collect(Collectors.toList()).toArray(new String[0]);
 
@@ -181,22 +183,24 @@ public class CreationDBMSPage extends MyWizardPage {
 			group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			group.setText(dbName);
 
-			Button checkbox = new Button(group, SWT.CHECK);
-			checkbox.setText("Use existing " + dbName + ".tdl file in this project folder");
-			checkbox.setSelection(fileExists(dbName + ".tdl"));
+			Button existingModelCheck = new Button(group, SWT.CHECK);
+			existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
+			existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
 			// if an existing file is to be used, there exists no buffer
-			if (checkbox.getSelection()) {
+			if (existingModelCheck.getSelection()) {
 				result.put(readExistingFile(dbName), null);
 			}
-			checkbox.setLayoutData(gridData);
-			checkbox.setToolTipText("Check this box if you already have a model file for " + dbName);
-			checkbox.addSelectionListener(new SelectionAdapter() {
+			existingModelCheck.setLayoutData(gridData);
+			existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
+			existingModelCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = databaseSettings.get(dbName);
-					wizardField.getCombo().setEnabled(!wizardField.getCheckbox().getSelection());
+					boolean useExistingModel = wizardField.getExistingModelCheck().getSelection();
+					wizardField.getCombo().setEnabled(!useExistingModel);
+					wizardField.getExistingDatabaseCheck().setEnabled(!useExistingModel);
 					removeDBfromResult(dbName);
-					if (wizardField.getCheckbox().getSelection()) {
+					if (useExistingModel) {
 						result.put(readExistingFile(dbName), null);
 					} else {
 						Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
@@ -206,18 +210,47 @@ public class CreationDBMSPage extends MyWizardPage {
 					validate();
 				}
 			});
-			databaseSettings.get(dbName).setCheckbox(checkbox);
+			databaseSettings.get(dbName).setExistingModelCheck(existingModelCheck);
+
+			Button existingDatabaseCheck = new Button(group, SWT.CHECK);
+			existingDatabaseCheck.setText("Use existing database for " + dbName + ".");
+			existingDatabaseCheck.setSelection(false);
+			existingDatabaseCheck.setLayoutData(gridData);
+			existingDatabaseCheck
+					.setToolTipText("Check this box if you already have this database outside of the polystore");
+			existingDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					WizardFields wizardField = databaseSettings.get(dbName);
+					boolean useExistingDatabase = wizardField.getExistingDatabaseCheck().getSelection();
+					wizardField.getCombo().setEnabled(!useExistingDatabase);
+					wizardField.getExistingModelCheck().setEnabled(!useExistingDatabase);
+					removeDBfromResult(dbName);
+					if (useExistingDatabase) {
+						DB emptyDB = getEmptyDB(dbName);
+						Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
+						address.setName("address");
+						emptyDB.getParameters().add(address);
+						result.put(emptyDB, null);
+					} else {
+						Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
+								wizardField.getCombo().getText());
+						result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+					}
+				};
+			});
+			databaseSettings.get(dbName).setExistingDatabaseCheck(existingDatabaseCheck);
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
 			combo.setItems(dbTemplateNames);
 			combo.setText(dbTemplateNames[0]);
 			// set initial dbTemplate
-			if (!checkbox.getSelection()) {
+			if (!existingModelCheck.getSelection()) {
 				Pair<DB, TemplateBuffer> template = templates.get(0);
 				result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
 			}
-			combo.setEnabled(!checkbox.getSelection());
+			combo.setEnabled(!existingModelCheck.getSelection());
 			combo.setToolTipText("Choose specific DBMS Template for " + dbName);
 			combo.addSelectionListener(new SelectionAdapter() {
 				@Override
@@ -321,7 +354,7 @@ public class CreationDBMSPage extends MyWizardPage {
 		for (String dbName : databaseSettings.keySet()) {
 			WizardFields fields = databaseSettings.get(dbName);
 			String path = dbName + ".tdl";
-			if (fields.getCheckbox().getSelection()) {
+			if (fields.getExistingModelCheck().getSelection()) {
 				if (!fileExists(path)) {
 					status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
 				}

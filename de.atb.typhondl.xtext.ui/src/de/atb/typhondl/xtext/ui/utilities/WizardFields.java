@@ -20,7 +20,12 @@ public class WizardFields {
 	/**
 	 * Checkbox for using an existing file or not
 	 */
-	private Button checkbox;
+	private Button existingModelCheck;
+
+	/**
+	 * Checkbox for using an existing database or not
+	 */
+	private Button existingDatabaseCheck;
 
 	/**
 	 * Combo to choose {@link DB} template from
@@ -36,22 +41,32 @@ public class WizardFields {
 	/**
 	 * Creates instance of {@link WizardFields}
 	 * 
-	 * @param checkbox  Checkbox for using an existing file or not
-	 * @param combo     Combo to choose {@link DB} template from
-	 * @param templates List of Pairs of {@link DB} and the {@link TemplateBuffer}
-	 *                  of the chosen Template
+	 * @param existingModelCheck    Checkbox for using an existing file or not
+	 * @param combo                 Combo to choose {@link DB} template from
+	 * @param templates             List of Pairs of {@link DB} and the
+	 *                              {@link TemplateBuffer} of the chosen Template
+	 * @param existingDatabaseCheck Checkbox for using an existing database or not
 	 */
-	public WizardFields(Button checkbox, Combo combo, ArrayList<Pair<DB, TemplateBuffer>> templates) {
-		this.checkbox = checkbox;
+	public WizardFields(Button existingModelCheck, Button existingDatabaseCheck, Combo combo,
+			ArrayList<Pair<DB, TemplateBuffer>> templates) {
+		this.existingModelCheck = existingModelCheck;
+		this.setExistingDatabaseCheck(existingDatabaseCheck);
 		this.combo = combo;
 		this.templateBuffers = templates;
 	}
 
 	/**
-	 * @param checkbox Checkbox for using an existing file or not
+	 * @param existingModelCheck Checkbox for using an existing file or not
 	 */
-	public void setCheckbox(Button checkbox) {
-		this.checkbox = checkbox;
+	public void setExistingModelCheck(Button existingModelCheck) {
+		this.setExistingModelCheck(existingModelCheck);
+	}
+
+	/**
+	 * @return Checkbox for using an existing file or not
+	 */
+	public Button getExistingModelCheck() {
+		return existingModelCheck;
 	}
 
 	/**
@@ -59,14 +74,6 @@ public class WizardFields {
 	 */
 	public void setCombo(Combo combo) {
 		this.combo = combo;
-	}
-
-	/**
-	 * 
-	 * @return Checkbox for using an existing file or not
-	 */
-	public Button getCheckbox() {
-		return checkbox;
 	}
 
 	/**
@@ -84,5 +91,21 @@ public class WizardFields {
 	 */
 	public ArrayList<Pair<DB, TemplateBuffer>> getTemplateBuffers() {
 		return templateBuffers;
+	}
+
+	/**
+	 * 
+	 * @return Checkbox for using an database file or not
+	 */
+	public Button getExistingDatabaseCheck() {
+		return existingDatabaseCheck;
+	}
+
+	/**
+	 * 
+	 * @param existingDatabaseCheck Checkbox for using an database file or not
+	 */
+	public void setExistingDatabaseCheck(Button existingDatabaseCheck) {
+		this.existingDatabaseCheck = existingDatabaseCheck;
 	}
 }
