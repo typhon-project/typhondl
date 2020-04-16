@@ -59,7 +59,7 @@ public class WizardFields {
 	 * @param existingModelCheck Checkbox for using an existing file or not
 	 */
 	public void setExistingModelCheck(Button existingModelCheck) {
-		this.setExistingModelCheck(existingModelCheck);
+		this.existingModelCheck = existingModelCheck;
 	}
 
 	/**

@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
@@ -198,7 +197,7 @@ public class CreationDBMSPage extends MyWizardPage {
 					WizardFields wizardField = databaseSettings.get(dbName);
 					boolean useExistingModel = wizardField.getExistingModelCheck().getSelection();
 					wizardField.getCombo().setEnabled(!useExistingModel);
-					wizardField.getExistingDatabaseCheck().setEnabled(!useExistingModel);
+					wizardField.getExistingDatabaseCheck().setSelection(!useExistingModel);
 					removeDBfromResult(dbName);
 					if (useExistingModel) {
 						result.put(readExistingFile(dbName), null);
@@ -224,13 +223,10 @@ public class CreationDBMSPage extends MyWizardPage {
 					WizardFields wizardField = databaseSettings.get(dbName);
 					boolean useExistingDatabase = wizardField.getExistingDatabaseCheck().getSelection();
 					wizardField.getCombo().setEnabled(!useExistingDatabase);
-					wizardField.getExistingModelCheck().setEnabled(!useExistingDatabase);
-					removeDBfromResult(dbName);
+					wizardField.getExistingModelCheck().setSelection(!useExistingDatabase);
+					removeDBfromResult(dbName); // TODO the DBMS still has to be chosen
 					if (useExistingDatabase) {
 						DB emptyDB = getEmptyDB(dbName);
-						Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
-						address.setName("address");
-						emptyDB.getParameters().add(address);
 						result.put(emptyDB, null);
 					} else {
 						Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
