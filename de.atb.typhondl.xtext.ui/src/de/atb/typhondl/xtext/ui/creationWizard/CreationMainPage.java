@@ -180,10 +180,6 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_PORT", "\"30061\"");
 					properties.setProperty("api.publishedPort", "30061");
 					properties.setProperty("ui.publishedPort", "30075");
-					properties.setProperty("db.publishedPort", "30064");
-					properties.setProperty("db.hostname", "192.168.99.101");
-					properties.setProperty("api.hostname", "192.168.99.101");
-					properties.setProperty("ui.hostname", "192.168.99.101");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
 				} else {
@@ -192,13 +188,8 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_PORT", "8080");
 					properties.setProperty("api.publishedPort", "8080");
 					properties.setProperty("ui.publishedPort", "4200");
-					properties.setProperty("db.publishedPort", "27017");
-					properties.setProperty("db.hostname", "localhost");
-					properties.setProperty("api.hostname", "localhost");
-					properties.setProperty("ui.hostname", "localhost");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
-
 				}
 			}
 		});
@@ -221,7 +212,11 @@ public class CreationMainPage extends MyWizardPage {
 		checkbox.setText("Use Typhon Data Analytics");
 		checkbox.setSelection(false);
 		checkbox.setLayoutData(gridData);
-		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
+		// TODO delete this when analytics can be used:
+		checkbox.setEnabled(false);
+		checkbox.setToolTipText("Analytics is under development and will be available in a future update");
+		// checkbox.setToolTipText("Check if you want to include Data Analytics in your
+		// deployment");
 		checkbox.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
