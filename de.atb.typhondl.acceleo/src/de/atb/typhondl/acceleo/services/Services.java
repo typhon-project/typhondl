@@ -476,7 +476,7 @@ public class Services {
 		polystore_ui_environment.setName("environment");
 		Key_Values polystore_ui_environment1 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment1.setName("API_PORT");
-		polystore_ui_environment1.setValue(properties.getProperty("api.publishedPort"));
+		polystore_ui_environment1.setValue(properties.getProperty("ui.environment.API_PORT"));
 		polystore_ui_environment.getProperties().add(polystore_ui_environment1);
 		Key_Values polystore_ui_environment2 = TyphonDLFactory.eINSTANCE.createKey_Values();
 		polystore_ui_environment2.setName("API_HOST");
