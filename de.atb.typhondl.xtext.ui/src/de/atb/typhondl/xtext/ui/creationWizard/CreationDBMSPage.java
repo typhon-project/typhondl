@@ -197,7 +197,9 @@ public class CreationDBMSPage extends MyWizardPage {
 					WizardFields wizardField = databaseSettings.get(dbName);
 					boolean useExistingModel = wizardField.getExistingModelCheck().getSelection();
 					wizardField.getCombo().setEnabled(!useExistingModel);
-					wizardField.getExistingDatabaseCheck().setSelection(!useExistingModel);
+					if (wizardField.getExistingDatabaseCheck().getSelection()) {
+						wizardField.getExistingDatabaseCheck().setSelection(!useExistingModel);
+					}
 					removeDBfromResult(dbName);
 					if (useExistingModel) {
 						result.put(readExistingFile(dbName), null);
@@ -222,8 +224,10 @@ public class CreationDBMSPage extends MyWizardPage {
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = databaseSettings.get(dbName);
 					boolean useExistingDatabase = wizardField.getExistingDatabaseCheck().getSelection();
-					wizardField.getCombo().setEnabled(!useExistingDatabase);
-					wizardField.getExistingModelCheck().setSelection(!useExistingDatabase);
+					wizardField.getCombo().setEnabled(true);
+					if (wizardField.getExistingModelCheck().getSelection()) {
+						wizardField.getExistingModelCheck().setSelection(!useExistingDatabase);
+					}
 					removeDBfromResult(dbName); // TODO the DBMS still has to be chosen
 					if (useExistingDatabase) {
 						DB emptyDB = getEmptyDB(dbName);
