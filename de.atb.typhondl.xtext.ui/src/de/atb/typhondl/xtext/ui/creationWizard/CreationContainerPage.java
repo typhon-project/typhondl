@@ -42,7 +42,7 @@ public class CreationContainerPage extends MyWizardPage {
 
 	/**
 	 * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
-	 * always 607, independent of what's given here
+	 * always 607, independent of what's given here //TODO wtf?
 	 */
 	private static final int WIDTH = 607;
 
@@ -151,14 +151,18 @@ public class CreationContainerPage extends MyWizardPage {
 			container.setDeploys(reference);
 
 			// check if the database is external
-			boolean externalDatabse = (db.getType() == null); // TODO
+			boolean externalDatabse = db.isExternal();
 
 			if (externalDatabse) {
 				container.setExternal(true);
 				Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
 				address.setName("address");
-				address.setValue("testAddress");
 				container.getProperties().add(address);
+				new Label(group, NONE).setText("Database Address: ");
+				Text addressText = new Text(group, SWT.BORDER);
+				addressText.setToolTipText("Give the address under which the polystore can reach the database");
+				addressText.setLayoutData(gridDataFields);
+				addressText.addModifyListener(e -> address.setValue(addressText.getText()));
 
 			} else {
 
@@ -180,9 +184,7 @@ public class CreationContainerPage extends MyWizardPage {
 				portText.setText(targetPort);
 				portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
 				portText.setLayoutData(gridDataFields);
-				portText.addModifyListener(e -> {
-					port.setValue(portText.getText());
-				});
+				portText.addModifyListener(e -> port.setValue(portText.getText()));
 
 				// Replicas
 				Key_Values replicas = TyphonDLFactory.eINSTANCE.createKey_Values();
