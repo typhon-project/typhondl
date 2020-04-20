@@ -214,7 +214,7 @@ public class CreationDBMSPage extends MyWizardPage {
 			databaseSettings.get(dbName).setExistingModelCheck(existingModelCheck);
 
 			Button externalDatabaseCheck = new Button(group, SWT.CHECK);
-			externalDatabaseCheck.setText("Use existing database for " + dbName + ".");
+			externalDatabaseCheck.setText("Use existing database for " + dbName);
 			externalDatabaseCheck.setSelection(false);
 			externalDatabaseCheck.setLayoutData(gridData);
 			externalDatabaseCheck
@@ -234,6 +234,7 @@ public class CreationDBMSPage extends MyWizardPage {
 					DB newDB = useBufferOnDB(db, template.firstValue);
 					newDB.setExternal(useExternalDatabase);
 					result.put(newDB, template.secondValue);
+					validate();
 				};
 			});
 			databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
