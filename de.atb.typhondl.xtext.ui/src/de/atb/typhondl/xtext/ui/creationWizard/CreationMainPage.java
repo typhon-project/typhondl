@@ -214,16 +214,18 @@ public class CreationMainPage extends MyWizardPage {
 		checkbox.setLayoutData(gridData);
 		// TODO delete this when analytics can be used:
 		checkbox.setEnabled(false);
-		checkbox.setToolTipText("Analytics is under development and will be available in a future update");
-		// checkbox.setToolTipText("Check if you want to include Data Analytics in your
-		// deployment");
+		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
 		checkbox.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
 			}
 		});
-
+		// TODO delete this when analytics can be used:
+		Label notReady = new Label(main, NONE);
+		notReady.setLayoutData(gridData);
+		notReady.setText("Analytics is under development and will be available in a future update");
+		notReady.setEnabled(false);
 	}
 
 	/**
