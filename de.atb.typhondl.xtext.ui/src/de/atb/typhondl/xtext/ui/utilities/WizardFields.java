@@ -23,9 +23,9 @@ public class WizardFields {
 	private Button existingModelCheck;
 
 	/**
-	 * Checkbox for using an existing database or not
+	 * Checkbox for using an external database or not
 	 */
-	private Button existingDatabaseCheck;
+	private Button externalDatabaseCheck;
 
 	/**
 	 * Combo to choose {@link DB} template from
@@ -45,12 +45,12 @@ public class WizardFields {
 	 * @param combo                 Combo to choose {@link DB} template from
 	 * @param templates             List of Pairs of {@link DB} and the
 	 *                              {@link TemplateBuffer} of the chosen Template
-	 * @param existingDatabaseCheck Checkbox for using an existing database or not
+	 * @param externalDatabaseCheck Checkbox for using an external database or not
 	 */
-	public WizardFields(Button existingModelCheck, Button existingDatabaseCheck, Combo combo,
+	public WizardFields(Button existingModelCheck, Button externalDatabaseCheck, Combo combo,
 			ArrayList<Pair<DB, TemplateBuffer>> templates) {
 		this.existingModelCheck = existingModelCheck;
-		this.setExistingDatabaseCheck(existingDatabaseCheck);
+		this.setExternalDatabaseCheck(externalDatabaseCheck);
 		this.combo = combo;
 		this.templateBuffers = templates;
 	}
@@ -95,17 +95,17 @@ public class WizardFields {
 
 	/**
 	 * 
-	 * @return Checkbox for using an database file or not
+	 * @return Checkbox for using an external database or not
 	 */
-	public Button getExistingDatabaseCheck() {
-		return existingDatabaseCheck;
+	public Button getExternalDatabaseCheck() {
+		return externalDatabaseCheck;
 	}
 
 	/**
 	 * 
-	 * @param existingDatabaseCheck Checkbox for using an database file or not
+	 * @param externalDatabaseCheck Checkbox for using an external database or not
 	 */
-	public void setExistingDatabaseCheck(Button existingDatabaseCheck) {
-		this.existingDatabaseCheck = existingDatabaseCheck;
+	public void setExternalDatabaseCheck(Button externalDatabaseCheck) {
+		this.externalDatabaseCheck = externalDatabaseCheck;
 	}
 }

@@ -18,6 +18,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Import/relativePath"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Services">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Services/external"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Services/image"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Services/parameters"/>
     </genClasses>

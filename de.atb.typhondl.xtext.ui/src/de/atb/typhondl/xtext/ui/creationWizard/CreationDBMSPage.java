@@ -197,8 +197,8 @@ public class CreationDBMSPage extends MyWizardPage {
 					WizardFields wizardField = databaseSettings.get(dbName);
 					boolean useExistingModel = wizardField.getExistingModelCheck().getSelection();
 					wizardField.getCombo().setEnabled(!useExistingModel);
-					if (wizardField.getExistingDatabaseCheck().getSelection()) {
-						wizardField.getExistingDatabaseCheck().setSelection(!useExistingModel);
+					if (wizardField.getExternalDatabaseCheck().getSelection()) {
+						wizardField.getExternalDatabaseCheck().setSelection(!useExistingModel);
 					}
 					removeDBfromResult(dbName);
 					if (useExistingModel) {
@@ -213,33 +213,30 @@ public class CreationDBMSPage extends MyWizardPage {
 			});
 			databaseSettings.get(dbName).setExistingModelCheck(existingModelCheck);
 
-			Button existingDatabaseCheck = new Button(group, SWT.CHECK);
-			existingDatabaseCheck.setText("Use existing database for " + dbName + ".");
-			existingDatabaseCheck.setSelection(false);
-			existingDatabaseCheck.setLayoutData(gridData);
-			existingDatabaseCheck
+			Button externalDatabaseCheck = new Button(group, SWT.CHECK);
+			externalDatabaseCheck.setText("Use existing database for " + dbName + ".");
+			externalDatabaseCheck.setSelection(false);
+			externalDatabaseCheck.setLayoutData(gridData);
+			externalDatabaseCheck
 					.setToolTipText("Check this box if you already have this database outside of the polystore");
-			existingDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+			externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					WizardFields wizardField = databaseSettings.get(dbName);
-					boolean useExistingDatabase = wizardField.getExistingDatabaseCheck().getSelection();
+					boolean useExternalDatabase = wizardField.getExternalDatabaseCheck().getSelection();
 					wizardField.getCombo().setEnabled(true);
 					if (wizardField.getExistingModelCheck().getSelection()) {
-						wizardField.getExistingModelCheck().setSelection(!useExistingDatabase);
+						wizardField.getExistingModelCheck().setSelection(!useExternalDatabase);
 					}
-					removeDBfromResult(dbName); // TODO the DBMS still has to be chosen
-					if (useExistingDatabase) {
-						DB emptyDB = getEmptyDB(dbName);
-						result.put(emptyDB, null);
-					} else {
-						Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
-								wizardField.getCombo().getText());
-						result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
-					}
+					removeDBfromResult(dbName);
+					Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
+							wizardField.getCombo().getText());
+					DB newDB = useBufferOnDB(db, template.firstValue);
+					newDB.setExternal(useExternalDatabase);
+					result.put(newDB, template.secondValue);
 				};
 			});
-			databaseSettings.get(dbName).setExistingDatabaseCheck(existingDatabaseCheck);
+			databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
 
 			new Label(group, NONE).setText("Choose DBMS:");
 			Combo combo = new Combo(group, SWT.READ_ONLY);
@@ -259,7 +256,9 @@ public class CreationDBMSPage extends MyWizardPage {
 					removeDBfromResult(dbName);
 					Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
 							wizardField.getCombo().getText());
-					result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+					DB newDB = useBufferOnDB(db, template.firstValue);
+					newDB.setExternal(wizardField.getExternalDatabaseCheck().getSelection());
+					result.put(newDB, template.secondValue);
 					validate();
 				}
 			});
