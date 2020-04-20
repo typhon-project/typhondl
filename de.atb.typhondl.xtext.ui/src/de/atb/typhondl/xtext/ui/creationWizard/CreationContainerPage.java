@@ -162,7 +162,11 @@ public class CreationContainerPage extends MyWizardPage {
 				Text addressText = new Text(group, SWT.BORDER);
 				addressText.setToolTipText("Give the address under which the polystore can reach the database");
 				addressText.setLayoutData(gridDataFields);
-				addressText.addModifyListener(e -> address.setValue(addressText.getText()));
+				addressText.addModifyListener(e -> {
+					address.setValue(addressText.getText());
+					validate();
+				});
+				validate();
 
 			} else {
 
@@ -184,7 +188,10 @@ public class CreationContainerPage extends MyWizardPage {
 				portText.setText(targetPort);
 				portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
 				portText.setLayoutData(gridDataFields);
-				portText.addModifyListener(e -> port.setValue(portText.getText()));
+				portText.addModifyListener(e -> {
+					port.setValue(portText.getText());
+					validate();
+				});
 
 				// Replicas
 				Key_Values replicas = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -222,6 +229,7 @@ public class CreationContainerPage extends MyWizardPage {
 							break;
 						}
 					}
+					validate();
 				});
 
 				// Resources
@@ -269,11 +277,19 @@ public class CreationContainerPage extends MyWizardPage {
 				Text limMemText = new Text(limitComposite, SWT.BORDER);
 				limMemText.setText(limMemKeyValue.getValue());
 				limMemText.setLayoutData(gridDataFields);
+				limMemText.addModifyListener(e -> {
+					limMemKeyValue.setValue(limMemText.getText());
+					validate();
+				});
 				Label limCPULabel = new Label(limitComposite, NONE);
 				limCPULabel.setText(limCPUKeyValue.getName() + ": ");
 				Text limCPUText = new Text(limitComposite, SWT.BORDER);
 				limCPUText.setText(limCPUKeyValue.getValue());
 				limCPUText.setLayoutData(gridDataFields);
+				limCPUText.addModifyListener(e -> {
+					limCPUKeyValue.setValue(limCPUText.getText());
+					validate();
+				});
 
 				Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
 				reservationCheck.setText("Set resource " + reservationList.getName());
@@ -289,11 +305,19 @@ public class CreationContainerPage extends MyWizardPage {
 				Text resMemText = new Text(reservationComposite, SWT.BORDER);
 				resMemText.setText(resMemKeyValue.getValue());
 				resMemText.setLayoutData(gridDataFields);
+				resMemText.addModifyListener(e -> {
+					resMemKeyValue.setValue(resMemText.getText());
+					validate();
+				});
 				Label resCPULabel = new Label(reservationComposite, NONE);
 				resCPULabel.setText(resCPUKeyValue.getName() + ": ");
 				Text resCPUText = new Text(reservationComposite, SWT.BORDER);
 				resCPUText.setText(resCPUKeyValue.getValue());
 				resCPUText.setLayoutData(gridDataFields);
+				resCPUText.addModifyListener(e -> {
+					resCPUKeyValue.setValue(resCPUText.getText());
+					validate();
+				});
 
 				limitCheck.addSelectionListener(new SelectionAdapter() {
 					@Override
@@ -336,6 +360,7 @@ public class CreationContainerPage extends MyWizardPage {
 								break;
 							}
 						}
+						validate();
 					}
 				});
 				reservationCheck.addSelectionListener(new SelectionAdapter() {
@@ -379,6 +404,7 @@ public class CreationContainerPage extends MyWizardPage {
 								break;
 							}
 						}
+						validate();
 					}
 				});
 			}
@@ -387,6 +413,17 @@ public class CreationContainerPage extends MyWizardPage {
 		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		setControl(scrolling);
+	}
+
+	private void validate() {
+		// TODO validation
+//		Status status = null;
+//		if (string == null || string.isEmpty()) {
+//			status = new Status(IStatus.ERROR, "Wizard", "Every Field needs an entry");
+//		}
+//		if (getErrorMessage() != null) {
+//			setStatus(status);
+//		}
 	}
 
 	/**
