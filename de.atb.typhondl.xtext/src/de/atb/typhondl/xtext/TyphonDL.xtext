@@ -29,10 +29,15 @@ Type:
 	PlatformType | ClusterType | ContainerType | DBType;
 
 DB:
-	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
+	(external?='external')? (function?=DBFunction)? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
 	(parameters+=Property)*
-	'}';
+	'}'
+;
+
+DBFunction:
+	'master' | 'slave'
+;
 
 PlatformType:
 	'platformtype' name=Name;
