@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -68,6 +69,11 @@ public class CreationContainerPage extends MyWizardPage {
 	private int chosenTemplate;
 
 	/**
+	 * List of statuses of this page
+	 */
+	private ArrayList<Status> statuses;
+
+	/**
 	 * Creates instance of {@link CreationContainerPage}
 	 * 
 	 * @param pageName
@@ -79,6 +85,7 @@ public class CreationContainerPage extends MyWizardPage {
 		this.dbs = dbs;
 		this.chosenTemplate = chosenTemplate;
 		this.result = new HashMap<>();
+		this.statuses = new ArrayList<>();
 		try {
 			this.properties = PropertiesLoader.loadProperties();
 		} catch (IOException e) {
@@ -157,16 +164,17 @@ public class CreationContainerPage extends MyWizardPage {
 				container.setExternal(true);
 				Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
 				address.setName("address");
+				address.setValue("https://example.com");
 				container.getProperties().add(address);
 				new Label(group, NONE).setText("Database Address: ");
 				Text addressText = new Text(group, SWT.BORDER);
+				addressText.setText(address.getValue());
 				addressText.setToolTipText("Give the address under which the polystore can reach the database");
 				addressText.setLayoutData(gridDataFields);
 				addressText.addModifyListener(e -> {
 					address.setValue(addressText.getText());
 					validate();
 				});
-				validate();
 
 			} else {
 
