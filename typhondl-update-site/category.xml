@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/typhondl_1.0.0.qualifier.jar" id="typhondl_feature" version="1.0.0.qualifier">
+      <category name="Typhon"/>
+   </feature>
+   <category-def name="Typhon" label="Typhon">
+      <description>
+         Typhon DSLs
+      </description>
+   </category-def>
+</site>
