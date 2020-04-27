@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -55,7 +54,7 @@ public class CreationContainerPage extends MyWizardPage {
 	private ArrayList<DB> dbs;
 
 	/**
-	 * each DB has a container //TODO list of containers for master/slave setup?
+	 * each DB has a container
 	 */
 	private HashMap<DB, ArrayList<Container>> result;
 
@@ -70,11 +69,6 @@ public class CreationContainerPage extends MyWizardPage {
 	private int chosenTemplate;
 
 	/**
-	 * List of statuses of this page
-	 */
-	private ArrayList<Status> statuses;
-
-	/**
 	 * Creates instance of {@link CreationContainerPage}
 	 * 
 	 * @param pageName
@@ -86,7 +80,6 @@ public class CreationContainerPage extends MyWizardPage {
 		this.dbs = dbs;
 		this.chosenTemplate = chosenTemplate;
 		this.result = new HashMap<>();
-		this.statuses = new ArrayList<>();
 		try {
 			this.properties = PropertiesLoader.loadProperties();
 		} catch (IOException e) {
@@ -501,6 +494,14 @@ public class CreationContainerPage extends MyWizardPage {
 		setControl(scrolling);
 	}
 
+	/**
+	 * Creates a new Container with link to the container called masterName and the
+	 * mongod slave command
+	 * 
+	 * @param masterName The name of the container with the mongo master instance
+	 * @param number     The count of the slaves
+	 * @return A new mongo slave container
+	 */
 	private Container createMongoSlave(String masterName, int number) {
 		Container slave = TyphonDLFactory.eINSTANCE.createContainer();
 		slave.setName(masterName + "-slave" + number);
@@ -516,14 +517,8 @@ public class CreationContainerPage extends MyWizardPage {
 	}
 
 	private void validate() {
-		// TODO validation
-//		Status status = null;
-//		if (string == null || string.isEmpty()) {
-//			status = new Status(IStatus.ERROR, "Wizard", "Every Field needs an entry");
-//		}
-//		if (getErrorMessage() != null) {
-//			setStatus(status);
-//		}
+		// TODO validation for ContainerPage
+
 	}
 
 	/**

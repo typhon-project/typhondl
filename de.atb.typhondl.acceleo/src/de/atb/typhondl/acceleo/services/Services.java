@@ -66,8 +66,12 @@ public class Services {
 			String outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
 			deleteOldGeneratedFiles(new File(outputFolder));
 			DeploymentModel model = loadXtextModel(file, provider);
-			new Generate(model, new File(outputFolder), new ArrayList<String>()).doGenerate(new BasicMonitor());
-			result = getResult(new File(outputFolder));
+			if (model == null) {
+				result = "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.";
+			} else {
+				new Generate(model, new File(outputFolder), new ArrayList<String>()).doGenerate(new BasicMonitor());
+				result = getResult(new File(outputFolder));
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -85,7 +89,7 @@ public class Services {
 			return "Something went wrong";
 		} else {
 			for (File subFile : folder.listFiles()) {
-				if (subFile.getName().contains("yml") || subFile.getName().contains("yaml")) { // TODO horrible
+				if (subFile.getName().contains("yml") || subFile.getName().contains("yaml")) {
 					return "Deployment script generated";
 				}
 				if (subFile.getName().endsWith("xmi")) {
@@ -142,7 +146,7 @@ public class Services {
 				}
 			}
 		}
-		// read DL model
+		// read DL model and properties
 		URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 		Resource DLmodelResource = resourceSet.getResource(modelURI, true);
 		DeploymentModel model = (DeploymentModel) DLmodelResource.getContents().get(0);
@@ -153,7 +157,8 @@ public class Services {
 			InputStream input = new FileInputStream(path);
 			properties.load(input);
 		} catch (IOException e) {
-			e.printStackTrace();// TODO popup if nonexistent
+			e.printStackTrace();
+			return null;
 		}
 		model = addPolystoreToModel(path, model, properties);
 		Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
@@ -638,7 +643,7 @@ public class Services {
 	}
 
 	/**
-	 * Gets application TODO remove
+	 * Gets application TODO remove application
 	 * 
 	 * @param model   The TyphonDL model
 	 * @param appName The name of the Application to find
