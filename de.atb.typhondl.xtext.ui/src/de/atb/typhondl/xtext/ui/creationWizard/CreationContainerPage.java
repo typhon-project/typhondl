@@ -24,6 +24,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
@@ -56,7 +57,7 @@ public class CreationContainerPage extends MyWizardPage {
 	/**
 	 * each DB has a container //TODO list of containers for master/slave setup?
 	 */
-	private HashMap<DB, Container> result;
+	private HashMap<DB, ArrayList<Container>> result;
 
 	/**
 	 * polystore.properties from classpath
@@ -109,7 +110,8 @@ public class CreationContainerPage extends MyWizardPage {
 		String limCPU;
 		String resMem;
 		String resCPU;
-		switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+		String clusterType = SupportedTechnologies.values()[chosenTemplate].getClusterType();
+		switch (clusterType) {
 		case "DockerCompose":
 			reservationWord = "reservations";
 			cpuText = "cpus";
@@ -156,6 +158,9 @@ public class CreationContainerPage extends MyWizardPage {
 			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
 			reference.setReference(db);
 			container.setDeploys(reference);
+
+			ArrayList<Container> containers = new ArrayList<>();
+			containers.add(container);
 
 			// check if the database is external
 			boolean externalDatabse = db.isExternal();
@@ -213,7 +218,7 @@ public class CreationContainerPage extends MyWizardPage {
 				replicasText.addModifyListener(e -> {
 					replicas.setValue(replicasText.getText());
 					if (replicas.getValue().equals("1")) {
-						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						switch (clusterType) {
 						case "DockerCompose":
 							removePropertyFromList(deployList, replicas);
 							if (deployList.getProperties().isEmpty()) {
@@ -226,7 +231,7 @@ public class CreationContainerPage extends MyWizardPage {
 							break;
 						}
 					} else {
-						switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+						switch (clusterType) {
 						case "DockerCompose":
 							addKeyValueToList(deployList, replicas);
 							addListToContainer(container, deployList);
@@ -331,14 +336,15 @@ public class CreationContainerPage extends MyWizardPage {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						// set the textfields visible, resize window
-						limitData.exclude = !limitCheck.getSelection();
-						limitComposite.setVisible(limitCheck.getSelection());
+						boolean useLimits = limitCheck.getSelection();
+						limitData.exclude = !useLimits;
+						limitComposite.setVisible(useLimits);
 						main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 						scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 						// add or remove objects from model
-						if (limitCheck.getSelection()) {
+						if (useLimits) {
 							resourceList.getProperties().add(limitList);
-							switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+							switch (clusterType) {
 							case "DockerCompose":
 								addListToList(deployList, resourceList);
 								addListToContainer(container, deployList);
@@ -349,7 +355,7 @@ public class CreationContainerPage extends MyWizardPage {
 								break;
 							}
 						} else {
-							switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+							switch (clusterType) {
 							case "DockerCompose":
 								removePropertyFromList(resourceList, limitList);
 								if (resourceList.getProperties().isEmpty()) {
@@ -375,14 +381,15 @@ public class CreationContainerPage extends MyWizardPage {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						// set the textfields visible, resize window
-						reservationData.exclude = !reservationCheck.getSelection();
-						reservationComposite.setVisible(reservationCheck.getSelection());
+						boolean useReservations = reservationCheck.getSelection();
+						reservationData.exclude = !useReservations;
+						reservationComposite.setVisible(useReservations);
 						main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 						scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 						// add or remove objects from model
-						if (reservationCheck.getSelection()) {
+						if (useReservations) {
 							resourceList.getProperties().add(reservationList);
-							switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+							switch (clusterType) {
 							case "DockerCompose":
 								addListToList(deployList, resourceList);
 								addListToContainer(container, deployList);
@@ -393,7 +400,7 @@ public class CreationContainerPage extends MyWizardPage {
 								break;
 							}
 						} else {
-							switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+							switch (clusterType) {
 							case "DockerCompose":
 								removePropertyFromList(resourceList, reservationList);
 								if (resourceList.getProperties().isEmpty()) {
@@ -415,12 +422,97 @@ public class CreationContainerPage extends MyWizardPage {
 						validate();
 					}
 				});
+
+				// master slave setup
+				// create master slave composite in each mongodb group
+				if (clusterType.equalsIgnoreCase("DockerCompose") && db.getType().getName().equalsIgnoreCase("mongo")) {
+					GridData masterSlaveGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+					masterSlaveGridData.horizontalSpan = 2;
+					Composite masterSlaveComposite = new Composite(group, NONE);
+					masterSlaveComposite.setLayout(new GridLayout(1, false));
+					masterSlaveComposite.setLayoutData(masterSlaveGridData);
+
+					Button masterSlaveCheck = new Button(masterSlaveComposite, SWT.CHECK);
+					masterSlaveCheck.setText("Use master-slave setup");
+					masterSlaveCheck.setLayoutData(gridDataChecks);
+
+					// create invisible slave composite in each master slave composite
+					Composite slaveComposite = new Composite(masterSlaveComposite, NONE);
+					slaveComposite.setLayout(new GridLayout(2, false));
+					GridData slaveData = new GridData(SWT.FILL, SWT.FILL, true, true);
+					slaveData.exclude = true;
+					slaveComposite.setLayoutData(slaveData);
+
+					Label slaveLabel = new Label(slaveComposite, NONE);
+					slaveLabel.setText("Number of slaves: ");
+					Text slaveText = new Text(slaveComposite, SWT.BORDER);
+					slaveText.setText("2");
+					slaveText.setLayoutData(gridDataFields);
+					slaveText.addModifyListener(e -> {
+						int numberOfSlaves = Integer.parseInt(slaveText.getText());
+						if (containers.size() < numberOfSlaves + 1) {
+							for (int i = containers.size(); i < numberOfSlaves + 1; i++) {
+								Container slave = createMongoSlave(container.getName(), i);
+								slave.setType(containerType);
+								Reference masterReference = TyphonDLFactory.eINSTANCE.createReference();
+								masterReference.setReference(db);
+								slave.setDeploys(masterReference);
+								containers.add(slave);
+							}
+						} else if (containers.size() > numberOfSlaves + 1) {
+							for (int i = containers.size(); i > numberOfSlaves + 1; i--) {
+								containers.remove(i - 1);
+							}
+						}
+					});
+
+					masterSlaveCheck.addSelectionListener(new SelectionAdapter() {
+						@Override
+						public void widgetSelected(SelectionEvent e) {
+							// set the textfields visible, resize window
+							boolean useMasterSlaveSetup = masterSlaveCheck.getSelection();
+							slaveData.exclude = !useMasterSlaveSetup;
+							slaveComposite.setVisible(useMasterSlaveSetup);
+							main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+							scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+							// add or remove objects from model
+							if (useMasterSlaveSetup) {
+								for (int i = 0; i < Integer.parseInt(slaveText.getText()); i++) {
+									Container slave = createMongoSlave(container.getName(), i + 1);
+									slave.setType(containerType);
+									Reference masterReference = TyphonDLFactory.eINSTANCE.createReference();
+									masterReference.setReference(db);
+									slave.setDeploys(masterReference);
+									containers.add(slave);
+								}
+							} else {
+								for (int i = 1; i < containers.size(); i++) {
+									containers.remove(i);
+								}
+							}
+						}
+					});
+				}
 			}
-			result.put(db, container);
+			result.put(db, containers);
 		}
 		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		setControl(scrolling);
+	}
+
+	private Container createMongoSlave(String masterName, int number) {
+		Container slave = TyphonDLFactory.eINSTANCE.createContainer();
+		slave.setName(masterName + "-slave" + number);
+		Key_ValueArray links = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+		links.setName("links");
+		links.getValues().add(masterName);
+		slave.getProperties().add(links);
+		Key_Values command = TyphonDLFactory.eINSTANCE.createKey_Values();
+		command.setName("command");
+		command.setValue("mongod --slave --source " + masterName);
+		slave.getProperties().add(command);
+		return slave;
 	}
 
 	private void validate() {
@@ -540,7 +632,7 @@ public class CreationContainerPage extends MyWizardPage {
 	 * 
 	 * @return A map with a Container for every DB
 	 */
-	public HashMap<DB, Container> getResult() {
+	public HashMap<DB, ArrayList<Container>> getResult() {
 		return result;
 	}
 

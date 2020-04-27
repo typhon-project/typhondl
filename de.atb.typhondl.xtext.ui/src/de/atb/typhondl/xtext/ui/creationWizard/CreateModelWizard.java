@@ -122,7 +122,7 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			properties = this.mainPage.getProperties();
 		}
-		HashMap<DB, Container> result = containerPage.getResult();
+		HashMap<DB, ArrayList<Container>> result = containerPage.getResult();
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
 		IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
