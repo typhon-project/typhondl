@@ -14,6 +14,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
 
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -68,6 +69,11 @@ public class CreateModelWizard extends Wizard {
 	private int chosenTemplate;
 
 	/**
+	 * A page to define container specifications
+	 */
+	private CreationContainerPage containerPage;
+
+	/**
 	 * Creates an instance of <code>CreateModelWizard</code>
 	 * 
 	 * @param MLmodel the ML model used as input
@@ -116,15 +122,10 @@ public class CreateModelWizard extends Wizard {
 		} else {
 			properties = this.mainPage.getProperties();
 		}
-		ArrayList<DB> dbs = new ArrayList<>();
-		if (dbmsPage.hasTemplateVariables()) {
-			dbs = variablePage.getDBs();
-		} else {
-			dbs = new ArrayList<DB>(dbmsPage.getResult().keySet());
-		}
+		HashMap<DB, ArrayList<Container>> result = containerPage.getResult();
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
-		IFile file = modelCreator.createDLmodel(dbs, chosenTemplate, properties);
+		IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
 		// get fileOpener
 		FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
 				.getInstance(FileOpener.class);
@@ -134,7 +135,7 @@ public class CreateModelWizard extends Wizard {
 		fileOpener.openFileToEdit(this.getShell(), file);
 		// save properties
 		String location = file.getLocation().toString();
-		String pathToProperties = location.substring(0, location.lastIndexOf('/') + 1) + "polystore.properties";
+		String pathToProperties = location.substring(0, location.lastIndexOf('/') + 1) + file.getName() + ".properties";
 		try {
 			OutputStream output = new FileOutputStream(pathToProperties);
 			properties.store(output, "Only edit this if you know what you are doing!");
@@ -149,22 +150,21 @@ public class CreateModelWizard extends Wizard {
 	 * 
 	 * @return <code>false</code> if
 	 *         <li>the current page is the Main Page or</li>
-	 *         <li>the current page is the DBMSPage and the useAnalytics checkbox is
-	 *         checked</li>
+	 *         <li>the current page is the DBMSPage or</li>
+	 *         <li>the current page is the TemplateVariablePage or</li>
+	 *         <li>the current page is the ContainerPage and the useAnalytics
+	 *         checkbox is checked</li>
 	 *         <p>
 	 *         Otherwise {@link Wizard#canFinish()}.
 	 */
 	@Override
 	public boolean canFinish() {
 		IWizardPage currentPage = this.getContainer().getCurrentPage();
-		if (currentPage instanceof CreationMainPage) {
+		if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
+				|| currentPage instanceof CreationTemplateVariablePage) {
 			return false;
 		}
-		if (currentPage instanceof CreationDBMSPage
-				&& (mainPage.getUseAnalytics() || ((CreationDBMSPage) currentPage).hasTemplateVariables())) {
-			return false;
-		}
-		if (currentPage instanceof CreationTemplateVariablePage && mainPage.getUseAnalytics()) {
+		if (currentPage instanceof CreationContainerPage && mainPage.getUseAnalytics()) {
 			return false;
 		}
 		return super.canFinish();
@@ -180,28 +180,45 @@ public class CreateModelWizard extends Wizard {
 	 *         {@link CreationAnalyticsPage} is created and returned.</li>
 	 *         <li>if the current page is the {@link CreationDBMSPage} and a
 	 *         template with {@link TemplateVariable}s is used, a
-	 *         {@link CreationTemplateVariablePage} is created and returned.</li>
-	 * 
+	 *         {@link CreationTemplateVariablePage} is created and returned,
+	 *         otherwise a {@link CreationContainerPage} is returned.</li>
+	 *         <li>if the current page is the {@link CreationTemplateVariablePage} a
+	 *         {@link CreationContainerPage} is returned.</li>
 	 */
 	@Override
 	public IWizardPage getNextPage(IWizardPage page) {
 		if (page instanceof CreationMainPage) {
 			this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
 		}
-		if (page instanceof CreationDBMSPage && ((CreationDBMSPage) page).hasTemplateVariables()) {
-			this.variablePage = createVariablesPage("Template Variables Page", ((CreationDBMSPage) page).getResult());
-			this.variablePage.setWizard(this);
-			return variablePage;
-		}
-		if (mainPage.getUseAnalytics()) {
-			if ((page instanceof CreationDBMSPage && !((CreationDBMSPage) page).hasTemplateVariables())
-					|| page instanceof CreationTemplateVariablePage) {
-				this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
-				this.analyticsPage.setWizard(this);
-				return analyticsPage;
+		if (page instanceof CreationDBMSPage) {
+			if (((CreationDBMSPage) page).hasTemplateVariables()) {
+				this.variablePage = createVariablesPage("Template Variables Page",
+						((CreationDBMSPage) page).getResult());
+				this.variablePage.setWizard(this);
+				return variablePage;
+			} else {
+				this.containerPage = createContainerPage("Container Definition Page",
+						new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()), this.chosenTemplate);
+				this.containerPage.setWizard(this);
+				return containerPage;
 			}
 		}
+		if (page instanceof CreationTemplateVariablePage) {
+			this.containerPage = createContainerPage("Container Definition Page",
+					((CreationTemplateVariablePage) page).getDBs(), this.chosenTemplate);
+			this.containerPage.setWizard(this);
+			return containerPage;
+		}
+		if (mainPage.getUseAnalytics() && page instanceof CreationContainerPage) {
+			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
+			this.analyticsPage.setWizard(this);
+			return analyticsPage;
+		}
 		return super.getNextPage(page);
+	}
+
+	private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs, int chosenTemplate) {
+		return new CreationContainerPage(string, dbs, chosenTemplate);
 	}
 
 	/**

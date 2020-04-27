@@ -81,12 +81,10 @@ public class PreferenceReader {
 						db.setName(dbTemplates[i].getName());
 						db.setType(supportedType);
 						buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
-					} else {
-						// TODO warning
 					}
 				}
 			} else {
-				// TODO warning
+				// TODO warning about error in template?
 			}
 		}
 		return buffers;
@@ -110,23 +108,6 @@ public class PreferenceReader {
 	}
 
 	/**
-	 * Transforms a List of TemplateBuffers and their Template names into an Array
-	 * of DBs
-	 * 
-	 * @param buffers the List of TemplateBuffers to transform
-	 * @return an Array of DBs
-	 */
-	public static DB[] getDBs(ArrayList<Pair<String, TemplateBuffer>> buffers) {
-		ArrayList<DB> dbs = new ArrayList<>();
-		for (Pair<String, TemplateBuffer> templateBuffer : buffers) {
-			DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer.secondValue);
-			db.setName(templateBuffer.firstValue);
-			dbs.add(db);
-		}
-		return dbs.toArray(new DB[0]);
-	}
-
-	/**
 	 * Transforms the parsed <code>pattern</code> from the TemplateBuffer into a
 	 * model object of given Type <code>T</code>
 	 * 
@@ -137,7 +118,7 @@ public class PreferenceReader {
 	 *         contain exactly one definition
 	 */
 	public static <T extends EObject> T getModelObject(T modelObject, TemplateBuffer buffer) {
-		// get the parser to transalte the template pattern into a TyphonDL model
+		// get the parser to translate the template pattern into a TyphonDL model
 		// instance
 		IParseResult result = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
 				.getInstance(IParser.class).parse(new StringReader(buffer.getString()));
@@ -146,7 +127,7 @@ public class PreferenceReader {
 				.filter(element -> modelObject.getClass().isInstance(element)).map(element -> (T) element)
 				.collect(Collectors.toList());
 		if (elements.size() != 1) {
-			return null; // there should only be one model definition in a template TODO warning!
+			return null; // there should only be one model definition in a template
 		}
 		return elements.get(0);
 	}

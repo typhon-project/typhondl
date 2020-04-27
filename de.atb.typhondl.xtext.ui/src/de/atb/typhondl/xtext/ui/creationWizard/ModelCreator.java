@@ -3,9 +3,8 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -28,11 +27,8 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
-import de.atb.typhondl.xtext.typhonDL.Ports;
-import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
@@ -110,13 +106,13 @@ public class ModelCreator {
 	/**
 	 * Creates the new DL model
 	 * 
-	 * @param dbs            The DBs to add to the new model
+	 * @param result         The DBs and Containers to add to the new model
 	 * @param chosenTemplate The int representation of the chosen technology
 	 *                       Template from {@link SupportedTechnologies}
 	 * @param properties     The polystore.properties
 	 * @return The main model file to be opened by the Xtext editor after creation
 	 */
-	public IFile createDLmodel(ArrayList<DB> dbs, int chosenTemplate, Properties properties) {
+	public IFile createDLmodel(HashMap<DB, ArrayList<Container>> result, int chosenTemplate, Properties properties) {
 
 		// create main model
 		DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -148,29 +144,21 @@ public class ModelCreator {
 			platformType.setName("localhost");
 			break;
 		}
-//		platformType.setName("localhost");
-//		platformType.setName(properties.getProperty("ui.environment.API_HOST"));
 		DLmodel.getElements().add(platformType);
 
 		ArrayList<DBType> dbTypes = new ArrayList<DBType>();
-		// create import for each db, use given db or load from file
-		for (DB db : dbs) {
+		// create import for each db
+		for (DB db : result.keySet()) {
 			Import importedDB = TyphonDLFactory.eINSTANCE.createImport();
-			DeploymentModel dbModel;
-			if (db.getType() == null) { // use existing .tdl file
-				String path = db.getName() + ".tdl";
-				URI dbURI = URI.createPlatformResourceURI(this.folder.append(path).toString(), true);
-				dbModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0);
-				addModelToDB(db, getDB(dbModel));
-				importedDB.setRelativePath(path);
-			} else {
-				importedDB.setRelativePath(db.getName() + ".tdl");
-			}
+			importedDB.setRelativePath(db.getName() + ".tdl");
 			DLmodel.getGuiMetaInformation().add(importedDB);
+
+			// types need to be the same instance
 			boolean containsType = false;
 			for (DBType dbType : dbTypes) {
 				if (dbType.getName().equals(db.getType().getName())) {
 					containsType = true;
+					db.setType(dbType);
 				}
 			}
 			if (!containsType) {
@@ -178,13 +166,7 @@ public class ModelCreator {
 			}
 		}
 
-		for (DB db : dbs) { // types need to be the same instance
-			for (DBType dbtype : dbTypes) {
-				if (dbtype.getName().equals(db.getType().getName())) {
-					db.setType(dbtype);
-				}
-			}
-		}
+		// save dbTypes in file
 		DeploymentModel dbTypesModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 		for (DBType dbType : dbTypes) {
 			dbTypesModel.getElements().add(dbType);
@@ -193,11 +175,14 @@ public class ModelCreator {
 		Import dbTypesImport = TyphonDLFactory.eINSTANCE.createImport();
 		dbTypesImport.setRelativePath("dbTypes.tdl");
 		DLmodel.getGuiMetaInformation().add(dbTypesImport);
-		for (DB db : dbs) {
+
+		// save DBs in file
+		for (DB db : result.keySet()) {
 			DeploymentModel dbModel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
 			dbModel.getElements().add(db);
 			save(dbModel, db.getName() + ".tdl");
 		}
+
 		/*
 		 * start container structure
 		 */
@@ -215,27 +200,11 @@ public class ModelCreator {
 		application.setName("Polystore");
 		cluster.getApplications().add(application);
 
-		for (DB db : dbs) {
-			Container container = TyphonDLFactory.eINSTANCE.createContainer();
-			container.setName(db.getName());
-			container.setType(containerType);
-			Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-			reference.setReference(db);
-			container.setDeploys(reference);
-
-			Ports db_ports = TyphonDLFactory.eINSTANCE.createPorts();
-			Key_Values db_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-			db_port.setName("target");
-			db_port.setValue(getStandardPort(db.getType().getName())); // TODO can be removed later
-			Key_Values publishedDB_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-			publishedDB_port.setName("published");
-			// TODO can be removed later
-			publishedDB_port.setValue(getStandardPublishedPort(db.getType().getName(), clusterType));
-			db_ports.getKey_values().add(db_port);
-			db_ports.getKey_values().add(publishedDB_port);
-			container.setPorts(db_ports);
-
-			application.getContainers().add(container);
+		for (DB db : result.keySet()) {
+			for (Container containerToAdd : result.get(db)) {
+				containerToAdd.setType(containerType);
+				application.getContainers().add(containerToAdd);
+			}
 		}
 
 		/*
@@ -246,86 +215,6 @@ public class ModelCreator {
 		URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
 		// return main model file to be opened in editor
 		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
-	}
-
-	/**
-	 * Adds the parsed model properties from existing file.tdl to the {@link DB}
-	 * 
-	 * @param db    The DB without information yet
-	 * @param input The parsed DB info from file
-	 */
-	private void addModelToDB(DB db, DB input) {
-		db.setType(input.getType());
-		db.getParameters().addAll(input.getParameters());
-	}
-
-	/**
-	 * Hardcoded standard ports for {@link DBType}s
-	 * <p>
-	 * TODO This should not be needed, since the databases should only be reachable
-	 * inside the same network/cluster
-	 * 
-	 * @param name The name of the {@link DBType}
-	 * @return The standard Port
-	 */
-	private String getStandardPort(String name) {
-		switch (name.toLowerCase()) {
-		case "mariadb":
-			return "3306";
-		case "mysql":
-			return "3306";
-		case "mongo":
-			return "27017";
-		case "postgres":
-			return "5432";
-		case "couchdb":
-			return "5984";
-		case "arangodb":
-			return "8529";
-		case "neo4j":
-			return "7474";
-		case "redis":
-			return "6379";
-		default:
-			return "";
-		}
-	}
-
-	/**
-	 * Hardcoded standard ports for {@link DBType}s
-	 * <p>
-	 * TODO This should not be needed, since the databases should only be reachable
-	 * inside the same network/cluster
-	 * 
-	 * @param name The name of the {@link DBType}
-	 * @return The standard Port
-	 */
-	private String getStandardPublishedPort(String name, ClusterType type) {
-		if (type.getName().equals("Kubernetes")) {
-			return "" + (31000 + ThreadLocalRandom.current().nextInt(1, 100));
-		} else {
-			switch (name.toLowerCase()) {
-			case "mariadb":
-				return "3306";
-			case "mysql":
-				return "3306";
-			case "mongo":
-				return "27018"; // 27017 is occupied by polystoredb
-			case "postgres":
-				return "5432";
-			case "couchdb":
-				return "5984";
-			case "arangodb":
-				return "8529";
-			case "neo4j":
-				return "7474";
-			case "redis":
-				return "6379";
-			default:
-				return "";
-			}
-		}
-
 	}
 
 	/**
@@ -351,18 +240,5 @@ public class ModelCreator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Filters the {@link DB} from a given {@link DeploymentModel}
-	 * 
-	 * @param model The {@link DeploymentModel} only containing one {@link DB}
-	 * @return The {@link DB}
-	 */
-	private DB getDB(DeploymentModel model) {
-		ArrayList<DB> dbs = new ArrayList<DB>();
-		dbs.addAll(model.getElements().stream().filter(element -> DB.class.isInstance(element))
-				.map(element -> (DB) element).collect(Collectors.toList()));
-		return dbs.get(0);
 	}
 }

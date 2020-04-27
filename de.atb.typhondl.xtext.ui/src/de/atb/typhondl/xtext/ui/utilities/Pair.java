@@ -10,7 +10,6 @@ package de.atb.typhondl.xtext.ui.utilities;
  */
 public class Pair<T, U> {
 
-//	TODO maybe change to <String,String> if not needed anywhere else
 	/**
 	 * probably the dbName
 	 */

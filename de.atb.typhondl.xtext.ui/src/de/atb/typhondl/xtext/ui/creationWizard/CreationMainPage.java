@@ -1,7 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -69,11 +69,6 @@ public class CreationMainPage extends MyWizardPage {
 	private Properties properties;
 
 	/**
-	 * The path to the polystore.properties
-	 */
-	private final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
-
-	/**
 	 * The checkbox to activate the use of the Typhon Analytics component
 	 */
 	private Button checkbox;
@@ -97,17 +92,8 @@ public class CreationMainPage extends MyWizardPage {
 	protected CreationMainPage(String pageName, URI MLmodelPath) {
 		super(pageName);
 		this.MLmodelPath = MLmodelPath;
-		this.properties = new Properties();
-		loadProperties();
-	}
-
-	/**
-	 * loads polystore.properties to {@link Properties} properties
-	 */
-	private void loadProperties() {
-		InputStream input = CreationMainPage.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH);
 		try {
-			this.properties.load(input);
+			this.properties = PropertiesLoader.loadProperties();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -159,8 +145,8 @@ public class CreationMainPage extends MyWizardPage {
 	}
 
 	/**
-	 * Creates technology choosing combo and sets initial polystore.properties. TODO
-	 * change to not hardcoded?
+	 * Creates technology choosing combo and sets initial polystore.properties.<br>
+	 * TODO change to not hardcoded?
 	 * 
 	 * @param main the composite in which the fields are created
 	 */
@@ -194,10 +180,6 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_PORT", "\"30061\"");
 					properties.setProperty("api.publishedPort", "30061");
 					properties.setProperty("ui.publishedPort", "30075");
-					properties.setProperty("db.publishedPort", "30064");
-					properties.setProperty("db.hostname", "192.168.99.101");
-					properties.setProperty("api.hostname", "192.168.99.101");
-					properties.setProperty("ui.hostname", "192.168.99.101");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
 				} else {
@@ -206,13 +188,8 @@ public class CreationMainPage extends MyWizardPage {
 					properties.setProperty("ui.environment.API_PORT", "8080");
 					properties.setProperty("api.publishedPort", "8080");
 					properties.setProperty("ui.publishedPort", "4200");
-					properties.setProperty("db.publishedPort", "27017");
-					properties.setProperty("db.hostname", "localhost");
-					properties.setProperty("api.hostname", "localhost");
-					properties.setProperty("ui.hostname", "localhost");
 					hostText.setText(properties.getProperty("ui.environment.API_HOST"));
 					portText.setText(properties.getProperty("ui.environment.API_PORT"));
-
 				}
 			}
 		});
@@ -235,6 +212,8 @@ public class CreationMainPage extends MyWizardPage {
 		checkbox.setText("Use Typhon Data Analytics");
 		checkbox.setSelection(false);
 		checkbox.setLayoutData(gridData);
+		// TODO delete this when analytics can be used:
+		checkbox.setEnabled(false);
 		checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
 		checkbox.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -242,7 +221,11 @@ public class CreationMainPage extends MyWizardPage {
 				properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
 			}
 		});
-
+		// TODO delete this when analytics can be used:
+		Label notReady = new Label(main, NONE);
+		notReady.setLayoutData(gridData);
+		notReady.setText("Analytics is under development and will be available in a future update");
+		notReady.setEnabled(false);
 	}
 
 	/**
