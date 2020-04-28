@@ -198,45 +198,6 @@ public class CreationContainerPage extends MyWizardPage {
                     validate();
                 });
 
-                // Replicas
-                Key_Values replicas = TyphonDLFactory.eINSTANCE.createKey_Values();
-                replicas.setName("replicas");
-                replicas.setValue("1");
-
-                new Label(group, NONE).setText(replicas.getName() + ": ");
-                Text replicasText = new Text(group, SWT.BORDER);
-                replicasText.setText(replicas.getValue());
-                replicasText.setLayoutData(gridDataFields);
-                replicasText.addModifyListener(e -> {
-                    replicas.setValue(replicasText.getText());
-                    if (replicas.getValue().equals("1")) {
-                        switch (clusterType) {
-                        case "DockerCompose":
-                            removePropertyFromList(deployList, replicas);
-                            if (deployList.getProperties().isEmpty()) {
-                                removePropertyFromContainer(container, deployList);
-                            }
-                            break;
-                        case "Kubernetes":
-                            removePropertyFromContainer(container, replicas);
-                        default:
-                            break;
-                        }
-                    } else {
-                        switch (clusterType) {
-                        case "DockerCompose":
-                            addKeyValueToList(deployList, replicas);
-                            addListToContainer(container, deployList);
-                            break;
-                        case "Kubernetes":
-                            addKeyValueToContainer(container, replicas);
-                        default:
-                            break;
-                        }
-                    }
-                    validate();
-                });
-
                 // Resources
                 Key_KeyValueList resourceList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
                 resourceList.setName("resources");
@@ -425,42 +386,6 @@ public class CreationContainerPage extends MyWizardPage {
     private void validate() {
         // TODO validation for ContainerPage
 
-    }
-
-    /**
-     * Adds a {@link Key_Values} to a {@link Key_KeyValueList}. If the key already
-     * exists, only the value is added.
-     * 
-     * @param Key_KeyValueList The list to which the keyValue pair shall be added
-     * @param key_values       The keyValue pair to be added to the list
-     */
-    private void addKeyValueToList(Key_KeyValueList listToAddTo, Key_Values key_values) {
-        List<Property> list = listToAddTo.getProperties().stream()
-                .filter(property -> property.getName().equalsIgnoreCase(key_values.getName()))
-                .collect(Collectors.toList());
-        if (list.size() == 1) {
-            ((Key_Values) list.get(0)).setValue(key_values.getValue());
-        } else {
-            listToAddTo.getProperties().add(key_values);
-        }
-    }
-
-    /**
-     * Adds a {@link Key_Values} to a {@link Container}. If the key already exists,
-     * only the value is added.
-     * 
-     * @param container  The Container to which the keyValue pair shall be added
-     * @param key_values The keyValue pair to be added to the Container
-     */
-    private void addKeyValueToContainer(Container container, Key_Values key_values) {
-        List<Property> temp = container.getProperties().stream()
-                .filter(property -> property.getName().equalsIgnoreCase(key_values.getName()))
-                .collect(Collectors.toList());
-        if (temp.isEmpty()) {
-            container.getProperties().add(key_values);
-        } else {
-            ((Key_Values) temp.get(0)).setValue(key_values.getValue());
-        }
     }
 
     /**
