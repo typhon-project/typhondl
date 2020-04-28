@@ -416,8 +416,8 @@ public class CreationContainerPage extends MyWizardPage {
 					}
 				});
 
-				// master slave setup
-				// create master slave composite in each mongodb group
+				// primary/secondary setup
+				// create primary/secondary composite in each mongodb group
 				if (clusterType.equalsIgnoreCase("DockerCompose") && db.getType().getName().equalsIgnoreCase("mongo")) {
 					GridData masterSlaveGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 					masterSlaveGridData.horizontalSpan = 2;
@@ -426,10 +426,10 @@ public class CreationContainerPage extends MyWizardPage {
 					masterSlaveComposite.setLayoutData(masterSlaveGridData);
 
 					Button masterSlaveCheck = new Button(masterSlaveComposite, SWT.CHECK);
-					masterSlaveCheck.setText("Use master-slave setup");
+					masterSlaveCheck.setText("Use primary/secondary setup (not tested!)");
 					masterSlaveCheck.setLayoutData(gridDataChecks);
 
-					// create invisible slave composite in each master slave composite
+					// create invisible slave composite in each primary/secondary composite
 					Composite slaveComposite = new Composite(masterSlaveComposite, NONE);
 					slaveComposite.setLayout(new GridLayout(2, false));
 					GridData slaveData = new GridData(SWT.FILL, SWT.FILL, true, true);
