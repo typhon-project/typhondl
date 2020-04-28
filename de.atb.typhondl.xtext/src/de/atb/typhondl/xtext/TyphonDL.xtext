@@ -98,7 +98,7 @@ Ports:
 	'}';
 
 Dependency:
-	'depends_on' reference=[Container] | 'links' reference=[Container]; 
+	'depends_on' reference=[Container] | 'links' '[' reference=[Container] ']'; 
 
 Reference:
 	'deploys' reference=[Services];
@@ -106,11 +106,14 @@ Reference:
 Property:
 	Key_Values | Key_ValueArray | Key_KeyValueList;
 
+Key: 
+	'key' name=Name;
+
 Key_Values:
 	name=ID '=' value=Value (',' values+=Value)* ';';
 
 Key_KeyValueList:
-	name=ID '{' (properties+=Property)+ '}';
+	name=[Key] '{' (properties+=Property)+ '}';
 
 Key_ValueArray:
 	name=ID ('[')
