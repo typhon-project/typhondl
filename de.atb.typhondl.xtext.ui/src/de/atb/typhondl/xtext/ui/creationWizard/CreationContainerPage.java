@@ -23,7 +23,6 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
@@ -415,105 +414,12 @@ public class CreationContainerPage extends MyWizardPage {
 						validate();
 					}
 				});
-
-				// primary/secondary setup
-				// create primary/secondary composite in each mongodb group
-				if (clusterType.equalsIgnoreCase("DockerCompose") && db.getType().getName().equalsIgnoreCase("mongo")) {
-					GridData primarySecondaryGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-					primarySecondaryGridData.horizontalSpan = 2;
-					Composite primarySecondaryComposite = new Composite(group, NONE);
-					primarySecondaryComposite.setLayout(new GridLayout(1, false));
-					primarySecondaryComposite.setLayoutData(primarySecondaryGridData);
-
-					Button primarySecondaryCheck = new Button(primarySecondaryComposite, SWT.CHECK);
-					primarySecondaryCheck.setText("Use primary/secondary setup (not tested!)");
-					primarySecondaryCheck.setLayoutData(gridDataChecks);
-
-					// create invisible secondary composite in each primary/secondary composite
-					Composite secondaryComposite = new Composite(primarySecondaryComposite, NONE);
-					secondaryComposite.setLayout(new GridLayout(2, false));
-					GridData secondaryData = new GridData(SWT.FILL, SWT.FILL, true, true);
-					secondaryData.exclude = true;
-					secondaryComposite.setLayoutData(secondaryData);
-
-					Label secondaryLabel = new Label(secondaryComposite, NONE);
-					secondaryLabel.setText("Number of secondaries: ");
-					Text secondaryText = new Text(secondaryComposite, SWT.BORDER);
-					secondaryText.setText("2");
-					secondaryText.setLayoutData(gridDataFields);
-					secondaryText.addModifyListener(e -> {
-						int numberOfSecondaries = Integer.parseInt(secondaryText.getText());
-						if (containers.size() < numberOfSecondaries + 1) {
-							for (int i = containers.size(); i < numberOfSecondaries + 1; i++) {
-								Container secondary = createMongoSecondary(container.getName(), i);
-								secondary.setType(containerType);
-								Reference primaryReference = TyphonDLFactory.eINSTANCE.createReference();
-								primaryReference.setReference(db);
-								secondary.setDeploys(primaryReference);
-								containers.add(secondary);
-							}
-						} else if (containers.size() > numberOfSecondaries + 1) {
-							for (int i = containers.size(); i > numberOfSecondaries + 1; i--) {
-								containers.remove(i - 1);
-							}
-						}
-					});
-
-					primarySecondaryCheck.addSelectionListener(new SelectionAdapter() {
-						@Override
-						public void widgetSelected(SelectionEvent e) {
-							// set the textfields visible, resize window
-							boolean usePrimarySecondarySetup = primarySecondaryCheck.getSelection();
-							secondaryData.exclude = !usePrimarySecondarySetup;
-							secondaryComposite.setVisible(usePrimarySecondarySetup);
-							main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
-							scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
-							// add or remove objects from model
-							if (usePrimarySecondarySetup) {
-								for (int i = 0; i < Integer.parseInt(secondaryText.getText()); i++) {
-									Container secondary = createMongoSecondary(container.getName(), i + 1);
-									secondary.setType(containerType);
-									Reference primaryReference = TyphonDLFactory.eINSTANCE.createReference();
-									primaryReference.setReference(db);
-									secondary.setDeploys(primaryReference);
-									containers.add(secondary);
-								}
-							} else {
-								for (int i = 1; i < containers.size(); i++) {
-									containers.remove(i);
-								}
-							}
-						}
-					});
-				}
 			}
 			result.put(db, containers);
 		}
 		main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 		setControl(scrolling);
-	}
-
-	/**
-	 * Creates a new Container with link to the container called primaryName and the
-	 * mongod slave command
-	 * 
-	 * @param primaryName The name of the container with the primary mongo instance
-	 * @param number      The count of the secondaries
-	 * @return A new secondary mongo container
-	 */
-	private Container createMongoSecondary(String primaryName, int number) {
-		Container secondary = TyphonDLFactory.eINSTANCE.createContainer();
-		secondary.setName(primaryName + "-secondary" + number);
-		Key_ValueArray links = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-		links.setName("links");
-		links.getValues().add(primaryName);
-		secondary.getProperties().add(links);
-		Key_Values command = TyphonDLFactory.eINSTANCE.createKey_Values();
-		command.setName("command");
-		command.setValue("mongod --slave --source " + primaryName);
-		secondary.getProperties().add(command);
-		return secondary;
 	}
 
 	private void validate() {
