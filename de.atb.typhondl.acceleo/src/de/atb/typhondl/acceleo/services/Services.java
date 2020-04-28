@@ -543,16 +543,20 @@ public class Services {
 		if (properties.get("polystore.useAnalytics").equals("true")) {
 			String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
 			String kafkaPort = properties.getProperty("analytics.kafka.publishedPort");
+			String kafkaInsidePort = properties.getProperty("analytics.kafka.insidePort");
+			String kafkaAdvertisedHost = properties.getProperty("analytics.kafka.avertisedHost");
 			String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
-			String kafkaListenerName = properties.getProperty("analytics.kafka.listenerName");
+			String kafkaListenerNameIn = properties.getProperty("analytics.kafka.listenerName.in");
+			String kafkaListenerNameOut = properties.getProperty("analytics.kafka.listenerName.out");
 			String kafkaListenersString = "";
 			String kafkaAdvertisedListenerString = "";
 			for (int i = 0; i < kafkaListeners.length; i++) {
-				kafkaListenersString += kafkaListenerName + "://:" + kafkaListeners[i] + ", ";
-				kafkaAdvertisedListenerString += kafkaListenerName + "://kafka:" + kafkaListeners[i] + ", ";
+				kafkaListenersString += kafkaListenerNameOut + "://:" + kafkaListeners[i] + ", ";
+				kafkaAdvertisedListenerString += kafkaListenerNameOut + "://" + kafkaAdvertisedHost + ":"
+						+ kafkaListeners[i] + ", ";
 			}
-			kafkaListenersString += "PLAINTEXT_HOST://:" + kafkaPort;
-			kafkaAdvertisedListenerString += "PLAINTEXT_HOST://localhost:" + kafkaPort;
+			kafkaListenersString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
+			kafkaAdvertisedListenerString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
 
 			Software zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
 			zookeeper.setName("zookeeper");
@@ -613,7 +617,7 @@ public class Services {
 			kafka_environment.getProperties().add(KAFKA_ZOOKEEPER_CONNECT);
 			Key_Values KAFKA_ADVERTISED_HOST_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
 			KAFKA_ADVERTISED_HOST_NAME.setName("KAFKA_ADVERTISED_HOST_NAME");
-			KAFKA_ADVERTISED_HOST_NAME.setValue("kafka");
+			KAFKA_ADVERTISED_HOST_NAME.setValue(kafkaAdvertisedHost);
 			kafka_environment.getProperties().add(KAFKA_ADVERTISED_HOST_NAME);
 			Key_Values KAFKA_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
 			KAFKA_LISTENERS.setName("KAFKA_LISTENERS");
@@ -621,11 +625,12 @@ public class Services {
 			kafka_environment.getProperties().add(KAFKA_LISTENERS);
 			Key_Values KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = TyphonDLFactory.eINSTANCE.createKey_Values();
 			KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setName("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
-			KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setValue(kafkaListenerName + ":PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT");
+			KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+					.setValue(kafkaListenerNameIn + ":PLAINTEXT, " + kafkaListenerNameOut + ":PLAINTEXT");
 			kafka_environment.getProperties().add(KAFKA_LISTENER_SECURITY_PROTOCOL_MAP);
 			Key_Values KAFKA_INTER_BROKER_LISTENER_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
 			KAFKA_INTER_BROKER_LISTENER_NAME.setName("KAFKA_INTER_BROKER_LISTENER_NAME");
-			KAFKA_INTER_BROKER_LISTENER_NAME.setValue(kafkaListenerName);
+			KAFKA_INTER_BROKER_LISTENER_NAME.setValue(kafkaListenerNameIn);
 			kafka_environment.getProperties().add(KAFKA_INTER_BROKER_LISTENER_NAME);
 			Key_Values KAFKA_ADVERTISED_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
 			KAFKA_ADVERTISED_LISTENERS.setName("KAFKA_ADVERTISED_LISTENERS");
@@ -638,6 +643,21 @@ public class Services {
 			kafka_container.getProperties().add(kafka_environment);
 
 			application.getContainers().add(kafka_container);
+
+			Container authAllContainer = TyphonDLFactory.eINSTANCE.createContainer();
+			authAllContainer.setName("authAll");
+			authAllContainer.setType(containerType);
+			Software authAll = TyphonDLFactory.eINSTANCE.createSoftware();
+			authAll.setName("authAll");
+			IMAGE authAllImage = TyphonDLFactory.eINSTANCE.createIMAGE();
+			authAllImage.setValue(properties.getProperty("analytics.authAll.image"));
+			authAll.setImage(authAllImage);
+			model.getElements().add(authAll);
+			Reference authAllRef = TyphonDLFactory.eINSTANCE.createReference();
+			authAllRef.setReference(authAll);
+			authAllContainer.setDeploys(authAllRef);
+
+			application.getContainers().add(authAllContainer);
 		}
 		return model;
 	}
