@@ -13,13 +13,13 @@ import org.eclipse.xtext.resource.SaveOptions.Builder;
  */
 public class SavingOptions {
 
-	/**
-	 * 
-	 * @return saving options including formatting
-	 */
-	public static Map<Object, Object> getTDLoptions() {
-		Builder builder = SaveOptions.newBuilder();
-		builder.format();
-		return builder.getOptions().toOptionsMap();
-	}
+    /**
+     * 
+     * @return saving options including formatting
+     */
+    public static Map<Object, Object> getTDLoptions() {
+        Builder builder = SaveOptions.newBuilder();
+        builder.format();
+        return builder.getOptions().toOptionsMap();
+    }
 }

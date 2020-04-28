@@ -12,20 +12,20 @@ import java.util.Properties;
  */
 public class PropertiesLoader {
 
-	private static final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
+    private static final String PROPERTIES_PATH = "de/atb/typhondl/xtext/ui/properties/polystore.properties";
 
-	/**
-	 * Loads polystore.properties from classpath
-	 * 
-	 * @return polystore.properties
-	 * @throws IOException
-	 */
-	public static Properties loadProperties() throws IOException {
+    /**
+     * Loads polystore.properties from classpath
+     * 
+     * @return polystore.properties
+     * @throws IOException
+     */
+    public static Properties loadProperties() throws IOException {
 
-		Properties properties = new Properties();
+        Properties properties = new Properties();
 
-		InputStream input = PropertiesLoader.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH);
-		properties.load(input);
-		return properties;
-	}
+        InputStream input = PropertiesLoader.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH);
+        properties.load(input);
+        return properties;
+    }
 }

@@ -22,18 +22,18 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
  */
 public class DBTemplatePreferencePage extends AdvancedTemplatesPreferencePage {
 
-	@Inject
-	public DBTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
-			TemplateStore templateStore) {
-		super(preferenceStore, registry, templateStore);
-	}
+    @Inject
+    public DBTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
+            TemplateStore templateStore) {
+        super(preferenceStore, registry, templateStore);
+    }
 
-	@Override
-	protected Control createContents(Composite ancestor) {
-		Control result = super.createContents(ancestor);
-		ancestor.layout();
-		getTableViewer().setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DB"));
-		return result;
-	}
+    @Override
+    protected Control createContents(Composite ancestor) {
+        Control result = super.createContents(ancestor);
+        ancestor.layout();
+        getTableViewer().setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DB"));
+        return result;
+    }
 
 }

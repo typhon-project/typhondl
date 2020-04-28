@@ -36,54 +36,54 @@ import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
  */
 public class CreateModelHandler extends AbstractHandler {
 
-	@Inject
-	IGrammarAccess grammarAccess;
+    @Inject
+    IGrammarAccess grammarAccess;
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-		IWorkbenchPage page = window.getActivePage();
-		ISelection selection = page.getSelection();
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+        IWorkbenchPage page = window.getActivePage();
+        ISelection selection = page.getSelection();
 
-		if (selection != null & selection instanceof IStructuredSelection) {
-			IStructuredSelection strucSelection = (IStructuredSelection) selection;
-			Object firstElement = strucSelection.getFirstElement();
-			if (firstElement instanceof IAdaptable) {
-				IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
-				IProject project = file.getProject();
-				boolean hasXtextNature;
-				try {
-					hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
-					if (!hasXtextNature) {
-						IProjectDescription projectDescription = project.getDescription();
-						String[] oldNatures = projectDescription.getNatureIds();
-						String[] newNatures = new String[oldNatures.length + 1];
-						System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
-						newNatures[0] = XtextProjectHelper.NATURE_ID;
-						projectDescription.setNatureIds(newNatures);
-						project.setDescription(projectDescription, null);
-					}
-				} catch (CoreException e) {
-					MessageDialog.openWarning(window.getShell(), "UI",
-							"Please add Xtext Project Nature to your project");
-					e.printStackTrace();
-				}
-				CreateModelWizard fileWizard = new CreateModelWizard(file);
-				WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), fileWizard);
+        if (selection != null & selection instanceof IStructuredSelection) {
+            IStructuredSelection strucSelection = (IStructuredSelection) selection;
+            Object firstElement = strucSelection.getFirstElement();
+            if (firstElement instanceof IAdaptable) {
+                IFile file = ((IAdaptable) firstElement).getAdapter(IFile.class);
+                IProject project = file.getProject();
+                boolean hasXtextNature;
+                try {
+                    hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
+                    if (!hasXtextNature) {
+                        IProjectDescription projectDescription = project.getDescription();
+                        String[] oldNatures = projectDescription.getNatureIds();
+                        String[] newNatures = new String[oldNatures.length + 1];
+                        System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
+                        newNatures[0] = XtextProjectHelper.NATURE_ID;
+                        projectDescription.setNatureIds(newNatures);
+                        project.setDescription(projectDescription, null);
+                    }
+                } catch (CoreException e) {
+                    MessageDialog.openWarning(window.getShell(), "UI",
+                            "Please add Xtext Project Nature to your project");
+                    e.printStackTrace();
+                }
+                CreateModelWizard fileWizard = new CreateModelWizard(file);
+                WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), fileWizard);
 
-				dialog.open();
-			}
+                dialog.open();
+            }
 
-		}
+        }
 
-		for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-			try {
-				iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
+        for (IProject iproject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            try {
+                iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 }
