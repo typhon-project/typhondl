@@ -106,14 +106,11 @@ Reference:
 Property:
 	Key_Values | Key_ValueArray | Key_KeyValueList;
 
-Key: 
-	'key' name=Name;
-
 Key_Values:
 	name=ID '=' value=Value (',' values+=Value)* ';';
 
 Key_KeyValueList:
-	name=[Key] '{' (properties+=Property)+ '}';
+	name=ID '{' (properties+=Property)+ '}';
 
 Key_ValueArray:
 	name=ID ('[')
