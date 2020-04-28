@@ -98,7 +98,7 @@ Ports:
 	'}';
 
 Dependency:
-	'depends_on' reference=[Container] | 'links' reference=[Container]; 
+	'depends_on' reference=[Container] | 'links' '[' reference=[Container] ']'; 
 
 Reference:
 	'deploys' reference=[Services];
