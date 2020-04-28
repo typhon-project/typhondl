@@ -29,7 +29,6 @@
         <mwe-version>2.11.1</mwe-version>
         <equinox-version>3.6.200-v20130402-1505</equinox-version>
         <eclipse-version>2020-03</eclipse-version>
-
         <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
         <maven-antrun-plugin-version>3.0.0</maven-antrun-plugin-version>
         <build-helper-maven-plugin-version>3.1.0</build-helper-maven-plugin-version>
