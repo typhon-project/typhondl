@@ -419,64 +419,64 @@ public class CreationContainerPage extends MyWizardPage {
 				// primary/secondary setup
 				// create primary/secondary composite in each mongodb group
 				if (clusterType.equalsIgnoreCase("DockerCompose") && db.getType().getName().equalsIgnoreCase("mongo")) {
-					GridData masterSlaveGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-					masterSlaveGridData.horizontalSpan = 2;
-					Composite masterSlaveComposite = new Composite(group, NONE);
-					masterSlaveComposite.setLayout(new GridLayout(1, false));
-					masterSlaveComposite.setLayoutData(masterSlaveGridData);
+					GridData primarySecondaryGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+					primarySecondaryGridData.horizontalSpan = 2;
+					Composite primarySecondaryComposite = new Composite(group, NONE);
+					primarySecondaryComposite.setLayout(new GridLayout(1, false));
+					primarySecondaryComposite.setLayoutData(primarySecondaryGridData);
 
-					Button masterSlaveCheck = new Button(masterSlaveComposite, SWT.CHECK);
-					masterSlaveCheck.setText("Use primary/secondary setup (not tested!)");
-					masterSlaveCheck.setLayoutData(gridDataChecks);
+					Button primarySecondaryCheck = new Button(primarySecondaryComposite, SWT.CHECK);
+					primarySecondaryCheck.setText("Use primary/secondary setup (not tested!)");
+					primarySecondaryCheck.setLayoutData(gridDataChecks);
 
-					// create invisible slave composite in each primary/secondary composite
-					Composite slaveComposite = new Composite(masterSlaveComposite, NONE);
-					slaveComposite.setLayout(new GridLayout(2, false));
-					GridData slaveData = new GridData(SWT.FILL, SWT.FILL, true, true);
-					slaveData.exclude = true;
-					slaveComposite.setLayoutData(slaveData);
+					// create invisible secondary composite in each primary/secondary composite
+					Composite secondaryComposite = new Composite(primarySecondaryComposite, NONE);
+					secondaryComposite.setLayout(new GridLayout(2, false));
+					GridData secondaryData = new GridData(SWT.FILL, SWT.FILL, true, true);
+					secondaryData.exclude = true;
+					secondaryComposite.setLayoutData(secondaryData);
 
-					Label slaveLabel = new Label(slaveComposite, NONE);
-					slaveLabel.setText("Number of slaves: ");
-					Text slaveText = new Text(slaveComposite, SWT.BORDER);
-					slaveText.setText("2");
-					slaveText.setLayoutData(gridDataFields);
-					slaveText.addModifyListener(e -> {
-						int numberOfSlaves = Integer.parseInt(slaveText.getText());
-						if (containers.size() < numberOfSlaves + 1) {
-							for (int i = containers.size(); i < numberOfSlaves + 1; i++) {
-								Container slave = createMongoSlave(container.getName(), i);
-								slave.setType(containerType);
-								Reference masterReference = TyphonDLFactory.eINSTANCE.createReference();
-								masterReference.setReference(db);
-								slave.setDeploys(masterReference);
-								containers.add(slave);
+					Label secondaryLabel = new Label(secondaryComposite, NONE);
+					secondaryLabel.setText("Number of secondaries: ");
+					Text secondaryText = new Text(secondaryComposite, SWT.BORDER);
+					secondaryText.setText("2");
+					secondaryText.setLayoutData(gridDataFields);
+					secondaryText.addModifyListener(e -> {
+						int numberOfSecondaries = Integer.parseInt(secondaryText.getText());
+						if (containers.size() < numberOfSecondaries + 1) {
+							for (int i = containers.size(); i < numberOfSecondaries + 1; i++) {
+								Container secondary = createMongoSecondary(container.getName(), i);
+								secondary.setType(containerType);
+								Reference primaryReference = TyphonDLFactory.eINSTANCE.createReference();
+								primaryReference.setReference(db);
+								secondary.setDeploys(primaryReference);
+								containers.add(secondary);
 							}
-						} else if (containers.size() > numberOfSlaves + 1) {
-							for (int i = containers.size(); i > numberOfSlaves + 1; i--) {
+						} else if (containers.size() > numberOfSecondaries + 1) {
+							for (int i = containers.size(); i > numberOfSecondaries + 1; i--) {
 								containers.remove(i - 1);
 							}
 						}
 					});
 
-					masterSlaveCheck.addSelectionListener(new SelectionAdapter() {
+					primarySecondaryCheck.addSelectionListener(new SelectionAdapter() {
 						@Override
 						public void widgetSelected(SelectionEvent e) {
 							// set the textfields visible, resize window
-							boolean useMasterSlaveSetup = masterSlaveCheck.getSelection();
-							slaveData.exclude = !useMasterSlaveSetup;
-							slaveComposite.setVisible(useMasterSlaveSetup);
+							boolean usePrimarySecondarySetup = primarySecondaryCheck.getSelection();
+							secondaryData.exclude = !usePrimarySecondarySetup;
+							secondaryComposite.setVisible(usePrimarySecondarySetup);
 							main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
 							scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
 							// add or remove objects from model
-							if (useMasterSlaveSetup) {
-								for (int i = 0; i < Integer.parseInt(slaveText.getText()); i++) {
-									Container slave = createMongoSlave(container.getName(), i + 1);
-									slave.setType(containerType);
-									Reference masterReference = TyphonDLFactory.eINSTANCE.createReference();
-									masterReference.setReference(db);
-									slave.setDeploys(masterReference);
-									containers.add(slave);
+							if (usePrimarySecondarySetup) {
+								for (int i = 0; i < Integer.parseInt(secondaryText.getText()); i++) {
+									Container secondary = createMongoSecondary(container.getName(), i + 1);
+									secondary.setType(containerType);
+									Reference primaryReference = TyphonDLFactory.eINSTANCE.createReference();
+									primaryReference.setReference(db);
+									secondary.setDeploys(primaryReference);
+									containers.add(secondary);
 								}
 							} else {
 								for (int i = 1; i < containers.size(); i++) {
@@ -495,25 +495,25 @@ public class CreationContainerPage extends MyWizardPage {
 	}
 
 	/**
-	 * Creates a new Container with link to the container called masterName and the
+	 * Creates a new Container with link to the container called primaryName and the
 	 * mongod slave command
 	 * 
-	 * @param masterName The name of the container with the mongo master instance
-	 * @param number     The count of the slaves
-	 * @return A new mongo slave container
+	 * @param primaryName The name of the container with the primary mongo instance
+	 * @param number      The count of the secondaries
+	 * @return A new secondary mongo container
 	 */
-	private Container createMongoSlave(String masterName, int number) {
-		Container slave = TyphonDLFactory.eINSTANCE.createContainer();
-		slave.setName(masterName + "-slave" + number);
+	private Container createMongoSecondary(String primaryName, int number) {
+		Container secondary = TyphonDLFactory.eINSTANCE.createContainer();
+		secondary.setName(primaryName + "-secondary" + number);
 		Key_ValueArray links = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
 		links.setName("links");
-		links.getValues().add(masterName);
-		slave.getProperties().add(links);
+		links.getValues().add(primaryName);
+		secondary.getProperties().add(links);
 		Key_Values command = TyphonDLFactory.eINSTANCE.createKey_Values();
 		command.setName("command");
-		command.setValue("mongod --slave --source " + masterName);
-		slave.getProperties().add(command);
-		return slave;
+		command.setValue("mongod --slave --source " + primaryName);
+		secondary.getProperties().add(command);
+		return secondary;
 	}
 
 	private void validate() {
