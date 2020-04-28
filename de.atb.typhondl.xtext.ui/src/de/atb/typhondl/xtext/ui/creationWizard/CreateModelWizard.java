@@ -117,11 +117,13 @@ public class CreateModelWizard extends Wizard {
 			}
 		}
 		Properties properties;
-		if (mainPage.getUseAnalytics()) {
-			properties = this.analyticsPage.getProperties();
-		} else {
-			properties = this.mainPage.getProperties();
-		}
+		properties = this.mainPage.getProperties();
+//		activate when analytics can be configured TODO #6
+//		if (mainPage.getUseAnalytics()) {
+//			properties = this.analyticsPage.getProperties();
+//		} else {
+//			properties = this.mainPage.getProperties();
+//		}
 		HashMap<DB, ArrayList<Container>> result = containerPage.getResult();
 		ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
 		// create DL model
@@ -164,9 +166,10 @@ public class CreateModelWizard extends Wizard {
 				|| currentPage instanceof CreationTemplateVariablePage) {
 			return false;
 		}
-		if (currentPage instanceof CreationContainerPage && mainPage.getUseAnalytics()) {
-			return false;
-		}
+//		activate when analytics can be configured TODO #6
+//		if (currentPage instanceof CreationContainerPage && mainPage.getUseAnalytics()) {
+//			return false;
+//		}
 		return super.canFinish();
 	}
 
@@ -209,11 +212,12 @@ public class CreateModelWizard extends Wizard {
 			this.containerPage.setWizard(this);
 			return containerPage;
 		}
-		if (mainPage.getUseAnalytics() && page instanceof CreationContainerPage) {
-			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
-			this.analyticsPage.setWizard(this);
-			return analyticsPage;
-		}
+//		activate when analytics can be configured TODO #6
+//		if (mainPage.getUseAnalytics() && page instanceof CreationContainerPage) {
+//			this.analyticsPage = createAnalyticsPage("Analytics Page", this.mainPage.getProperties());
+//			this.analyticsPage.setWizard(this);
+//			return analyticsPage;
+//		}
 		return super.getNextPage(page);
 	}
 
@@ -233,13 +237,14 @@ public class CreateModelWizard extends Wizard {
 	}
 
 	/**
-	 * Creates a CreationAnalyticsPage
+	 * Creates a CreationAnalyticsPage. Activate when analytics can be configured
+	 * TODO #6
 	 * 
 	 * @param string     Name of the Page
 	 * @param properties default properties for the polystore
 	 * @return a new {@link CreationAnalyticsPage}
 	 */
-	private CreationAnalyticsPage createAnalyticsPage(String string, Properties properties) {
-		return new CreationAnalyticsPage(string, properties);
-	}
+//	private CreationAnalyticsPage createAnalyticsPage(String string, Properties properties) {
+//		return new CreationAnalyticsPage(string, properties);
+//	}
 }
