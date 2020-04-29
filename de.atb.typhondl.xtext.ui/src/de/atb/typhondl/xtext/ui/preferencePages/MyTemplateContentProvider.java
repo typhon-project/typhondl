@@ -18,41 +18,41 @@ import org.eclipse.jface.viewers.Viewer;
 @SuppressWarnings("deprecation")
 class MyTemplateContentProvider implements IStructuredContentProvider {
 
-	/**
-	 * The template store containing the {@link TemplatePersistenceData}
-	 */
-	private TemplateStore fStore;
+    /**
+     * The template store containing the {@link TemplatePersistenceData}
+     */
+    private TemplateStore fStore;
 
-	/**
-	 * The contextID to filter the data
-	 */
-	private String contextID;
+    /**
+     * The contextID to filter the data
+     */
+    private String contextID;
 
-	/**
-	 * Creates instance of {@link MyTemplateContentProvider}.
-	 * 
-	 * @param contextID The context (i.e. Model type) to use as a filter.
-	 */
-	public MyTemplateContentProvider(String contextID) {
-		this.contextID = contextID;
-	}
+    /**
+     * Creates instance of {@link MyTemplateContentProvider}.
+     * 
+     * @param contextID The context (i.e. Model type) to use as a filter.
+     */
+    public MyTemplateContentProvider(String contextID) {
+        this.contextID = contextID;
+    }
 
-	@Override
-	public Object[] getElements(Object input) {
-		TemplatePersistenceData[] templateData = fStore.getTemplateData(false);
-		return Arrays.asList(templateData).stream()
-				.filter(data -> data.getTemplate().getContextTypeId().equalsIgnoreCase(this.contextID))
-				.collect(Collectors.toList()).toArray(new TemplatePersistenceData[0]);
-	}
+    @Override
+    public Object[] getElements(Object input) {
+        TemplatePersistenceData[] templateData = fStore.getTemplateData(false);
+        return Arrays.asList(templateData).stream()
+                .filter(data -> data.getTemplate().getContextTypeId().equalsIgnoreCase(this.contextID))
+                .collect(Collectors.toList()).toArray(new TemplatePersistenceData[0]);
+    }
 
-	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		fStore = (TemplateStore) newInput;
-	}
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        fStore = (TemplateStore) newInput;
+    }
 
-	@Override
-	public void dispose() {
-		fStore = null;
-	}
+    @Override
+    public void dispose() {
+        fStore = null;
+    }
 
 }

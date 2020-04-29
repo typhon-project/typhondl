@@ -17,72 +17,95 @@ import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPage;
  */
 public class WizardFields {
 
-	/**
-	 * Checkbox for using an existing file or not
-	 */
-	private Button checkbox;
+    /**
+     * Checkbox for using an existing file or not
+     */
+    private Button existingModelCheck;
 
-	/**
-	 * Combo to choose {@link DB} template from
-	 */
-	private Combo combo;
+    /**
+     * Checkbox for using an external database or not
+     */
+    private Button externalDatabaseCheck;
 
-	/**
-	 * List of Pairs of {@link DB} and the {@link TemplateBuffer} of the chosen
-	 * Template
-	 */
-	private ArrayList<Pair<DB, TemplateBuffer>> templateBuffers;
+    /**
+     * Combo to choose {@link DB} template from
+     */
+    private Combo combo;
 
-	/**
-	 * Creates instance of {@link WizardFields}
-	 * 
-	 * @param checkbox  Checkbox for using an existing file or not
-	 * @param combo     Combo to choose {@link DB} template from
-	 * @param templates List of Pairs of {@link DB} and the {@link TemplateBuffer}
-	 *                  of the chosen Template
-	 */
-	public WizardFields(Button checkbox, Combo combo, ArrayList<Pair<DB, TemplateBuffer>> templates) {
-		this.checkbox = checkbox;
-		this.combo = combo;
-		this.templateBuffers = templates;
-	}
+    /**
+     * List of Pairs of {@link DB} and the {@link TemplateBuffer} of the chosen
+     * Template
+     */
+    private ArrayList<Pair<DB, TemplateBuffer>> templateBuffers;
 
-	/**
-	 * @param checkbox Checkbox for using an existing file or not
-	 */
-	public void setCheckbox(Button checkbox) {
-		this.checkbox = checkbox;
-	}
+    /**
+     * Creates instance of {@link WizardFields}
+     * 
+     * @param existingModelCheck    Checkbox for using an existing file or not
+     * @param combo                 Combo to choose {@link DB} template from
+     * @param templates             List of Pairs of {@link DB} and the
+     *                              {@link TemplateBuffer} of the chosen Template
+     * @param externalDatabaseCheck Checkbox for using an external database or not
+     */
+    public WizardFields(Button existingModelCheck, Button externalDatabaseCheck, Combo combo,
+            ArrayList<Pair<DB, TemplateBuffer>> templates) {
+        this.existingModelCheck = existingModelCheck;
+        this.setExternalDatabaseCheck(externalDatabaseCheck);
+        this.combo = combo;
+        this.templateBuffers = templates;
+    }
 
-	/**
-	 * @param combo Combo to choose {@link DB} template from
-	 */
-	public void setCombo(Combo combo) {
-		this.combo = combo;
-	}
+    /**
+     * @param existingModelCheck Checkbox for using an existing file or not
+     */
+    public void setExistingModelCheck(Button existingModelCheck) {
+        this.existingModelCheck = existingModelCheck;
+    }
 
-	/**
-	 * 
-	 * @return Checkbox for using an existing file or not
-	 */
-	public Button getCheckbox() {
-		return checkbox;
-	}
+    /**
+     * @return Checkbox for using an existing file or not
+     */
+    public Button getExistingModelCheck() {
+        return existingModelCheck;
+    }
 
-	/**
-	 * 
-	 * @return Combo to choose {@link DB} template from
-	 */
-	public Combo getCombo() {
-		return combo;
-	}
+    /**
+     * @param combo Combo to choose {@link DB} template from
+     */
+    public void setCombo(Combo combo) {
+        this.combo = combo;
+    }
 
-	/**
-	 * 
-	 * @return List of Pairs of {@link DB} and the {@link TemplateBuffer} of the
-	 *         chosen Template
-	 */
-	public ArrayList<Pair<DB, TemplateBuffer>> getTemplateBuffers() {
-		return templateBuffers;
-	}
+    /**
+     * 
+     * @return Combo to choose {@link DB} template from
+     */
+    public Combo getCombo() {
+        return combo;
+    }
+
+    /**
+     * 
+     * @return List of Pairs of {@link DB} and the {@link TemplateBuffer} of the
+     *         chosen Template
+     */
+    public ArrayList<Pair<DB, TemplateBuffer>> getTemplateBuffers() {
+        return templateBuffers;
+    }
+
+    /**
+     * 
+     * @return Checkbox for using an external database or not
+     */
+    public Button getExternalDatabaseCheck() {
+        return externalDatabaseCheck;
+    }
+
+    /**
+     * 
+     * @param externalDatabaseCheck Checkbox for using an external database or not
+     */
+    public void setExternalDatabaseCheck(Button externalDatabaseCheck) {
+        this.externalDatabaseCheck = externalDatabaseCheck;
+    }
 }

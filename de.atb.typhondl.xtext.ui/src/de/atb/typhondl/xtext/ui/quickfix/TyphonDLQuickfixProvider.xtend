@@ -4,16 +4,6 @@
 package de.atb.typhondl.xtext.ui.quickfix
 
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider
-import org.eclipse.xtext.validation.Issue
-import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
-import org.eclipse.xtext.ui.editor.quickfix.Fix
-import de.atb.typhondl.xtext.validation.TyphonDLValidator
-import org.eclipse.xtext.ui.editor.model.edit.ISemanticModification
-import org.eclipse.xtext.ui.editor.model.edit.IModificationContext
-import org.eclipse.emf.ecore.EObject
-import de.atb.typhondl.xtext.typhonDL.Key_Values
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory
-import de.atb.typhondl.xtext.typhonDL.Container
 
 /**
  * Custom quickfixes.

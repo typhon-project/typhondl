@@ -20,7 +20,7 @@ Services:
 	DB | Software;
 
 Software:
-	'software' name=Name '{'
+	(external?='external')? 'software' name=Name '{'
 	(image=IMAGE)
 	(parameters+=Property)*
 	'}';
@@ -29,7 +29,7 @@ Type:
 	PlatformType | ClusterType | ContainerType | DBType;
 
 DB:
-	'database' name=Name ':' type=[DBType] '{'
+	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
 	(parameters+=Property)*
 	'}';
@@ -83,7 +83,7 @@ Application:
 
 Container:
 	{Container}
-	'container' name=Name ':' (type=[ContainerType])? '{'
+	(external?='external')? 'container' name=Name ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
@@ -98,7 +98,7 @@ Ports:
 	'}';
 
 Dependency:
-	'depends_on' reference=[Container];
+	'depends_on' reference=[Container]; 
 
 Reference:
 	'deploys' reference=[Services];

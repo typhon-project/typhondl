@@ -1,0 +1,85 @@
+version: '3.7'
+
+services:
+  VehicleDataDB:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - target: 27017
+  TextWarningData:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - target: 27017
+  VehicleMetadataDB:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - target: 3306
+  AppData:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - target: 3306
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: admin
+    ports:
+      - target: 27017
+    volumes:
+      - ./models/:/docker-entrypoint-initdb.d
+  typhon-polystore-service:
+    image: clms/typhon-polystore-api:latest
+    depends_on: 
+      - polystore-mongo
+    ports:
+      - target: 8080
+        published:
+  polystore-ui:
+    image: clms/typhon-polystore-ui:latest
+    environment:
+      API_PORT: 8080
+      API_HOST: localhost
+    depends_on: 
+      - typhon-polystore-service
+    ports:
+      - target: 4200
+        published: 4200
+  typhonql-server:
+    image: swatengineering/typhonql-server
+    ports:
+      - target: 7000
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - target: 2181
+        published: 2181
+
+  kafka:
+    depends_on: 
+      - zookeeper
+    ports:
+      - target: 29092
+        published: 29092
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+  authAll:
+    image: zolotas4/typhon-analytics-auth-all

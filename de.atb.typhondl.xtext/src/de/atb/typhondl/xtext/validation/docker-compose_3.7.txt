@@ -1,3 +1,4 @@
+address
 build
 cap_add
 cap_drop
@@ -7,6 +8,7 @@ configs
 credential_spec
 depends_on
 devices
+deploy
 dns
 dns_search
 entrypoint

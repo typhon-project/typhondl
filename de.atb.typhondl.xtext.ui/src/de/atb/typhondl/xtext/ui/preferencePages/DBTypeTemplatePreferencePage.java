@@ -22,19 +22,19 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
  */
 public class DBTypeTemplatePreferencePage extends AdvancedTemplatesPreferencePage {
 
-	@Inject
-	public DBTypeTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
-			TemplateStore templateStore) {
-		super(preferenceStore, registry, templateStore);
-	}
+    @Inject
+    public DBTypeTemplatePreferencePage(IPreferenceStore preferenceStore, ContextTypeRegistry registry,
+            TemplateStore templateStore) {
+        super(preferenceStore, registry, templateStore);
+    }
 
-	@Override
-	protected Control createContents(Composite ancestor) {
-		Control result = super.createContents(ancestor);
-		ancestor.layout();
-		super.getTableViewer()
-				.setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DBType"));
-		return result;
-	}
+    @Override
+    protected Control createContents(Composite ancestor) {
+        Control result = super.createContents(ancestor);
+        ancestor.layout();
+        super.getTableViewer()
+                .setContentProvider(new MyTemplateContentProvider("de.atb.typhondl.xtext.TyphonDL.DBType"));
+        return result;
+    }
 
 }

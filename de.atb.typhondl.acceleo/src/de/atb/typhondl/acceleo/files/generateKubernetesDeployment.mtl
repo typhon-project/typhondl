@@ -5,16 +5,13 @@
 
 [template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
-[for (aApplication : Application | aCluster.getAllApplications())]
 
-[file (aApplication.name + '/polystore.yml', false, 'UTF-8')]
-[for (aContainer : Container | aApplication.containers)]
+[file ('polystore.yml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: [aContainer.name.toLower()/]-deployment
-  labels:
-    app: [aContainer.name.toLower()/]-pod
 spec:
 [if (aContainer.findReplicas() <> null)]
   replicas: [aContainer.findReplicas().value/]
@@ -28,35 +25,68 @@ spec:
         app: [aContainer.name.toLower()/]-pod
     spec:
       containers:
-        - name: [aContainer.name.toLower()/]
+        - name: [aContainer.name.toLower()/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [aContainer.ports.printPorts()/]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
 [/for]
 [/if]
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
   name: [aContainer.name.toLower()/]
-  labels:
-    name: [aContainer.name.toLower()/]
 spec:
+[if (aContainer.ports.getPublishedPort()<>null)]
   type: NodePort
+[/if] 
   ports:
-    - name: "[aContainer.ports.getTargetPort().value/]"
-      port: [aContainer.ports.getTargetPort().value/]
+    - port: [aContainer.ports.getTargetPort().value/]
       targetPort: [aContainer.ports.getTargetPort().value/]
+[if (aContainer.name.equalsIgnoreCase('typhon-polystore-service'))]
       nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if]
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+---
+[/if]
 [/for]
 
 [/file]
 [/for]
-[/for]
+[/template]
+
+[template public printPolystoreMongo(aContainer : Container)]
+mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser().value/] -p [aContainer.getMongoRootPassword().value/] admin --eval '[aContainer.getMongoPrint()/]';
+[/template]
+
+[template public printPublishedPorts(aPorts : Ports)]
+	template_expression
+[/template]
+
+[template public printPorts(aPorts : Ports)]
+ports:
+  - containerPort: [aPorts.getTargetPort().value/] 
 [/template]
 
 [template public printKubernetes(arg : Property) post (trim())]
@@ -64,7 +94,7 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[if (arg.name.equalsIgnoreCase('hostname')._or(arg.name.equalsIgnoreCase('replicas')))][else]
+[if (arg.name.equalsIgnoreCase('replicas')._or(arg.name.equalsIgnoreCase('print')))][else]
 [arg.name/]: [arg.value/]
 [/if]
 [/template]
@@ -80,7 +110,9 @@ env:
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-TODO
+[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))][else]
+Arrays not defined yet
+[/if]
 [/template]
 
 

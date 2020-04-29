@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="typhondl_feature"
+      label="TyphonDL"
+      version="1.0.0.qualifier"
+      provider-name="ATB">
+
+   <description url="http://www.example.com/description">
+      TyphonDL
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      ?
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      ?
+   </license>
+
+   <plugin
+         id="de.atb.typhondl.xtext.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.atb.typhondl.xtext.ide"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.atb.typhondl.xtext"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.atb.typhondl.acceleo"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

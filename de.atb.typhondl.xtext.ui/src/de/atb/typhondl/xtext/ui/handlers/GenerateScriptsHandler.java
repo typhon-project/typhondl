@@ -35,54 +35,54 @@ import de.atb.typhondl.acceleo.services.Services;
  */
 public class GenerateScriptsHandler extends AbstractHandler {
 
-	@Inject
-	XtextLiveScopeResourceSetProvider provider;
+    @Inject
+    XtextLiveScopeResourceSetProvider provider;
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		String result = "";
-		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-		Object object = selection.getFirstElement();
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IWorkspaceRoot root = workspace.getRoot();
-		if (object instanceof IFile) {
-			IFile file = (IFile) object;
+        String result = "";
+        IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
+        Object object = selection.getFirstElement();
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IWorkspaceRoot root = workspace.getRoot();
+        if (object instanceof IFile) {
+            IFile file = (IFile) object;
 
-			// add Xtext Nature
-			IProject project = file.getProject();
-			boolean hasXtextNature;
-			try {
-				hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
-				if (!hasXtextNature) {
-					IProjectDescription projectDescription = project.getDescription();
-					String[] oldNatures = projectDescription.getNatureIds();
-					String[] newNatures = new String[oldNatures.length + 1];
-					System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
-					newNatures[0] = XtextProjectHelper.NATURE_ID;
-					projectDescription.setNatureIds(newNatures);
-					project.setDescription(projectDescription, null);
-				}
-			} catch (CoreException e) {
-				MessageDialog.openWarning(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
-						"Please add Xtext Project Nature to your project");
-				e.printStackTrace();
-			}
+            // add Xtext Nature
+            IProject project = file.getProject();
+            boolean hasXtextNature;
+            try {
+                hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
+                if (!hasXtextNature) {
+                    IProjectDescription projectDescription = project.getDescription();
+                    String[] oldNatures = projectDescription.getNatureIds();
+                    String[] newNatures = new String[oldNatures.length + 1];
+                    System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
+                    newNatures[0] = XtextProjectHelper.NATURE_ID;
+                    projectDescription.setNatureIds(newNatures);
+                    project.setDescription(projectDescription, null);
+                }
+            } catch (CoreException e) {
+                MessageDialog.openWarning(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                        "Please add Xtext Project Nature to your project");
+                e.printStackTrace();
+            }
 
-			result = Services.generateDeployment(file, provider);
+            result = Services.generateDeployment(file, provider);
 
-			for (IProject iproject : root.getProjects()) {
-				try {
-					iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+            for (IProject iproject : root.getProjects()) {
+                try {
+                    iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(window.getShell(), "UI", result);
-		return null;
-	}
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        MessageDialog.openInformation(window.getShell(), "UI", result);
+        return null;
+    }
 
 }
