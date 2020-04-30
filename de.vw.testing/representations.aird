@@ -3,7 +3,6 @@
   <semanticResources>weather_warning_ML.tml</semanticResources>
   <semanticResources>w_w_ML_custom_datatypes.tml</semanticResources>
   <semanticResources>weatherModelDockerCompose.tdl</semanticResources>
-  <semanticResources>weatherModelDockerCompose/weatherModelDockerCompose.xmi</semanticResources>
   <semanticResources>weatherModelMinikube.tdl</semanticResources>
   <semanticResources>weatherModelMinikube/weatherModelMinikube.xmi</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
@@ -13,4 +12,5 @@
   <semanticResources>AppData.tdl</semanticResources>
   <semanticResources>weatherModelWithAnalytics.tdl</semanticResources>
   <semanticResources>weatherModelWithAnalytics/weatherModelWithAnalytics.xmi</semanticResources>
+  <semanticResources>weatherModelDockerCompose/weatherModelDockerCompose.xmi</semanticResources>
 </viewpoint:DAnalysis>

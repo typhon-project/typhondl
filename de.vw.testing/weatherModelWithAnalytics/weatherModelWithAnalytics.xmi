@@ -100,35 +100,35 @@
       </applications>
     </clusters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.8">
+  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.8">
+  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.9">
+  <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.8">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.9">
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
     </parameters>
-  </elements>
-  <elements xsi:type="typhonDL:DBType" name="Mongo">
-    <image value="mongo:latest"/>
   </elements>
   <elements xsi:type="typhonDL:DBType" name="MariaDB">
     <image value="mariadb:latest"/>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.8">
+  <elements xsi:type="typhonDL:DBType" name="Mongo">
+    <image value="mongo:latest"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
