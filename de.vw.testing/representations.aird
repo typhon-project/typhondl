@@ -4,7 +4,6 @@
   <semanticResources>w_w_ML_custom_datatypes.tml</semanticResources>
   <semanticResources>wmDeployment_k8s_minikube.tdl</semanticResources>
   <semanticResources>wmDL_compose_analytics.tdl</semanticResources>
-  <semanticResources>wmDeployment_k8s_minikube/wmDeployment_k8s_minikube.xmi</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>VehicleMetadataDB.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
@@ -13,4 +12,5 @@
   <semanticResources>wmDL_compose.tdl</semanticResources>
   <semanticResources>wmDL_compose_analytics/wmDL_compose_analytics.xmi</semanticResources>
   <semanticResources>wmDL_compose/wmDL_compose.xmi</semanticResources>
+  <semanticResources>wmDeployment_k8s_minikube/wmDeployment_k8s_minikube.xmi</semanticResources>
 </viewpoint:DAnalysis>
