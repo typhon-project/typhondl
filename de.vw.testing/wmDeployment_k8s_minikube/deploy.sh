@@ -11,3 +11,4 @@ echo "Deploy Polystore"
 kubectl apply -n typhon -f polystore.yaml --kubeconfig=/home/flug/.kube/config
 echo "Polystore installation completed."
 echo "It may take a few minutes for all services to be up and running."
+exit 1
