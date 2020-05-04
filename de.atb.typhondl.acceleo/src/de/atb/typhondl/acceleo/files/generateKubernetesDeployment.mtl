@@ -13,7 +13,7 @@ kubectl create namespace typhon --kubeconfig=[aCluster.getKubeconfig().value/]
 sleep 1
 echo "Deploy databases and upload models to metadata database (polystore-mongo)"
 kubectl apply -n typhon -f databases.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
-sleep1
+sleep 1
 echo "Wait for databases to complete startup"
 kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models --kubeconfig=[aCluster.getKubeconfig().value/]
 echo "Deploy Polystore"
@@ -52,7 +52,7 @@ echo "Polystore installation completed."
 echo "It may take a few minutes for all services to be up and running."
 [/file]
 
-[file ('polystore.yml', false, 'UTF-8')]
+[file ('polystore.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
 [if ((aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
 apiVersion: apps/v1
@@ -102,7 +102,7 @@ spec:
 [/for]
 [/file]
 
-[file ('databases.yml', false, 'UTF-8')]
+[file ('databases.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
 [if (not((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server')))]
 apiVersion: apps/v1
