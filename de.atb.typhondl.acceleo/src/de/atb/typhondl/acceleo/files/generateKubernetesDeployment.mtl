@@ -51,6 +51,7 @@ echo "Typhon Flink K8s installation completed."
 [/if]
 echo "Polystore installation completed."
 echo "It may take a few minutes for all services to be up and running."
+exit 1
 [/file]
 
 [file ('polystore.yaml', false, 'UTF-8')]
