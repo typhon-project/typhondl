@@ -30,7 +30,7 @@ kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/032-Rol
 sleep 1
 kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
 sleep 2
-kubectl create -n typhon -f typhon-cluster.yml --kubeconfig=[aCluster.getKubeconfig().value/]
+kubectl create -n typhon -f typhon-cluster.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
 echo "Waiting for Typhon Kafka K8s deployment to complete ..."
 kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon --kubeconfig=[aCluster.getKubeconfig().value/]
 echo "Typhon Kafka K8s deployment completed."

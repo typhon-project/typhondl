@@ -7,7 +7,7 @@
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 	
-[file ('databases.yml', false, 'UTF-8')]
+[file ('databases.yaml', false, 'UTF-8')]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
@@ -43,7 +43,7 @@ services:
 [/if]
 [/for]
 [/file]
-[file ('polystore.yml', false, 'UTF-8')]
+[file ('polystore.yaml', false, 'UTF-8')]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
