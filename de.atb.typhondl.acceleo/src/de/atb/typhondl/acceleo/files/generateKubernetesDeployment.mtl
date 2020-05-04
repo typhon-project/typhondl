@@ -8,44 +8,48 @@
 
 [file ('deploy.sh', false, 'UTF-8')]
 #!/bin/bash
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]"
 echo "Create Typhon namespace"
-kubectl create namespace typhon [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+if ['['/] -n "$kubeconfig" [']'/]; then
+    echo "Using Cluster configuration file ${kubeconfig}"
+fi
+kubectl create namespace typhon $kubeconfig
 sleep 1
 echo "Deploy databases and upload models to metadata database (polystore-mongo)"
-kubectl apply -n typhon -f databases.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
 echo "Wait for databases to complete startup"
-kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
 echo "Deploy Polystore"
-kubectl apply -n typhon -f polystore.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n typhon -f polystore.yaml $kubeconfig
 
 [if (aCluster.useAnalytics())]
 echo "Running Typhon Kafka K8s installation ..."
-kubectl create namespace kafka [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl create namespace kafka $kubeconfig
 sleep 1
-kubectl apply -n kafka -f kafka/strimzi-0.17.0/install/cluster-operator/ [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n kafka -f kafka/strimzi-0.17.0/install/cluster-operator/ $kubeconfig
 sleep 1
-kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml $kubeconfig
 sleep 1
-kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml $kubeconfig
 sleep 1
-kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
 sleep 2
-kubectl create -n typhon -f typhon-cluster.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl create -n typhon -f typhon-cluster.yaml $kubeconfig
 echo "Waiting for Typhon Kafka K8s deployment to complete ..."
-kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
 echo "Typhon Kafka K8s deployment completed."
 echo "Typhon Kafka K8s installation completed."
 echo ""
 echo "Running Typhon Flink K8s installation ..."
 sleep 2
-kubectl -n typhon apply -f flink/flink-configuration-configmap.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl -n typhon apply -f flink/flink-configuration-configmap.yaml $kubeconfig
 sleep 1
-kubectl -n typhon apply -f flink/jobmanager-service.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl -n typhon apply -f flink/jobmanager-service.yaml $kubeconfig
 sleep 1
-kubectl -n typhon apply -f flink/jobmanager-deployment.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl -n typhon apply -f flink/jobmanager-deployment.yaml $kubeconfig
 sleep 1
-kubectl -n typhon apply -f flink/taskmanager-deployment.yaml [if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]
+kubectl -n typhon apply -f flink/taskmanager-deployment.yaml $kubeconfig
 sleep 1
 echo "Typhon Flink K8s installation completed."
 [/if]
