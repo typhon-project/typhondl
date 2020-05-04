@@ -9,6 +9,7 @@ clustertype Kubernetes
 platformtype minikube
 platform platformName : minikube {
 	cluster clusterName : Kubernetes {
+		kubeconfig = /home/flug/.kube/config;
 		application Polystore {
 			container TextWarningData : Docker {
 				deploys TextWarningData
