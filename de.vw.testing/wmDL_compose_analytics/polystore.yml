@@ -7,7 +7,7 @@ services:
       - polystore-mongo
     ports:
       - target: 8080
-        published:
+        published: 8080
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
     environment:
