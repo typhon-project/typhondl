@@ -1,49 +1,11 @@
 version: '3.7'
 
 services:
-  VehicleDataDB:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: username
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-      - target: 27017
-  TextWarningData:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: username
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-      - target: 27017
-  VehicleMetadataDB:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-    ports:
-      - target: 3306
-  AppData:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-    ports:
-      - target: 3306
-  polystore-mongo:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: admin
-    ports:
-      - target: 27017
-    volumes:
-      - ./models/:/docker-entrypoint-initdb.d
   typhon-polystore-service:
     image: clms/typhon-polystore-api:latest
-    depends_on: 
-      - polystore-mongo
     ports:
       - target: 8080
-        published:
+        published: 8080
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
     environment:
