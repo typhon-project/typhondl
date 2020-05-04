@@ -11,6 +11,7 @@
   <elements xsi:type="typhonDL:PlatformType" name="minikube"/>
   <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.2">
     <clusters name="clusterName" type="//@elements.1">
+      <properties xsi:type="typhonDL:Key_Values" name="kubeconfig" value="/home/flug/.kube/config"/>
       <applications name="Polystore">
         <containers name="TextWarningData" type="//@elements.0">
           <deploys reference="//@elements.4"/>
