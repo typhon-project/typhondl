@@ -438,9 +438,6 @@ public class Services {
         polystoredb_container_ports.getKey_values().add(polystoredb_container_port);
         polystoredb_container.setPorts(polystoredb_container_ports);
 
-        Dependency polystoredb_dependency = TyphonDLFactory.eINSTANCE.createDependency();
-        polystoredb_dependency.setReference(polystoredb_container);
-
         // polystore_api
         Software polystore_api;
         polystore_api = TyphonDLFactory.eINSTANCE.createSoftware();
@@ -456,7 +453,6 @@ public class Services {
         polystore_api_container.setName(properties.getProperty("api.containername"));
         polystore_api_container.setType(containerType);
         polystore_api_container.setDeploys(polystore_api_reference);
-        polystore_api_container.getDepends_on().add(polystoredb_dependency);
         Key_Values polystore_api_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
         polystore_api_container_port.setName("target");
         polystore_api_container_port.setValue(properties.getProperty("api.port"));
