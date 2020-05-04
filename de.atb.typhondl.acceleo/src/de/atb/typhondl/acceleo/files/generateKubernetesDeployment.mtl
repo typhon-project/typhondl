@@ -6,8 +6,55 @@
 [template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 
+[file ('deploy.sh', false, 'UTF-8')]
+#!/bin/bash
+echo "Create Typhon namespace"
+kubectl create namespace typhon --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+echo "Deploy databases and upload models to metadata database (polystore-mongo)"
+kubectl apply -n typhon -f databases.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep1
+echo "Wait for databases to complete startup"
+kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models --kubeconfig=[aCluster.getKubeconfig().value/]
+echo "Deploy Polystore"
+kubectl apply -n typhon -f polystore.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+[if (aCluster.useAnalytics())]
+echo "Running Typhon Kafka K8s installation ..."
+kubectl create namespace kafka --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl apply -n kafka -f kafka/strimzi-0.17.0/install/cluster-operator/ --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 2
+kubectl create -n typhon -f typhon-cluster.yml --kubeconfig=[aCluster.getKubeconfig().value/]
+echo "Waiting for Typhon Kafka K8s deployment to complete ..."
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon --kubeconfig=[aCluster.getKubeconfig().value/]
+echo "Typhon Kafka K8s deployment completed."
+echo "Typhon Kafka K8s installation completed."
+echo ""
+echo "Running Typhon Flink K8s installation ..."
+sleep 2
+kubectl -n typhon apply -f flink/flink-configuration-configmap.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl -n typhon apply -f flink/jobmanager-service.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl -n typhon apply -f flink/jobmanager-deployment.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+kubectl -n typhon apply -f flink/taskmanager-deployment.yaml --kubeconfig=[aCluster.getKubeconfig().value/]
+sleep 1
+echo "Typhon Flink K8s installation completed."
+[/if]
+echo "Polystore installation completed."
+echo "It may take a few minutes for all services to be up and running."
+[/file]
+
 [file ('polystore.yml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
+[if ((aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,7 +92,57 @@ spec:
   ports:
     - port: [aContainer.ports.getTargetPort().value/]
       targetPort: [aContainer.ports.getTargetPort().value/]
-[if (aContainer.name.equalsIgnoreCase('typhon-polystore-service'))]
+[if (aContainer.ports.getPublishedPort()<>null)]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if]
+  selector:
+    app: [aContainer.name.toLower()/]-pod
+---
+[/if]
+[/for]
+[/file]
+
+[file ('databases.yml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server')))]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name.toLower()/]-deployment
+spec:
+[if (aContainer.findReplicas() <> null)]
+  replicas: [aContainer.findReplicas().value/]
+[/if]
+  selector:
+    matchLabels:
+      app: [aContainer.name.toLower()/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name.toLower()/]-pod
+    spec:
+      containers:
+        - name: [aContainer.name.toLower()/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [aContainer.ports.printPorts()/]
+[if (aContainer.properties <> null)]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: [aContainer.name.toLower()/]
+spec:
+[if (aContainer.ports.getPublishedPort()<>null)]
+  type: NodePort
+[/if] 
+  ports:
+    - port: [aContainer.ports.getTargetPort().value/]
+      targetPort: [aContainer.ports.getTargetPort().value/]
+[if (aContainer.ports.getPublishedPort()<>null)]
       nodePort: [aContainer.ports.getPublishedPort().value/]
 [/if]
   selector:
@@ -70,9 +167,10 @@ spec:
       restartPolicy: Never
 ---
 [/if]
+[/if]
 [/for]
-
 [/file]
+
 [/for]
 [/template]
 
