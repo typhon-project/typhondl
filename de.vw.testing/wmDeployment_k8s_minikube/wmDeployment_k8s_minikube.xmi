@@ -2,50 +2,39 @@
 <typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weatherModel.xmi"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
-  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleMetadataDB.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleDataDB.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
   <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
   <elements xsi:type="typhonDL:ClusterType" name="Kubernetes"/>
   <elements xsi:type="typhonDL:PlatformType" name="minikube"/>
   <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.2">
     <clusters name="clusterName" type="//@elements.1">
+      <properties xsi:type="typhonDL:Key_Values" name="kubeconfig" value="/home/flug/.kube/config"/>
       <applications name="Polystore">
         <containers name="TextWarningData" type="//@elements.0">
           <deploys reference="//@elements.4"/>
           <ports>
             <key_values name="target" value="27017"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_KeyValueList" name="resources">
-            <properties xsi:type="typhonDL:Key_KeyValueList" name="requests">
-              <properties xsi:type="typhonDL:Key_Values" name="memory" value="&quot;64Mi&quot;"/>
-              <properties xsi:type="typhonDL:Key_Values" name="cpu" value="&quot;250m&quot;"/>
-            </properties>
-          </properties>
         </containers>
-        <containers name="AppData" type="//@elements.0">
+        <containers name="VehicleMetadataDB" type="//@elements.0">
           <deploys reference="//@elements.5"/>
           <ports>
             <key_values name="target" value="3306"/>
           </ports>
         </containers>
-        <containers name="VehicleMetadataDB" type="//@elements.0">
+        <containers name="VehicleDataDB" type="//@elements.0">
           <deploys reference="//@elements.6"/>
           <ports>
-            <key_values name="target" value="3306"/>
+            <key_values name="target" value="27017"/>
           </ports>
-          <properties xsi:type="typhonDL:Key_KeyValueList" name="resources">
-            <properties xsi:type="typhonDL:Key_KeyValueList" name="limits">
-              <properties xsi:type="typhonDL:Key_Values" name="memory" value="&quot;128Mi&quot;"/>
-              <properties xsi:type="typhonDL:Key_Values" name="cpu" value="&quot;500m&quot;"/>
-            </properties>
-          </properties>
         </containers>
-        <containers name="VehicleDataDB" type="//@elements.0">
+        <containers name="AppData" type="//@elements.0">
           <deploys reference="//@elements.7"/>
           <ports>
-            <key_values name="target" value="27017"/>
+            <key_values name="target" value="3306"/>
           </ports>
         </containers>
         <containers name="polystore-mongo" type="//@elements.0">
@@ -56,7 +45,6 @@
         </containers>
         <containers name="typhon-polystore-service" type="//@elements.0">
           <deploys reference="//@elements.11"/>
-          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.4"/>
           <ports>
             <key_values name="target" value="8080"/>
             <key_values name="published" value="30061"/>
@@ -79,35 +67,35 @@
       </applications>
     </clusters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.8">
+  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.9">
+  <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.8">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.9">
-    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-      <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
-    </parameters>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.8">
+  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
-  <elements xsi:type="typhonDL:DBType" name="Mongo">
-    <image value="mongo:latest"/>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
+    </parameters>
   </elements>
   <elements xsi:type="typhonDL:DBType" name="MariaDB">
     <image value="mariadb:latest"/>
   </elements>
-  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.8">
+  <elements xsi:type="typhonDL:DBType" name="Mongo">
+    <image value="mongo:latest"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="admin"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="admin"/>
@@ -120,7 +108,7 @@
     <image value="clms/typhon-polystore-ui:latest"/>
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="API_PORT" value="&quot;30061&quot;"/>
-      <properties xsi:type="typhonDL:Key_Values" name="API_HOST" value="&quot;192.168.99.102&quot;"/>
+      <properties xsi:type="typhonDL:Key_Values" name="API_HOST" value="&quot;192.168.99.103&quot;"/>
     </parameters>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_ql">

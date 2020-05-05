@@ -52,3 +52,13 @@ aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROO
 [query public getMongoRootPassword(aContainer : Container) : Key_Values =
 aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_PASSWORD')
 /]
+
+[query public getKubeconfig(aCluster : Cluster) : Key_Values =
+aCluster.properties->any(key | key.name.equalsIgnoreCase('kubeconfig'))
+/]
+
+[query public useAnalytics(aCluster : Cluster) : Boolean =
+aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<>null
+/]
+
+
