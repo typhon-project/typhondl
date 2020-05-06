@@ -462,4 +462,8 @@ public class CreationContainerPage extends MyWizardPage {
         return result;
     }
 
+    public void setDBs(ArrayList<DB> dbs) {
+        this.dbs = dbs;
+    }
+
 }

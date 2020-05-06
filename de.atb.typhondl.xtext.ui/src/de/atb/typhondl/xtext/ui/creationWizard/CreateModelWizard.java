@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -58,12 +59,6 @@ public class CreateModelWizard extends Wizard {
     private CreationAnalyticsPage analyticsPage;
 
     /**
-     * An optional page. Values for extracted {@link TemplateVariable}s can be
-     * entered
-     */
-    private CreationTemplateVariablePage variablePage;
-
-    /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
     private int chosenTemplate;
@@ -91,9 +86,11 @@ public class CreateModelWizard extends Wizard {
     @Override
     public void addPages() {
         mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
+        mainPage.setWizard(this);
         addPage(mainPage);
 
         dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel);
+        dbmsPage.setWizard(this);
         addPage(dbmsPage);
     }
 
@@ -164,19 +161,13 @@ public class CreateModelWizard extends Wizard {
     }
 
     /**
-     * Returns the next page of the TyphonDL Creation Wizard.
+     * Returns the next page of the TyphonDL Creation Wizard. The pages for each
+     * databases and the container definition page are created. Since this method is
+     * called whenever something changes on a page (e.g. entering text) the input
+     * for the created database and container pages can change and thus has to be
+     * updated
      * 
-     * @return
-     *         <li>{@link Wizard#getNextPage(IWizardPage)}</li>
-     *         <li>if the current page is the {@link CreationDBMSPage} and the
-     *         useAnalytics checkbox is checked, Then a
-     *         {@link CreationAnalyticsPage} is created and returned.</li>
-     *         <li>if the current page is the {@link CreationDBMSPage} and a
-     *         template with {@link TemplateVariable}s is used, a
-     *         {@link CreationTemplateVariablePage} is created and returned,
-     *         otherwise a {@link CreationContainerPage} is returned.</li>
-     *         <li>if the current page is the {@link CreationTemplateVariablePage} a
-     *         {@link CreationContainerPage} is returned.</li>
+     * @return the next page
      */
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
@@ -184,48 +175,40 @@ public class CreateModelWizard extends Wizard {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
         }
         if (page instanceof CreationDBMSPage) {
-            if (((CreationDBMSPage) page).hasTemplateVariables()) {
-                this.variablePage = createVariablesPage("Template Variables Page",
-                        ((CreationDBMSPage) page).getResult());
-                this.variablePage.setWizard(this);
-                return variablePage;
-            } else {
-                this.containerPage = createContainerPage("Container Definition Page",
-                        new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()), this.chosenTemplate);
+            HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
+            for (DB db : result.keySet()) {
+                String pageName = "Database Page for " + db.getName();
+                if (!pageExists(pageName)) {
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db));
+                    databasePage.setWizard(this);
+                    addPage(databasePage);
+                } else {
+                    ((CreationDatabasePage) this.getPage(pageName)).setDB(db);
+                    ((CreationDatabasePage) this.getPage(pageName)).setBuffer(result.get(db));
+                }
+            }
+            String containerPageName = "Container Definition Page";
+            if (!pageExists(containerPageName)) {
+                this.containerPage = new CreationContainerPage(containerPageName, new ArrayList<>(result.keySet()),
+                        this.chosenTemplate);
                 this.containerPage.setWizard(this);
-                return containerPage;
+                addPage(this.containerPage);
+            } else {
+                ((CreationContainerPage) this.getPage(containerPageName)).setDBs(new ArrayList<>(result.keySet()));
             }
         }
-        if (page instanceof CreationTemplateVariablePage) {
-            this.containerPage = createContainerPage("Container Definition Page",
-                    ((CreationTemplateVariablePage) page).getDBs(), this.chosenTemplate);
-            this.containerPage.setWizard(this);
-            return containerPage;
-        }
         return super.getNextPage(page);
-    }
 
-    private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs, int chosenTemplate) {
-        return new CreationContainerPage(string, dbs, chosenTemplate);
     }
 
     /**
-     * Creates a CreationTemplateVariablePage
+     * Checks if a page already exists
      * 
-     * @param string Name of the Page
-     * @param result Map of {@link DB}s and their {@link TemplateBuffer}
-     * @return a new {@link CreationTemplateVariablePage}
+     * @param pageName The name of the page to check
+     * @return true if page exists, false otherwise
      */
-    private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateBuffer> result) {
-        return new CreationTemplateVariablePage(string, result);
+    private boolean pageExists(String pageName) {
+        return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }
 
-    /**
-     * Creates a CreationAnalyticsPage. Activate when analytics can be configured
-     * TODO #6
-     * 
-     * @param string     Name of the Page
-     * @param properties default properties for the polystore
-     * @return a new {@link CreationAnalyticsPage}
-     */
 }
