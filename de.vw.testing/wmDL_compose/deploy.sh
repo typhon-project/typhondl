@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "Pulling latest images"
+docker-compose -f databases.yaml pull
+docker-compose -f polystore.yaml pull
 echo "Starting the Polystore user databases and metadata database"
 docker-compose -f databases.yaml up -d
 echo "Wait for databases"

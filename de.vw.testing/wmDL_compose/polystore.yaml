@@ -6,6 +6,13 @@ services:
     ports:
       - target: 8080
         published: 8080
+    entrypoint:
+      - "java"
+      - "-cp"
+      - "/app/resources:/app/classes:/app/libs/*"
+    #   - "-Dlogging.level.org.tomcat=INFO"
+    #   - "-Dlogging.level.root=TRACE"
+      - "com.clms.typhonapi.Application"
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
     environment:
