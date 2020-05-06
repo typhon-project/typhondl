@@ -89,7 +89,7 @@ public class CreateModelWizard extends Wizard {
         mainPage.setWizard(this);
         addPage(mainPage);
 
-        dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel);
+        dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel, chosenTemplate);
         dbmsPage.setWizard(this);
         addPage(dbmsPage);
     }
@@ -173,6 +173,7 @@ public class CreateModelWizard extends Wizard {
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
+            this.dbmsPage.setChosenTemplate(this.chosenTemplate);
         }
         if (page instanceof CreationDBMSPage) {
             HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();

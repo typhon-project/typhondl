@@ -38,6 +38,7 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 /**
@@ -78,6 +79,8 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private IFile file;
 
+    private int chosenTemplate;
+
     private XtextResourceSet resourceSet;
 
     /**
@@ -86,8 +89,8 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param pageName
      * @param file     ML model file
      */
-    public CreationDBMSPage(String pageName, IFile file) {
-        this(pageName, file, readModel(file));
+    public CreationDBMSPage(String pageName, IFile file, int chosenTemplate) {
+        this(pageName, file, readModel(file), chosenTemplate);
     }
 
     /**
@@ -97,12 +100,13 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param file     ML model file
      * @param MLmodel  List of Pair(name, abstractType) taken from the ML model file
      */
-    public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel) {
+    public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel, int chosenTemplate) {
         super(pageName);
         this.MLmodel = MLmodel;
         this.file = file;
         this.databaseSettings = new HashMap<>();
         this.result = new HashMap<>();
+        this.chosenTemplate = chosenTemplate;
         addResources();
     }
 
@@ -238,6 +242,11 @@ public class CreationDBMSPage extends MyWizardPage {
                 };
             });
             databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
+
+            if (SupportedTechnologies.values()[chosenTemplate].getContainerType().equalsIgnoreCase("Kubernetes")) {
+                Button useHelmChart = new Button(group, SWT.CHECK);
+                useHelmChart.setText("Use Helm chart");
+            }
 
             new Label(group, NONE).setText("Choose Template:");
             Combo combo = new Combo(group, SWT.READ_ONLY);
@@ -400,5 +409,9 @@ public class CreationDBMSPage extends MyWizardPage {
         TemplateBuffer buffer = result.keySet().stream().map(key -> result.get(key)).filter(value -> value != null)
                 .findFirst().orElse(null);
         return buffer != null;
+    }
+
+    public void setChosenTemplate(int chosenTemplate) {
+        this.chosenTemplate = chosenTemplate;
     }
 }
