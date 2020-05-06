@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
@@ -39,7 +40,40 @@ public class CreationDatabasePage extends WizardPage {
 
         templateVariableArea(main);
 
+        imageArea(main);
+
+        parameterArea(main);
+
         setControl(main);
+    }
+
+    private void parameterArea(Composite main) {
+        // TODO Auto-generated method stub
+
+    }
+
+    private void imageArea(Composite main) {
+        Group group = new Group(main, SWT.READ_ONLY);
+        group.setLayout(new GridLayout(2, false));
+        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        group.setText("Image");
+
+        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        new Label(group, NONE).setText("image used:");
+        Text text = new Text(group, SWT.BORDER);
+        String imageText = db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
+        text.setText(imageText);
+        text.setLayoutData(gridDataFields);
+        text.addModifyListener(e -> {
+            if (text.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
+                db.setImage(null);
+            } else {
+                IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                image.setValue(text.getText());
+                db.setImage(image);
+            }
+        });
+
     }
 
     private void templateVariableArea(Composite main) {
@@ -54,7 +88,7 @@ public class CreationDatabasePage extends WizardPage {
             } else {
                 variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
             }
-            // create a group for each database that has templates
+            // create a group
             Group group = new Group(main, SWT.READ_ONLY);
             group.setLayout(new GridLayout(2, false));
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

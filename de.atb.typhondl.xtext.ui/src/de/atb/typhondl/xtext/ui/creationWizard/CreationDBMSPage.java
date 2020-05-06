@@ -239,7 +239,7 @@ public class CreationDBMSPage extends MyWizardPage {
             });
             databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
 
-            new Label(group, NONE).setText("Choose DBMS:");
+            new Label(group, NONE).setText("Choose Template:");
             Combo combo = new Combo(group, SWT.READ_ONLY);
             combo.setItems(dbTemplateNames);
             combo.setText(dbTemplateNames[0]);
