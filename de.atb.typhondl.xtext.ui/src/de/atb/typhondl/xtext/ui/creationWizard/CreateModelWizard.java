@@ -154,7 +154,7 @@ public class CreateModelWizard extends Wizard {
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
         if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationTemplateVariablePage) {
+                || currentPage instanceof CreationDatabasePage) {
             return false;
         }
         return super.canFinish();
