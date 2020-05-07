@@ -28,6 +28,11 @@ public class WizardFields {
     private Button externalDatabaseCheck;
 
     /**
+     * Checkbox for using helm charts
+     */
+    private Button useHelmChartCheck;
+
+    /**
      * Combo to choose {@link DB} template from
      */
     private Combo combo;
@@ -47,10 +52,11 @@ public class WizardFields {
      *                              {@link TemplateBuffer} of the chosen Template
      * @param externalDatabaseCheck Checkbox for using an external database or not
      */
-    public WizardFields(Button existingModelCheck, Button externalDatabaseCheck, Combo combo,
+    public WizardFields(Button existingModelCheck, Button externalDatabaseCheck, Button useHelmChartCheck, Combo combo,
             ArrayList<Pair<DB, TemplateBuffer>> templates) {
         this.existingModelCheck = existingModelCheck;
-        this.setExternalDatabaseCheck(externalDatabaseCheck);
+        this.externalDatabaseCheck = externalDatabaseCheck;
+        this.setUseHelmChartCheck(useHelmChartCheck);
         this.combo = combo;
         this.templateBuffers = templates;
     }
@@ -107,5 +113,13 @@ public class WizardFields {
      */
     public void setExternalDatabaseCheck(Button externalDatabaseCheck) {
         this.externalDatabaseCheck = externalDatabaseCheck;
+    }
+
+    public Button getUseHelmChartCheck() {
+        return useHelmChartCheck;
+    }
+
+    public void setUseHelmChartCheck(Button useHelmChartCheck) {
+        this.useHelmChartCheck = useHelmChartCheck;
     }
 }

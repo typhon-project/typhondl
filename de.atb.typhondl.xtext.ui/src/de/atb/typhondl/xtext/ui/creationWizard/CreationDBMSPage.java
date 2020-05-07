@@ -33,6 +33,8 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
+import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
@@ -176,7 +178,7 @@ public class CreationDBMSPage extends MyWizardPage {
             // get Templates from buffer. The DBs have the template's name.
             DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
                     .toArray(new DB[0]);
-            databaseSettings.put(dbName, new WizardFields(null, null, null, templates));
+            databaseSettings.put(dbName, new WizardFields(null, null, null, null, templates));
             String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
                     .collect(Collectors.toList()).toArray(new String[0]);
 
@@ -204,6 +206,10 @@ public class CreationDBMSPage extends MyWizardPage {
                     if (wizardField.getExternalDatabaseCheck().getSelection()) {
                         wizardField.getExternalDatabaseCheck().setSelection(!useExistingModel);
                     }
+                    if (wizardField.getUseHelmChartCheck() != null
+                            && wizardField.getUseHelmChartCheck().getSelection()) {
+                        wizardField.getUseHelmChartCheck().setSelection(!useExistingModel);
+                    }
                     removeDBfromResult(dbName);
                     if (useExistingModel) {
                         result.put(readExistingFile(dbName), null);
@@ -218,7 +224,8 @@ public class CreationDBMSPage extends MyWizardPage {
             databaseSettings.get(dbName).setExistingModelCheck(existingModelCheck);
 
             Button externalDatabaseCheck = new Button(group, SWT.CHECK);
-            externalDatabaseCheck.setText("Use existing database for " + dbName);
+            externalDatabaseCheck
+                    .setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
             externalDatabaseCheck.setSelection(false);
             externalDatabaseCheck.setLayoutData(gridData);
             externalDatabaseCheck
@@ -232,6 +239,10 @@ public class CreationDBMSPage extends MyWizardPage {
                     if (wizardField.getExistingModelCheck().getSelection()) {
                         wizardField.getExistingModelCheck().setSelection(!useExternalDatabase);
                     }
+                    if (wizardField.getUseHelmChartCheck() != null
+                            && wizardField.getUseHelmChartCheck().getSelection()) {
+                        wizardField.getUseHelmChartCheck().setSelection(!useExternalDatabase);
+                    }
                     removeDBfromResult(dbName);
                     Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
                             wizardField.getCombo().getText());
@@ -244,8 +255,34 @@ public class CreationDBMSPage extends MyWizardPage {
             databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
 
             if (SupportedTechnologies.values()[chosenTemplate].getContainerType().equalsIgnoreCase("Kubernetes")) {
-                Button useHelmChart = new Button(group, SWT.CHECK);
-                useHelmChart.setText("Use Helm chart");
+                Button useHelmChartCheck = new Button(group, SWT.CHECK);
+                useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
+                useHelmChartCheck.setSelection(false);
+                useHelmChartCheck.setLayoutData(gridData);
+                useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
+                useHelmChartCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        WizardFields wizardField = databaseSettings.get(dbName);
+                        boolean useHelmChart = wizardField.getUseHelmChartCheck().getSelection();
+                        wizardField.getCombo().setEnabled(true);
+                        if (wizardField.getExistingModelCheck().getSelection()) {
+                            wizardField.getExistingModelCheck().setSelection(!useHelmChart);
+                        }
+                        if (wizardField.getExternalDatabaseCheck().getSelection()) {
+                            wizardField.getExternalDatabaseCheck().setSelection(!useHelmChart);
+                        }
+                        removeDBfromResult(dbName);
+                        Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
+                                wizardField.getCombo().getText());
+                        DB newDB = useBufferOnDB(db, template.firstValue);
+                        if (useHelmChart) {
+                            newDB = addHelmChartKeys(newDB);
+                        }
+                        result.put(newDB, template.secondValue);
+                    }
+                });
+                databaseSettings.get(dbName).setUseHelmChartCheck(useHelmChartCheck);
             }
 
             new Label(group, NONE).setText("Choose Template:");
@@ -268,6 +305,10 @@ public class CreationDBMSPage extends MyWizardPage {
                             wizardField.getCombo().getText());
                     DB newDB = useBufferOnDB(db, template.firstValue);
                     newDB.setExternal(wizardField.getExternalDatabaseCheck().getSelection());
+                    if (wizardField.getUseHelmChartCheck() != null
+                            && wizardField.getUseHelmChartCheck().getSelection()) {
+                        newDB = addHelmChartKeys(newDB);
+                    }
                     result.put(newDB, template.secondValue);
                     validate();
                 }
@@ -276,6 +317,26 @@ public class CreationDBMSPage extends MyWizardPage {
         }
         validate();
         setControl(main);
+    }
+
+    protected DB addHelmChartKeys(DB newDB) {
+        newDB.getParameters().clear();
+        Key_KeyValueList helm = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+        helm.setName("helm");
+        Key_Values helmRepoAddress = TyphonDLFactory.eINSTANCE.createKey_Values();
+        helmRepoAddress.setName("address");
+        helmRepoAddress.setValue("https://charts.bitnami.com/bitnami");
+        Key_Values helmRepoName = TyphonDLFactory.eINSTANCE.createKey_Values();
+        helmRepoName.setName("name");
+        helmRepoName.setValue("bitnami");
+        Key_Values helmChart = TyphonDLFactory.eINSTANCE.createKey_Values();
+        helmChart.setName("chart");
+        helmChart.setValue("bitnami/" + newDB.getType());
+        helm.getProperties().add(helmRepoName);
+        helm.getProperties().add(helmRepoAddress);
+        helm.getProperties().add(helmChart);
+        newDB.getParameters().add(helm);
+        return newDB;
     }
 
     /**
