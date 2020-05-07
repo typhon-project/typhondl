@@ -40,8 +40,6 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 
 /**
  * Second page of the TyphonDL {@link CreateModelWizard}. The ML model gets
@@ -55,17 +53,17 @@ import de.atb.typhondl.xtext.ui.utilities.WizardFields;
 public class CreationDBMSPage extends MyWizardPage {
 
     /**
-     * Each DB needs WizardFields to get the wanted DBMS or the path to the already
-     * existing model file
-     */
-    private HashMap<String, WizardFields> databaseSettings;
-
-    /**
      * Each DB has a TemplateBuffer with the pattern and template variables if
      * created from a template, this is given to the wizard to create additional
      * pages
      */
     private HashMap<DB, TemplateBuffer> result;
+
+    /**
+     * Store some buttons for validation <br>
+     * TODO validation should be better
+     */
+    private HashMap<String, Button> validationList;
 
     /**
      * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
@@ -106,9 +104,9 @@ public class CreationDBMSPage extends MyWizardPage {
         super(pageName);
         this.MLmodel = MLmodel;
         this.file = file;
-        this.databaseSettings = new HashMap<>();
         this.result = new HashMap<>();
         this.chosenTemplate = chosenTemplate;
+        this.validationList = new HashMap<>();
         addResources();
     }
 
@@ -178,7 +176,6 @@ public class CreationDBMSPage extends MyWizardPage {
             // get Templates from buffer. The DBs have the template's name.
             DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
                     .toArray(new DB[0]);
-            databaseSettings.put(dbName, new WizardFields(null, null, null, null, templates));
             String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
                     .collect(Collectors.toList()).toArray(new String[0]);
 
@@ -197,31 +194,7 @@ public class CreationDBMSPage extends MyWizardPage {
             }
             existingModelCheck.setLayoutData(gridData);
             existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
-            existingModelCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    WizardFields wizardField = databaseSettings.get(dbName);
-                    boolean useExistingModel = wizardField.getExistingModelCheck().getSelection();
-                    wizardField.getCombo().setEnabled(!useExistingModel);
-                    if (wizardField.getExternalDatabaseCheck().getSelection()) {
-                        wizardField.getExternalDatabaseCheck().setSelection(!useExistingModel);
-                    }
-                    if (wizardField.getUseHelmChartCheck() != null
-                            && wizardField.getUseHelmChartCheck().getSelection()) {
-                        wizardField.getUseHelmChartCheck().setSelection(!useExistingModel);
-                    }
-                    removeDBfromResult(dbName);
-                    if (useExistingModel) {
-                        result.put(readExistingFile(dbName), null);
-                    } else {
-                        Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
-                                wizardField.getCombo().getText());
-                        result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
-                    }
-                    validate();
-                }
-            });
-            databaseSettings.get(dbName).setExistingModelCheck(existingModelCheck);
+            validationList.put(dbName, existingModelCheck);
 
             Button externalDatabaseCheck = new Button(group, SWT.CHECK);
             externalDatabaseCheck
@@ -230,60 +203,13 @@ public class CreationDBMSPage extends MyWizardPage {
             externalDatabaseCheck.setLayoutData(gridData);
             externalDatabaseCheck
                     .setToolTipText("Check this box if you already have this database outside of the polystore");
-            externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    WizardFields wizardField = databaseSettings.get(dbName);
-                    boolean useExternalDatabase = wizardField.getExternalDatabaseCheck().getSelection();
-                    wizardField.getCombo().setEnabled(true);
-                    if (wizardField.getExistingModelCheck().getSelection()) {
-                        wizardField.getExistingModelCheck().setSelection(!useExternalDatabase);
-                    }
-                    if (wizardField.getUseHelmChartCheck() != null
-                            && wizardField.getUseHelmChartCheck().getSelection()) {
-                        wizardField.getUseHelmChartCheck().setSelection(!useExternalDatabase);
-                    }
-                    removeDBfromResult(dbName);
-                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
-                            wizardField.getCombo().getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
-                    newDB.setExternal(useExternalDatabase);
-                    result.put(newDB, template.secondValue);
-                    validate();
-                };
-            });
-            databaseSettings.get(dbName).setExternalDatabaseCheck(externalDatabaseCheck);
 
-            if (SupportedTechnologies.values()[chosenTemplate].getContainerType().equalsIgnoreCase("Kubernetes")) {
-                Button useHelmChartCheck = new Button(group, SWT.CHECK);
-                useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
-                useHelmChartCheck.setSelection(false);
-                useHelmChartCheck.setLayoutData(gridData);
-                useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
-                useHelmChartCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        WizardFields wizardField = databaseSettings.get(dbName);
-                        boolean useHelmChart = wizardField.getUseHelmChartCheck().getSelection();
-                        wizardField.getCombo().setEnabled(true);
-                        if (wizardField.getExistingModelCheck().getSelection()) {
-                            wizardField.getExistingModelCheck().setSelection(!useHelmChart);
-                        }
-                        if (wizardField.getExternalDatabaseCheck().getSelection()) {
-                            wizardField.getExternalDatabaseCheck().setSelection(!useHelmChart);
-                        }
-                        removeDBfromResult(dbName);
-                        Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
-                                wizardField.getCombo().getText());
-                        DB newDB = useBufferOnDB(db, template.firstValue);
-                        if (useHelmChart) {
-                            newDB = addHelmChartKeys(newDB);
-                        }
-                        result.put(newDB, template.secondValue);
-                    }
-                });
-                databaseSettings.get(dbName).setUseHelmChartCheck(useHelmChartCheck);
-            }
+//            if (SupportedTechnologies.values()[chosenTemplate].getContainerType().equalsIgnoreCase("Kubernetes")) {
+            Button useHelmChartCheck = new Button(group, SWT.CHECK);
+            useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
+            useHelmChartCheck.setSelection(false);
+            useHelmChartCheck.setLayoutData(gridData);
+            useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
 
             new Label(group, NONE).setText("Choose Template:");
             Combo combo = new Combo(group, SWT.READ_ONLY);
@@ -294,26 +220,92 @@ public class CreationDBMSPage extends MyWizardPage {
                 Pair<DB, TemplateBuffer> template = templates.get(0);
                 result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
             }
-            combo.setEnabled(!existingModelCheck.getSelection());
-            combo.setToolTipText("Choose specific DBMS Template for " + dbName);
-            combo.addSelectionListener(new SelectionAdapter() {
+
+            existingModelCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    WizardFields wizardField = databaseSettings.get(dbName);
+                    boolean useExistingModel = existingModelCheck.getSelection();
+                    combo.setEnabled(!useExistingModel);
+                    if (externalDatabaseCheck.getSelection()) {
+                        externalDatabaseCheck.setSelection(!useExistingModel);
+                    }
+                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                        useHelmChartCheck.setSelection(!useExistingModel);
+                    }
                     removeDBfromResult(dbName);
-                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates,
-                            wizardField.getCombo().getText());
+                    if (useExistingModel) {
+                        DB newDB = readExistingFile(dbName);
+                        newDB.setExternal(externalDatabaseCheck.getSelection());
+                        result.put(newDB, null);
+                    } else {
+                        Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                        DB newDB = useBufferOnDB(db, template.firstValue);
+                        newDB.setExternal(externalDatabaseCheck.getSelection());
+                        result.put(newDB, template.secondValue);
+                    }
+                    validate();
+                }
+            });
+
+            externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean useExternalDatabase = externalDatabaseCheck.getSelection();
+                    combo.setEnabled(true);
+                    if (existingModelCheck.getSelection()) {
+                        existingModelCheck.setSelection(!useExternalDatabase);
+                    }
+                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                        useHelmChartCheck.setSelection(!useExternalDatabase);
+                    }
+                    removeDBfromResult(dbName);
+                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                     DB newDB = useBufferOnDB(db, template.firstValue);
-                    newDB.setExternal(wizardField.getExternalDatabaseCheck().getSelection());
-                    if (wizardField.getUseHelmChartCheck() != null
-                            && wizardField.getUseHelmChartCheck().getSelection()) {
+                    newDB.setExternal(useExternalDatabase);
+                    result.put(newDB, template.secondValue);
+                    validate();
+                };
+            });
+
+            useHelmChartCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean useHelmChart = useHelmChartCheck.getSelection();
+                    combo.setEnabled(true);
+                    if (existingModelCheck.getSelection()) {
+                        existingModelCheck.setSelection(!useHelmChart);
+                    }
+                    if (externalDatabaseCheck.getSelection()) {
+                        externalDatabaseCheck.setSelection(!useHelmChart);
+                    }
+                    removeDBfromResult(dbName);
+                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    if (useHelmChart) {
                         newDB = addHelmChartKeys(newDB);
                     }
                     result.put(newDB, template.secondValue);
                     validate();
                 }
             });
-            databaseSettings.get(dbName).setCombo(combo);
+
+            combo.setEnabled(!existingModelCheck.getSelection());
+            combo.setToolTipText("Choose specific DBMS Template for " + dbName);
+            combo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    removeDBfromResult(dbName);
+                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                        newDB = addHelmChartKeys(newDB);
+                    }
+                    result.put(newDB, template.secondValue);
+                    validate();
+                }
+            });
         }
         validate();
         setControl(main);
@@ -331,7 +323,7 @@ public class CreationDBMSPage extends MyWizardPage {
         helmRepoName.setValue("bitnami");
         Key_Values helmChart = TyphonDLFactory.eINSTANCE.createKey_Values();
         helmChart.setName("chart");
-        helmChart.setValue("bitnami/" + newDB.getType());
+        helmChart.setValue("bitnami/" + newDB.getType().getName().toLowerCase());
         helm.getProperties().add(helmRepoName);
         helm.getProperties().add(helmRepoAddress);
         helm.getProperties().add(helmChart);
@@ -421,10 +413,10 @@ public class CreationDBMSPage extends MyWizardPage {
     protected void validate() {
         Status status = null;
         ArrayList<String> warning = new ArrayList<String>();
-        for (String dbName : databaseSettings.keySet()) {
-            WizardFields fields = databaseSettings.get(dbName);
+        for (String dbName : validationList.keySet()) {
+            Button existingModelCheck = validationList.get(dbName);
             String path = dbName + ".tdl";
-            if (fields.getExistingModelCheck().getSelection()) {
+            if (existingModelCheck.getSelection()) {
                 if (!fileExists(path)) {
                     status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
                 }
