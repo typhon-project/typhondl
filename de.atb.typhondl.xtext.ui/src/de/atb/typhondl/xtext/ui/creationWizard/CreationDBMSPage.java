@@ -40,6 +40,7 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Second page of the TyphonDL {@link CreateModelWizard}. The ML model gets
@@ -79,7 +80,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private IFile file;
 
-    private int chosenTemplate;
+    private GridData helmGridData;
 
     private XtextResourceSet resourceSet;
 
@@ -105,7 +106,9 @@ public class CreationDBMSPage extends MyWizardPage {
         this.MLmodel = MLmodel;
         this.file = file;
         this.result = new HashMap<>();
-        this.chosenTemplate = chosenTemplate;
+        helmGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getContainerType()
+                .equalsIgnoreCase("Kubernetes");
         this.validationList = new HashMap<>();
         addResources();
     }
@@ -204,8 +207,10 @@ public class CreationDBMSPage extends MyWizardPage {
             externalDatabaseCheck
                     .setToolTipText("Check this box if you already have this database outside of the polystore");
 
-//            if (SupportedTechnologies.values()[chosenTemplate].getContainerType().equalsIgnoreCase("Kubernetes")) {
-            Button useHelmChartCheck = new Button(group, SWT.CHECK);
+            Composite helmComposite = new Composite(group, NONE);
+            helmComposite.setLayout(new GridLayout(1, false));
+            helmComposite.setLayoutData(this.helmGridData);
+            Button useHelmChartCheck = new Button(helmComposite, SWT.CHECK);
             useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
             useHelmChartCheck.setSelection(false);
             useHelmChartCheck.setLayoutData(gridData);
@@ -465,6 +470,7 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     public void setChosenTemplate(int chosenTemplate) {
-        this.chosenTemplate = chosenTemplate;
+        this.helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getClusterType()
+                .equalsIgnoreCase("Kubernetes");
     }
 }

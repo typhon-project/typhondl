@@ -13,6 +13,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.SWT;
 import org.eclipse.xtext.ui.util.FileOpener;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -172,8 +173,18 @@ public class CreateModelWizard extends Wizard {
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
+            int oldChosenTemplate = this.chosenTemplate;
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
-            this.dbmsPage.setChosenTemplate(this.chosenTemplate);
+            if (oldChosenTemplate != this.chosenTemplate) {
+                IWizardPage nextPage = page.getNextPage();
+                ((CreationDBMSPage) nextPage).setChosenTemplate(this.chosenTemplate);
+                nextPage.getControl().setSize(nextPage.getControl().computeSize(607, SWT.DEFAULT));
+//                nextPage.getControl().pack();
+//                nextPage.getControl().redraw();
+//                this.dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel, chosenTemplate);
+//                dbmsPage.setWizard(this);
+//                addPage(dbmsPage);
+            }
         }
         if (page instanceof CreationDBMSPage) {
             HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();

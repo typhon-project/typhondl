@@ -276,7 +276,7 @@ public class CreationMainPage extends MyWizardPage {
      *         {@link SupportedTechnologies}
      */
     public int getChosenTemplate() {
-        return chosenTemplate;
+        return this.chosenTemplate;
     }
 
     /**
