@@ -223,4 +223,21 @@ public class CreateModelWizard extends Wizard {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }
 
+    /**
+     * TODO maybe this helps with dynamically producing pages
+     * 
+     * @param pageName
+     */
+    private void deletePage(String pageName) {
+        IWizardPage[] oldPages = this.getPages();
+        for (IWizardPage iWizardPage : oldPages) {
+            if (iWizardPage.getName().equalsIgnoreCase(pageName)) {
+                iWizardPage.dispose();
+            } else {
+                iWizardPage.dispose();
+                this.addPage(iWizardPage);
+            }
+        }
+    }
+
 }
