@@ -151,7 +151,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        setTitle("Choose a DBMS for each database");
+        setTitle("Choose a DBMS for each database" + this.chosenTemplate);
         Composite main = new Composite(parent, SWT.NONE);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
@@ -208,8 +208,9 @@ public class CreationDBMSPage extends MyWizardPage {
             Composite helmComposite = new Composite(group, NONE);
             helmComposite.setLayout(new GridLayout(1, false));
             GridData helmGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-            helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getContainerType()
+            helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getClusterType()
                     .equalsIgnoreCase("Kubernetes");
+//            helmGridData.horizontalSpan = 2; TODO not working
             helmComposite.setLayoutData(helmGridData);
             Button useHelmChartCheck = new Button(helmComposite, SWT.CHECK);
             useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");

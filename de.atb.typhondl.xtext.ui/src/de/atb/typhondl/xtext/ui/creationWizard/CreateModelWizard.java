@@ -86,8 +86,8 @@ public class CreateModelWizard extends Wizard {
             CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.getClusterType(), MLmodel,
                     value.ordinal());
             newPage.setWizard(this);
+//            newPage.setVisible(false); there is no control yet
             addPage(newPage);
-            newPage.setVisible(false);
         }
     }
 
@@ -172,10 +172,7 @@ public class CreateModelWizard extends Wizard {
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
-            for (CreationDBMSPage nextPageCandidate : getDBMSPages()) {
-                nextPageCandidate
-                        .setVisible(nextPageCandidate.getName().equalsIgnoreCase(getDBMSPageName(chosenTemplate)));
-            }
+            return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
             HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
@@ -198,6 +195,12 @@ public class CreateModelWizard extends Wizard {
             } else {
                 ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(new ArrayList<>(result.keySet()));
             }
+            // skip other DBMS pages
+            IWizardPage nextPage = super.getNextPage(page);
+            while (nextPage instanceof CreationDBMSPage) {
+                nextPage = super.getNextPage(nextPage);
+            }
+            return nextPage;
         }
         return super.getNextPage(page);
 
@@ -211,14 +214,6 @@ public class CreateModelWizard extends Wizard {
      */
     private boolean pageExists(String pageName) {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
-    }
-
-    private ArrayList<CreationDBMSPage> getDBMSPages() {
-        ArrayList<CreationDBMSPage> DBMSPages = new ArrayList<>();
-        for (SupportedTechnologies value : SupportedTechnologies.values()) {
-            DBMSPages.add((CreationDBMSPage) this.getPage(PAGENAME_DBMS + value.getClusterType()));
-        }
-        return DBMSPages;
     }
 
     private String getDBMSPageName(int templateOrdinal) {
