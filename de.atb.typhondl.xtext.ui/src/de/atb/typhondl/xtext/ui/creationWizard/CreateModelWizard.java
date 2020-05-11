@@ -14,7 +14,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.SWT;
 import org.eclipse.xtext.ui.util.FileOpener;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -50,25 +49,15 @@ public class CreateModelWizard extends Wizard {
      */
     private CreationMainPage mainPage;
 
-    /**
-     * The second page of this wizard. A template can be chosen for each Database
-     */
-    private CreationDBMSPage dbmsPage;
-
-    /**
-     * An optional page of this wizard. Kafka and Zookeeper settings can be entered
-     */
-    private CreationAnalyticsPage analyticsPage;
+    private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
+    private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
+    private final String PAGENAME_CONTAINER = "Container";
+    private final String PAGENAME_ANALYTICS = "Analytics";
 
     /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
     private int chosenTemplate;
-
-    /**
-     * A page to define container specifications
-     */
-    private CreationContainerPage containerPage;
 
     /**
      * Creates an instance of <code>CreateModelWizard</code>
@@ -93,9 +82,13 @@ public class CreateModelWizard extends Wizard {
         mainPage.setWizard(this);
         addPage(mainPage);
 
-        dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel, chosenTemplate);
-        dbmsPage.setWizard(this);
-        addPage(dbmsPage);
+        for (SupportedTechnologies value : SupportedTechnologies.values()) {
+            CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.getClusterType(), MLmodel,
+                    value.ordinal());
+            newPage.setWizard(this);
+            addPage(newPage);
+            newPage.setVisible(false);
+        }
     }
 
     /**
@@ -107,8 +100,9 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public boolean performFinish() {
-        if (dbmsPage.getMessage() != null) {
-            if (!MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage())) {
+        String message = this.getPage(getDBMSPageName(chosenTemplate)).getMessage();
+        if (message != null) {
+            if (!MessageDialog.openConfirm(this.getShell(), "Wizard", message)) {
                 return false;
             }
         }
@@ -119,7 +113,8 @@ public class CreateModelWizard extends Wizard {
         }
         Properties properties;
         properties = this.mainPage.getProperties();
-        HashMap<DB, ArrayList<Container>> result = containerPage.getResult();
+        HashMap<DB, ArrayList<Container>> result = ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER))
+                .getResult();
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
         IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
@@ -176,23 +171,16 @@ public class CreateModelWizard extends Wizard {
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
-            int oldChosenTemplate = this.chosenTemplate;
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
-            if (oldChosenTemplate != this.chosenTemplate) {
-                IWizardPage nextPage = page.getNextPage();
-                ((CreationDBMSPage) nextPage).setChosenTemplate(this.chosenTemplate);
-                nextPage.getControl().setSize(nextPage.getControl().computeSize(607, SWT.DEFAULT));
-//                nextPage.getControl().pack();
-//                nextPage.getControl().redraw();
-//                this.dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel, chosenTemplate);
-//                dbmsPage.setWizard(this);
-//                addPage(dbmsPage);
+            for (CreationDBMSPage nextPageCandidate : getDBMSPages()) {
+                nextPageCandidate
+                        .setVisible(nextPageCandidate.getName().equalsIgnoreCase(getDBMSPageName(chosenTemplate)));
             }
         }
         if (page instanceof CreationDBMSPage) {
             HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
             for (DB db : result.keySet()) {
-                String pageName = "Database Page for " + db.getName();
+                String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
                     CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db));
                     databasePage.setWizard(this);
@@ -202,14 +190,13 @@ public class CreateModelWizard extends Wizard {
                     ((CreationDatabasePage) this.getPage(pageName)).setBuffer(result.get(db));
                 }
             }
-            String containerPageName = "Container Definition Page";
-            if (!pageExists(containerPageName)) {
-                this.containerPage = new CreationContainerPage(containerPageName, new ArrayList<>(result.keySet()),
-                        this.chosenTemplate);
-                this.containerPage.setWizard(this);
-                addPage(this.containerPage);
+            if (!pageExists(PAGENAME_CONTAINER)) {
+                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER,
+                        new ArrayList<>(result.keySet()), this.chosenTemplate);
+                newPage.setWizard(this);
+                addPage(newPage);
             } else {
-                ((CreationContainerPage) this.getPage(containerPageName)).setDBs(new ArrayList<>(result.keySet()));
+                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(new ArrayList<>(result.keySet()));
             }
         }
         return super.getNextPage(page);
@@ -226,21 +213,16 @@ public class CreateModelWizard extends Wizard {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }
 
-    /**
-     * TODO maybe this helps with dynamically producing pages
-     * 
-     * @param pageName
-     */
-    private void deletePage(String pageName) {
-        IWizardPage[] oldPages = this.getPages();
-        for (IWizardPage iWizardPage : oldPages) {
-            if (iWizardPage.getName().equalsIgnoreCase(pageName)) {
-                iWizardPage.dispose();
-            } else {
-                iWizardPage.dispose();
-                this.addPage(iWizardPage);
-            }
+    private ArrayList<CreationDBMSPage> getDBMSPages() {
+        ArrayList<CreationDBMSPage> DBMSPages = new ArrayList<>();
+        for (SupportedTechnologies value : SupportedTechnologies.values()) {
+            DBMSPages.add((CreationDBMSPage) this.getPage(PAGENAME_DBMS + value.getClusterType()));
         }
+        return DBMSPages;
+    }
+
+    private String getDBMSPageName(int templateOrdinal) {
+        return PAGENAME_DBMS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
     }
 
 }

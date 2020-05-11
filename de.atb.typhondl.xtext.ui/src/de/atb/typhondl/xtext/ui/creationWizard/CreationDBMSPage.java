@@ -80,7 +80,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private IFile file;
 
-    private GridData helmGridData;
+    private int chosenTemplate;
 
     private XtextResourceSet resourceSet;
 
@@ -106,10 +106,8 @@ public class CreationDBMSPage extends MyWizardPage {
         this.MLmodel = MLmodel;
         this.file = file;
         this.result = new HashMap<>();
-        helmGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getContainerType()
-                .equalsIgnoreCase("Kubernetes");
         this.validationList = new HashMap<>();
+        this.chosenTemplate = chosenTemplate;
         addResources();
     }
 
@@ -209,7 +207,10 @@ public class CreationDBMSPage extends MyWizardPage {
 
             Composite helmComposite = new Composite(group, NONE);
             helmComposite.setLayout(new GridLayout(1, false));
-            helmComposite.setLayoutData(this.helmGridData);
+            GridData helmGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getContainerType()
+                    .equalsIgnoreCase("Kubernetes");
+            helmComposite.setLayoutData(helmGridData);
             Button useHelmChartCheck = new Button(helmComposite, SWT.CHECK);
             useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
             useHelmChartCheck.setSelection(false);
@@ -474,8 +475,4 @@ public class CreationDBMSPage extends MyWizardPage {
         return buffer != null;
     }
 
-    public void setChosenTemplate(int chosenTemplate) {
-        this.helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getClusterType()
-                .equalsIgnoreCase("Kubernetes");
-    }
 }
