@@ -229,6 +229,11 @@ public class CreationDBMSPage extends MyWizardPage {
             existingModelCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+//                     TODO put this in separate methods that already include validation
+//                     and pageComlete
+//                    setErrorMessage("The arrival date is not before the departure date");
+//                    setPageComplete(false);
+//                    maybe use IInputValidator
                     boolean useExistingModel = existingModelCheck.getSelection();
                     combo.setEnabled(!useExistingModel);
                     if (externalDatabaseCheck.getSelection()) {

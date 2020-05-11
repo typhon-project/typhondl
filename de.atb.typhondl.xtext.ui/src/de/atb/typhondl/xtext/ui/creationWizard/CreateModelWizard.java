@@ -78,6 +78,7 @@ public class CreateModelWizard extends Wizard {
     public CreateModelWizard(IFile MLmodel) {
         super();
         setDefaultPageImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "icons/TYPHON Logo Small.png"));
+        setWindowTitle("TyphonDL Creation Wizard");
         this.MLmodel = MLmodel;
     }
 
