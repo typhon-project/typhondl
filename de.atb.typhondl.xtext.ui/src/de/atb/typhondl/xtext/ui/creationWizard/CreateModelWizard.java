@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -76,6 +77,7 @@ public class CreateModelWizard extends Wizard {
      */
     public CreateModelWizard(IFile MLmodel) {
         super();
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "icons/TYPHON Logo Small.png"));
         this.MLmodel = MLmodel;
     }
 
