@@ -16,6 +16,7 @@ spec:
           image: clms/typhon-polystore-api:latest
           ports:
             - containerPort: 8080 
+          Arrays not defined yet
 ---
 kind: Service
 apiVersion: v1
@@ -50,7 +51,7 @@ spec:
             - name: API_PORT
               value: "30061"
             - name: API_HOST
-              value: "192.168.99.103"
+              value: "192.168.99.101"
           ports:
             - containerPort: 4200 
 ---

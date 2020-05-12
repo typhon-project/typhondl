@@ -1,5 +1,5 @@
 #!/bin/bash
-kubeconfig="--kubeconfig=/home/flug/.kube/config"
+kubeconfig=""
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 if [ -n "$kubeconfig" ]; then
@@ -24,4 +24,3 @@ echo "Wait for the API, UI and QL to be ready"
 kubectl wait --for=condition=available --timeout=300s --all -n typhon deployments $kubeconfig
 echo "----------------------------------------------------------------------------"
 echo "Polystore installation completed."
-exit 1
