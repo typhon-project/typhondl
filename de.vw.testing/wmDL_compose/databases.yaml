@@ -7,13 +7,12 @@ services:
       MYSQL_ROOT_PASSWORD: password
     ports:
       - target: 3306
-  TextWarningData:
-    image: mongo:latest
+  AppData:
+    image: mariadb:latest
     environment:
-      MONGO_INITDB_ROOT_USERNAME: username
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
     ports:
-      - target: 27017
+      - target: 3306
   VehicleDataDB:
     image: mongo:latest
     environment:
@@ -21,12 +20,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - target: 27017
-  AppData:
-    image: mariadb:latest
+  TextWarningData:
+    image: mongo:latest
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-      - target: 3306
+      - target: 27017
   polystore-mongo:
     image: mongo:latest
     environment:
