@@ -82,6 +82,10 @@ public class CreateModelWizard extends Wizard {
         mainPage.setWizard(this);
         addPage(mainPage);
 
+        TestPage testPage = new TestPage("TestPage", 3);
+        testPage.setWizard(this);
+        addPage(testPage);
+
         for (SupportedTechnologies value : SupportedTechnologies.values()) {
             CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.getClusterType(), MLmodel,
                     value.ordinal());
@@ -172,7 +176,10 @@ public class CreateModelWizard extends Wizard {
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
-            return this.getPage(getDBMSPageName(this.chosenTemplate));
+            TestPage nextPage = (TestPage) this.getPage("TestPage");
+            nextPage.setOptionalCheckVisible(this.chosenTemplate == 1);
+            return nextPage;
+            // return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
             HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();

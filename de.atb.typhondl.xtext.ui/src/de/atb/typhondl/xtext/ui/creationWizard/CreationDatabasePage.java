@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -20,7 +19,7 @@ import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
-public class CreationDatabasePage extends WizardPage {
+public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private TemplateBuffer buffer;
