@@ -77,7 +77,8 @@ public class PreferenceReader {
             DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), buffer);
             if (db != null) {
                 for (DBType supportedType : dbTypes) {
-                    if (buffer.getString().contains(supportedType.getName())) {
+                    if (buffer.getString().contains(supportedType.getName() + " ")
+                            || buffer.getString().contains(supportedType.getName() + "{")) {
                         db.setName(dbTemplates[i].getName());
                         db.setType(supportedType);
                         buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));

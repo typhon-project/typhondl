@@ -90,6 +90,11 @@ aContainer.getHelmList().properties->any(key | key.name='name')
 aContainer.getHelmList().properties->any(key | key.name='chart')
 /]
 
+[query public getMySQLPassword(aContainer : Container) : Key_Values =
+aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')
+/]
+
+
 
 
 

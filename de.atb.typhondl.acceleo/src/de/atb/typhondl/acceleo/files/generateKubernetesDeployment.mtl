@@ -200,7 +200,7 @@ spec:
 
 [template public printHelmCommand(aContainer : Container)]
 helm repo add [aContainer.getHelmRepoName().value/] [aContainer.getHelmRepoAddress().value/]
-helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] [aContainer.getHelmRepoName().value/]/[aContainer.getHelmChart().value/] -n typhon
+helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName().value/]/[aContainer.getHelmChart().value/] -n typhon
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container)]
