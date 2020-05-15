@@ -19,6 +19,12 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
+echo "Apply Helm Charts"
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (aContainer.useHelmChart())]
+[aContainer.printHelmCommand()/]
+[/if]
+[/for]
 echo "----------------------------------------------------------------------------"
 echo "Wait for the models to be inserted into the metadata database"
 kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
@@ -29,6 +35,7 @@ kubectl wait --for=condition=available --timeout=100s --all -n typhon deployment
 echo "----------------------------------------------------------------------------"
 echo "Deploy Polystore"
 kubectl apply -n typhon -f polystore.yaml $kubeconfig
+echo "----------------------------------------------------------------------------"
 echo "Wait for the API, UI and QL to be ready"
 kubectl wait --for=condition=available --timeout=300s --all -n typhon deployments $kubeconfig
 echo "----------------------------------------------------------------------------"
@@ -119,6 +126,7 @@ spec:
 
 [file ('databases.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.useHelmChart()))]
 [if (not((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server')))]
 apiVersion: apps/v1
 kind: Deployment
@@ -183,10 +191,16 @@ spec:
 ---
 [/if]
 [/if]
+[/if]
 [/for]
 [/file]
 
 [/for]
+[/template]
+
+[template public printHelmCommand(aContainer : Container)]
+helm repo add [aContainer.getHelmRepoName().value/] [aContainer.getHelmRepoAddress().value/]
+helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] [aContainer.getHelmRepoName().value/]/[aContainer.getHelmChart().value/] -n typhon
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container)]

@@ -61,4 +61,35 @@ aCluster.properties->any(key | key.name.equalsIgnoreCase('kubeconfig'))
 aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<>null
 /]
 
+[query public isPolystoreContainer(aContainer : Container) : Boolean = 
+((aContainer.name.toLower() = 'kafka')
+    ._or(aContainer.name.toLower() = 'zookeeper')
+    ._or(aContainer.name.toLower() = 'authall')
+    ._or(aContainer.name.toLower() = 'typhon-polystore-service')
+    ._or(aContainer.name.toLower() = 'polystore-ui')
+    ._or(aContainer.name.toLower() = 'typhonql-server')) 
+/]
+
+[query public useHelmChart(aContainer : Container) : Boolean =  
+not(aContainer.getHelmList().oclIsUndefined())
+/]
+
+[query public getHelmList(aContainer : Container) : Key_KeyValueList =  
+aContainer.deploys.reference.parameters->any(key | key.name='helm')
+/]
+
+[query public getHelmRepoAddress(aContainer : Container) : Key_Values =
+aContainer.getHelmList().properties->any(key | key.name='address')
+/]
+
+[query public getHelmRepoName(aContainer : Container) : Key_Values = 
+aContainer.getHelmList().properties->any(key | key.name='name')
+/]
+
+[query public getHelmChart(aContainer : Container) : Key_Values = 
+aContainer.getHelmList().properties->any(key | key.name='chart')
+/]
+
+
+
 

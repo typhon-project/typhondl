@@ -62,7 +62,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
     /**
      * Store some buttons for validation <br>
-     * TODO validation should be better
+     * TODO validation should be better maybe with IInputValidator
      */
     private HashMap<String, Button> validationList;
 
@@ -231,11 +231,6 @@ public class CreationDBMSPage extends MyWizardPage {
             existingModelCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-//                     TODO put this in separate methods that already include validation
-//                     and pageComlete
-//                    setErrorMessage("The arrival date is not before the departure date");
-//                    setPageComplete(false);
-//                    maybe use IInputValidator
                     boolean useExistingModel = existingModelCheck.getSelection();
                     combo.setEnabled(!useExistingModel);
                     if (externalDatabaseCheck.getSelection()) {
@@ -324,22 +319,23 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     protected DB addHelmChartKeys(DB newDB) {
-        newDB.getParameters().clear();
-        Key_KeyValueList helm = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-        helm.setName("helm");
-        Key_Values helmRepoAddress = TyphonDLFactory.eINSTANCE.createKey_Values();
-        helmRepoAddress.setName("address");
-        helmRepoAddress.setValue("https://charts.bitnami.com/bitnami");
-        Key_Values helmRepoName = TyphonDLFactory.eINSTANCE.createKey_Values();
-        helmRepoName.setName("name");
-        helmRepoName.setValue("bitnami");
-        Key_Values helmChart = TyphonDLFactory.eINSTANCE.createKey_Values();
-        helmChart.setName("chart");
-        helmChart.setValue("bitnami/" + newDB.getType().getName().toLowerCase());
-        helm.getProperties().add(helmRepoName);
-        helm.getProperties().add(helmRepoAddress);
-        helm.getProperties().add(helmChart);
-        newDB.getParameters().add(helm);
+        if (!newDB.getParameters().stream().anyMatch(parameter -> parameter.getName().equalsIgnoreCase("helm"))) {
+            Key_KeyValueList helm = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+            helm.setName("helm");
+            Key_Values helmRepoAddress = TyphonDLFactory.eINSTANCE.createKey_Values();
+            helmRepoAddress.setName("address");
+            helmRepoAddress.setValue("https://charts.bitnami.com/bitnami");
+            Key_Values helmRepoName = TyphonDLFactory.eINSTANCE.createKey_Values();
+            helmRepoName.setName("name");
+            helmRepoName.setValue("bitnami");
+            Key_Values helmChart = TyphonDLFactory.eINSTANCE.createKey_Values();
+            helmChart.setName("chart");
+            helmChart.setValue(newDB.getType().getName().toLowerCase());
+            helm.getProperties().add(helmRepoName);
+            helm.getProperties().add(helmRepoAddress);
+            helm.getProperties().add(helmChart);
+            newDB.getParameters().add(helm);
+        }
         return newDB;
     }
 

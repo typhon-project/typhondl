@@ -330,6 +330,7 @@ public class CreationContainerPage extends MyWizardPage {
                         validate();
                     }
                 });
+
                 reservationCheck.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
