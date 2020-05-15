@@ -1,7 +1,10 @@
-database VehicleMetadataDB : MariaDBgalera  {
+database VehicleMetadataDB : MariaDBGalera {
+	environment {
+		MYSQL_ROOT_PASSWORD = password ;
+	}
 	helm {
 		name = bitnami ;
 		address = https://charts.bitnami.com/bitnami ;
-		chart = mariadb-galera ;
+		chart = mariadbgalera ;
 	}
 }
