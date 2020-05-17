@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -66,6 +68,8 @@ public class CreationContainerPage extends MyWizardPage {
      * Docker Compose or Kubernetes
      */
     private int chosenTemplate;
+
+    private ArrayList<Text> notEmptyTexts;
 
     /**
      * Creates instance of {@link CreationContainerPage}
@@ -130,6 +134,8 @@ public class CreationContainerPage extends MyWizardPage {
             break;
         }
 
+        notEmptyTexts = new ArrayList<>();
+
         for (DB db : dbs) {
             // create a group for each database
             Group group = new Group(main, SWT.READ_ONLY);
@@ -172,7 +178,7 @@ public class CreationContainerPage extends MyWizardPage {
                     address.setValue(addressText.getText());
                     validate();
                 });
-
+                notEmptyTexts.add(addressText);
             } else {
 
                 // deploy for docker swarm
@@ -197,6 +203,7 @@ public class CreationContainerPage extends MyWizardPage {
                     port.setValue(portText.getText());
                     validate();
                 });
+                notEmptyTexts.add(portText);
 
                 // Resources
                 Key_KeyValueList resourceList = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
@@ -247,6 +254,7 @@ public class CreationContainerPage extends MyWizardPage {
                     limMemKeyValue.setValue(limMemText.getText());
                     validate();
                 });
+                notEmptyTexts.add(limMemText);
                 Label limCPULabel = new Label(limitComposite, NONE);
                 limCPULabel.setText(limCPUKeyValue.getName() + ": ");
                 Text limCPUText = new Text(limitComposite, SWT.BORDER);
@@ -256,6 +264,7 @@ public class CreationContainerPage extends MyWizardPage {
                     limCPUKeyValue.setValue(limCPUText.getText());
                     validate();
                 });
+                notEmptyTexts.add(limCPUText);
 
                 Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
                 reservationCheck.setText("Set resource " + reservationList.getName());
@@ -275,6 +284,7 @@ public class CreationContainerPage extends MyWizardPage {
                     resMemKeyValue.setValue(resMemText.getText());
                     validate();
                 });
+                notEmptyTexts.add(resMemText);
                 Label resCPULabel = new Label(reservationComposite, NONE);
                 resCPULabel.setText(resCPUKeyValue.getName() + ": ");
                 Text resCPUText = new Text(reservationComposite, SWT.BORDER);
@@ -284,6 +294,7 @@ public class CreationContainerPage extends MyWizardPage {
                     resCPUKeyValue.setValue(resCPUText.getText());
                     validate();
                 });
+                notEmptyTexts.add(resCPUText);
 
                 limitCheck.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -385,8 +396,14 @@ public class CreationContainerPage extends MyWizardPage {
     }
 
     private void validate() {
-        // TODO validation for ContainerPage
-
+        Status status = null;
+        for (Text text : notEmptyTexts) {
+            if (text.isVisible() && text.getText().isEmpty()) {
+                status = new Status(IStatus.ERROR, "Wizard", "Textfields can't be empty");
+            }
+        }
+        setStatus(status);
+        // TODO validation resource syntax
     }
 
     /**

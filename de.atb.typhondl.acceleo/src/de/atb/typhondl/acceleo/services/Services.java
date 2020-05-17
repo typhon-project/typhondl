@@ -670,7 +670,7 @@ public class Services {
         model.getElements().stream().filter(element -> Platform.class.isInstance(element))
                 .map(element -> (Platform) element)
                 .forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications().stream()
-                        .filter(app -> app.getName().equals(appName)).map(app -> list.add(app)))); // TODO not nice?
+                        .filter(app -> app.getName().equals(appName)).map(app -> list.add(app))));
         return (list.size() == 1) ? list.get(0) : null;
     }
 }
