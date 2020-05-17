@@ -384,7 +384,10 @@ public class CreationDBMSPage extends MyWizardPage {
     protected DB useBufferOnDB(DB db, DB templateDB) {
         db.setType(templateDB.getType());
         db.getParameters().clear();
+        // TODO copy parameters
+        // this deletes the parameters in templateDB
         db.getParameters().addAll(templateDB.getParameters());
+
         return db;
     }
 
