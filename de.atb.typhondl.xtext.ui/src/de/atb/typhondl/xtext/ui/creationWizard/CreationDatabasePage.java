@@ -10,12 +10,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
+import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
+import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
@@ -23,6 +28,7 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private TemplateBuffer buffer;
+    private Group parameterGroup;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -41,14 +47,28 @@ public class CreationDatabasePage extends MyWizardPage {
 
         imageArea(main);
 
-        parameterArea(main);
+        parameterGroup = new Group(main, SWT.READ_ONLY);
+        parameterGroup.setLayout(new GridLayout(2, false));
+        parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        parameterGroup.setText("Parameters");
+        parameterArea();
 
         setControl(main);
     }
 
-    private void parameterArea(Composite main) {
-        // TODO Auto-generated method stub
+    private void parameterArea() {
+        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        for (Property property : db.getParameters()) {
+            new Label(parameterGroup, NONE).setText(property.getName());
+            if (Key_KeyValueList.class.isInstance(property)) {
+                System.out.println("list");
+            } else if (Key_ValueArray.class.isInstance(property)) {
+                System.out.println("array");
+            } else if (Key_Values.class.isInstance(property)) {
+                System.out.println("keyValue");
+            }
 
+        }
     }
 
     private void imageArea(Composite main) {
@@ -159,6 +179,14 @@ public class CreationDatabasePage extends MyWizardPage {
 
     public void setBuffer(TemplateBuffer templateBuffer) {
         this.buffer = templateBuffer;
+    }
+
+    public void updateParameterArea() {
+        for (Control control : parameterGroup.getChildren()) {
+            control.dispose();
+        }
+        parameterArea();
+        parameterGroup.layout();
     }
 
 }
