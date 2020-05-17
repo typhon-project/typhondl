@@ -12,7 +12,7 @@ kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
 echo "Apply Helm Charts"
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install vehiclemetadatadb --set fullnameOverride=vehiclemetadatadb --set rootUser.password=password bitnami/mariadbgalera -n typhon
+helm install vehiclemetadatadb --set fullnameOverride=vehiclemetadatadb --set rootUser.password=password bitnami/mariadb-galera -n typhon
 echo "----------------------------------------------------------------------------"
 echo "Wait for the models to be inserted into the metadata database"
 kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig

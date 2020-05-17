@@ -5,6 +5,6 @@ database VehicleMetadataDB : MariaDBGalera {
 	helm {
 		name = bitnami ;
 		address = https://charts.bitnami.com/bitnami ;
-		chart = mariadbgalera ;
+		chart = mariadb-galera ;
 	}
 }

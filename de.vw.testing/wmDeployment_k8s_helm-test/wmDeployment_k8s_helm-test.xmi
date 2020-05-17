@@ -90,7 +90,7 @@
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="helm">
       <properties xsi:type="typhonDL:Key_Values" name="name" value="bitnami"/>
       <properties xsi:type="typhonDL:Key_Values" name="address" value="https://charts.bitnami.com/bitnami"/>
-      <properties xsi:type="typhonDL:Key_Values" name="chart" value="mariadbgalera"/>
+      <properties xsi:type="typhonDL:Key_Values" name="chart" value="mariadb-galera"/>
     </parameters>
   </elements>
   <elements xsi:type="typhonDL:DBType" name="Mongo">
