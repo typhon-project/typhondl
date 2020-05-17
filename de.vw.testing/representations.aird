@@ -9,10 +9,9 @@
   <semanticResources>wmDL_compose/wmDL_compose.xmi</semanticResources>
   <semanticResources>wmDeployment_k8s_minikube/wmDeployment_k8s_minikube.xmi</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
-  <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>VehicleDataDB.tdl</semanticResources>
-  <semanticResources>TextWarningData.tdl</semanticResources>
   <semanticResources>VehicleMetadataDB.tdl</semanticResources>
   <semanticResources>wmDeployment_k8s_helm-test.tdl</semanticResources>
-  <semanticResources>wmDeployment_k8s_helm-test/wmDeployment_k8s_helm-test.xmi</semanticResources>
+  <semanticResources>dbTypes.tdl</semanticResources>
+  <semanticResources>TextWarningData.tdl</semanticResources>
 </viewpoint:DAnalysis>
