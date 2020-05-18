@@ -538,6 +538,12 @@ public class Services {
         qlserver_container_ports.getKey_values().add(qlserver_container_port);
         qlserver_container.setPorts(qlserver_container_ports);
         qlserver_container.setDeploys(qlserver_reference);
+        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+            Key_Values qlserver_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+            qlserver_container_restart.setName("restart");
+            qlserver_container_restart.setValue("always");
+            qlserver_container.getProperties().add(qlserver_container_restart);
+        }
 
         application.getContainers().add(qlserver_container);
 
