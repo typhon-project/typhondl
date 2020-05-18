@@ -183,9 +183,7 @@ public class CreateModelWizard extends Wizard {
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
-                    boolean changed = databasePage.setDB(db);
-                    databasePage.setBuffer(result.get(db));
-                    if (databasePage.getControl() != null && changed) {
+                    if (databasePage.getControl() != null) {
                         databasePage.updateParameterArea();
                         databasePage.updateTemplateVariablesArea();
                     }

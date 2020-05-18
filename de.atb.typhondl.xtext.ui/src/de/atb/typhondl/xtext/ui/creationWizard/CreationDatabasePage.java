@@ -182,13 +182,8 @@ public class CreationDatabasePage extends MyWizardPage {
         return db.getName();
     }
 
-    public boolean setDB(DB db) {
-        if (this.db.equals(db)) {
-            return false;
-        } else {
-            this.db = db;
-            return true;
-        }
+    public void setDB(DB db) {
+        this.db = db;
     }
 
     public void setBuffer(TemplateBuffer templateBuffer) {
