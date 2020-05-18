@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.text.templates.TemplateBuffer;
@@ -64,17 +65,31 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     private void parameterArea() {
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        GridData gridDataWide = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        gridDataWide.horizontalSpan = 2;
+        HashMap<String, Property> properties = new HashMap<>();
         for (Property property : db.getParameters()) {
-            new Label(parameterGroup, NONE).setText(property.getName());
             if (Key_KeyValueList.class.isInstance(property)) {
-                System.out.println("list");
+                Key_KeyValueList list = (Key_KeyValueList) property;
+                for (Property subProperty : list.getProperties()) {
+                    if (Key_KeyValueList.class.isInstance(subProperty)) {
+                        Key_KeyValueList subList = (Key_KeyValueList) subProperty;
+                        for (Property subSubProperty : subList.getProperties()) {
+                            if (Key_Values.class.isInstance(subSubProperty)) {
+
+                            }
+                        }
+                    } else if (Key_ValueArray.class.isInstance(subProperty)) {
+                    } else if (Key_Values.class.isInstance(subProperty)) {
+                    }
+                }
             } else if (Key_ValueArray.class.isInstance(property)) {
                 System.out.println("array");
             } else if (Key_Values.class.isInstance(property)) {
                 System.out.println("keyValue");
             }
-
+            Label propertyNameLabel = new Label(parameterGroup, NONE);
+            propertyNameLabel.setText(property.getName());
         }
     }
 
@@ -104,7 +119,6 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private void templateVariableArea() {
 
-        TemplateVariable[] variables = buffer.getVariables();
         List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
 
         // this is the database.name, which should not be changed, so it is removed from
