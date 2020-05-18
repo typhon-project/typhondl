@@ -183,15 +183,12 @@ public class CreateModelWizard extends Wizard {
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
-                    databasePage.setDB(db);
+                    boolean changed = databasePage.setDB(db);
                     databasePage.setBuffer(result.get(db));
-                    if (databasePage.getControl() != null) {
+                    if (databasePage.getControl() != null && changed) {
                         databasePage.updateParameterArea();
+                        databasePage.updateTemplateVariablesArea();
                     }
-//                    if (databasePage.getControl() != null) {
-//                        ((Composite) databasePage.getControl()).requestLayout();
-//                    }
-                    // databasePage.createControl(this.getContainer().getShell());
                 }
             }
             if (!pageExists(PAGENAME_CONTAINER)) {
@@ -222,23 +219,6 @@ public class CreateModelWizard extends Wizard {
     private boolean pageExists(String pageName) {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }
-
-    /**
-     * TODO maybe this helps with dynamically producing pages
-     * 
-     * @param pageName
-     */
-//    private void deletePage(String pageName) {
-//        IWizardPage[] oldPages = this.getPages();
-//        for (IWizardPage iWizardPage : oldPages) {
-//            if (iWizardPage.getName().equalsIgnoreCase(pageName)) {
-//                iWizardPage.dispose();
-//            } else {
-//                iWizardPage.dispose();
-//                this.addPage(iWizardPage);
-//            } // does not delete pages
-//        }
-//    }
 
     private String getDBMSPageName(int templateOrdinal) {
         return PAGENAME_DBMS + SupportedTechnologies.values()[templateOrdinal].getClusterType();

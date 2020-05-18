@@ -29,6 +29,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private DB db;
     private TemplateBuffer buffer;
     private Group parameterGroup;
+    private Group templateVariableGroup;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -43,7 +44,13 @@ public class CreationDatabasePage extends MyWizardPage {
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        templateVariableArea(main);
+        if (buffer != null && buffer.getVariables().length != 0) {
+            templateVariableGroup = new Group(main, SWT.READ_ONLY);
+            templateVariableGroup.setLayout(new GridLayout(2, false));
+            templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            templateVariableGroup.setText("Template Variables");
+            templateVariableArea();
+        }
 
         imageArea(main);
 
@@ -95,30 +102,32 @@ public class CreationDatabasePage extends MyWizardPage {
 
     }
 
-    private void templateVariableArea(Composite main) {
-        if (buffer != null) {
-            TemplateVariable[] variables = buffer.getVariables();
-            List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(variables));
+    private void templateVariableArea() {
 
-            // this is the database.name, which should not be changed, so it is removed from
-            // the list:
-            if (db.isExternal()) {
-                variablesList.removeIf(variable -> variable.getOffsets()[0] == 17);
-            } else {
-                variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
-            }
-            // create a group
-            Group group = new Group(main, SWT.READ_ONLY);
-            group.setLayout(new GridLayout(2, false));
-            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setText("Template Variables");
+        TemplateVariable[] variables = buffer.getVariables();
+        List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
 
+        // this is the database.name, which should not be changed, so it is removed from
+        // the list:
+        if (db.isExternal()) {
+            variablesList.removeIf(variable -> variable.getOffsets()[0] == 17);
+        } else {
+            variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
+        }
+        if (templateVariableGroup == null && !variablesList.isEmpty()) {
+            templateVariableGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+            templateVariableGroup.setLayout(new GridLayout(2, false));
+            templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            templateVariableGroup.setText("Template Variables");
+        }
+
+        if (!variablesList.isEmpty()) {
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 
             // create a field for each variable:
             for (TemplateVariable templateVariable : variablesList) {
-                new Label(group, NONE).setText(templateVariable.getName() + ":");
-                Text text = new Text(group, SWT.BORDER);
+                new Label(templateVariableGroup, NONE).setText(templateVariable.getName() + ":");
+                Text text = new Text(templateVariableGroup, SWT.BORDER);
                 text.setText(templateVariable.getName());
                 text.setLayoutData(gridDataFields);
                 text.addModifyListener(e -> {
@@ -173,8 +182,13 @@ public class CreationDatabasePage extends MyWizardPage {
         return db.getName();
     }
 
-    public void setDB(DB db) {
-        this.db = db;
+    public boolean setDB(DB db) {
+        if (this.db.equals(db)) {
+            return false;
+        } else {
+            this.db = db;
+            return true;
+        }
     }
 
     public void setBuffer(TemplateBuffer templateBuffer) {
@@ -187,6 +201,16 @@ public class CreationDatabasePage extends MyWizardPage {
         }
         parameterArea();
         parameterGroup.layout();
+    }
+
+    public void updateTemplateVariablesArea() {
+        if (templateVariableGroup != null) {
+            for (Control control : templateVariableGroup.getChildren()) {
+                control.dispose();
+            }
+        }
+        templateVariableArea();
+        templateVariableGroup.layout();
     }
 
 }
