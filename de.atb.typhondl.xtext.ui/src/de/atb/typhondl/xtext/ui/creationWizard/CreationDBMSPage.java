@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -370,9 +372,10 @@ public class CreationDBMSPage extends MyWizardPage {
         if (fileExists(path)) {
             URI dbURI = URI.createPlatformResourceURI(
                     this.file.getFullPath().removeLastSegments(1).append(path).toString(), true);
-            return ((DeploymentModel) resourceSet.getResource(dbURI, true).getContents().get(0)).getElements().stream()
-                    .filter(element -> DB.class.isInstance(element)).map(element -> (DB) element)
-                    .collect(Collectors.toList()).get(0);
+            DeploymentModel deploymentModel = (DeploymentModel) resourceSet.getResource(dbURI, true).getContents()
+                    .get(0);
+            List<DB> allContentsOfType = EcoreUtil2.getAllContentsOfType(deploymentModel, DB.class);
+            return allContentsOfType.size() == 1 ? allContentsOfType.get(0) : getEmptyDB(dbName);
         } else {
             return getEmptyDB(dbName);
         }

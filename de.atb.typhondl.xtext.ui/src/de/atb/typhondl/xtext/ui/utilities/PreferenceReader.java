@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.text.templates.Template;
@@ -15,6 +14,7 @@ import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateTranslator;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
 
@@ -123,13 +123,10 @@ public class PreferenceReader {
         // instance
         IParseResult result = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
                 .getInstance(IParser.class).parse(new StringReader(buffer.getString()));
+        DeploymentModel deploymentModel = (DeploymentModel) result.getRootASTElement();
         @SuppressWarnings("unchecked")
-        List<T> elements = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
-                .filter(element -> modelObject.getClass().isInstance(element)).map(element -> (T) element)
-                .collect(Collectors.toList());
-        if (elements.size() != 1) {
-            return null; // there should only be one model definition in a template
-        }
-        return elements.get(0);
+        List<T> elements = (List<T>) EcoreUtil2.getAllContentsOfType(deploymentModel, modelObject.getClass());
+        // there should only be one model definition in a template
+        return elements.size() == 1 ? elements.get(0) : null;
     }
 }
