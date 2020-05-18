@@ -6,6 +6,7 @@ services:
     ports:
       - target: 8080
         published: 8080
+    restart: always
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
     environment:
