@@ -51,6 +51,7 @@
             <key_values name="target" value="8080"/>
             <key_values name="published" value="8080"/>
           </ports>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
         </containers>
         <containers name="polystore-ui" type="//@elements.0">
           <deploys reference="//@elements.12"/>

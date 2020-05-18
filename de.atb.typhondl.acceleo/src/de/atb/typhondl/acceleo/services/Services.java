@@ -463,6 +463,12 @@ public class Services {
         polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
         polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
         polystore_api_container.setPorts(polystore_api_container_ports);
+        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+            Key_Values polystore_api_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+            polystore_api_container_restart.setName("restart");
+            polystore_api_container_restart.setValue("always");
+            polystore_api_container.getProperties().add(polystore_api_container_restart);
+        }
 
         Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
         polystore_api_dependency.setReference(polystore_api_container);

@@ -1,19 +1,12 @@
 version: '3.7'
 
 services:
-  VehicleMetadataDB:
+  AppData:
     image: mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: password
     ports:
       - target: 3306
-  TextWarningData:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: username
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-      - target: 27017
   VehicleDataDB:
     image: mongo:latest
     environment:
@@ -21,7 +14,14 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - target: 27017
-  AppData:
+  TextWarningData:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - target: 27017
+  VehicleMetadataDB:
     image: mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: password
