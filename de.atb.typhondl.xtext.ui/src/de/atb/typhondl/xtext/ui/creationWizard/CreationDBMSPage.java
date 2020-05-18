@@ -3,6 +3,7 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.swt.SWT;
@@ -35,6 +37,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
@@ -384,10 +387,8 @@ public class CreationDBMSPage extends MyWizardPage {
     protected DB useBufferOnDB(DB db, DB templateDB) {
         db.setType(templateDB.getType());
         db.getParameters().clear();
-        // TODO copy parameters
-        // this deletes the parameters in templateDB
-        db.getParameters().addAll(templateDB.getParameters());
-
+        Collection<Property> parameters = EcoreUtil.copyAll(templateDB.getParameters());
+        db.getParameters().addAll(parameters);
         return db;
     }
 
