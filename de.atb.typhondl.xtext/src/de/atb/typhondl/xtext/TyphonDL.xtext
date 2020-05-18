@@ -31,8 +31,18 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
+	(helm+=HelmList)?
 	(parameters+=Property)*
 	'}';
+
+HelmList:
+	'helm' '{'
+	  'repoName' '=' repoName=Value ';'
+	  'repoAddress' '=' repoAddress=Value ';'
+	  'chartName' '=' chartName=Value ';'
+	  (parameters+=Property)*
+	'}'
+;
 
 PlatformType:
 	'platformtype' name=Name;
