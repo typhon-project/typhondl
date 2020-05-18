@@ -66,6 +66,7 @@
           <ports>
             <key_values name="target" value="7000"/>
           </ports>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
         </containers>
         <containers name="zookeeper" type="//@elements.0">
           <deploys reference="//@elements.14"/>

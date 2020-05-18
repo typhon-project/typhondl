@@ -21,6 +21,7 @@ services:
     image: swatengineering/typhonql-server
     ports:
       - target: 7000
+    restart: always
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
