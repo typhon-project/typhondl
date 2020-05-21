@@ -179,17 +179,17 @@ public class CreationDBMSPage extends MyWizardPage {
 
             String dbName = db.getName();
 
+            // create a group for each database
+            Group group = new Group(main, SWT.READ_ONLY);
+            group.setLayout(new GridLayout(2, false));
+            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            group.setText(dbName);
+
             // get Templates from buffer. The DBs have the template's name.
             DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
                     .toArray(new DB[0]);
             String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
                     .collect(Collectors.toList()).toArray(new String[0]);
-
-            // create a group for each database
-            Group group = new Group(main, SWT.READ_ONLY);
-            group.setLayout(new GridLayout(2, false));
-            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setText(dbName);
 
             Button existingModelCheck = new Button(group, SWT.CHECK);
             existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
@@ -211,11 +211,11 @@ public class CreationDBMSPage extends MyWizardPage {
                     .setToolTipText("Check this box if you already have this database outside of the polystore");
 
             Composite helmComposite = new Composite(group, NONE);
-            helmComposite.setLayout(new GridLayout(1, false));
-            GridData helmGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            helmComposite.setLayout(new GridLayout(1, true));
+            GridData helmGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            helmGridData.horizontalSpan = 2;
             helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getClusterType()
                     .equalsIgnoreCase("Kubernetes");
-//            helmGridData.horizontalSpan = 2; TODO not working
             helmComposite.setLayoutData(helmGridData);
             Button useHelmChartCheck = new Button(helmComposite, SWT.CHECK);
             useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
@@ -321,6 +321,7 @@ public class CreationDBMSPage extends MyWizardPage {
         }
         validate();
         setControl(main);
+        ((Composite) this.getControl()).layout(true);
     }
 
     protected DB addHelmChartKeys(DB newDB) {
