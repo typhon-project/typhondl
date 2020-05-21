@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -157,7 +158,10 @@ public class CreationDBMSPage extends MyWizardPage {
     @Override
     public void createControl(Composite parent) {
         setTitle("Choose a DBMS for each database" + this.chosenTemplate);
-        Composite main = new Composite(parent, SWT.NONE);
+        ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
+        Composite main = new Composite(scrolling, SWT.NONE);
+        scrolling.setContent(main);
+        scrolling.setExpandVertical(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -182,7 +186,7 @@ public class CreationDBMSPage extends MyWizardPage {
             // create a group for each database
             Group group = new Group(main, SWT.READ_ONLY);
             group.setLayout(new GridLayout(2, false));
-            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             group.setText(dbName);
 
             // get Templates from buffer. The DBs have the template's name.
@@ -320,7 +324,9 @@ public class CreationDBMSPage extends MyWizardPage {
             });
         }
         validate();
-        setControl(main);
+        main.setSize(main.computeSize(((CreateModelWizard) this.getWizard()).getPageWidth(), SWT.DEFAULT));
+        scrolling.setMinSize(main.computeSize(((CreateModelWizard) this.getWizard()).getPageWidth(), SWT.DEFAULT));
+        setControl(scrolling);
         ((Composite) this.getControl()).layout(true);
     }
 

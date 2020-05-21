@@ -55,6 +55,12 @@ public class CreateModelWizard extends Wizard {
     private final String PAGENAME_ANALYTICS = "Analytics";
 
     /**
+     * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
+     * always 607, independent of what's given here //TODO wtf?
+     */
+    private final int pageWidth = 607;
+
+    /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
     private int chosenTemplate;
@@ -220,6 +226,10 @@ public class CreateModelWizard extends Wizard {
 
     private String getDBMSPageName(int templateOrdinal) {
         return PAGENAME_DBMS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
+    }
+
+    public int getPageWidth() {
+        return pageWidth;
     }
 
 }
