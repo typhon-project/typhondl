@@ -26,6 +26,13 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 
+/**
+ * Each Database has a page to define and/or change the image and other
+ * properties
+ * 
+ * @author flug
+ *
+ */
 public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
@@ -67,6 +74,10 @@ public class CreationDatabasePage extends MyWizardPage {
         setControl(main);
     }
 
+    /**
+     * The Area inside the parameter group. Here the {@link DB#getParameters()} are
+     * handled.
+     */
     private void parameterArea() {
         key_ValuesPropertiesShorter = new HashMap<>();
         key_ValueArrayPropertiesShorter = new HashMap<>();
@@ -94,6 +105,13 @@ public class CreationDatabasePage extends MyWizardPage {
         }
     }
 
+    /**
+     * Finds all {@link Key_Values} and {@link Key_ValueArray}s inside the property
+     * list, gives them the right name and adds them to the right list
+     * 
+     * @param name     Name of the Property
+     * @param property The Property to add to the list
+     */
     private void addPropertyToList(String name, Property property) {
         if (Key_Values.class.isInstance(property)) {
             key_ValuesPropertiesShorter.put(name, (Key_Values) property);
@@ -106,10 +124,23 @@ public class CreationDatabasePage extends MyWizardPage {
         }
     }
 
+    /**
+     * Turns Text text into List to be set as {@link Key_ValueArray#getValues()}
+     * 
+     * @param text the text taken from the Text
+     * @return text as List
+     */
     private List<String> toArray(String text) {
         return Arrays.asList(text.split(","));
     }
 
+    /**
+     * Turns values of {@link Key_ValueArray} into String with comma separated
+     * values
+     * 
+     * @param values values of a {@link Key_ValueArray}
+     * @return Comma separated String
+     */
     private String fromArray(EList<String> values) {
         if (!values.isEmpty()) {
             String arrayString = values.get(0);
@@ -122,6 +153,11 @@ public class CreationDatabasePage extends MyWizardPage {
             return "";
     }
 
+    /**
+     * The image group, here the image can be edited
+     * 
+     * @param main Composite to put the group in
+     */
     private void imageArea(Composite main) {
         Group group = new Group(main, SWT.READ_ONLY);
         group.setLayout(new GridLayout(2, false));
@@ -146,6 +182,10 @@ public class CreationDatabasePage extends MyWizardPage {
 
     }
 
+    /**
+     * The Area inside the templateCariable group. Here the
+     * {@link TemplateBuffer#getVariables()} are handled.
+     */
     private void templateVariableArea() {
 
         List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
@@ -233,6 +273,9 @@ public class CreationDatabasePage extends MyWizardPage {
         this.buffer = templateBuffer;
     }
 
+    /**
+     * In case the chosen template has changed, the areas have to be updated
+     */
     public void updateParameterArea() {
         for (Control control : parameterGroup.getChildren()) {
             control.dispose();
@@ -242,6 +285,9 @@ public class CreationDatabasePage extends MyWizardPage {
         parameterGroup.getParent().layout(true);
     }
 
+    /**
+     * In case the chosen template has changed, the areas have to be updated
+     */
     public void updateTemplateVariablesArea() {
         if (templateVariableGroup != null) {
             for (Control control : templateVariableGroup.getChildren()) {
