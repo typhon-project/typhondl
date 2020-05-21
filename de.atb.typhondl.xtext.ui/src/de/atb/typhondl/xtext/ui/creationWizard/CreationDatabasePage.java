@@ -32,6 +32,8 @@ public class CreationDatabasePage extends MyWizardPage {
     private TemplateBuffer buffer;
     private Group parameterGroup;
     private Group templateVariableGroup;
+    private HashMap<String, Key_Values> key_ValuesPropertiesShorter;
+    private HashMap<String, Key_ValueArray> key_ValueArrayPropertiesShorter;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -66,61 +68,25 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     private void parameterArea() {
-        GridData gridDataWide = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        gridDataWide.horizontalSpan = 2;
-        HashMap<String, Key_Values> key_ValuesProperties = new HashMap<>();
-        HashMap<String, Key_ValueArray> key_ValueArrayProperties = new HashMap<>();
+        key_ValuesPropertiesShorter = new HashMap<>();
+        key_ValueArrayPropertiesShorter = new HashMap<>();
         for (Property property : db.getParameters()) {
-            if (Key_KeyValueList.class.isInstance(property)) {
-                Key_KeyValueList list = (Key_KeyValueList) property;
-                for (Property subProperty : list.getProperties()) {
-                    if (Key_KeyValueList.class.isInstance(subProperty)) {
-                        Key_KeyValueList subList = (Key_KeyValueList) subProperty;
-                        for (Property subSubProperty : subList.getProperties()) {
-                            if (Key_Values.class.isInstance(subSubProperty)) {
-                                key_ValuesProperties.put(
-                                        list.getName() + "." + subProperty.getName() + "." + subSubProperty.getName(),
-                                        (Key_Values) subSubProperty);
-                            } else if (Key_KeyValueList.class.isInstance(subSubProperty)) {
-                                Key_KeyValueList subSubList = (Key_KeyValueList) subSubProperty;
-                                for (Property subSubSubProperty : subSubList.getProperties()) {
-                                    if (Key_Values.class.isInstance(subSubSubProperty)) {
-                                        key_ValuesProperties.put(
-                                                list.getName() + "." + subProperty.getName() + "."
-                                                        + subSubProperty.getName() + "." + subSubSubProperty.getName(),
-                                                (Key_Values) subSubProperty);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (Key_ValueArray.class.isInstance(subProperty)) {
-                        key_ValueArrayProperties.put(list.getName() + "." + subProperty.getName(),
-                                (Key_ValueArray) subProperty);
-                    } else if (Key_Values.class.isInstance(subProperty)) {
-                        key_ValuesProperties.put(list.getName() + "." + subProperty.getName(),
-                                (Key_Values) subProperty);
-                    }
-                }
-            } else if (Key_Values.class.isInstance(property)) {
-                key_ValuesProperties.put(property.getName(), (Key_Values) property);
-            } else if (Key_ValueArray.class.isInstance(property)) {
-                key_ValueArrayProperties.put(property.getName(), (Key_ValueArray) property);
-            }
+            addPropertyToList(property.getName(), property);
         }
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        for (String name : key_ValuesProperties.keySet()) {
+        for (String name : key_ValuesPropertiesShorter.keySet()) {
             Label propertyNameLabel = new Label(parameterGroup, NONE);
             propertyNameLabel.setText(name);
-            Key_Values key_Values = key_ValuesProperties.get(name);
+            Key_Values key_Values = key_ValuesPropertiesShorter.get(name);
             Text propertyText = new Text(parameterGroup, SWT.BORDER);
             propertyText.setLayoutData(gridDataFields);
             propertyText.setText(key_Values.getValue());
             propertyText.addModifyListener(e -> key_Values.setValue(propertyText.getText()));
         }
-        for (String name : key_ValueArrayProperties.keySet()) {
+        for (String name : key_ValueArrayPropertiesShorter.keySet()) {
             Label propertyNameLabel = new Label(parameterGroup, NONE);
             propertyNameLabel.setText(name);
-            Key_ValueArray key_ValueArray = key_ValueArrayProperties.get(name);
+            Key_ValueArray key_ValueArray = key_ValueArrayPropertiesShorter.get(name);
             Text propertyText = new Text(parameterGroup, SWT.BORDER);
             propertyText.setLayoutData(gridDataFields);
             propertyText.setText(fromArray(key_ValueArray.getValues()));
@@ -128,22 +94,32 @@ public class CreationDatabasePage extends MyWizardPage {
         }
     }
 
-    private EList<String> toArray(String text) {
-        // TODO Auto-generated method stub
-        return null;
+    private void addPropertyToList(String name, Property property) {
+        if (Key_Values.class.isInstance(property)) {
+            key_ValuesPropertiesShorter.put(name, (Key_Values) property);
+        } else if (Key_ValueArray.class.isInstance(property)) {
+            key_ValueArrayPropertiesShorter.put(name, (Key_ValueArray) property);
+        } else if (Key_KeyValueList.class.isInstance(property)) {
+            for (Property subProperty : ((Key_KeyValueList) property).getProperties()) {
+                addPropertyToList(name + "." + subProperty.getName(), subProperty);
+            }
+        }
+    }
+
+    private List<String> toArray(String text) {
+        return Arrays.asList(text.split(","));
     }
 
     private String fromArray(EList<String> values) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    private HashMap<String, Key_Values> getKey_ValuesChildren(Key_KeyValueList list) {
-        HashMap<String, Key_Values> map = new HashMap<>();
-        String name = "";
-        // while (list) {
-        // } TODO
-        return map;
+        if (!values.isEmpty()) {
+            String arrayString = values.get(0);
+            values.remove(0);
+            for (String string : values) {
+                arrayString += "," + string;
+            }
+            return arrayString;
+        } else
+            return "";
     }
 
     private void imageArea(Composite main) {
