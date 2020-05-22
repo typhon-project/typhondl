@@ -38,8 +38,7 @@ import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
@@ -445,22 +444,11 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     private DB addHelmChartKeys(DB newDB) {
-        if (!newDB.getParameters().stream().anyMatch(parameter -> parameter.getName().equalsIgnoreCase("helm"))) {
-            Key_KeyValueList helm = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-            helm.setName("helm");
-            Key_Values helmRepoAddress = TyphonDLFactory.eINSTANCE.createKey_Values();
-            helmRepoAddress.setName("address");
-            helmRepoAddress.setValue("https://charts.bitnami.com/bitnami");
-            Key_Values helmRepoName = TyphonDLFactory.eINSTANCE.createKey_Values();
-            helmRepoName.setName("name");
-            helmRepoName.setValue("bitnami");
-            Key_Values helmChart = TyphonDLFactory.eINSTANCE.createKey_Values();
-            helmChart.setName("chart");
-            helmChart.setValue(newDB.getType().getName().toLowerCase());
-            helm.getProperties().add(helmRepoName);
-            helm.getProperties().add(helmRepoAddress);
-            helm.getProperties().add(helmChart);
-            newDB.getParameters().add(helm);
+        if (newDB.getHelm() == null) {
+            HelmList helmList = TyphonDLFactory.eINSTANCE.createHelmList();
+            helmList.setChartName(newDB.getType().getName().toLowerCase());
+            helmList.setRepoAddress("https://charts.bitnami.com/bitnami");
+            helmList.setRepoName("bitnami");
         }
         return newDB;
     }
