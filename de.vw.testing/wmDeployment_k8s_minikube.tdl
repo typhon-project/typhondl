@@ -1,7 +1,7 @@
 import weatherModel.xmi
 import TextWarningData.tdl
-import VehicleMetadataDB.tdl
 import VehicleDataDB.tdl
+import VehicleMetadataDB.tdl
 import AppData.tdl
 import dbTypes.tdl
 containertype Docker
@@ -9,10 +9,15 @@ clustertype Kubernetes
 platformtype minikube
 platform platformName : minikube {
 	cluster clusterName : Kubernetes {
-		kubeconfig = /home/flug/.kube/config;
 		application Polystore {
 			container TextWarningData : Docker {
 				deploys TextWarningData
+				ports {
+					target = 27017 ;
+				}
+			}
+			container VehicleDataDB : Docker {
+				deploys VehicleDataDB
 				ports {
 					target = 27017 ;
 				}
@@ -21,12 +26,6 @@ platform platformName : minikube {
 				deploys VehicleMetadataDB
 				ports {
 					target = 3306 ;
-				}
-			}
-			container VehicleDataDB : Docker {
-				deploys VehicleDataDB
-				ports {
-					target = 27017 ;
 				}
 			}
 			container AppData : Docker {

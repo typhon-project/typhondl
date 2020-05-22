@@ -26,6 +26,13 @@
     <genClasses ecoreClass="TyphonDL.ecore#//Type"/>
     <genClasses ecoreClass="TyphonDL.ecore#//DB">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/helm"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//HelmList">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/repoName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/repoAddress"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/chartName"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//HelmList/parameters"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//PlatformType"/>
     <genClasses ecoreClass="TyphonDL.ecore#//ClusterType"/>
