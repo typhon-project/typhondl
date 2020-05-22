@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -39,8 +40,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private TemplateBuffer buffer;
     private Group parameterGroup;
     private Group templateVariableGroup;
-    private HashMap<String, Key_Values> key_ValuesPropertiesShorter;
-    private HashMap<String, Key_ValueArray> key_ValueArrayPropertiesShorter;
+    private HashMap<String, Property> properties;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -79,29 +79,27 @@ public class CreationDatabasePage extends MyWizardPage {
      * handled.
      */
     private void parameterArea() {
-        key_ValuesPropertiesShorter = new HashMap<>();
-        key_ValueArrayPropertiesShorter = new HashMap<>();
+        properties = new HashMap<>();
         for (Property property : db.getParameters()) {
             addPropertyToList(property.getName(), property);
         }
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        for (String name : key_ValuesPropertiesShorter.keySet()) {
-            Label propertyNameLabel = new Label(parameterGroup, NONE);
-            propertyNameLabel.setText(name);
-            Key_Values key_Values = key_ValuesPropertiesShorter.get(name);
+        ArrayList<String> names = new ArrayList<>(properties.keySet());
+        Collections.sort(names);
+        for (String name : names) {
+            new Label(parameterGroup, NONE).setText(name + ":");
+            Property property = properties.get(name);
             Text propertyText = new Text(parameterGroup, SWT.BORDER);
             propertyText.setLayoutData(gridDataFields);
-            propertyText.setText(key_Values.getValue());
-            propertyText.addModifyListener(e -> key_Values.setValue(propertyText.getText()));
-        }
-        for (String name : key_ValueArrayPropertiesShorter.keySet()) {
-            Label propertyNameLabel = new Label(parameterGroup, NONE);
-            propertyNameLabel.setText(name);
-            Key_ValueArray key_ValueArray = key_ValueArrayPropertiesShorter.get(name);
-            Text propertyText = new Text(parameterGroup, SWT.BORDER);
-            propertyText.setLayoutData(gridDataFields);
-            propertyText.setText(fromArray(key_ValueArray.getValues()));
-            propertyText.addModifyListener(e -> key_ValueArray.getValues().addAll(toArray(propertyText.getText())));
+            if (Key_Values.class.isInstance(property)) {
+                Key_Values key_Values = (Key_Values) property;
+                propertyText.setText(key_Values.getValue());
+                propertyText.addModifyListener(e -> key_Values.setValue(propertyText.getText()));
+            } else {
+                Key_ValueArray key_ValueArray = (Key_ValueArray) property;
+                propertyText.setText(fromArray(key_ValueArray.getValues()));
+                propertyText.addModifyListener(e -> key_ValueArray.getValues().addAll(toArray(propertyText.getText())));
+            }
         }
     }
 
@@ -113,14 +111,12 @@ public class CreationDatabasePage extends MyWizardPage {
      * @param property The Property to add to the list
      */
     private void addPropertyToList(String name, Property property) {
-        if (Key_Values.class.isInstance(property)) {
-            key_ValuesPropertiesShorter.put(name, (Key_Values) property);
-        } else if (Key_ValueArray.class.isInstance(property)) {
-            key_ValueArrayPropertiesShorter.put(name, (Key_ValueArray) property);
-        } else if (Key_KeyValueList.class.isInstance(property)) {
+        if (Key_KeyValueList.class.isInstance(property)) {
             for (Property subProperty : ((Key_KeyValueList) property).getProperties()) {
                 addPropertyToList(name + "." + subProperty.getName(), subProperty);
             }
+        } else {
+            properties.put(name, property);
         }
     }
 
