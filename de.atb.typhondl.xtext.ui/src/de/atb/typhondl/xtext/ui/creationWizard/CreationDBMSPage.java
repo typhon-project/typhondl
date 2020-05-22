@@ -157,7 +157,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        setTitle("Choose a DBMS for each database" + this.chosenTemplate);
+        setTitle("Choose a DBMS for each database");
         ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
         Composite main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
@@ -199,6 +199,17 @@ public class CreationDBMSPage extends MyWizardPage {
         setControl(scrolling);
     }
 
+    /**
+     * Creates controls for DBMS kubernetes page
+     * <li>existing model</li>
+     * <li>existing database</li>
+     * <li>use helm charts</li>
+     * <li>combo for choosing template</li>
+     * 
+     * @param group
+     * @param templates
+     * @param db
+     */
     private void kubernetesComposeControls(Group group, ArrayList<Pair<DB, TemplateBuffer>> templates, DB db) {
         String dbName = db.getName();
         // get Templates from buffer. The DBs have the template's name.
@@ -330,6 +341,16 @@ public class CreationDBMSPage extends MyWizardPage {
         });
     }
 
+    /**
+     * Creates controls for DBMS docker compose page
+     * <li>existing model</li>
+     * <li>existing database</li>
+     * <li>combo for choosing template</li>
+     * 
+     * @param group
+     * @param templates
+     * @param db
+     */
     private void dockerComposeControls(Composite group, ArrayList<Pair<DB, TemplateBuffer>> templates, DB db) {
         String dbName = db.getName();
         // get Templates from buffer. The DBs have the template's name.
