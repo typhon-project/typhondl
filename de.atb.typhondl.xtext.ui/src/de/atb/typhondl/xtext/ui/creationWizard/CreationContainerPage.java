@@ -98,6 +98,7 @@ public class CreationContainerPage extends MyWizardPage {
         Composite main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
         scrolling.setExpandVertical(true);
+        scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
         String reservationWord;
