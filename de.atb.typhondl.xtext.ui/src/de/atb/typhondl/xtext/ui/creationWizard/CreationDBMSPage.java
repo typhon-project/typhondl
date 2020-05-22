@@ -162,10 +162,9 @@ public class CreationDBMSPage extends MyWizardPage {
         Composite main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
         scrolling.setExpandVertical(true);
-        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        scrolling.setExpandHorizontal(true);
+        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(1, false));
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        gridData.horizontalSpan = 2;
 
         for (Pair<String, String> dbFromML : MLmodel) {
 
@@ -181,156 +180,250 @@ public class CreationDBMSPage extends MyWizardPage {
                                 + ". Please add or activate a fitting DB template in the Eclipse settings.");
             }
 
-            String dbName = db.getName();
-
             // create a group for each database
             Group group = new Group(main, SWT.READ_ONLY);
             group.setLayout(new GridLayout(2, false));
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setText(dbName);
+            group.setText(db.getName());
 
-            // get Templates from buffer. The DBs have the template's name.
-            DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
-                    .toArray(new DB[0]);
-            String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
-                    .collect(Collectors.toList()).toArray(new String[0]);
-
-            Button existingModelCheck = new Button(group, SWT.CHECK);
-            existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
-            existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
-            // if an existing file is to be used, there exists no buffer
-            if (existingModelCheck.getSelection()) {
-                result.put(readExistingFile(dbName), null);
+            if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")) {
+                kubernetesComposeControls(group, templates, db);
+            } else {
+                dockerComposeControls(group, templates, db);
             }
-            existingModelCheck.setLayoutData(gridData);
-            existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
-            validationList.put(dbName, existingModelCheck);
-
-            Button externalDatabaseCheck = new Button(group, SWT.CHECK);
-            externalDatabaseCheck
-                    .setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
-            externalDatabaseCheck.setSelection(false);
-            externalDatabaseCheck.setLayoutData(gridData);
-            externalDatabaseCheck
-                    .setToolTipText("Check this box if you already have this database outside of the polystore");
-
-            Composite helmComposite = new Composite(group, NONE);
-            helmComposite.setLayout(new GridLayout(1, true));
-            GridData helmGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-            helmGridData.horizontalSpan = 2;
-            helmGridData.exclude = !SupportedTechnologies.values()[chosenTemplate].getClusterType()
-                    .equalsIgnoreCase("Kubernetes");
-            helmComposite.setLayoutData(helmGridData);
-            Button useHelmChartCheck = new Button(helmComposite, SWT.CHECK);
-            useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
-            useHelmChartCheck.setSelection(false);
-            useHelmChartCheck.setLayoutData(gridData);
-            useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
-
-            new Label(group, NONE).setText("Choose Template:");
-            Combo combo = new Combo(group, SWT.READ_ONLY);
-            combo.setItems(dbTemplateNames);
-            combo.setText(dbTemplateNames[0]);
-            // set initial dbTemplate
-            if (!existingModelCheck.getSelection()) {
-                Pair<DB, TemplateBuffer> template = templates.get(0);
-                result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
-            }
-
-            existingModelCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean useExistingModel = existingModelCheck.getSelection();
-                    combo.setEnabled(!useExistingModel);
-                    if (externalDatabaseCheck.getSelection()) {
-                        externalDatabaseCheck.setSelection(!useExistingModel);
-                    }
-                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
-                        useHelmChartCheck.setSelection(!useExistingModel);
-                    }
-                    removeDBfromResult(dbName);
-                    if (useExistingModel) {
-                        DB newDB = readExistingFile(dbName);
-                        newDB.setExternal(externalDatabaseCheck.getSelection());
-                        result.put(newDB, null);
-                    } else {
-                        Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                        DB newDB = useBufferOnDB(db, template.firstValue);
-                        newDB.setExternal(externalDatabaseCheck.getSelection());
-                        result.put(newDB, template.secondValue);
-                    }
-                    validate();
-                }
-            });
-
-            externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean useExternalDatabase = externalDatabaseCheck.getSelection();
-                    combo.setEnabled(true);
-                    if (existingModelCheck.getSelection()) {
-                        existingModelCheck.setSelection(!useExternalDatabase);
-                    }
-                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
-                        useHelmChartCheck.setSelection(!useExternalDatabase);
-                    }
-                    removeDBfromResult(dbName);
-                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
-                    newDB.setExternal(useExternalDatabase);
-                    result.put(newDB, template.secondValue);
-                    validate();
-                };
-            });
-
-            useHelmChartCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean useHelmChart = useHelmChartCheck.getSelection();
-                    combo.setEnabled(true);
-                    if (existingModelCheck.getSelection()) {
-                        existingModelCheck.setSelection(!useHelmChart);
-                    }
-                    if (externalDatabaseCheck.getSelection()) {
-                        externalDatabaseCheck.setSelection(!useHelmChart);
-                    }
-                    removeDBfromResult(dbName);
-                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
-                    newDB.setExternal(externalDatabaseCheck.getSelection());
-                    if (useHelmChart) {
-                        newDB = addHelmChartKeys(newDB);
-                    }
-                    result.put(newDB, template.secondValue);
-                    validate();
-                }
-            });
-
-            combo.setEnabled(!existingModelCheck.getSelection());
-            combo.setToolTipText("Choose specific DBMS Template for " + dbName);
-            combo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    removeDBfromResult(dbName);
-                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
-                    newDB.setExternal(externalDatabaseCheck.getSelection());
-                    if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
-                        newDB = addHelmChartKeys(newDB);
-                    }
-                    result.put(newDB, template.secondValue);
-                    validate();
-                }
-            });
         }
         validate();
         main.setSize(main.computeSize(((CreateModelWizard) this.getWizard()).getPageWidth(), SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(((CreateModelWizard) this.getWizard()).getPageWidth(), SWT.DEFAULT));
+
         setControl(scrolling);
-        ((Composite) this.getControl()).layout(true);
     }
 
-    protected DB addHelmChartKeys(DB newDB) {
+    private void kubernetesComposeControls(Group group, ArrayList<Pair<DB, TemplateBuffer>> templates, DB db) {
+        String dbName = db.getName();
+        // get Templates from buffer. The DBs have the template's name.
+        DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
+                .toArray(new DB[0]);
+        String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
+                .collect(Collectors.toList()).toArray(new String[0]);
+        GridData wideGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        wideGridData.horizontalSpan = 2;
+
+        Button existingModelCheck = new Button(group, SWT.CHECK);
+        existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
+        existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
+        // if an existing file is to be used, there exists no buffer
+        if (existingModelCheck.getSelection()) {
+            result.put(readExistingFile(dbName), null);
+        }
+        existingModelCheck.setLayoutData(wideGridData);
+        existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
+        validationList.put(dbName, existingModelCheck);
+
+        Button externalDatabaseCheck = new Button(group, SWT.CHECK);
+        externalDatabaseCheck.setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
+        externalDatabaseCheck.setSelection(false);
+        externalDatabaseCheck.setLayoutData(wideGridData);
+        externalDatabaseCheck
+                .setToolTipText("Check this box if you already have this database outside of the polystore");
+
+        Button useHelmChartCheck = new Button(group, SWT.CHECK);
+        useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
+        useHelmChartCheck.setSelection(false);
+        useHelmChartCheck.setLayoutData(wideGridData);
+        useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
+
+        new Label(group, NONE).setText("Choose Template:");
+        Combo combo = new Combo(group, SWT.READ_ONLY);
+        combo.setItems(dbTemplateNames);
+        combo.setText(dbTemplateNames[0]);
+        // set initial dbTemplate
+        if (!existingModelCheck.getSelection()) {
+            Pair<DB, TemplateBuffer> template = templates.get(0);
+            result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+        }
+
+        existingModelCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean useExistingModel = existingModelCheck.getSelection();
+                combo.setEnabled(!useExistingModel);
+                if (externalDatabaseCheck.getSelection()) {
+                    externalDatabaseCheck.setSelection(!useExistingModel);
+                }
+                if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                    useHelmChartCheck.setSelection(!useExistingModel);
+                }
+                removeDBfromResult(dbName);
+                if (useExistingModel) {
+                    DB newDB = readExistingFile(dbName);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    result.put(newDB, null);
+                } else {
+                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    result.put(newDB, template.secondValue);
+                }
+                validate();
+            }
+        });
+
+        externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean useExternalDatabase = externalDatabaseCheck.getSelection();
+                combo.setEnabled(true);
+                if (existingModelCheck.getSelection()) {
+                    existingModelCheck.setSelection(!useExternalDatabase);
+                }
+                if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                    useHelmChartCheck.setSelection(!useExternalDatabase);
+                }
+                removeDBfromResult(dbName);
+                Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                DB newDB = useBufferOnDB(db, template.firstValue);
+                newDB.setExternal(useExternalDatabase);
+                result.put(newDB, template.secondValue);
+                validate();
+            };
+        });
+
+        useHelmChartCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean useHelmChart = useHelmChartCheck.getSelection();
+                combo.setEnabled(true);
+                if (existingModelCheck.getSelection()) {
+                    existingModelCheck.setSelection(!useHelmChart);
+                }
+                if (externalDatabaseCheck.getSelection()) {
+                    externalDatabaseCheck.setSelection(!useHelmChart);
+                }
+                removeDBfromResult(dbName);
+                Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                DB newDB = useBufferOnDB(db, template.firstValue);
+                newDB.setExternal(externalDatabaseCheck.getSelection());
+                if (useHelmChart) {
+                    newDB = addHelmChartKeys(newDB);
+                }
+                result.put(newDB, template.secondValue);
+                validate();
+            }
+        });
+
+        combo.setEnabled(!existingModelCheck.getSelection());
+        combo.setToolTipText("Choose specific DBMS Template for " + dbName);
+        combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removeDBfromResult(dbName);
+                Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                DB newDB = useBufferOnDB(db, template.firstValue);
+                newDB.setExternal(externalDatabaseCheck.getSelection());
+                if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
+                    newDB = addHelmChartKeys(newDB);
+                }
+                result.put(newDB, template.secondValue);
+                validate();
+            }
+        });
+    }
+
+    private void dockerComposeControls(Composite group, ArrayList<Pair<DB, TemplateBuffer>> templates, DB db) {
+        String dbName = db.getName();
+        // get Templates from buffer. The DBs have the template's name.
+        DB[] dbTemplates = templates.stream().map(pair -> pair.firstValue).collect(Collectors.toList())
+                .toArray(new DB[0]);
+        String[] dbTemplateNames = Arrays.asList(dbTemplates).stream().map(dbTemplate -> dbTemplate.getName())
+                .collect(Collectors.toList()).toArray(new String[0]);
+        GridData wideGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        wideGridData.horizontalSpan = 2;
+
+        Button existingModelCheck = new Button(group, SWT.CHECK);
+        existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
+        existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
+        // if an existing file is to be used, there exists no buffer
+        if (existingModelCheck.getSelection()) {
+            result.put(readExistingFile(dbName), null);
+        }
+        existingModelCheck.setLayoutData(wideGridData);
+        existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
+        validationList.put(dbName, existingModelCheck);
+
+        Button externalDatabaseCheck = new Button(group, SWT.CHECK);
+        externalDatabaseCheck.setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
+        externalDatabaseCheck.setSelection(false);
+        externalDatabaseCheck.setLayoutData(wideGridData);
+        externalDatabaseCheck
+                .setToolTipText("Check this box if you already have this database outside of the polystore");
+
+        new Label(group, NONE).setText("Choose Template:");
+        Combo combo = new Combo(group, SWT.READ_ONLY);
+        combo.setItems(dbTemplateNames);
+        combo.setText(dbTemplateNames[0]);
+        // set initial dbTemplate
+        if (!existingModelCheck.getSelection()) {
+            Pair<DB, TemplateBuffer> template = templates.get(0);
+            result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+        }
+
+        existingModelCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean useExistingModel = existingModelCheck.getSelection();
+                combo.setEnabled(!useExistingModel);
+                if (externalDatabaseCheck.getSelection()) {
+                    externalDatabaseCheck.setSelection(!useExistingModel);
+                }
+                removeDBfromResult(dbName);
+                if (useExistingModel) {
+                    DB newDB = readExistingFile(dbName);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    result.put(newDB, null);
+                } else {
+                    Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB.setExternal(externalDatabaseCheck.getSelection());
+                    result.put(newDB, template.secondValue);
+                }
+                validate();
+            }
+        });
+
+        externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean useExternalDatabase = externalDatabaseCheck.getSelection();
+                combo.setEnabled(true);
+                if (existingModelCheck.getSelection()) {
+                    existingModelCheck.setSelection(!useExternalDatabase);
+                }
+                removeDBfromResult(dbName);
+                Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                DB newDB = useBufferOnDB(db, template.firstValue);
+                newDB.setExternal(useExternalDatabase);
+                result.put(newDB, template.secondValue);
+                validate();
+            };
+        });
+
+        combo.setEnabled(!existingModelCheck.getSelection());
+        combo.setToolTipText("Choose specific DBMS Template for " + dbName);
+        combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removeDBfromResult(dbName);
+                Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
+                DB newDB = useBufferOnDB(db, template.firstValue);
+                newDB.setExternal(externalDatabaseCheck.getSelection());
+                result.put(newDB, template.secondValue);
+                validate();
+            }
+        });
+    }
+
+    private DB addHelmChartKeys(DB newDB) {
         if (!newDB.getParameters().stream().anyMatch(parameter -> parameter.getName().equalsIgnoreCase("helm"))) {
             Key_KeyValueList helm = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
             helm.setName("helm");
