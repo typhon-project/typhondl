@@ -70,7 +70,14 @@ aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<
     ._or(aContainer.name.toLower() = 'typhonql-server')) 
 /]
 
-[query public useHelmChart(aContainer : Container) : Boolean =  
+[query public getHelmList(aContainer : Container) : HelmList = 
+aContainer.deploys.reference.oclAsType(DB).helm 
+/]
+
+[query public deploysDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
+
+
+[comment][query public useHelmChart(aContainer : Container) : Boolean =  
 not(aContainer.getHelmList().oclIsUndefined())
 /]
 
@@ -88,7 +95,7 @@ aContainer.getHelmList().properties->any(key | key.name='name')
 
 [query public getHelmChart(aContainer : Container) : Key_Values = 
 aContainer.getHelmList().properties->any(key | key.name='chart')
-/]
+/][/comment]
 
 [query public getMySQLPassword(aContainer : Container) : Key_Values =
 aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')

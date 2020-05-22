@@ -21,7 +21,7 @@ kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
 echo "Apply Helm Charts"
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (aContainer.useHelmChart())]
+[if (aContainer.deploys.reference.oclIsTypeOf(DB)._and(aContainer.useHelmChart()))]
 [aContainer.printHelmCommand()/]
 [/if]
 [/for]
@@ -198,8 +198,8 @@ spec:
 [/template]
 
 [template public printHelmCommand(aContainer : Container)]
-helm repo add [aContainer.getHelmRepoName().value/] [aContainer.getHelmRepoAddress().value/]
-helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName().value/]/[aContainer.getHelmChart().value/] -n typhon
+helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
+helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container)]

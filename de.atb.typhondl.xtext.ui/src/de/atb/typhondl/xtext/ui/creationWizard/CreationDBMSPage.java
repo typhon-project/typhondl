@@ -449,6 +449,7 @@ public class CreationDBMSPage extends MyWizardPage {
             helmList.setChartName(newDB.getType().getName().toLowerCase());
             helmList.setRepoAddress("https://charts.bitnami.com/bitnami");
             helmList.setRepoName("bitnami");
+            newDB.setHelm(helmList);
         }
         return newDB;
     }
