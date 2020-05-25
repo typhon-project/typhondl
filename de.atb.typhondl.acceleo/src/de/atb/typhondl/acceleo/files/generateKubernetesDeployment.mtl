@@ -127,14 +127,40 @@ spec:
 
 [file ('databases.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
-[comment][if (not(aContainer.deploys.oclIsUndefined())._and(aContainer.containsDB()))]
-contains DB [aContainer.name/] [aContainer.containsDB()/][/comment]
 [if (not(aContainer.deploys.oclIsUndefined()))]
 [if (aContainer.containsDB())]
-contains DB [aContainer.name/] [aContainer.containsDB()/]
+[aContainer.printDB()/]
 [/if]
 [/if]
-[if (not(aContainer.useHelmChart())._and(not(aContainer.isPolystoreContainer())))]
+[/for]
+[/file]
+[/for]
+[/template]
+
+[template public printMongoJob(aContainer : Container) post (trim())]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+---
+[/if]
+[/template]
+
+[template public printDB(aContainer : Container) post (trim())]
+[if (not(aContainer.useHelmChart()))]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -179,33 +205,6 @@ spec:
     app: [aContainer.name.toLower()/]-pod
 ---
 [aContainer.printMongoJob()/]
-[comment][/if][/comment]
-[/if]
-[/for]
-[/file]
-
-[/for]
-[/template]
-
-[template public printMongoJob(aContainer : Container)]
-[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
-kind: Job
-apiVersion: batch/v1
-metadata:
-  name: insert-models
-spec:
-  template:
-    spec:
-      containers:
-        - name: insert-models
-          image: mongo:latest
-          command: ['['/]"/bin/sh", "-c"[']'/]
-          args:
-          # wait for polystore-mongo to be ready
-            - sleep 20; 
-              [aContainer.printPolystoreMongo()/]
-      restartPolicy: Never
----
 [/if]
 [/template]
 
@@ -220,7 +219,7 @@ helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
 helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
 [/template]
 
-[template public printPolystoreMongo(aContainer : Container)]
+[template public printPolystoreMongo(aContainer : Container) post (trim())]
 mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser().value/] -p [aContainer.getMongoRootPassword().value/] admin --eval '[aContainer.getMongoPrint()/]';
 [/template]
 
