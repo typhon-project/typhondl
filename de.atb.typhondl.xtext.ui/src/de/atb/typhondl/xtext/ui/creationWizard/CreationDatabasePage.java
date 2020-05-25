@@ -41,8 +41,8 @@ public class CreationDatabasePage extends MyWizardPage {
     private TemplateBuffer buffer;
     private Group parameterGroup;
     private Group templateVariableGroup;
-//    private HashMap<String, Property> properties;
     private Group helmGroup;
+    private Text imageText;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -224,20 +224,24 @@ public class CreationDatabasePage extends MyWizardPage {
 
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         new Label(group, NONE).setText("image used:");
-        Text text = new Text(group, SWT.BORDER);
-        String imageText = db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
-        text.setText(imageText);
-        text.setLayoutData(gridDataFields);
-        text.addModifyListener(e -> {
-            if (text.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
+        imageText = new Text(group, SWT.BORDER);
+        String imageTextValue = getImageValue();
+        imageText.setText(imageTextValue);
+        imageText.setLayoutData(gridDataFields);
+        imageText.addModifyListener(e -> {
+            if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
                 db.setImage(null);
             } else {
                 IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                image.setValue(text.getText());
+                image.setValue(imageText.getText());
                 db.setImage(image);
             }
         });
 
+    }
+
+    private String getImageValue() {
+        return db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
     }
 
     /**
@@ -324,63 +328,38 @@ public class CreationDatabasePage extends MyWizardPage {
         return db.getName();
     }
 
-    public void setDB(DB db) {
-        this.db = db;
+    public void updateImageValue() {
+        imageText.setText(getImageValue());
     }
 
-    public void setBuffer(TemplateBuffer templateBuffer) {
-        this.buffer = templateBuffer;
-    }
-
-    /**
-     * In case the chosen template has changed, the areas have to be updated
-     */
-    public void updateParameterArea() {
-        if (parameterGroup != null) {
-            for (Control control : parameterGroup.getChildren()) {
+    public void updateGroup(Group group, Runnable areaMethod) {
+        if (group != null) {
+            for (Control control : group.getChildren()) {
                 control.dispose();
             }
         }
-        parameterArea();
-        if (parameterGroup != null) {
-            parameterGroup.layout();
-            parameterGroup.getParent().layout(true);
-        }
-    }
-
-    public void updateHelmArea() {
-        if (helmGroup != null) {
-            for (Control control : helmGroup.getChildren()) {
-                control.dispose();
+        areaMethod.run();
+        if (group != null) {
+            if (group.getChildren().length == 0) {
+                GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
+                excludeData.exclude = true;
+                group.setLayoutData(excludeData);
+                group.setVisible(false);
+            } else {
+                group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                group.setVisible(true);
             }
-        }
-        helmArea();
-        if (helmGroup != null) {
-            helmGroup.layout();
-            helmGroup.getParent().layout(true);
-        }
-    }
-
-    /**
-     * In case the chosen template has changed, the areas have to be updated
-     */
-    public void updateTemplateVariablesArea() {
-        if (templateVariableGroup != null) {
-            for (Control control : templateVariableGroup.getChildren()) {
-                control.dispose();
-            }
-        }
-        templateVariableArea();
-        if (templateVariableGroup != null) {
-            templateVariableGroup.layout();
-            templateVariableGroup.getParent().layout(true);
+            group.layout();
+            group.getParent().layout(true);
         }
     }
 
     public void updateAllAreas() {
-        updateHelmArea();
-        updateParameterArea();
-        updateTemplateVariablesArea();
+        updateGroup(helmGroup, this::helmArea);
+        updateGroup(parameterGroup, this::parameterArea);
+        updateGroup(templateVariableGroup, this::templateVariableArea);
+        updateImageValue();
+        ((Composite) this.getControl()).layout();
     }
 
 }

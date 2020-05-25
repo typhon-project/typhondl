@@ -90,6 +90,8 @@ public class CreationDBMSPage extends MyWizardPage {
 
     private XtextResourceSet resourceSet;
 
+    private HashMap<String, Boolean> changedField;
+
     /**
      * Creates a CreationDBMSPage, reading the ML model from the given file.
      * 
@@ -114,6 +116,7 @@ public class CreationDBMSPage extends MyWizardPage {
         this.result = new HashMap<>();
         this.fileNameValidationList = new HashMap<>();
         this.chosenTemplate = chosenTemplate;
+        this.changedField = new HashMap<>();
         addResources();
     }
 
@@ -256,6 +259,7 @@ public class CreationDBMSPage extends MyWizardPage {
             Pair<DB, TemplateBuffer> template = templates.get(0);
             result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
         }
+        changedField.put(dbName, false);
 
         existingModelCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -268,17 +272,19 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
                     useHelmChartCheck.setSelection(!useExistingModel);
                 }
+                DB newDB;
                 removeDBfromResult(dbName);
                 if (useExistingModel) {
-                    DB newDB = readExistingFile(dbName);
+                    newDB = readExistingFile(dbName);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
                     result.put(newDB, null);
                 } else {
                     Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB = useBufferOnDB(db, template.firstValue);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
                     result.put(newDB, template.secondValue);
                 }
+                changedField.put(newDB.getName(), true);
                 validate();
             }
         });
@@ -299,6 +305,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
                 result.put(newDB, template.secondValue);
+                changedField.put(newDB.getName(), true);
                 validate();
             };
         });
@@ -322,6 +329,7 @@ public class CreationDBMSPage extends MyWizardPage {
                     newDB = addHelmChartKeys(newDB);
                 }
                 result.put(newDB, template.secondValue);
+                changedField.put(newDB.getName(), true);
                 validate();
             }
         });
@@ -339,6 +347,7 @@ public class CreationDBMSPage extends MyWizardPage {
                     newDB = addHelmChartKeys(newDB);
                 }
                 result.put(newDB, template.secondValue);
+                changedField.put(newDB.getName(), true);
                 validate();
             }
         });
@@ -382,6 +391,8 @@ public class CreationDBMSPage extends MyWizardPage {
         externalDatabaseCheck
                 .setToolTipText("Check this box if you already have this database outside of the polystore");
 
+        changedField.put(dbName, false);
+
         new Label(group, NONE).setText("Choose Template:");
         Combo combo = new Combo(group, SWT.READ_ONLY);
         combo.setItems(dbTemplateNames);
@@ -401,16 +412,18 @@ public class CreationDBMSPage extends MyWizardPage {
                     externalDatabaseCheck.setSelection(!useExistingModel);
                 }
                 removeDBfromResult(dbName);
+                DB newDB;
                 if (useExistingModel) {
-                    DB newDB = readExistingFile(dbName);
+                    newDB = readExistingFile(dbName);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
                     result.put(newDB, null);
                 } else {
                     Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
-                    DB newDB = useBufferOnDB(db, template.firstValue);
+                    newDB = useBufferOnDB(db, template.firstValue);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
                     result.put(newDB, template.secondValue);
                 }
+                changedField.put(newDB.getName(), true);
                 validate();
             }
         });
@@ -428,6 +441,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
                 result.put(newDB, template.secondValue);
+                changedField.put(newDB.getName(), true);
                 validate();
             };
         });
@@ -442,6 +456,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(externalDatabaseCheck.getSelection());
                 result.put(newDB, template.secondValue);
+                changedField.put(newDB.getName(), true);
                 validate();
             }
         });
@@ -505,6 +520,7 @@ public class CreationDBMSPage extends MyWizardPage {
     protected DB useBufferOnDB(DB db, DB templateDB) {
         db.setType(templateDB.getType());
         db.getParameters().clear();
+        db.setHelm(null);
         Collection<Property> parameters = EcoreUtil.copyAll(templateDB.getParameters());
         db.getParameters().addAll(parameters);
         if (templateDB.getHelm() != null) {
@@ -609,6 +625,14 @@ public class CreationDBMSPage extends MyWizardPage {
         TemplateBuffer buffer = result.keySet().stream().map(key -> result.get(key)).filter(value -> value != null)
                 .findFirst().orElse(null);
         return buffer != null;
+    }
+
+    public boolean hasFieldChanged(String databaseName) {
+        return changedField.get(databaseName);
+    }
+
+    public void setFieldChanged(String databaseName, boolean changed) {
+        changedField.put(databaseName, changed);
     }
 
 }
