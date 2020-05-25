@@ -25,6 +25,7 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.ClusterType
 import de.atb.typhondl.xtext.typhonDL.Ports
+import de.atb.typhondl.xtext.typhonDL.HelmList
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -63,10 +64,26 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			[indent]
 		)
 		db.image.format
+		db.helm.format
 		for (property : db.parameters) {
 			property.format
 			property.append[newLine]
 		}
+	}
+	
+	def dispatch void format(HelmList helmList, extension IFormattableDocument document) {
+	    interior(
+	        helmList.regionFor.keyword('{').append[newLine],
+            helmList.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+	    )
+	    helmList.regionFor.keyword('repoName').prepend[newLine]
+        helmList.regionFor.keyword('repoAddress').prepend[newLine]
+        helmList.regionFor.keyword('chartName').prepend[newLine]
+	    for (property : helmList.parameters) {
+	        property.format
+	        property.append[newLine]
+	    }    
 	}
 	
 	def dispatch void format(Ports ports, extension IFormattableDocument document) {
