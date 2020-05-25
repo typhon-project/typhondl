@@ -190,8 +190,7 @@ public class CreateModelWizard extends Wizard {
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
                     if (databasePage.getControl() != null) {
-                        databasePage.updateParameterArea();
-                        databasePage.updateTemplateVariablesArea();
+                        databasePage.updateAllAreas();
                     }
                 }
             }

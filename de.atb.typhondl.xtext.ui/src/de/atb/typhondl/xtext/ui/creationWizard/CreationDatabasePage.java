@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
@@ -40,7 +41,8 @@ public class CreationDatabasePage extends MyWizardPage {
     private TemplateBuffer buffer;
     private Group parameterGroup;
     private Group templateVariableGroup;
-    private HashMap<String, Property> properties;
+//    private HashMap<String, Property> properties;
+    private Group helmGroup;
 
     protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
@@ -63,15 +65,54 @@ public class CreationDatabasePage extends MyWizardPage {
             templateVariableArea();
         }
 
+        if (db.getHelm() != null) {
+            helmGroup = new Group(main, SWT.READ_ONLY);
+            helmGroup.setLayout(new GridLayout(2, false));
+            helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            helmGroup.setText("Helm settings");
+            helmArea();
+        }
+
         imageArea(main);
 
-        parameterGroup = new Group(main, SWT.READ_ONLY);
-        parameterGroup.setLayout(new GridLayout(2, false));
-        parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        parameterGroup.setText("Parameters");
-        parameterArea();
+        if (!db.getParameters().isEmpty()) {
+            parameterGroup = new Group(main, SWT.READ_ONLY);
+            parameterGroup.setLayout(new GridLayout(2, false));
+            parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            parameterGroup.setText("Parameters");
+            parameterArea();
+        }
 
         setControl(main);
+    }
+
+    private void helmArea() {
+        if (db.getHelm() != null) {
+            HelmList helmList = db.getHelm();
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            new Label(helmGroup, SWT.NONE).setText("Repository Address:");
+            Text addressText = new Text(helmGroup, SWT.BORDER);
+            addressText.setText(helmList.getRepoAddress());
+            addressText.setLayoutData(gridDataFields);
+            addressText.addModifyListener(e -> helmList.setRepoAddress(addressText.getText()));
+            new Label(helmGroup, SWT.NONE).setText("Repository Name:");
+            Text repoNameText = new Text(helmGroup, SWT.BORDER);
+            repoNameText.setText(helmList.getRepoName());
+            repoNameText.setLayoutData(gridDataFields);
+            repoNameText.addModifyListener(e -> helmList.setRepoName(repoNameText.getText()));
+            new Label(helmGroup, SWT.NONE).setText("Chart Name:");
+            Text nameText = new Text(helmGroup, SWT.BORDER);
+            nameText.setText(helmList.getChartName());
+            nameText.setLayoutData(gridDataFields);
+            nameText.addModifyListener(e -> helmList.setChartName(nameText.getText()));
+            HashMap<String, Property> properties = new HashMap<>();
+            for (Property property : helmList.getParameters()) {
+                addPropertyToList(property.getName(), property, properties);
+            }
+            if (!helmList.getParameters().isEmpty()) {
+                addPropertyFieldsToGroup(helmGroup, properties);
+            }
+        }
     }
 
     /**
@@ -79,17 +120,23 @@ public class CreationDatabasePage extends MyWizardPage {
      * handled.
      */
     private void parameterArea() {
-        properties = new HashMap<>();
-        for (Property property : db.getParameters()) {
-            addPropertyToList(property.getName(), property);
+        if (!db.getParameters().isEmpty()) {
+            HashMap<String, Property> properties = new HashMap<>();
+            for (Property property : db.getParameters()) {
+                addPropertyToList(property.getName(), property, properties);
+            }
+            addPropertyFieldsToGroup(parameterGroup, properties);
         }
+    }
+
+    private void addPropertyFieldsToGroup(Group group, HashMap<String, Property> properties) {
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         ArrayList<String> names = new ArrayList<>(properties.keySet());
         Collections.sort(names);
         for (String name : names) {
-            new Label(parameterGroup, NONE).setText(name + ":");
+            new Label(group, NONE).setText(name + ":");
             Property property = properties.get(name);
-            Text propertyText = new Text(parameterGroup, SWT.BORDER);
+            Text propertyText = new Text(group, SWT.BORDER);
             propertyText.setLayoutData(gridDataFields);
             if (Key_Values.class.isInstance(property)) {
                 Key_Values key_Values = (Key_Values) property;
@@ -107,13 +154,14 @@ public class CreationDatabasePage extends MyWizardPage {
      * Finds all {@link Key_Values} and {@link Key_ValueArray}s inside the property
      * list, gives them the right name and adds them to the right list
      * 
-     * @param name     Name of the Property
-     * @param property The Property to add to the list
+     * @param name       Name of the Property
+     * @param property   The Property to add to the list
+     * @param properties
      */
-    private void addPropertyToList(String name, Property property) {
+    private void addPropertyToList(String name, Property property, HashMap<String, Property> properties) {
         if (Key_KeyValueList.class.isInstance(property)) {
             for (Property subProperty : ((Key_KeyValueList) property).getProperties()) {
-                addPropertyToList(name + "." + subProperty.getName(), subProperty);
+                addPropertyToList(name + "." + subProperty.getName(), subProperty, properties);
             }
         } else {
             properties.put(name, property);
@@ -183,50 +231,51 @@ public class CreationDatabasePage extends MyWizardPage {
      * {@link TemplateBuffer#getVariables()} are handled.
      */
     private void templateVariableArea() {
+        if (buffer != null) {
+            List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
 
-        List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
+            // this is the database.name, which should not be changed, so it is removed from
+            // the list:
+            if (db.isExternal()) {
+                variablesList.removeIf(variable -> variable.getOffsets()[0] == 17);
+            } else {
+                variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
+            }
+            if (templateVariableGroup == null && !variablesList.isEmpty()) {
+                templateVariableGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                templateVariableGroup.setLayout(new GridLayout(2, false));
+                templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                templateVariableGroup.setText("Template Variables");
+            }
 
-        // this is the database.name, which should not be changed, so it is removed from
-        // the list:
-        if (db.isExternal()) {
-            variablesList.removeIf(variable -> variable.getOffsets()[0] == 17);
-        } else {
-            variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
-        }
-        if (templateVariableGroup == null && !variablesList.isEmpty()) {
-            templateVariableGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
-            templateVariableGroup.setLayout(new GridLayout(2, false));
-            templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            templateVariableGroup.setText("Template Variables");
-        }
+            if (!variablesList.isEmpty()) {
+                GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 
-        if (!variablesList.isEmpty()) {
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
-            // create a field for each variable:
-            for (TemplateVariable templateVariable : variablesList) {
-                new Label(templateVariableGroup, NONE).setText(templateVariable.getName() + ":");
-                Text text = new Text(templateVariableGroup, SWT.BORDER);
-                text.setText(templateVariable.getName());
-                text.setLayoutData(gridDataFields);
-                text.addModifyListener(e -> {
-                    int variableIndex = variablesList.indexOf(templateVariable);
-                    int oldLenght = templateVariable.getLength();
-                    // replace old value in template variable
-                    templateVariable.setValue(text.getText());
-                    int newLength = templateVariable.getLength();
-                    // replace old value in pattern string
-                    String newPattern = updatePattern(templateVariable, buffer.getString(), oldLenght);
-                    // correct offset of other variables if this variable is not the last one
-                    if (variableIndex != variablesList.size() - 1) {
-                        for (int i = variableIndex + 1; i < variablesList.size(); i++) {
-                            variablesList.get(i).setOffsets(
-                                    new int[] { variablesList.get(i).getOffsets()[0] + newLength - oldLenght });
+                // create a field for each variable:
+                for (TemplateVariable templateVariable : variablesList) {
+                    new Label(templateVariableGroup, NONE).setText(templateVariable.getName() + ":");
+                    Text text = new Text(templateVariableGroup, SWT.BORDER);
+                    text.setText(templateVariable.getName());
+                    text.setLayoutData(gridDataFields);
+                    text.addModifyListener(e -> {
+                        int variableIndex = variablesList.indexOf(templateVariable);
+                        int oldLenght = templateVariable.getLength();
+                        // replace old value in template variable
+                        templateVariable.setValue(text.getText());
+                        int newLength = templateVariable.getLength();
+                        // replace old value in pattern string
+                        String newPattern = updatePattern(templateVariable, buffer.getString(), oldLenght);
+                        // correct offset of other variables if this variable is not the last one
+                        if (variableIndex != variablesList.size() - 1) {
+                            for (int i = variableIndex + 1; i < variablesList.size(); i++) {
+                                variablesList.get(i).setOffsets(
+                                        new int[] { variablesList.get(i).getOffsets()[0] + newLength - oldLenght });
+                            }
                         }
-                    }
-                    buffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
-                    updateDB(db, buffer);
-                });
+                        buffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
+                        updateDB(db, buffer);
+                    });
+                }
             }
         }
     }
@@ -273,12 +322,29 @@ public class CreationDatabasePage extends MyWizardPage {
      * In case the chosen template has changed, the areas have to be updated
      */
     public void updateParameterArea() {
-        for (Control control : parameterGroup.getChildren()) {
-            control.dispose();
+        if (parameterGroup != null) {
+            for (Control control : parameterGroup.getChildren()) {
+                control.dispose();
+            }
         }
         parameterArea();
-        parameterGroup.layout();
-        parameterGroup.getParent().layout(true);
+        if (parameterGroup != null) {
+            parameterGroup.layout();
+            parameterGroup.getParent().layout(true);
+        }
+    }
+
+    public void updateHelmArea() {
+        if (helmGroup != null) {
+            for (Control control : helmGroup.getChildren()) {
+                control.dispose();
+            }
+        }
+        helmArea();
+        if (helmGroup != null) {
+            helmGroup.layout();
+            helmGroup.getParent().layout(true);
+        }
     }
 
     /**
@@ -291,8 +357,16 @@ public class CreationDatabasePage extends MyWizardPage {
             }
         }
         templateVariableArea();
-        templateVariableGroup.layout();
-        templateVariableGroup.getParent().layout(true);
+        if (templateVariableGroup != null) {
+            templateVariableGroup.layout();
+            templateVariableGroup.getParent().layout(true);
+        }
+    }
+
+    public void updateAllAreas() {
+        updateHelmArea();
+        updateParameterArea();
+        updateTemplateVariablesArea();
     }
 
 }
