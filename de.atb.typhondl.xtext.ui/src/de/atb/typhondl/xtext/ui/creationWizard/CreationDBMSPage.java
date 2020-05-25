@@ -492,7 +492,8 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     /**
-     * Adds the DBType and Parameters from the given TemplateBuffer to the given DB
+     * Adds the DBType, Parameters and helm (if exists) from the given
+     * TemplateBuffer to the given DB
      * 
      * @param db     The DB that should have all attributes from the template
      * @param buffer The chosen TemplateBuffer
@@ -502,6 +503,10 @@ public class CreationDBMSPage extends MyWizardPage {
         db.getParameters().clear();
         Collection<Property> parameters = EcoreUtil.copyAll(templateDB.getParameters());
         db.getParameters().addAll(parameters);
+        if (templateDB.getHelm() != null) {
+            HelmList helm = EcoreUtil.copy(templateDB.getHelm());
+            db.setHelm(helm);
+        }
         return db;
     }
 
