@@ -59,13 +59,13 @@ public class PreferenceReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        List<String> possibleTypes = Arrays.asList(((String) properties.get(metatype)).split(" "));
+        List<String> possibleTypes = Arrays.asList(((String) properties.get(metatype)).toLowerCase().split(" "));
         // get all dbTypes that match the metatype
         ArrayList<DBType> dbTypes = new ArrayList<>();
         for (int i = 0; i < dbTypeTemplates.length; i++) {
             TemplateBuffer buffer = getTemplateBuffer(dbTypeTemplates[i]);
             DBType dbtype = getModelObject(TyphonDLFactory.eINSTANCE.createDBType(), buffer);
-            if (possibleTypes.contains(dbtype.getName())) {
+            if (possibleTypes.contains(dbtype.getName().toLowerCase())) {
                 dbTypes.add(dbtype);
             }
         }
@@ -77,8 +77,8 @@ public class PreferenceReader {
             DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), buffer);
             if (db != null) {
                 for (DBType supportedType : dbTypes) {
-                    if (buffer.getString().contains(supportedType.getName() + " ")
-                            || buffer.getString().contains(supportedType.getName() + "{")) {
+                    if (buffer.getString().toLowerCase().contains(supportedType.getName().toLowerCase() + " ")
+                            || buffer.getString().toLowerCase().contains(supportedType.getName().toLowerCase() + "{")) {
                         db.setName(dbTemplates[i].getName());
                         db.setType(supportedType);
                         buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
