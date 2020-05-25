@@ -88,6 +88,12 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private void helmArea() {
         if (db.getHelm() != null) {
+            if (helmGroup == null) {
+                helmGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                helmGroup.setLayout(new GridLayout(2, false));
+                helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                helmGroup.setText("Helm settings");
+            }
             HelmList helmList = db.getHelm();
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             new Label(helmGroup, SWT.NONE).setText("Repository Address:");
@@ -118,9 +124,17 @@ public class CreationDatabasePage extends MyWizardPage {
     /**
      * The Area inside the parameter group. Here the {@link DB#getParameters()} are
      * handled.
+     * 
+     * @param main
      */
     private void parameterArea() {
         if (!db.getParameters().isEmpty()) {
+            if (parameterGroup == null) {
+                parameterGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                parameterGroup.setLayout(new GridLayout(2, false));
+                parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                parameterGroup.setText("Parameters");
+            }
             HashMap<String, Property> properties = new HashMap<>();
             for (Property property : db.getParameters()) {
                 addPropertyToList(property.getName(), property, properties);
@@ -242,7 +256,7 @@ public class CreationDatabasePage extends MyWizardPage {
                 variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
             }
             if (templateVariableGroup == null && !variablesList.isEmpty()) {
-                templateVariableGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                templateVariableGroup = new Group(((Composite) this.getControl()), SWT.READ_ONLY);
                 templateVariableGroup.setLayout(new GridLayout(2, false));
                 templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 templateVariableGroup.setText("Template Variables");

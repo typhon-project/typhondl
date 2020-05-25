@@ -69,7 +69,8 @@ public class CreationDBMSPage extends MyWizardPage {
      * Store some buttons for validation <br>
      * TODO validation should be better maybe with IInputValidator
      */
-    private HashMap<String, Button> validationList;
+    private HashMap<String, Button> fileNameValidationList;
+    private HashMap<DB, Button> helmValidationList;
 
     /**
      * The parsed ML model containing Pairs of (DatabaseName, DatabaseAbstractType)
@@ -111,7 +112,7 @@ public class CreationDBMSPage extends MyWizardPage {
         this.MLmodel = MLmodel;
         this.file = file;
         this.result = new HashMap<>();
-        this.validationList = new HashMap<>();
+        this.fileNameValidationList = new HashMap<>();
         this.chosenTemplate = chosenTemplate;
         addResources();
     }
@@ -164,7 +165,9 @@ public class CreationDBMSPage extends MyWizardPage {
         scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(1, false));
-
+        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")) {
+            helmValidationList = new HashMap<>();
+        }
         for (Pair<String, String> dbFromML : MLmodel) {
 
             // empty DB model object with the name taken from the ML model
@@ -228,7 +231,7 @@ public class CreationDBMSPage extends MyWizardPage {
         }
         existingModelCheck.setLayoutData(wideGridData);
         existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
-        validationList.put(dbName, existingModelCheck);
+        fileNameValidationList.put(dbName, existingModelCheck);
 
         Button externalDatabaseCheck = new Button(group, SWT.CHECK);
         externalDatabaseCheck.setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
@@ -242,6 +245,7 @@ public class CreationDBMSPage extends MyWizardPage {
         useHelmChartCheck.setSelection(false);
         useHelmChartCheck.setLayoutData(wideGridData);
         useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
+        helmValidationList.put(db, useHelmChartCheck);
 
         new Label(group, NONE).setText("Choose Template:");
         Combo combo = new Combo(group, SWT.READ_ONLY);
@@ -369,7 +373,7 @@ public class CreationDBMSPage extends MyWizardPage {
         }
         existingModelCheck.setLayoutData(wideGridData);
         existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
-        validationList.put(dbName, existingModelCheck);
+        fileNameValidationList.put(dbName, existingModelCheck);
 
         Button externalDatabaseCheck = new Button(group, SWT.CHECK);
         externalDatabaseCheck.setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
@@ -539,12 +543,15 @@ public class CreationDBMSPage extends MyWizardPage {
      * Checks if a database file already exists, gives warning if the file exists
      * and would be overwritten or error if the file doesn't exist but the
      * fileExists checkbox is checked
+     * 
+     * Shows error if the chosen template contains a HelmList but the
+     * useHelmChartButton is not checked
      */
     protected void validate() {
         Status status = null;
         ArrayList<String> warning = new ArrayList<String>();
-        for (String dbName : validationList.keySet()) {
-            Button existingModelCheck = validationList.get(dbName);
+        for (String dbName : fileNameValidationList.keySet()) {
+            Button existingModelCheck = fileNameValidationList.get(dbName);
             String path = dbName + ".tdl";
             if (existingModelCheck.getSelection()) {
                 if (!fileExists(path)) {
@@ -556,10 +563,20 @@ public class CreationDBMSPage extends MyWizardPage {
                 }
             }
         }
+        if (helmValidationList != null) {
+            for (DB db : helmValidationList.keySet()) {
+                if (db.getHelm() != null && !helmValidationList.get(db).getSelection()) {
+                    status = new Status(IStatus.ERROR, "Wizzard", "The Template for " + db.getName()
+                            + " contains a helm key. Please check \"Use Helm chart\" ");
+                }
+            }
+        }
+
         if (!warning.isEmpty() && status == null) {
             status = new Status(IStatus.WARNING, "Wizard", "Database file(s) " + Arrays.toString(warning.toArray())
                     + " already exist(s) and will be overwritten if you continue");
         }
+
         setStatus(status);
     }
 
