@@ -21,8 +21,10 @@ kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
 echo "Apply Helm Charts"
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (aContainer.deploys.reference.oclIsTypeOf(DB)._and(aContainer.useHelmChart()))]
-[aContainer.printHelmCommand()/]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.helmMoreIfs()/]
+[/if]
 [/if]
 [/for]
 echo "----------------------------------------------------------------------------"
@@ -125,8 +127,14 @@ spec:
 
 [file ('databases.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (not(aContainer.useHelmChart()))]
-[if (not((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server')))]
+[comment][if (not(aContainer.deploys.oclIsUndefined())._and(aContainer.containsDB()))]
+contains DB [aContainer.name/] [aContainer.containsDB()/][/comment]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+contains DB [aContainer.name/] [aContainer.containsDB()/]
+[/if]
+[/if]
+[if (not(aContainer.useHelmChart())._and(not(aContainer.isPolystoreContainer())))]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -170,6 +178,16 @@ spec:
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---
+[aContainer.printMongoJob()/]
+[comment][/if][/comment]
+[/if]
+[/for]
+[/file]
+
+[/for]
+[/template]
+
+[template public printMongoJob(aContainer : Container)]
 [if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
 kind: Job
 apiVersion: batch/v1
@@ -189,15 +207,15 @@ spec:
       restartPolicy: Never
 ---
 [/if]
-[/if]
-[/if]
-[/for]
-[/file]
-
-[/for]
 [/template]
 
-[template public printHelmCommand(aContainer : Container)]
+[template public helmMoreIfs(aContainer : Container) post (trim())]
+[if (aContainer.useHelmChart())]
+[aContainer.printHelmCommand()/]
+[/if]
+[/template]
+
+[template public printHelmCommand(aContainer : Container) post (trim())]
 helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
 helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
 [/template]

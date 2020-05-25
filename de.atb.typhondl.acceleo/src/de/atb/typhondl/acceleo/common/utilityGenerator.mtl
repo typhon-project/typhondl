@@ -70,32 +70,28 @@ aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<
     ._or(aContainer.name.toLower() = 'typhonql-server')) 
 /]
 
-[query public getHelmList(aContainer : Container) : HelmList = 
-aContainer.deploys.reference.oclAsType(DB).helm 
-/]
-
-[query public deploysDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
+[query public containsDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
 
 
-[comment][query public useHelmChart(aContainer : Container) : Boolean =  
+[query public useHelmChart(aContainer : Container) : Boolean =  
 not(aContainer.getHelmList().oclIsUndefined())
 /]
 
-[query public getHelmList(aContainer : Container) : Key_KeyValueList =  
-aContainer.deploys.reference.parameters->any(key | key.name='helm')
+[query public getHelmList(aContainer : Container) : HelmList =  
+aContainer.deploys.reference.oclAsType(DB).helm
 /]
 
-[query public getHelmRepoAddress(aContainer : Container) : Key_Values =
-aContainer.getHelmList().properties->any(key | key.name='address')
+[query public getHelmRepoAddress(aContainer : Container) : String =
+aContainer.getHelmList().repoAddress
 /]
 
-[query public getHelmRepoName(aContainer : Container) : Key_Values = 
-aContainer.getHelmList().properties->any(key | key.name='name')
+[query public getHelmRepoName(aContainer : Container) : String = 
+aContainer.getHelmList().repoName
 /]
 
-[query public getHelmChart(aContainer : Container) : Key_Values = 
-aContainer.getHelmList().properties->any(key | key.name='chart')
-/][/comment]
+[query public getHelmChart(aContainer : Container) : String = 
+aContainer.getHelmList().chartName
+/]
 
 [query public getMySQLPassword(aContainer : Container) : Key_Values =
 aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')
