@@ -4,7 +4,7 @@ docker-compose -f databases.yaml pull
 docker-compose -f polystore.yaml pull
 echo "Starting the Polystore user databases and metadata database"
 docker-compose -f databases.yaml up -d
-sleep 30
+sleep 15
 echo "Start Polystore components"
 docker-compose -f polystore.yaml up -d
 echo "Typhon Polystore installation completed."

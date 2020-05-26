@@ -23,8 +23,8 @@ services:
   TextWarningData:
     image: mongo:latest
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - target: 27017
   polystore-mongo:
