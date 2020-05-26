@@ -190,7 +190,7 @@ public class CreateModelWizard extends Wizard {
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
                     if (databasePage.getControl() != null && ((CreationDBMSPage) page).hasFieldChanged(db.getName())) {
-                        databasePage.updateAllAreas(); // TODO don't always do this
+                        databasePage.updateAllAreas();
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                     }
                 }

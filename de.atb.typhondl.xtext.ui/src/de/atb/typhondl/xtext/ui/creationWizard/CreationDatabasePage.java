@@ -10,6 +10,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -44,7 +45,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private Group helmGroup;
     private Text imageText;
 
-    protected CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
+    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
         super(pageName);
         this.db = db;
         this.buffer = buffer;
@@ -86,6 +87,9 @@ public class CreationDatabasePage extends MyWizardPage {
         setControl(main);
     }
 
+    /**
+     * The Area inside the helm group. Here the {@link HelmList} is handled.
+     */
     private void helmArea() {
         if (db.getHelm() != null) {
             if (helmGroup == null) {
@@ -124,8 +128,6 @@ public class CreationDatabasePage extends MyWizardPage {
     /**
      * The Area inside the parameter group. Here the {@link DB#getParameters()} are
      * handled.
-     * 
-     * @param main
      */
     private void parameterArea() {
         if (!db.getParameters().isEmpty()) {
@@ -143,6 +145,12 @@ public class CreationDatabasePage extends MyWizardPage {
         }
     }
 
+    /**
+     * Creates a Label and a Text with {@link ModifyListener} for each Property
+     * 
+     * @param group
+     * @param properties
+     */
     private void addPropertyFieldsToGroup(Group group, HashMap<String, Property> properties) {
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         ArrayList<String> names = new ArrayList<>(properties.keySet());
@@ -166,7 +174,7 @@ public class CreationDatabasePage extends MyWizardPage {
 
     /**
      * Finds all {@link Key_Values} and {@link Key_ValueArray}s inside the property
-     * list, gives them the right name and adds them to the right list
+     * list, gives them the right name and adds them to a list
      * 
      * @param name       Name of the Property
      * @param property   The Property to add to the list
@@ -240,6 +248,12 @@ public class CreationDatabasePage extends MyWizardPage {
 
     }
 
+    /**
+     * Returns the correct image value
+     * 
+     * @return The database's image value if an image is given in the database,
+     *         otherwise the dbtype's image value
+     */
     private String getImageValue() {
         return db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
     }
@@ -328,32 +342,67 @@ public class CreationDatabasePage extends MyWizardPage {
         return db.getName();
     }
 
+    /**
+     * Updates the Text showing the image value
+     */
     public void updateImageValue() {
         imageText.setText(getImageValue());
     }
 
+    /**
+     * Updates each group with the given areaMethod
+     * 
+     * @param group
+     * @param areaMethod
+     */
     public void updateGroup(Group group, Runnable areaMethod) {
         if (group != null) {
-            for (Control control : group.getChildren()) {
-                control.dispose();
-            }
+            disposeChildren(group);
         }
         areaMethod.run();
         if (group != null) {
-            if (group.getChildren().length == 0) {
-                GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
-                excludeData.exclude = true;
-                group.setLayoutData(excludeData);
-                group.setVisible(false);
-            } else {
-                group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                group.setVisible(true);
-            }
+            setGroupVisible(group);
             group.layout();
             group.getParent().layout(true);
         }
     }
 
+    /**
+     * If the given group has no children (i.e. no Labels or Texts) the empty group
+     * should be hidden.
+     * 
+     * @param group
+     * @param isVisible
+     */
+    private void setGroupVisible(Group group) {
+        if (group.getChildren().length == 0) {
+            GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            excludeData.exclude = true;
+            group.setLayoutData(excludeData);
+            group.setVisible(false);
+        } else {
+            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            group.setVisible(false);
+        }
+
+    }
+
+    /**
+     * Disposes all Labels and Texts of the given group
+     * 
+     * @param group
+     */
+    private void disposeChildren(Group group) {
+        for (Control control : group.getChildren()) {
+            control.dispose();
+        }
+    }
+
+    /**
+     * Updates the database page. <br>
+     * After something has changed on the DBMS page, the widgets on the database
+     * page have to be updated.
+     */
     public void updateAllAreas() {
         updateGroup(helmGroup, this::helmArea);
         updateGroup(parameterGroup, this::parameterArea);
