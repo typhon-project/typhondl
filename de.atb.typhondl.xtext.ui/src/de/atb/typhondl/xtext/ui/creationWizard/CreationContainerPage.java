@@ -135,7 +135,8 @@ public class CreationContainerPage extends MyWizardPage {
             Group group = new Group(main, SWT.READ_ONLY);
             group.setLayout(new GridLayout(2, false));
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setText(db.getName());
+            String containerName = createContainerName(db.getName());
+            group.setText("Container " + containerName + " for database " + db.getName());
 
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -143,7 +144,7 @@ public class CreationContainerPage extends MyWizardPage {
 
             // create a Container Model Object
             Container container = TyphonDLFactory.eINSTANCE.createContainer();
-            container.setName(db.getName());
+            container.setName(containerName);
             ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
             containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
             container.setType(containerType);
@@ -381,6 +382,22 @@ public class CreationContainerPage extends MyWizardPage {
         main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
         setControl(scrolling);
+    }
+
+    /**
+     * Names of container have to be DNS subdomain names (see DL #31)
+     * 
+     * @param name
+     * @return
+     */
+    private String createContainerName(String name) {
+        while (name.substring(0, 1).matches("[^a-zA-Z]")) {
+            name = name.substring(1);
+        }
+        while (name.substring(name.length() - 1).matches("[^a-zA-Z]")) {
+            name = name.substring(0, name.length() - 2);
+        }
+        return name.toLowerCase().replaceAll("[^a-zA-Z0-9.]", "-");
     }
 
     private void validate() {
