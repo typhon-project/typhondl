@@ -74,7 +74,14 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/depends_on"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/networks"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/ports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/resources"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Resources">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/limitCPU"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/limitMemory"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationCPU"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationMemory"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Ports">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/key_values"/>

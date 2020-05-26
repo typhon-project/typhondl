@@ -184,12 +184,15 @@ public class CreateModelWizard extends Wizard {
             for (DB db : result.keySet()) {
                 String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
-                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db));
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db),
+                            chosenTemplate);
                     databasePage.setWizard(this);
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
-                    if (databasePage.getControl() != null && ((CreationDBMSPage) page).hasFieldChanged(db.getName())) {
+                    if (databasePage.getControl() != null && (((CreationDBMSPage) page).hasFieldChanged(db.getName())
+                            || databasePage.getChosenTemplate() != this.chosenTemplate)) {
+                        databasePage.setChosenTemplate(this.chosenTemplate);
                         databasePage.updateAllAreas();
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                     }

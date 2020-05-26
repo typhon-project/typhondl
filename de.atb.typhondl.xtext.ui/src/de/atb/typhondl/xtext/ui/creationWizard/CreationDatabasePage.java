@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.text.templates.TemplateBuffer;
@@ -19,6 +20,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.typhonDL.Container;
+import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
@@ -26,8 +29,11 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
+import de.atb.typhondl.xtext.typhonDL.Reference;
+import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -39,16 +45,48 @@ import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
+    private Container container;
     private TemplateBuffer buffer;
     private Group parameterGroup;
     private Group templateVariableGroup;
     private Group helmGroup;
     private Text imageText;
+    private int chosenTemplate;
+    private Group resourceGroup;
+    private Group addressGroup;
 
-    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
+    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer, int chosenTemplate) {
         super(pageName);
         this.db = db;
         this.buffer = buffer;
+        this.chosenTemplate = chosenTemplate;
+        this.container = createDBContainer();
+    }
+
+    private Container createDBContainer() {
+        Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
+        String containerName = createContainerName(db.getName());
+        newContainer.setName(containerName);
+        ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
+        containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
+        newContainer.setType(containerType);
+        Reference reference = TyphonDLFactory.eINSTANCE.createReference();
+        reference.setReference(db);
+        newContainer.setDeploys(reference);
+        return newContainer;
+    }
+
+    /**
+     * Names of container have to be DNS subdomain names (see DL #31)
+     * 
+     * @param name
+     * @return
+     */
+    private String createContainerName(String name) {
+        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
+        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
+        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
+        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     @Override
@@ -66,7 +104,8 @@ public class CreationDatabasePage extends MyWizardPage {
             templateVariableArea();
         }
 
-        if (db.getHelm() != null) {
+        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null) {
             helmGroup = new Group(main, SWT.READ_ONLY);
             helmGroup.setLayout(new GridLayout(2, false));
             helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -84,14 +123,236 @@ public class CreationDatabasePage extends MyWizardPage {
             parameterArea();
         }
 
+        if (db.isExternal()) {
+            addressGroup = new Group(main, SWT.READ_ONLY);
+            addressGroup.setLayout(new GridLayout(2, false));
+            addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            addressGroup.setText("Database Address");
+            addressArea();
+        } else {
+            resourceGroup = new Group(main, SWT.READ_ONLY);
+            resourceGroup.setLayout(new GridLayout(1, false));
+            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            resourceGroup.setText("Container Resources");
+            resourceArea();
+        }
+
         setControl(main);
+    }
+
+    private void addressArea() {
+        if (db.isExternal()) {
+            if (addressGroup == null) {
+                addressGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                addressGroup.setLayout(new GridLayout(2, false));
+                addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                addressGroup.setText("Database Address");
+            }
+            clearAddress();
+            Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
+            address.setName("address");
+            address.setValue("https://example.com");
+            db.getParameters().add(address);
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            new Label(addressGroup, NONE).setText("Database Address: ");
+            Text addressText = new Text(addressGroup, SWT.BORDER);
+            addressText.setText(address.getValue());
+            addressText.setToolTipText("Give the address under which the polystore can reach the database");
+            addressText.setLayoutData(gridDataFields);
+            addressText.addModifyListener(e -> {
+                address.setValue(addressText.getText());
+            });
+        }
+    }
+
+    private void clearAddress() {
+        Property address = db.getParameters().stream()
+                .filter(parameter -> parameter.getName().equalsIgnoreCase("address")).findFirst().orElse(null);
+        if (address != null) {
+            db.getParameters().remove(address);
+        }
+    }
+
+    private void resourceArea() {
+        if (!db.isExternal()) {
+            if (resourceGroup == null) {
+                resourceGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                resourceGroup.setLayout(new GridLayout(1, false));
+                resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                resourceGroup.setText("Container Resources");
+            }
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            gridDataChecks.horizontalSpan = 2;
+
+            Resources resources = TyphonDLFactory.eINSTANCE.createResources();
+//            // create Resource composite in each group
+//            GridData resourceGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+//            resourceGridData.horizontalSpan = 2;
+//            Composite resourceComposite = new Composite(group, NONE);
+//            resourceComposite.setLayout(new GridLayout(1, false));
+//            resourceComposite.setLayoutData(resourceGridData);
+//
+//            Button limitCheck = new Button(resourceComposite, SWT.CHECK);
+//            limitCheck.setText("Set resource " + limitList.getName());
+//            limitCheck.setLayoutData(gridDataChecks);
+//            // create invisible Limit Composite in each resource composite
+//            Composite limitComposite = new Composite(resourceComposite, NONE);
+//            limitComposite.setLayout(new GridLayout(2, false));
+//            GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
+//            limitData.exclude = true;
+//            limitComposite.setLayoutData(limitData);
+//            Label limMemLabel = new Label(limitComposite, NONE);
+//            limMemLabel.setText(limMemKeyValue.getName() + ": ");
+//            Text limMemText = new Text(limitComposite, SWT.BORDER);
+//            limMemText.setText(limMemKeyValue.getValue());
+//            limMemText.setLayoutData(gridDataFields);
+//            limMemText.addModifyListener(e -> {
+//                limMemKeyValue.setValue(limMemText.getText());
+//                validate();
+//            });
+//            notEmptyTexts.add(limMemText);
+//            Label limCPULabel = new Label(limitComposite, NONE);
+//            limCPULabel.setText(limCPUKeyValue.getName() + ": ");
+//            Text limCPUText = new Text(limitComposite, SWT.BORDER);
+//            limCPUText.setText(limCPUKeyValue.getValue());
+//            limCPUText.setLayoutData(gridDataFields);
+//            limCPUText.addModifyListener(e -> {
+//                limCPUKeyValue.setValue(limCPUText.getText());
+//                validate();
+//            });
+//            notEmptyTexts.add(limCPUText);
+//
+//            Button reservationCheck = new Button(resourceComposite, SWT.CHECK);
+//            reservationCheck.setText("Set resource " + reservationList.getName());
+//            reservationCheck.setLayoutData(gridDataChecks);
+//            // create invisible Reservation Composite in each resource composite
+//            Composite reservationComposite = new Composite(resourceComposite, NONE);
+//            reservationComposite.setLayout(new GridLayout(2, false));
+//            GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
+//            reservationData.exclude = true;
+//            reservationComposite.setLayoutData(reservationData);
+//            Label resMemLabel = new Label(reservationComposite, NONE);
+//            resMemLabel.setText(resMemKeyValue.getName() + ": ");
+//            Text resMemText = new Text(reservationComposite, SWT.BORDER);
+//            resMemText.setText(resMemKeyValue.getValue());
+//            resMemText.setLayoutData(gridDataFields);
+//            resMemText.addModifyListener(e -> {
+//                resMemKeyValue.setValue(resMemText.getText());
+//                validate();
+//            });
+//            notEmptyTexts.add(resMemText);
+//            Label resCPULabel = new Label(reservationComposite, NONE);
+//            resCPULabel.setText(resCPUKeyValue.getName() + ": ");
+//            Text resCPUText = new Text(reservationComposite, SWT.BORDER);
+//            resCPUText.setText(resCPUKeyValue.getValue());
+//            resCPUText.setLayoutData(gridDataFields);
+//            resCPUText.addModifyListener(e -> {
+//                resCPUKeyValue.setValue(resCPUText.getText());
+//                validate();
+//            });
+//            notEmptyTexts.add(resCPUText);
+//
+//            limitCheck.addSelectionListener(new SelectionAdapter() {
+//                @Override
+//                public void widgetSelected(SelectionEvent e) {
+//                    // set the textfields visible, resize window
+//                    boolean useLimits = limitCheck.getSelection();
+//                    limitData.exclude = !useLimits;
+//                    limitComposite.setVisible(useLimits);
+//                    main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+//                    scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+//                    // add or remove objects from model
+//                    if (useLimits) {
+//                        resourceList.getProperties().add(limitList);
+//                        switch (clusterType) {
+//                        case "DockerCompose":
+//                            addListToList(deployList, resourceList);
+//                            addListToContainer(container, deployList);
+//                            break;
+//                        case "Kubernetes":
+//                            addListToContainer(container, resourceList);
+//                        default:
+//                            break;
+//                        }
+//                    } else {
+//                        switch (clusterType) {
+//                        case "DockerCompose":
+//                            removePropertyFromList(resourceList, limitList);
+//                            if (resourceList.getProperties().isEmpty()) {
+//                                removePropertyFromList(deployList, resourceList);
+//                                if (deployList.getProperties().isEmpty()) {
+//                                    removePropertyFromContainer(container, deployList);
+//                                }
+//                            }
+//                            break;
+//                        case "Kubernetes":
+//                            removePropertyFromList(resourceList, limitList);
+//                            if (resourceList.getProperties().isEmpty()) {
+//                                removePropertyFromContainer(container, resourceList);
+//                            }
+//                        default:
+//                            break;
+//                        }
+//                    }
+//                    validate();
+//                }
+//            });
+//
+//            reservationCheck.addSelectionListener(new SelectionAdapter() {
+//                @Override
+//                public void widgetSelected(SelectionEvent e) {
+//                    // set the textfields visible, resize window
+//                    boolean useReservations = reservationCheck.getSelection();
+//                    reservationData.exclude = !useReservations;
+//                    reservationComposite.setVisible(useReservations);
+//                    main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
+//                    scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+//                    // add or remove objects from model
+//                    if (useReservations) {
+//                        resourceList.getProperties().add(reservationList);
+//                        switch (clusterType) {
+//                        case "DockerCompose":
+//                            addListToList(deployList, resourceList);
+//                            addListToContainer(container, deployList);
+//                            break;
+//                        case "Kubernetes":
+//                            addListToContainer(container, resourceList);
+//                        default:
+//                            break;
+//                        }
+//                    } else {
+//                        switch (clusterType) {
+//                        case "DockerCompose":
+//                            removePropertyFromList(resourceList, reservationList);
+//                            if (resourceList.getProperties().isEmpty()) {
+//                                removePropertyFromList(deployList, resourceList);
+//                                if (deployList.getProperties().isEmpty()) {
+//                                    removePropertyFromContainer(container, deployList);
+//                                }
+//                            }
+//                            break;
+//                        case "Kubernetes":
+//                            removePropertyFromList(resourceList, reservationList);
+//                            if (resourceList.getProperties().isEmpty()) {
+//                                removePropertyFromContainer(container, resourceList);
+//                            }
+//                        default:
+//                            break;
+//                        }
+//                    }
+//                    validate();
+//                }
+//            });
+        }
     }
 
     /**
      * The Area inside the helm group. Here the {@link HelmList} is handled.
      */
     private void helmArea() {
-        if (db.getHelm() != null) {
+        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null) {
             if (helmGroup == null) {
                 helmGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
                 helmGroup.setLayout(new GridLayout(2, false));
@@ -409,6 +670,14 @@ public class CreationDatabasePage extends MyWizardPage {
         updateGroup(templateVariableGroup, this::templateVariableArea);
         updateImageValue();
         ((Composite) this.getControl()).layout();
+    }
+
+    public int getChosenTemplate() {
+        return this.chosenTemplate;
+    }
+
+    public void setChosenTemplate(int chosenTemplate) {
+        this.chosenTemplate = chosenTemplate;
     }
 
 }
