@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
@@ -391,13 +392,10 @@ public class CreationContainerPage extends MyWizardPage {
      * @return
      */
     private String createContainerName(String name) {
-        while (name.substring(0, 1).matches("[^a-zA-Z]")) {
-            name = name.substring(1);
-        }
-        while (name.substring(name.length() - 1).matches("[^a-zA-Z]")) {
-            name = name.substring(0, name.length() - 2);
-        }
-        return name.toLowerCase().replaceAll("[^a-zA-Z0-9.]", "-");
+        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
+        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
+        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
+        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     private void validate() {
