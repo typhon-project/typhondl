@@ -12,6 +12,12 @@
 <template id="dbType_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MariaDB Galera using the bitnami image" enabled="true" name="MariaDBGalera">dbtype mariadbgalera {
     default image = bitnami/mariadb-galera;
 }</template>
+<template id="dbType_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Neo4j using the latest image from Docker Hub" enabled="true" name="Neo4j">dbtype Neo4j {
+    default image = neo4j:latest;
+}</template>
+<template id="dbType_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Cassandra using the latest image from Docker Hub" enabled="true" name="Cassandra">dbtype Cassandra {
+    default image = cassandra:latest;
+}</template>
 <template id="db_mariadb" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MariaDB" enabled="true" name="MariaDB">database ${databaseName} : MariaDB {
     environment {
         MYSQL_ROOT_PASSWORD = ${password} ;
@@ -37,6 +43,13 @@
     }
     environment {
         MYSQL_ROOT_PASSWORD = ${password};
+    }
+}</template>
+<template id="db_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Cassandra" enabled="true" name="Cassandra">database ${name} : Cassandra {
+}</template>
+<template id="db_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Neo4j" enabled="true" name="Neo4j">database ${name} : Neo4j {
+    environment {
+        NEO4J_AUTH = neo4j/${password};
     }
 }</template>
 </templates>

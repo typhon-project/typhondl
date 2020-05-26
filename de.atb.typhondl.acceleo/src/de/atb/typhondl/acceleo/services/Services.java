@@ -463,6 +463,12 @@ public class Services {
         polystore_api_entrypoint.getValues().add("--");
         polystore_api_entrypoint.getValues().addAll(Arrays.asList(properties.getProperty("api.entrypoint").split(",")));
         polystore_api_container.getProperties().add(polystore_api_entrypoint);
+        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+            Key_Values polystore_api_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+            polystore_api_container_restart.setName("restart");
+            polystore_api_container_restart.setValue("always");
+            polystore_api_container.getProperties().add(polystore_api_container_restart);
+        }
 
         Dependency polystore_api_dependency = TyphonDLFactory.eINSTANCE.createDependency();
         polystore_api_dependency.setReference(polystore_api_container);
@@ -532,6 +538,12 @@ public class Services {
         qlserver_container_ports.getKey_values().add(qlserver_container_port);
         qlserver_container.setPorts(qlserver_container_ports);
         qlserver_container.setDeploys(qlserver_reference);
+        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+            Key_Values qlserver_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
+            qlserver_container_restart.setName("restart");
+            qlserver_container_restart.setValue("always");
+            qlserver_container.getProperties().add(qlserver_container_restart);
+        }
 
         application.getContainers().add(qlserver_container);
 

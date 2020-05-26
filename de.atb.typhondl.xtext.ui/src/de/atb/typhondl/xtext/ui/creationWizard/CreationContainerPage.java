@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IStatus;
@@ -142,7 +143,8 @@ public class CreationContainerPage extends MyWizardPage {
             Group group = new Group(main, SWT.READ_ONLY);
             group.setLayout(new GridLayout(2, false));
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setText(db.getName());
+            String containerName = createContainerName(db.getName());
+            group.setText("Container " + containerName + " for database " + db.getName());
 
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -150,7 +152,7 @@ public class CreationContainerPage extends MyWizardPage {
 
             // create a Container Model Object
             Container container = TyphonDLFactory.eINSTANCE.createContainer();
-            container.setName(db.getName());
+            container.setName(containerName);
             ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
             containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
             container.setType(containerType);
@@ -394,6 +396,19 @@ public class CreationContainerPage extends MyWizardPage {
         main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
         setControl(scrolling);
+    }
+
+    /**
+     * Names of container have to be DNS subdomain names (see DL #31)
+     * 
+     * @param name
+     * @return
+     */
+    private String createContainerName(String name) {
+        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
+        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
+        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
+        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     private void validate() {
