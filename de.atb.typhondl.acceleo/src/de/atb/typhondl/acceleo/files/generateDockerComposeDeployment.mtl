@@ -17,8 +17,7 @@ version: '3.7'
 [/if]
 services:
 [for (aContainer : Container | aCluster.applications.containers)]
-[if ((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
-[else]
+[if (not(aContainer.isPolystoreContainer()))]
   [aContainer.name/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.print()/]

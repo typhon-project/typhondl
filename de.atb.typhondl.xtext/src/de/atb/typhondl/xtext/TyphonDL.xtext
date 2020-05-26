@@ -31,7 +31,7 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
-	(helm+=HelmList)?
+	(helm=HelmList)?
 	(parameters+=Property)*
 	'}';
 

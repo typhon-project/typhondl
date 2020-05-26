@@ -61,4 +61,43 @@ aCluster.properties->any(key | key.name.equalsIgnoreCase('kubeconfig'))
 aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<>null
 /]
 
+[query public isPolystoreContainer(aContainer : Container) : Boolean = 
+((aContainer.name.toLower() = 'kafka')
+    ._or(aContainer.name.toLower() = 'zookeeper')
+    ._or(aContainer.name.toLower() = 'authall')
+    ._or(aContainer.name.toLower() = 'typhon-polystore-service')
+    ._or(aContainer.name.toLower() = 'polystore-ui')
+    ._or(aContainer.name.toLower() = 'typhonql-server')) 
+/]
+
+[query public containsDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
+
+
+[query public useHelmChart(aContainer : Container) : Boolean =  
+not(aContainer.getHelmList().oclIsUndefined())
+/]
+
+[query public getHelmList(aContainer : Container) : HelmList =  
+aContainer.deploys.reference.oclAsType(DB).helm
+/]
+
+[query public getHelmRepoAddress(aContainer : Container) : String =
+aContainer.getHelmList().repoAddress
+/]
+
+[query public getHelmRepoName(aContainer : Container) : String = 
+aContainer.getHelmList().repoName
+/]
+
+[query public getHelmChart(aContainer : Container) : String = 
+aContainer.getHelmList().chartName
+/]
+
+[query public getMySQLPassword(aContainer : Container) : Key_Values =
+aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')
+/]
+
+
+
+
 

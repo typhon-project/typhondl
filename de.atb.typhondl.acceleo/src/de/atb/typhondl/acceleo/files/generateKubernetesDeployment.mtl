@@ -19,6 +19,14 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
+echo "Apply Helm Charts"
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.helmMoreIfs()/]
+[/if]
+[/if]
+[/for]
 echo "----------------------------------------------------------------------------"
 echo "Wait for the models to be inserted into the metadata database"
 kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
@@ -29,6 +37,7 @@ kubectl wait --for=condition=available --timeout=100s --all -n typhon deployment
 echo "----------------------------------------------------------------------------"
 echo "Deploy Polystore"
 kubectl apply -n typhon -f polystore.yaml $kubeconfig
+echo "----------------------------------------------------------------------------"
 echo "Wait for the API, UI and QL to be ready"
 kubectl wait --for=condition=available --timeout=300s --all -n typhon deployments $kubeconfig
 echo "----------------------------------------------------------------------------"
@@ -118,7 +127,40 @@ spec:
 
 [file ('databases.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (not((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server')))]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.printDB()/]
+[/if]
+[/if]
+[/for]
+[/file]
+[/for]
+[/template]
+
+[template public printMongoJob(aContainer : Container) post (trim())]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+---
+[/if]
+[/template]
+
+[template public printDB(aContainer : Container) post (trim())]
+[if (not(aContainer.useHelmChart()))]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -162,33 +204,22 @@ spec:
   selector:
     app: [aContainer.name.toLower()/]-pod
 ---
-[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
-kind: Job
-apiVersion: batch/v1
-metadata:
-  name: insert-models
-spec:
-  template:
-    spec:
-      containers:
-        - name: insert-models
-          image: mongo:latest
-          command: ['['/]"/bin/sh", "-c"[']'/]
-          args:
-          # wait for polystore-mongo to be ready
-            - sleep 20; 
-              [aContainer.printPolystoreMongo()/]
-      restartPolicy: Never
----
+[aContainer.printMongoJob()/]
 [/if]
-[/if]
-[/for]
-[/file]
-
-[/for]
 [/template]
 
-[template public printPolystoreMongo(aContainer : Container)]
+[template public helmMoreIfs(aContainer : Container) post (trim())]
+[if (aContainer.useHelmChart())]
+[aContainer.printHelmCommand()/]
+[/if]
+[/template]
+
+[template public printHelmCommand(aContainer : Container) post (trim())]
+helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
+helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+[/template]
+
+[template public printPolystoreMongo(aContainer : Container) post (trim())]
 mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser().value/] -p [aContainer.getMongoRootPassword().value/] admin --eval '[aContainer.getMongoPrint()/]';
 [/template]
 

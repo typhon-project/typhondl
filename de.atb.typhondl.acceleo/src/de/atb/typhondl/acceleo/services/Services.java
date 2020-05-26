@@ -21,6 +21,7 @@ import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -40,7 +41,6 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Software;
@@ -231,16 +231,10 @@ public class Services {
      * @return A container named "polystore-mongo"
      */
     private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
-        List<Container> polystoreMongoContainerList = new ArrayList<>();
-        model.getElements().stream().filter(element -> Platform.class.isInstance(element))
-                .map(element -> (Platform) element).forEach(element -> element.getClusters()
-                        .forEach(cluster -> cluster.getApplications().forEach(application -> {
-                            polystoreMongoContainerList.addAll(application.getContainers().stream()
-                                    .filter(container -> container.getName()
-                                            .equalsIgnoreCase(properties.getProperty("db.containername")))
-                                    .collect(Collectors.toList()));
-                        })));
-        return polystoreMongoContainerList.isEmpty() ? null : polystoreMongoContainerList.get(0);
+        List<Container> mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
+                .filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
+                .collect(Collectors.toList());
+        return mongo.isEmpty() ? null : mongo.get(0);
     }
 
     /**
@@ -297,8 +291,7 @@ public class Services {
      * @return The relative MLmodel path as a String
      */
     private static String getMLmodelPath(DeploymentModel model) {
-        return model.getGuiMetaInformation().stream().filter(imortedModel -> Import.class.isInstance(imortedModel))
-                .map(importedModel -> (Import) importedModel)
+        return EcoreUtil2.getAllContentsOfType(model, Import.class).stream()
                 .filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
                 .map(info -> info.getRelativePath()).collect(Collectors.toList()).get(0);
     }
@@ -314,9 +307,8 @@ public class Services {
         Resource resource = model.eResource();
         URI uri = resource.getURI().trimSegments(1);
 
-        model.getGuiMetaInformation().stream().filter(imortedModel -> Import.class.isInstance(imortedModel))
-                .map(importedModel -> (Import) importedModel).filter(info -> info.getRelativePath().endsWith("tdl"))
-                .forEach(info -> {
+        EcoreUtil2.getAllContentsOfType(model, Import.class).stream()
+                .filter(info -> info.getRelativePath().endsWith("tdl")).forEach(info -> {
                     model.getElements()
                             .addAll(((DeploymentModel) resource.getResourceSet()
                                     .getResource(uri.appendSegment(info.getRelativePath()), true).getContents().get(0))
@@ -363,8 +355,7 @@ public class Services {
      */
     private static DeploymentModel addPolystoreToModel(String path, DeploymentModel model, Properties properties) {
 
-        List<DBType> dbTypes = model.getElements().stream().filter(element -> DBType.class.isInstance(element))
-                .map(element -> (DBType) element).collect(Collectors.toList());
+        List<DBType> dbTypes = EcoreUtil2.getAllContentsOfType(model, DBType.class);
         // if Mongo is not allready a DBType, add Mongo
         DBType mongo = dbTypes.stream().filter(dbType -> dbType.getName().equalsIgnoreCase("mongo")).findFirst()
                 .orElse(null);
@@ -383,9 +374,8 @@ public class Services {
         if (!properties.get("polystore.inApplication").equals("default")) {
             application = getApplication(model, (String) properties.get("polystore.inApplication"));
         } else if (properties.get("polystore.inApplication").equals("default") || application == null) {
-            // get first application in first cluster on first platform
-            application = ((Platform) model.getElements().stream().filter(element -> Platform.class.isInstance(element))
-                    .collect(Collectors.toList()).get(0)).getClusters().get(0).getApplications().get(0);
+            // get first application
+            application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
         }
         // will be removed -----------------------------------------^
 
@@ -677,10 +667,8 @@ public class Services {
      */
     private static Application getApplication(DeploymentModel model, String appName) {
         List<Application> list = new ArrayList<Application>();
-        model.getElements().stream().filter(element -> Platform.class.isInstance(element))
-                .map(element -> (Platform) element)
-                .forEach(platform -> platform.getClusters().forEach(cluster -> cluster.getApplications().stream()
-                        .filter(app -> app.getName().equals(appName)).map(app -> list.add(app)))); // TODO not nice?
+        EcoreUtil2.getAllContentsOfType(model, Application.class).stream().filter(app -> app.getName().equals(appName))
+                .map(app -> list.add(app));
         return (list.size() == 1) ? list.get(0) : null;
     }
 }

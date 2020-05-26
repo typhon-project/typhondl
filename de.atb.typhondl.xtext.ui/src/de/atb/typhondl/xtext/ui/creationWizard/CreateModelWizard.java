@@ -4,11 +4,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -47,31 +49,21 @@ public class CreateModelWizard extends Wizard {
      */
     private CreationMainPage mainPage;
 
-    /**
-     * The second page of this wizard. A template can be chosen for each Database
-     */
-    private CreationDBMSPage dbmsPage;
+    private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
+    private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
+    private final String PAGENAME_CONTAINER = "Container";
+    private final String PAGENAME_ANALYTICS = "Analytics";
 
     /**
-     * An optional page of this wizard. Kafka and Zookeeper settings can be entered
+     * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
+     * always 607, independent of what's given here //TODO wtf?
      */
-    private CreationAnalyticsPage analyticsPage;
-
-    /**
-     * An optional page. Values for extracted {@link TemplateVariable}s can be
-     * entered
-     */
-    private CreationTemplateVariablePage variablePage;
+    private final int pageWidth = 607;
 
     /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
     private int chosenTemplate;
-
-    /**
-     * A page to define container specifications
-     */
-    private CreationContainerPage containerPage;
 
     /**
      * Creates an instance of <code>CreateModelWizard</code>
@@ -80,6 +72,8 @@ public class CreateModelWizard extends Wizard {
      */
     public CreateModelWizard(IFile MLmodel) {
         super();
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "icons/TYPHON Logo Small.png"));
+        setWindowTitle("TyphonDL Creation Wizard");
         this.MLmodel = MLmodel;
     }
 
@@ -91,10 +85,15 @@ public class CreateModelWizard extends Wizard {
     @Override
     public void addPages() {
         mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
+        mainPage.setWizard(this);
         addPage(mainPage);
 
-        dbmsPage = new CreationDBMSPage("Choose DBMS", MLmodel);
-        addPage(dbmsPage);
+        for (SupportedTechnologies value : SupportedTechnologies.values()) {
+            CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.getClusterType(), MLmodel,
+                    value.ordinal());
+            newPage.setWizard(this);
+            addPage(newPage);
+        }
     }
 
     /**
@@ -106,8 +105,9 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public boolean performFinish() {
-        if (dbmsPage.getMessage() != null) {
-            if (!MessageDialog.openConfirm(this.getShell(), "Wizard", dbmsPage.getMessage())) {
+        String message = this.getPage(getDBMSPageName(chosenTemplate)).getMessage();
+        if (message != null) {
+            if (!MessageDialog.openConfirm(this.getShell(), "Wizard", message)) {
                 return false;
             }
         }
@@ -118,7 +118,8 @@ public class CreateModelWizard extends Wizard {
         }
         Properties properties;
         properties = this.mainPage.getProperties();
-        HashMap<DB, ArrayList<Container>> result = containerPage.getResult();
+        HashMap<DB, ArrayList<Container>> result = ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER))
+                .getResult();
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
         IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
@@ -157,75 +158,78 @@ public class CreateModelWizard extends Wizard {
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
         if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationTemplateVariablePage) {
+                || currentPage instanceof CreationDatabasePage) {
             return false;
         }
         return super.canFinish();
     }
 
     /**
-     * Returns the next page of the TyphonDL Creation Wizard.
+     * Returns the next page of the TyphonDL Creation Wizard. The pages for each
+     * databases and the container definition page are created. Since this method is
+     * called whenever something changes on a page (e.g. entering text) the input
+     * for the created database and container pages can change and thus has to be
+     * updated
      * 
-     * @return
-     *         <li>{@link Wizard#getNextPage(IWizardPage)}</li>
-     *         <li>if the current page is the {@link CreationDBMSPage} and the
-     *         useAnalytics checkbox is checked, Then a
-     *         {@link CreationAnalyticsPage} is created and returned.</li>
-     *         <li>if the current page is the {@link CreationDBMSPage} and a
-     *         template with {@link TemplateVariable}s is used, a
-     *         {@link CreationTemplateVariablePage} is created and returned,
-     *         otherwise a {@link CreationContainerPage} is returned.</li>
-     *         <li>if the current page is the {@link CreationTemplateVariablePage} a
-     *         {@link CreationContainerPage} is returned.</li>
+     * @return the next page
      */
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
+            return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
-            if (((CreationDBMSPage) page).hasTemplateVariables()) {
-                this.variablePage = createVariablesPage("Template Variables Page",
-                        ((CreationDBMSPage) page).getResult());
-                this.variablePage.setWizard(this);
-                return variablePage;
-            } else {
-                this.containerPage = createContainerPage("Container Definition Page",
-                        new ArrayList<>(((CreationDBMSPage) page).getResult().keySet()), this.chosenTemplate);
-                this.containerPage.setWizard(this);
-                return containerPage;
+            HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
+            for (DB db : result.keySet()) {
+                String pageName = PAGENAME_DATABASE + db.getName();
+                if (!pageExists(pageName)) {
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db));
+                    databasePage.setWizard(this);
+                    addPage(databasePage);
+                } else {
+                    CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
+                    if (databasePage.getControl() != null && ((CreationDBMSPage) page).hasFieldChanged(db.getName())) {
+                        databasePage.updateAllAreas();
+                        ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
+                    }
+                }
             }
-        }
-        if (page instanceof CreationTemplateVariablePage) {
-            this.containerPage = createContainerPage("Container Definition Page",
-                    ((CreationTemplateVariablePage) page).getDBs(), this.chosenTemplate);
-            this.containerPage.setWizard(this);
-            return containerPage;
+            if (!pageExists(PAGENAME_CONTAINER)) {
+                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER,
+                        new ArrayList<>(result.keySet()), this.chosenTemplate);
+                newPage.setWizard(this);
+                addPage(newPage);
+            } else {
+                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(new ArrayList<>(result.keySet()));
+            }
+            // skip other DBMS pages
+            IWizardPage nextPage = super.getNextPage(page);
+            while (nextPage instanceof CreationDBMSPage) {
+                nextPage = super.getNextPage(nextPage);
+            }
+            return nextPage;
         }
         return super.getNextPage(page);
-    }
 
-    private CreationContainerPage createContainerPage(String string, ArrayList<DB> dbs, int chosenTemplate) {
-        return new CreationContainerPage(string, dbs, chosenTemplate);
     }
 
     /**
-     * Creates a CreationTemplateVariablePage
+     * Checks if a page already exists
      * 
-     * @param string Name of the Page
-     * @param result Map of {@link DB}s and their {@link TemplateBuffer}
-     * @return a new {@link CreationTemplateVariablePage}
+     * @param pageName The name of the page to check
+     * @return true if page exists, false otherwise
      */
-    private CreationTemplateVariablePage createVariablesPage(String string, HashMap<DB, TemplateBuffer> result) {
-        return new CreationTemplateVariablePage(string, result);
+    private boolean pageExists(String pageName) {
+        return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }
 
-    /**
-     * Creates a CreationAnalyticsPage. Activate when analytics can be configured
-     * TODO #6
-     * 
-     * @param string     Name of the Page
-     * @param properties default properties for the polystore
-     * @return a new {@link CreationAnalyticsPage}
-     */
+    private String getDBMSPageName(int templateOrdinal) {
+        return PAGENAME_DBMS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
+    }
+
+    public int getPageWidth() {
+        return pageWidth;
+    }
+
 }

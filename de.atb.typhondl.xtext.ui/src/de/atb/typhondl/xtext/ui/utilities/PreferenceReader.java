@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.text.templates.Template;
@@ -15,6 +14,7 @@ import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateTranslator;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
 
@@ -59,13 +59,13 @@ public class PreferenceReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        List<String> possibleTypes = Arrays.asList(((String) properties.get(metatype)).split(" "));
+        List<String> possibleTypes = Arrays.asList(((String) properties.get(metatype)).toLowerCase().split(" "));
         // get all dbTypes that match the metatype
         ArrayList<DBType> dbTypes = new ArrayList<>();
         for (int i = 0; i < dbTypeTemplates.length; i++) {
             TemplateBuffer buffer = getTemplateBuffer(dbTypeTemplates[i]);
             DBType dbtype = getModelObject(TyphonDLFactory.eINSTANCE.createDBType(), buffer);
-            if (possibleTypes.contains(dbtype.getName())) {
+            if (possibleTypes.contains(dbtype.getName().toLowerCase())) {
                 dbTypes.add(dbtype);
             }
         }
@@ -77,7 +77,8 @@ public class PreferenceReader {
             DB db = getModelObject(TyphonDLFactory.eINSTANCE.createDB(), buffer);
             if (db != null) {
                 for (DBType supportedType : dbTypes) {
-                    if (buffer.getString().contains(supportedType.getName())) {
+                    if (buffer.getString().toLowerCase().contains(supportedType.getName().toLowerCase() + " ")
+                            || buffer.getString().toLowerCase().contains(supportedType.getName().toLowerCase() + "{")) {
                         db.setName(dbTemplates[i].getName());
                         db.setType(supportedType);
                         buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
@@ -122,13 +123,10 @@ public class PreferenceReader {
         // instance
         IParseResult result = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
                 .getInstance(IParser.class).parse(new StringReader(buffer.getString()));
+        DeploymentModel deploymentModel = (DeploymentModel) result.getRootASTElement();
         @SuppressWarnings("unchecked")
-        List<T> elements = ((DeploymentModel) result.getRootASTElement()).getElements().stream()
-                .filter(element -> modelObject.getClass().isInstance(element)).map(element -> (T) element)
-                .collect(Collectors.toList());
-        if (elements.size() != 1) {
-            return null; // there should only be one model definition in a template
-        }
-        return elements.get(0);
+        List<T> elements = (List<T>) EcoreUtil2.getAllContentsOfType(deploymentModel, modelObject.getClass());
+        // there should only be one model definition in a template
+        return elements.size() == 1 ? elements.get(0) : null;
     }
 }
