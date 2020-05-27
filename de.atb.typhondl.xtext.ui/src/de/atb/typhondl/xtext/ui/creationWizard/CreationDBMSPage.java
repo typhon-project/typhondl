@@ -343,11 +343,16 @@ public class CreationDBMSPage extends MyWizardPage {
                 removeDBfromResult(dbName);
                 Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template.firstValue);
-                newDB.setExternal(externalDatabaseCheck.getSelection());
                 if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
                     newDB = addHelmChartKeys(newDB);
                 }
-                result.put(newDB, template.secondValue);
+                if (externalDatabaseCheck.getSelection()) {
+                    newDB.setExternal(true);
+                    clearEverythingExceptTypeAndEnvironment(newDB);
+                    result.put(newDB, null);
+                } else {
+                    result.put(newDB, template.secondValue);
+                }
                 changedField.put(newDB.getName(), true);
                 validate();
             }
@@ -358,7 +363,9 @@ public class CreationDBMSPage extends MyWizardPage {
         Property environment = EcoreUtil2.copy(newDB.getParameters().stream()
                 .filter(parameter -> parameter.getName().equalsIgnoreCase("environment")).findFirst().orElse(null));
         newDB.getParameters().clear();
-        newDB.getParameters().add(environment);
+        if (environment != null) {
+            newDB.getParameters().add(environment);
+        }
         newDB.setHelm(null);
         newDB.setImage(null);
     }
@@ -465,8 +472,13 @@ public class CreationDBMSPage extends MyWizardPage {
                 removeDBfromResult(dbName);
                 Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template.firstValue);
-                newDB.setExternal(externalDatabaseCheck.getSelection());
-                result.put(newDB, template.secondValue);
+                if (externalDatabaseCheck.getSelection()) {
+                    newDB.setExternal(true);
+                    clearEverythingExceptTypeAndEnvironment(newDB);
+                    result.put(newDB, null);
+                } else {
+                    result.put(newDB, template.secondValue);
+                }
                 changedField.put(newDB.getName(), true);
                 validate();
             }
