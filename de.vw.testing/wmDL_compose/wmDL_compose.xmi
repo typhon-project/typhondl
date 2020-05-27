@@ -2,9 +2,9 @@
 <typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weatherModel.xmi"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleMetadataDB.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleDataDB.tdl"/>
-  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
   <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
   <elements xsi:type="typhonDL:ClusterType" name="DockerCompose"/>
@@ -12,25 +12,25 @@
   <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.2">
     <clusters name="clusterName" type="//@elements.1">
       <applications name="Polystore">
-        <containers name="VehicleMetadataDB" type="//@elements.0">
+        <containers name="vehiclemetadatadb" type="//@elements.0">
           <deploys reference="//@elements.4"/>
           <ports>
             <key_values name="target" value="3306"/>
           </ports>
         </containers>
-        <containers name="AppData" type="//@elements.0">
+        <containers name="textwarningdata" type="//@elements.0">
           <deploys reference="//@elements.5"/>
-          <ports>
-            <key_values name="target" value="3306"/>
-          </ports>
-        </containers>
-        <containers name="VehicleDataDB" type="//@elements.0">
-          <deploys reference="//@elements.6"/>
           <ports>
             <key_values name="target" value="27017"/>
           </ports>
         </containers>
-        <containers name="TextWarningData" type="//@elements.0">
+        <containers name="appdata" type="//@elements.0">
+          <deploys reference="//@elements.6"/>
+          <ports>
+            <key_values name="target" value="3306"/>
+          </ports>
+        </containers>
+        <containers name="vehicledatadb" type="//@elements.0">
           <deploys reference="//@elements.7"/>
           <ports>
             <key_values name="target" value="27017"/>
@@ -62,6 +62,7 @@
             <values>/app/resources:/app/classes:/app/libs/*</values>
             <values>com.clms.typhonapi.Application</values>
           </properties>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
         </containers>
         <containers name="polystore-ui" type="//@elements.0">
           <deploys reference="//@elements.12"/>
@@ -76,6 +77,7 @@
           <ports>
             <key_values name="target" value="7000"/>
           </ports>
+          <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
         </containers>
       </applications>
     </clusters>
@@ -85,18 +87,18 @@
       <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
+  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
+      <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
+    </parameters>
+  </elements>
   <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MYSQL_ROOT_PASSWORD" value="password"/>
     </parameters>
   </elements>
   <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
-    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
-      <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
-      <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>
-    </parameters>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
     <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_USERNAME" value="username"/>
       <properties xsi:type="typhonDL:Key_Values" name="MONGO_INITDB_ROOT_PASSWORD" value="password"/>

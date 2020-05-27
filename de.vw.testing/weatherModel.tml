@@ -1,74 +1,71 @@
-datatype Int
-datatype String
-datatype Bool
-
 entity VehicleWeatherData {
-	VIN: Int
-	timeStamp : String
-	vehicle_position : String
-	temperature: Int
-	rain_Intensity: Int
-	solar_Intensity: Int
-	metadata :-> VehicleMetadata[1]
+	timeStamp : datetime
+	vehicle_position : point
+	temperature: float
+	rain_Intensity: float
+	solar_Intensity: int
+	metadata -> VehicleMetadata."VehicleMetadata.vehicle_weather_data"[1]
 }
 
 entity VehicleMetadata{
-	VIN: Int
-	brand: String
-	model: String
-	constr_year: Int
-	color: String
-	t_sensor_h: Int
-	engine_type: String
+	VIN: int
+	brand: string
+	model: string
+	constr_year: int
+	color: string
+	t_sensor_h: int
+	engine_type: string
+	vehicle_weather_data :-> VehicleWeatherData[0..*]
+	vehicle_esp_data :-> ESP[0..*]
 }
 
 entity ESP{
-	VIN : Int
-	timeStamp : String
-	vehicle_position : String
-	esp_edl: Bool
-	esp_idd: Bool
-	esp_abs: Bool
-	vweather:-> VehicleWeatherData[1]
+	timeStamp : datetime
+	vehicle_position : point
+	esp_edl: bool
+	esp_idd: bool
+	esp_abs: bool
+	metadata -> VehicleMetadata."VehicleMetadata.vehicle_esp_data"[1]
 }
 
 entity App {
-	VIN: Int
-	timeStamp : String
-	vehicle_position : String
+	VIN: int
+	timeStamp : datetime
+	vehicle_position : point
 	esp :-> ESP[0..*]
 	warnings :-> WarningWeatherData[0..*]
 }
 
 entity WarningWeatherData {
-	time_start : String
-	time_end : String
-	warningType : String
-	severity : Int
-	area : String
+	time_start : datetime
+	time_end : datetime
+	warningType : string
+	severity : int
+	area : polygon
 }
 
 entity TextWarning {
-	timeStamp : String
-	text : String
+	timeStamp : datetime
+	warning : text
+	extractedWarning : freetext[RelationExtraction[workflow1], TermExtraction[workflow1]]
 }
 
 entity ExtractedWarning {
-	ORGANIZATION : String
-	WEATHER_EVENT : String
-	WEATHER_EVENT_INTENSITY : String
-	WEATHER_EVENT_COUNT : Int
-	LOCATION : String
-	WARNING_LEVEL : Int
-	DAY: String
-	DATE : String
-	TIME : String
-	DISTANCE : String
-	DIRECTION : String
-	SPEED : String
-	SIZE : String
-	TEMPERATURE : Int
-	NUMBER : Int
+	ORGANIZATION : string
+	WEATHER_EVENT : string
+	WEATHER_EVENT_INTENSITY : float
+	WEATHER_EVENT_COUNT : int
+	LOCATION : point
+	WARNING_LEVEL : int
+	DAY: string
+	DATE : date
+	TIME : string
+	DISTANCE : string
+	DIRECTION : string
+	SPEED : float
+	SIZE : string
+	TEMPERATURE : float
+	NUMBER : int
 }
 
 
