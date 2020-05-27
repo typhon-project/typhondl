@@ -13,6 +13,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -60,13 +61,17 @@ public class CreationDatabasePage extends MyWizardPage {
     private Group resourceGroup;
     private Group addressGroup;
     private ArrayList<Text> notEmptyTexts;
+    private Composite main;
+    private int pageWidth;
+    private Group imageGroup;
 
-    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer, int chosenTemplate) {
+    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer, int chosenTemplate, int pageWidth) {
         super(pageName);
         this.db = db;
         this.buffer = buffer;
         this.chosenTemplate = chosenTemplate;
         this.container = createDBContainer();
+        this.pageWidth = pageWidth;
     }
 
     private Container createDBContainer() {
@@ -98,11 +103,16 @@ public class CreationDatabasePage extends MyWizardPage {
     @Override
     public void createControl(Composite parent) {
         setTitle("Database settings for " + db.getName());
-        Composite main = new Composite(parent, SWT.NONE);
+        setDescription("Database Type: " + db.getType().getName());
+        ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
+        this.main = new Composite(scrolling, SWT.NONE);
+        scrolling.setContent(main);
+        scrolling.setExpandVertical(true);
+        scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        if (buffer != null && buffer.getVariables().length != 0) {
+        if (buffer != null && buffer.getVariables().length != 0 && !db.isExternal()) {
             templateVariableGroup = new Group(main, SWT.READ_ONLY);
             templateVariableGroup.setLayout(new GridLayout(2, false));
             templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -111,7 +121,7 @@ public class CreationDatabasePage extends MyWizardPage {
         }
 
         if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null) {
+                && db.getHelm() != null && !db.isExternal()) {
             helmGroup = new Group(main, SWT.READ_ONLY);
             helmGroup.setLayout(new GridLayout(2, false));
             helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -119,7 +129,13 @@ public class CreationDatabasePage extends MyWizardPage {
             helmArea();
         }
 
-        imageArea(main);
+        if (!db.isExternal()) {
+            imageGroup = new Group(main, SWT.READ_ONLY);
+            imageGroup.setLayout(new GridLayout(2, false));
+            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            imageGroup.setText("Image");
+            imageArea();
+        }
 
         if (!db.getParameters().isEmpty()) {
             parameterGroup = new Group(main, SWT.READ_ONLY);
@@ -143,13 +159,16 @@ public class CreationDatabasePage extends MyWizardPage {
             resourceArea();
         }
 
-        setControl(main);
+        main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+        scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+
+        setControl(scrolling);
     }
 
     private void addressArea() {
         if (db.isExternal()) {
             if (addressGroup == null) {
-                addressGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                addressGroup = new Group(main, SWT.READ_ONLY);
                 addressGroup.setLayout(new GridLayout(2, false));
                 addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 addressGroup.setText("Database Address");
@@ -168,6 +187,8 @@ public class CreationDatabasePage extends MyWizardPage {
             addressText.addModifyListener(e -> {
                 address.setValue(addressText.getText());
             });
+        } else {
+            clearAddress();
         }
     }
 
@@ -181,7 +202,6 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private void resourceArea() {
         if (!db.isExternal()) {
-            Composite main = (Composite) this.getControl();
             if (resourceGroup == null) {
                 resourceGroup = new Group(main, SWT.READ_ONLY);
                 resourceGroup.setLayout(new GridLayout(1, false));
@@ -262,8 +282,8 @@ public class CreationDatabasePage extends MyWizardPage {
                     boolean useLimits = limitCheck.getSelection();
                     limitData.exclude = !useLimits;
                     limitComposite.setVisible(useLimits);
-//                  main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
-//                  scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
+                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
                 }
             });
 
@@ -387,7 +407,7 @@ public class CreationDatabasePage extends MyWizardPage {
         if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null) {
             if (helmGroup == null) {
-                helmGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                helmGroup = new Group(main, SWT.READ_ONLY);
                 helmGroup.setLayout(new GridLayout(2, false));
                 helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 helmGroup.setText("Helm settings");
@@ -426,7 +446,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private void parameterArea() {
         if (!db.getParameters().isEmpty()) {
             if (parameterGroup == null) {
-                parameterGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                parameterGroup = new Group(main, SWT.READ_ONLY);
                 parameterGroup.setLayout(new GridLayout(2, false));
                 parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 parameterGroup.setText("Parameters");
@@ -518,28 +538,30 @@ public class CreationDatabasePage extends MyWizardPage {
      * 
      * @param main Composite to put the group in
      */
-    private void imageArea(Composite main) {
-        Group group = new Group(main, SWT.READ_ONLY);
-        group.setLayout(new GridLayout(2, false));
-        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        group.setText("Image");
-
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        new Label(group, NONE).setText("image used:");
-        imageText = new Text(group, SWT.BORDER);
-        String imageTextValue = getImageValue();
-        imageText.setText(imageTextValue);
-        imageText.setLayoutData(gridDataFields);
-        imageText.addModifyListener(e -> {
-            if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
-                db.setImage(null);
-            } else {
-                IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                image.setValue(imageText.getText());
-                db.setImage(image);
+    private void imageArea() {
+        if (!db.isExternal()) {
+            if (imageGroup == null) {
+                imageGroup = new Group(main, SWT.READ_ONLY);
+                imageGroup.setLayout(new GridLayout(2, false));
+                imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                imageGroup.setText("Image");
             }
-        });
-
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            new Label(imageGroup, NONE).setText("image used:");
+            imageText = new Text(imageGroup, SWT.BORDER);
+            String imageTextValue = getImageValue();
+            imageText.setText(imageTextValue);
+            imageText.setLayoutData(gridDataFields);
+            imageText.addModifyListener(e -> {
+                if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
+                    db.setImage(null);
+                } else {
+                    IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    image.setValue(imageText.getText());
+                    db.setImage(image);
+                }
+            });
+        }
     }
 
     /**
@@ -568,7 +590,7 @@ public class CreationDatabasePage extends MyWizardPage {
                 variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
             }
             if (templateVariableGroup == null && !variablesList.isEmpty()) {
-                templateVariableGroup = new Group(((Composite) this.getControl()), SWT.READ_ONLY);
+                templateVariableGroup = new Group(main, SWT.READ_ONLY);
                 templateVariableGroup.setLayout(new GridLayout(2, false));
                 templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 templateVariableGroup.setText("Template Variables");
@@ -637,13 +659,6 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     /**
-     * Updates the Text showing the image value
-     */
-    public void updateImageValue() {
-        imageText.setText(getImageValue());
-    }
-
-    /**
      * Updates each group with the given areaMethod
      * 
      * @param group
@@ -676,7 +691,7 @@ public class CreationDatabasePage extends MyWizardPage {
             group.setVisible(false);
         } else {
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setVisible(false);
+            group.setVisible(true);
         }
 
     }
@@ -698,11 +713,14 @@ public class CreationDatabasePage extends MyWizardPage {
      * page have to be updated.
      */
     public void updateAllAreas() {
+        setDescription("Database Type: " + db.getType().getName());
         updateGroup(helmGroup, this::helmArea);
         updateGroup(parameterGroup, this::parameterArea);
         updateGroup(templateVariableGroup, this::templateVariableArea);
-        updateImageValue();
-        ((Composite) this.getControl()).layout();
+        updateGroup(addressGroup, this::addressArea);
+        updateGroup(imageGroup, this::imageArea);
+        updateGroup(resourceGroup, this::resourceArea);
+        main.layout();
     }
 
     public int getChosenTemplate() {
@@ -711,6 +729,14 @@ public class CreationDatabasePage extends MyWizardPage {
 
     public void setChosenTemplate(int chosenTemplate) {
         this.chosenTemplate = chosenTemplate;
+    }
+
+    public void setDB(DB db) {
+        this.db = db;
+    }
+
+    public void setBuffer(TemplateBuffer templateBuffer) {
+        this.buffer = templateBuffer;
     }
 
 }
