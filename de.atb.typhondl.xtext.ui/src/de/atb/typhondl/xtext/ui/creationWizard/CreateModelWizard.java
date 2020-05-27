@@ -11,7 +11,6 @@ import java.util.Properties;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
@@ -143,12 +142,12 @@ public class CreateModelWizard extends Wizard {
     }
 
     /**
-     * Checks if the TyphonDL Creation Wizard can finish.
+     * TODO Checks if the TyphonDL Creation Wizard can finish.
      * 
      * @return <code>false</code> if
      *         <li>the current page is the Main Page or</li>
      *         <li>the current page is the DBMSPage or</li>
-     *         <li>the current page is the TemplateVariablePage or</li>
+     *         <li>the current page is a DatabasePage or</li>
      *         <li>the current page is the ContainerPage and the useAnalytics
      *         checkbox is checked</li>
      *         <p>
@@ -180,12 +179,12 @@ public class CreateModelWizard extends Wizard {
             return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
-            HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
-            for (DB db : result.keySet()) {
+            ArrayList<DB> result = ((CreationDBMSPage) page).getResult();
+            for (DB db : result) {
                 String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
-                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db),
-                            chosenTemplate, pageWidth);
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, chosenTemplate,
+                            pageWidth);
                     databasePage.setWizard(this);
                     addPage(databasePage);
                 } else {
@@ -194,19 +193,18 @@ public class CreateModelWizard extends Wizard {
                             || databasePage.getChosenTemplate() != this.chosenTemplate)) {
                         databasePage.setChosenTemplate(this.chosenTemplate);
                         databasePage.setDB(db);
-                        databasePage.setBuffer(result.get(db));
                         databasePage.updateAllAreas();
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                     }
                 }
             }
             if (!pageExists(PAGENAME_CONTAINER)) {
-                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER,
-                        new ArrayList<>(result.keySet()), this.chosenTemplate);
+                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER, result,
+                        this.chosenTemplate);
                 newPage.setWizard(this);
                 addPage(newPage);
             } else {
-                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(new ArrayList<>(result.keySet()));
+                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(result);
             }
             // skip other DBMS pages
             IWizardPage nextPage = super.getNextPage(page);

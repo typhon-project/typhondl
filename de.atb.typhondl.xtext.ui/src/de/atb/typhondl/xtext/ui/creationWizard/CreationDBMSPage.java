@@ -63,7 +63,7 @@ public class CreationDBMSPage extends MyWizardPage {
      * created from a template, this is given to the wizard to create additional
      * pages
      */
-    private HashMap<DB, TemplateBuffer> result;
+    private ArrayList<DB> result;
 
     /**
      * Store some buttons for validation <br>
@@ -113,7 +113,7 @@ public class CreationDBMSPage extends MyWizardPage {
         super(pageName);
         this.MLmodel = MLmodel;
         this.file = file;
-        this.result = new HashMap<>();
+        this.result = new ArrayList<>();
         this.fileNameValidationList = new HashMap<>();
         this.chosenTemplate = chosenTemplate;
         this.changedField = new HashMap<>();
@@ -230,7 +230,7 @@ public class CreationDBMSPage extends MyWizardPage {
         existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
         // if an existing file is to be used, there exists no buffer
         if (existingModelCheck.getSelection()) {
-            result.put(readExistingFile(dbName), null);
+            result.add(readExistingFile(dbName));
         }
         existingModelCheck.setLayoutData(wideGridData);
         existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
@@ -257,7 +257,7 @@ public class CreationDBMSPage extends MyWizardPage {
         // set initial dbTemplate
         if (!existingModelCheck.getSelection()) {
             Pair<DB, TemplateBuffer> template = templates.get(0);
-            result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+            result.add(useBufferOnDB(db, template.firstValue));
         }
         changedField.put(dbName, false);
 
@@ -277,12 +277,12 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (useExistingModel) {
                     newDB = readExistingFile(dbName);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.put(newDB, null);
+                    result.add(newDB);
                 } else {
                     Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                     newDB = useBufferOnDB(db, template.firstValue);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.put(newDB, template.secondValue);
+                    result.add(newDB);
                 }
                 changedField.put(newDB.getName(), true);
                 validate();
@@ -305,7 +305,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
                 clearEverythingExceptTypeAndEnvironment(newDB);
-                result.put(newDB, null);
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
             };
@@ -329,7 +329,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (useHelmChart) {
                     newDB = addHelmChartKeys(newDB);
                 }
-                result.put(newDB, template.secondValue);
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
             }
@@ -349,10 +349,8 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (externalDatabaseCheck.getSelection()) {
                     newDB.setExternal(true);
                     clearEverythingExceptTypeAndEnvironment(newDB);
-                    result.put(newDB, null);
-                } else {
-                    result.put(newDB, template.secondValue);
                 }
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
             }
@@ -393,9 +391,8 @@ public class CreationDBMSPage extends MyWizardPage {
         Button existingModelCheck = new Button(group, SWT.CHECK);
         existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
         existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
-        // if an existing file is to be used, there exists no buffer
         if (existingModelCheck.getSelection()) {
-            result.put(readExistingFile(dbName), null);
+            result.add(readExistingFile(dbName));
         }
         existingModelCheck.setLayoutData(wideGridData);
         existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
@@ -417,7 +414,7 @@ public class CreationDBMSPage extends MyWizardPage {
         // set initial dbTemplate
         if (!existingModelCheck.getSelection()) {
             Pair<DB, TemplateBuffer> template = templates.get(0);
-            result.put(useBufferOnDB(db, template.firstValue), template.secondValue);
+            result.add(useBufferOnDB(db, template.firstValue));
         }
 
         existingModelCheck.addSelectionListener(new SelectionAdapter() {
@@ -433,12 +430,12 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (useExistingModel) {
                     newDB = readExistingFile(dbName);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.put(newDB, null);
+                    result.add(newDB);
                 } else {
                     Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                     newDB = useBufferOnDB(db, template.firstValue);
                     newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.put(newDB, template.secondValue);
+                    result.add(newDB);
                 }
                 changedField.put(newDB.getName(), true);
                 validate();
@@ -458,7 +455,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
                 clearEverythingExceptTypeAndEnvironment(newDB);
-                result.put(newDB, null);
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
             };
@@ -475,10 +472,8 @@ public class CreationDBMSPage extends MyWizardPage {
                 if (externalDatabaseCheck.getSelection()) {
                     newDB.setExternal(true);
                     clearEverythingExceptTypeAndEnvironment(newDB);
-                    result.put(newDB, null);
-                } else {
-                    result.put(newDB, template.secondValue);
                 }
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
             }
@@ -503,7 +498,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     protected void removeDBfromResult(String dbName) {
         DB dbToRemove = null;
-        for (DB db : result.keySet()) {
+        for (DB db : result) {
             if (db.getName().equalsIgnoreCase(dbName)) {
                 dbToRemove = db;
             }
@@ -629,25 +624,12 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     /**
-     * Get a list of DBs taken from the MLmodel enriched with wizard and template
-     * input and the corresponding TemplateVariables
+     * Get a list of DBs taken from the MLmodel enriched with wizard input
      * 
-     * @return DBs and their TemplateVariable Array
+     * @return DBs
      */
-    public HashMap<DB, TemplateBuffer> getResult() {
+    public ArrayList<DB> getResult() {
         return result;
-    }
-
-    /**
-     * Lets the wizard check if there is the need for additional template variables
-     * pages
-     * 
-     * @return true if there should be additional pages, otherwise false
-     */
-    public boolean hasTemplateVariables() {
-        TemplateBuffer buffer = result.keySet().stream().map(key -> result.get(key)).filter(value -> value != null)
-                .findFirst().orElse(null);
-        return buffer != null;
     }
 
     public boolean hasFieldChanged(String databaseName) {
