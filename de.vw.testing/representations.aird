@@ -2,15 +2,11 @@
 <viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" uid="_EdVecNO4EemuGowF4sVjuA" version="14.3.0.201909031200">
   <semanticResources>weather_warning_ML.tml</semanticResources>
   <semanticResources>w_w_ML_custom_datatypes.tml</semanticResources>
-  <semanticResources>wmDL_compose.tdl</semanticResources>
-  <semanticResources>wmDL_compose_analytics.tdl</semanticResources>
   <semanticResources>VehicleMetadataDB.tdl</semanticResources>
-  <semanticResources>wmDeployment_k8s_minikube.tdl</semanticResources>
-  <semanticResources>wmDeployment_k8s_minikube/wmDeployment_k8s_minikube.xmi</semanticResources>
-  <semanticResources>wmDL_compose_analytics/wmDL_compose_analytics.xmi</semanticResources>
-  <semanticResources>VehicleDataDB.tdl</semanticResources>
-  <semanticResources>VehicleMetadataDB.tdl</semanticResources>
-  <semanticResources>wmDeployment_k8s_helm-test.tdl</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
+  <semanticResources>AppData.tdl</semanticResources>
+  <semanticResources>VehicleDataDB.tdl</semanticResources>
+  <semanticResources>wmDL_compose.tdl</semanticResources>
+  <semanticResources>wmDL_compose/wmDL_compose.xmi</semanticResources>
 </viewpoint:DAnalysis>

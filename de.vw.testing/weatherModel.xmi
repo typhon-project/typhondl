@@ -1,90 +1,177 @@
 <?xml version="1.0" encoding="ASCII"?>
 <typhonml:Model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonml="http://org.typhon.dsls.typhonml.sirius">
+  <entities name="VehicleWeatherData">
+    <attributes xsi:type="typhonml:Attribute" name="timeStamp">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="vehicle_position">
+      <type xsi:type="typhonml:PointType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="temperature">
+      <type xsi:type="typhonml:FloatType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="rain_Intensity">
+      <type xsi:type="typhonml:FloatType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="solar_Intensity">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <relations name="metadata" type="//@entities.1" cardinality="one" opposite="//@entities.1/@relations.0"/>
+  </entities>
+  <entities name="VehicleMetadata">
+    <attributes xsi:type="typhonml:Attribute" name="VIN">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="brand">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="model">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="constr_year">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="color">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="t_sensor_h">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="engine_type">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <relations name="vehicle_weather_data" type="//@entities.0" cardinality="zero_many" isContainment="true"/>
+    <relations name="vehicle_esp_data" type="//@entities.2" cardinality="zero_many" isContainment="true"/>
+  </entities>
+  <entities name="ESP">
+    <attributes xsi:type="typhonml:Attribute" name="timeStamp">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="vehicle_position">
+      <type xsi:type="typhonml:PointType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="esp_edl">
+      <type xsi:type="typhonml:BoolType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="esp_idd">
+      <type xsi:type="typhonml:BoolType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="esp_abs">
+      <type xsi:type="typhonml:BoolType"/>
+    </attributes>
+    <relations name="metadata" type="//@entities.1" cardinality="one" opposite="//@entities.1/@relations.1"/>
+  </entities>
+  <entities name="App">
+    <attributes xsi:type="typhonml:Attribute" name="VIN">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="timeStamp">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="vehicle_position">
+      <type xsi:type="typhonml:PointType"/>
+    </attributes>
+    <relations name="esp" type="//@entities.2" cardinality="zero_many" isContainment="true"/>
+    <relations name="warnings" type="//@entities.4" cardinality="zero_many" isContainment="true"/>
+  </entities>
+  <entities name="WarningWeatherData">
+    <attributes xsi:type="typhonml:Attribute" name="time_start">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="time_end">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="warningType">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="severity">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="area">
+      <type xsi:type="typhonml:PolygonType"/>
+    </attributes>
+  </entities>
+  <entities name="TextWarning">
+    <attributes xsi:type="typhonml:Attribute" name="timeStamp">
+      <type xsi:type="typhonml:DatetimeType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="warning">
+      <type xsi:type="typhonml:TextType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="extractedWarning">
+      <type xsi:type="typhonml:FreetextType">
+        <tasks workflowName="workflow1" type="RelationExtraction"/>
+        <tasks workflowName="workflow1" type="TermExtraction"/>
+      </type>
+    </attributes>
+  </entities>
+  <entities name="ExtractedWarning">
+    <attributes xsi:type="typhonml:Attribute" name="ORGANIZATION">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="WEATHER_EVENT">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="WEATHER_EVENT_INTENSITY">
+      <type xsi:type="typhonml:FloatType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="WEATHER_EVENT_COUNT">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="LOCATION">
+      <type xsi:type="typhonml:PointType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="WARNING_LEVEL">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="DAY">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="DATE">
+      <type xsi:type="typhonml:DateType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="TIME">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="DISTANCE">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="DIRECTION">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="SPEED">
+      <type xsi:type="typhonml:FloatType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="SIZE">
+      <type xsi:type="typhonml:StringType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="TEMPERATURE">
+      <type xsi:type="typhonml:FloatType"/>
+    </attributes>
+    <attributes xsi:type="typhonml:Attribute" name="NUMBER">
+      <type xsi:type="typhonml:IntType"/>
+    </attributes>
+  </entities>
   <databases xsi:type="typhonml:RelationalDB" name="VehicleMetadataDB">
-    <tables name="VehicleMetadataDB" entity="//@dataTypes.4">
-      <indexSpec name="metadataIndex" attributes="//@dataTypes.4/@attributes.0"/>
-      <idSpec attributes="//@dataTypes.4/@attributes.0"/>
+    <tables name="VehicleMetadataDB" entity="//@entities.1">
+      <indexSpec name="metadataIndex" attributes="//@entities.1/@attributes.0"/>
+      <idSpec attributes="//@entities.1/@attributes.0"/>
     </tables>
   </databases>
   <databases xsi:type="typhonml:DocumentDB" name="VehicleDataDB">
-    <collections name="VehicleWeatherDataDB" entity="//@dataTypes.3"/>
-    <collections name="ESPDB" entity="//@dataTypes.5"/>
+    <collections name="VehicleWeatherDataDB" entity="//@entities.0"/>
+    <collections name="ESPDB" entity="//@entities.2"/>
   </databases>
   <databases xsi:type="typhonml:RelationalDB" name="AppData">
-    <tables name="AppDB" entity="//@dataTypes.6">
-      <indexSpec name="appIndex" attributes="//@dataTypes.6/@attributes.0"/>
+    <tables name="AppDB" entity="//@entities.3">
+      <indexSpec name="appIndex" attributes="//@entities.3/@attributes.0"/>
     </tables>
-    <tables name="AnalyticsDB" entity="//@dataTypes.9">
-      <indexSpec name="analyticsIndex" attributes="//@dataTypes.9/@attributes.14"/>
+    <tables name="AnalyticsDB" entity="//@entities.6">
+      <indexSpec name="analyticsIndex" attributes="//@entities.6/@attributes.14"/>
     </tables>
   </databases>
   <databases xsi:type="typhonml:DocumentDB" name="TextWarningData">
-    <collections name="TextWarningDB" entity="//@dataTypes.8"/>
-    <collections name="WarningWeatherDB" entity="//@dataTypes.7"/>
+    <collections name="TextWarningDB" entity="//@entities.5"/>
+    <collections name="WarningWeatherDB" entity="//@entities.4"/>
   </databases>
-  <dataTypes xsi:type="typhonml:PrimitiveDataType" name="Int"/>
-  <dataTypes xsi:type="typhonml:PrimitiveDataType" name="String"/>
-  <dataTypes xsi:type="typhonml:PrimitiveDataType" name="Bool"/>
-  <dataTypes xsi:type="typhonml:Entity" name="VehicleWeatherData">
-    <attributes name="VIN" type="//@dataTypes.0"/>
-    <attributes name="timeStamp" type="//@dataTypes.1"/>
-    <attributes name="vehicle_position" type="//@dataTypes.1"/>
-    <attributes name="temperature" type="//@dataTypes.0"/>
-    <attributes name="rain_Intensity" type="//@dataTypes.0"/>
-    <attributes name="solar_Intensity" type="//@dataTypes.0"/>
-    <relations name="metadata" type="//@dataTypes.4" cardinality="one" isContainment="true"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="VehicleMetadata">
-    <attributes name="VIN" type="//@dataTypes.0"/>
-    <attributes name="brand" type="//@dataTypes.1"/>
-    <attributes name="model" type="//@dataTypes.1"/>
-    <attributes name="constr_year" type="//@dataTypes.0"/>
-    <attributes name="color" type="//@dataTypes.1"/>
-    <attributes name="t_sensor_h" type="//@dataTypes.0"/>
-    <attributes name="engine_type" type="//@dataTypes.1"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="ESP">
-    <attributes name="VIN" type="//@dataTypes.0"/>
-    <attributes name="timeStamp" type="//@dataTypes.1"/>
-    <attributes name="vehicle_position" type="//@dataTypes.1"/>
-    <attributes name="esp_edl" type="//@dataTypes.2"/>
-    <attributes name="esp_idd" type="//@dataTypes.2"/>
-    <attributes name="esp_abs" type="//@dataTypes.2"/>
-    <relations name="vweather" type="//@dataTypes.3" cardinality="one" isContainment="true"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="App">
-    <attributes name="VIN" type="//@dataTypes.0"/>
-    <attributes name="timeStamp" type="//@dataTypes.1"/>
-    <attributes name="vehicle_position" type="//@dataTypes.1"/>
-    <relations name="esp" type="//@dataTypes.5" cardinality="zero_many" isContainment="true"/>
-    <relations name="warnings" type="//@dataTypes.7" cardinality="zero_many" isContainment="true"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="WarningWeatherData">
-    <attributes name="time_start" type="//@dataTypes.1"/>
-    <attributes name="time_end" type="//@dataTypes.1"/>
-    <attributes name="warningType" type="//@dataTypes.1"/>
-    <attributes name="severity" type="//@dataTypes.0"/>
-    <attributes name="area" type="//@dataTypes.1"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="TextWarning">
-    <attributes name="timeStamp" type="//@dataTypes.1"/>
-    <attributes name="text" type="//@dataTypes.1"/>
-  </dataTypes>
-  <dataTypes xsi:type="typhonml:Entity" name="ExtractedWarning">
-    <attributes name="ORGANIZATION" type="//@dataTypes.1"/>
-    <attributes name="WEATHER_EVENT" type="//@dataTypes.1"/>
-    <attributes name="WEATHER_EVENT_INTENSITY" type="//@dataTypes.1"/>
-    <attributes name="WEATHER_EVENT_COUNT" type="//@dataTypes.0"/>
-    <attributes name="LOCATION" type="//@dataTypes.1"/>
-    <attributes name="WARNING_LEVEL" type="//@dataTypes.0"/>
-    <attributes name="DAY" type="//@dataTypes.1"/>
-    <attributes name="DATE" type="//@dataTypes.1"/>
-    <attributes name="TIME" type="//@dataTypes.1"/>
-    <attributes name="DISTANCE" type="//@dataTypes.1"/>
-    <attributes name="DIRECTION" type="//@dataTypes.1"/>
-    <attributes name="SPEED" type="//@dataTypes.1"/>
-    <attributes name="SIZE" type="//@dataTypes.1"/>
-    <attributes name="TEMPERATURE" type="//@dataTypes.0"/>
-    <attributes name="NUMBER" type="//@dataTypes.0"/>
-  </dataTypes>
 </typhonml:Model>

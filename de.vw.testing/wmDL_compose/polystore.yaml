@@ -16,6 +16,7 @@ services:
       - -cp
       - /app/resources:/app/classes:/app/libs/*
       - com.clms.typhonapi.Application
+    restart: always
   polystore-ui:
     image: clms/typhon-polystore-ui:latest
     environment:
@@ -30,3 +31,4 @@ services:
     image: swatengineering/typhonql-server
     ports:
       - target: 7000
+    restart: always
