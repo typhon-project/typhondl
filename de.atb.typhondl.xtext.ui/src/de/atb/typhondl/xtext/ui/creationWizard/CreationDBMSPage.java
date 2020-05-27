@@ -304,7 +304,8 @@ public class CreationDBMSPage extends MyWizardPage {
                 Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
-                result.put(newDB, template.secondValue);
+                clearEverythingExceptTypeAndEnvironment(newDB);
+                result.put(newDB, null);
                 changedField.put(newDB.getName(), true);
                 validate();
             };
@@ -351,6 +352,15 @@ public class CreationDBMSPage extends MyWizardPage {
                 validate();
             }
         });
+    }
+
+    protected void clearEverythingExceptTypeAndEnvironment(DB newDB) {
+        Property environment = EcoreUtil2.copy(newDB.getParameters().stream()
+                .filter(parameter -> parameter.getName().equalsIgnoreCase("environment")).findFirst().orElse(null));
+        newDB.getParameters().clear();
+        newDB.getParameters().add(environment);
+        newDB.setHelm(null);
+        newDB.setImage(null);
     }
 
     /**
@@ -440,7 +450,8 @@ public class CreationDBMSPage extends MyWizardPage {
                 Pair<DB, TemplateBuffer> template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template.firstValue);
                 newDB.setExternal(useExternalDatabase);
-                result.put(newDB, template.secondValue);
+                clearEverythingExceptTypeAndEnvironment(newDB);
+                result.put(newDB, null);
                 changedField.put(newDB.getName(), true);
                 validate();
             };
