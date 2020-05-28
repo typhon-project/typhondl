@@ -11,7 +11,6 @@ import java.util.Properties;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.xtext.ui.util.FileOpener;
@@ -19,6 +18,7 @@ import org.eclipse.xtext.ui.util.FileOpener;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -51,7 +51,6 @@ public class CreateModelWizard extends Wizard {
 
     private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
     private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
-    private final String PAGENAME_CONTAINER = "Container";
     private final String PAGENAME_ANALYTICS = "Analytics";
 
     /**
@@ -78,9 +77,10 @@ public class CreateModelWizard extends Wizard {
     }
 
     /**
-     * Two pages are initially added:
+     * Two types of pages are initially added:
      * <li>Main Page {@link CreationMainPage}</li>
-     * <li>DBMS Page {@link CreationDBMSPage}</li>
+     * <li>one DBMS Page {@link CreationDBMSPage} for every
+     * {@link SupportedTechnologies}</li>
      */
     @Override
     public void addPages() {
@@ -118,8 +118,7 @@ public class CreateModelWizard extends Wizard {
         }
         Properties properties;
         properties = this.mainPage.getProperties();
-        HashMap<DB, ArrayList<Container>> result = ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER))
-                .getResult();
+        HashMap<DB, Container> result = getDabasesAndContainers();
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
         IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
@@ -142,23 +141,34 @@ public class CreateModelWizard extends Wizard {
         return true;
     }
 
+    private HashMap<DB, Container> getDabasesAndContainers() {
+        HashMap<DB, Container> result = new HashMap<>();
+        for (IWizardPage page : this.getPages()) {
+            if (page.getName().contains(PAGENAME_DATABASE)) {
+                Pair<DB, Container> fromDatabasePage = ((CreationDatabasePage) page).getResultPair();
+                result.put(fromDatabasePage.firstValue, fromDatabasePage.secondValue);
+            }
+        }
+        return result;
+    }
+
     /**
-     * Checks if the TyphonDL Creation Wizard can finish.
+     * TODO Checks if the TyphonDL Creation Wizard can finish.
      * 
      * @return <code>false</code> if
      *         <li>the current page is the Main Page or</li>
      *         <li>the current page is the DBMSPage or</li>
-     *         <li>the current page is the TemplateVariablePage or</li>
-     *         <li>the current page is the ContainerPage and the useAnalytics
-     *         checkbox is checked</li>
+     *         <li>the current page is a DatabasePage and the next page as well</li>
      *         <p>
      *         Otherwise {@link Wizard#canFinish()}.
      */
     @Override
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
-        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationDatabasePage) {
+        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage) {
+            return false;
+        }
+        if (currentPage instanceof CreationDatabasePage && currentPage.getNextPage() instanceof CreationDatabasePage) {
             return false;
         }
         return super.canFinish();
@@ -180,28 +190,24 @@ public class CreateModelWizard extends Wizard {
             return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
-            HashMap<DB, TemplateBuffer> result = ((CreationDBMSPage) page).getResult();
-            for (DB db : result.keySet()) {
+            ArrayList<DB> result = ((CreationDBMSPage) page).getResult();
+            for (DB db : result) {
                 String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
-                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, result.get(db));
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, chosenTemplate,
+                            pageWidth);
                     databasePage.setWizard(this);
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
-                    if (databasePage.getControl() != null && ((CreationDBMSPage) page).hasFieldChanged(db.getName())) {
+                    if (databasePage.getControl() != null && (((CreationDBMSPage) page).hasFieldChanged(db.getName())
+                            || databasePage.getChosenTemplate() != this.chosenTemplate)) {
+                        databasePage.setChosenTemplate(this.chosenTemplate);
+                        databasePage.setDB(db);
                         databasePage.updateAllAreas();
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                     }
                 }
-            }
-            if (!pageExists(PAGENAME_CONTAINER)) {
-                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER,
-                        new ArrayList<>(result.keySet()), this.chosenTemplate);
-                newPage.setWizard(this);
-                addPage(newPage);
-            } else {
-                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(new ArrayList<>(result.keySet()));
             }
             // skip other DBMS pages
             IWizardPage nextPage = super.getNextPage(page);

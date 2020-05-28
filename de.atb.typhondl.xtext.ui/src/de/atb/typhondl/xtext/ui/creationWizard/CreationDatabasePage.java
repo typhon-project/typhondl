@@ -1,24 +1,33 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.jface.text.templates.TemplateBuffer;
-import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
@@ -26,8 +35,12 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
+import de.atb.typhondl.xtext.typhonDL.Reference;
+import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -39,34 +52,69 @@ import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
-    private TemplateBuffer buffer;
+    private Container container;
     private Group parameterGroup;
-    private Group templateVariableGroup;
     private Group helmGroup;
     private Text imageText;
+    private int chosenTemplate;
+    private Group resourceGroup;
+    private Group addressGroup;
+    private ArrayList<Text> notEmptyTexts;
+    private Composite main;
+    private int pageWidth;
+    private Group imageGroup;
+    private Properties properties;
 
-    public CreationDatabasePage(String pageName, DB db, TemplateBuffer buffer) {
+    public CreationDatabasePage(String pageName, DB db, int chosenTemplate, int pageWidth) {
         super(pageName);
         this.db = db;
-        this.buffer = buffer;
+        this.chosenTemplate = chosenTemplate;
+        this.container = createDBContainer();
+        this.pageWidth = pageWidth;
+        try {
+            this.properties = PropertiesLoader.loadProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Container createDBContainer() {
+        Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
+        String containerName = createContainerName(db.getName());
+        newContainer.setName(containerName);
+        Reference reference = TyphonDLFactory.eINSTANCE.createReference();
+        reference.setReference(db);
+        newContainer.setDeploys(reference);
+        return newContainer;
+    }
+
+    /**
+     * Names of container have to be DNS subdomain names (see DL #31)
+     * 
+     * @param name
+     * @return
+     */
+    private String createContainerName(String name) {
+        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
+        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
+        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
+        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     @Override
     public void createControl(Composite parent) {
         setTitle("Database settings for " + db.getName());
-        Composite main = new Composite(parent, SWT.NONE);
+        setDescription("Database Type: " + db.getType().getName());
+        ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
+        this.main = new Composite(scrolling, SWT.NONE);
+        scrolling.setContent(main);
+        scrolling.setExpandVertical(true);
+        scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        if (buffer != null && buffer.getVariables().length != 0) {
-            templateVariableGroup = new Group(main, SWT.READ_ONLY);
-            templateVariableGroup.setLayout(new GridLayout(2, false));
-            templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            templateVariableGroup.setText("Template Variables");
-            templateVariableArea();
-        }
-
-        if (db.getHelm() != null) {
+        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null && !db.isExternal()) {
             helmGroup = new Group(main, SWT.READ_ONLY);
             helmGroup.setLayout(new GridLayout(2, false));
             helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -74,7 +122,13 @@ public class CreationDatabasePage extends MyWizardPage {
             helmArea();
         }
 
-        imageArea(main);
+        if (!db.isExternal()) {
+            imageGroup = new Group(main, SWT.READ_ONLY);
+            imageGroup.setLayout(new GridLayout(2, false));
+            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            imageGroup.setText("Image");
+            imageArea();
+        }
 
         if (!db.getParameters().isEmpty()) {
             parameterGroup = new Group(main, SWT.READ_ONLY);
@@ -84,16 +138,243 @@ public class CreationDatabasePage extends MyWizardPage {
             parameterArea();
         }
 
-        setControl(main);
+        if (db.isExternal()) {
+            addressGroup = new Group(main, SWT.READ_ONLY);
+            addressGroup.setLayout(new GridLayout(2, false));
+            addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            addressGroup.setText("Database Address");
+            addressArea();
+        } else {
+            resourceGroup = new Group(main, SWT.READ_ONLY);
+            resourceGroup.setLayout(new GridLayout(1, false));
+            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            resourceGroup.setText("Container Resources");
+            resourceArea();
+        }
+
+        main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+        scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+
+        setControl(scrolling);
+    }
+
+    private void addressArea() {
+        if (db.isExternal()) {
+            if (addressGroup == null) {
+                addressGroup = new Group(main, SWT.READ_ONLY);
+                addressGroup.setLayout(new GridLayout(2, false));
+                addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                addressGroup.setText("Database Address");
+            }
+            clearAddress();
+            Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
+            address.setName("address");
+            address.setValue("https://example.com");
+            db.getParameters().add(address);
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            new Label(addressGroup, NONE).setText("Database Address: ");
+            Text addressText = new Text(addressGroup, SWT.BORDER);
+            addressText.setText(address.getValue());
+            addressText.setToolTipText("Give the address under which the polystore can reach the database");
+            addressText.setLayoutData(gridDataFields);
+            addressText.addModifyListener(e -> {
+                address.setValue(addressText.getText());
+            });
+        } else {
+            clearAddress();
+        }
+    }
+
+    private void clearAddress() {
+        Property address = db.getParameters().stream()
+                .filter(parameter -> parameter.getName().equalsIgnoreCase("address")).findFirst().orElse(null);
+        if (address != null) {
+            db.getParameters().remove(address);
+        }
+    }
+
+    // TODO
+//    private void portArea() {
+//        // Ports
+//        Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
+//        Key_Values port = TyphonDLFactory.eINSTANCE.createKey_Values();
+//        port.setName("target");
+//        String targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
+//        port.setValue(targetPort);
+//        ports.getKey_values().add(port);
+//        container.setPorts(ports);
+//        new Label(group, NONE).setText("Container port: ");
+//        Text portText = new Text(group, SWT.BORDER);
+//        portText.setText(targetPort);
+//        portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
+//        portText.setLayoutData(gridDataFields);
+//        portText.addModifyListener(e -> {
+//            port.setValue(portText.getText());
+//            validate();
+//        });
+//        notEmptyTexts.add(portText);
+//    }
+
+    private void resourceArea() {
+        if (!db.isExternal()) {
+            if (resourceGroup == null) {
+                resourceGroup = new Group(main, SWT.READ_ONLY);
+                resourceGroup.setLayout(new GridLayout(1, false));
+                resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                resourceGroup.setText("Container Resources");
+            }
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            gridDataChecks.horizontalSpan = 2;
+
+            Resources resources = createDefaultResources();
+            notEmptyTexts = new ArrayList<>();
+
+            Button limitCheck = new Button(resourceGroup, SWT.CHECK);
+            limitCheck.setText("Set container resource limits");
+            limitCheck.setLayoutData(gridDataChecks);
+            // create invisible Limit Composite in each resource composite
+            Composite limitComposite = new Composite(resourceGroup, NONE);
+            limitComposite.setLayout(new GridLayout(2, false));
+            GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            limitData.exclude = true;
+            limitComposite.setLayoutData(limitData);
+            Label limCPULabel = new Label(limitComposite, NONE);
+            limCPULabel.setText("limitCPU: ");
+            Text limCPUText = new Text(limitComposite, SWT.BORDER);
+            limCPUText.setText(resources.getLimitCPU());
+            limCPUText.setLayoutData(gridDataFields);
+            limCPUText.addModifyListener(e -> {
+                resources.setLimitCPU(limCPUText.getText());
+                validate();
+            });
+            notEmptyTexts.add(limCPUText);
+            Label limMemLabel = new Label(limitComposite, NONE);
+            limMemLabel.setText("limitMemory: ");
+            Text limMemText = new Text(limitComposite, SWT.BORDER);
+            limMemText.setText(resources.getLimitMemory());
+            limMemText.setLayoutData(gridDataFields);
+            limMemText.addModifyListener(e -> {
+                resources.setLimitMemory(limMemText.getText());
+                validate();
+            });
+            notEmptyTexts.add(limMemText);
+
+            Button reservationCheck = new Button(resourceGroup, SWT.CHECK);
+            reservationCheck.setText("Set container resource reservations (this will set limits as well)");
+            reservationCheck.setLayoutData(gridDataChecks);
+            // create invisible Reservation Composite in each resource composite
+            Composite reservationComposite = new Composite(resourceGroup, NONE);
+            reservationComposite.setLayout(new GridLayout(2, false));
+            GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            reservationData.exclude = true;
+            reservationComposite.setLayoutData(reservationData);
+            Label resCPULabel = new Label(reservationComposite, NONE);
+            resCPULabel.setText("reservationCPU: ");
+            Text resCPUText = new Text(reservationComposite, SWT.BORDER);
+            resCPUText.setText(resources.getReservationCPU());
+            resCPUText.setLayoutData(gridDataFields);
+            resCPUText.addModifyListener(e -> {
+                resources.setReservationCPU(resCPUText.getText());
+                validate();
+            });
+            notEmptyTexts.add(resCPUText);
+            Label resMemLabel = new Label(reservationComposite, NONE);
+            resMemLabel.setText("reservationMemory: ");
+            Text resMemText = new Text(reservationComposite, SWT.BORDER);
+            resMemText.setText(resources.getReservationMemory());
+            resMemText.setLayoutData(gridDataFields);
+            resMemText.addModifyListener(e -> {
+                resources.setReservationMemory(resMemText.getText());
+                validate();
+            });
+            notEmptyTexts.add(resMemText);
+
+            limitCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // set the textfields visible, resize window
+                    boolean useLimits = limitCheck.getSelection();
+                    limitData.exclude = !useLimits;
+                    limitComposite.setVisible(useLimits);
+                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    if (useLimits) {
+                        Resources newResources = container.getResources();
+                        if (newResources == null) {
+                            newResources = TyphonDLFactory.eINSTANCE.createResources();
+                        }
+                        newResources.setLimitCPU(limCPUText.getText());
+                        newResources.setLimitMemory(limMemText.getText());
+                        // TODO check if necessary:
+                        container.setResources(newResources);
+                        validate();
+                    } else {
+                        reservationCheck.setSelection(false);
+                        reservationCheck.notifyListeners(13, new Event());
+                        container.setResources(null);
+                    }
+                }
+            });
+            reservationCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // set the textfields visible, resize window
+                    boolean useReservations = reservationCheck.getSelection();
+                    reservationData.exclude = !useReservations;
+                    reservationComposite.setVisible(useReservations);
+                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    if (useReservations) {
+                        limitCheck.setSelection(true);
+                        limitCheck.notifyListeners(13, new Event());
+                        // TODO check if this can be null:
+                        Resources newResources = container.getResources();
+                        newResources.setReservationCPU(resCPUText.getText());
+                        newResources.setReservationMemory(resMemText.getText());
+                        container.setResources(newResources);
+                        validate();
+                    } else {
+                        Resources newResources = container.getResources();
+                        if (newResources != null) {
+                            newResources.setReservationCPU(null);
+                            newResources.setReservationMemory(null);
+                            container.setResources(newResources);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private void validate() {
+        Status status = null;
+        for (Text text : notEmptyTexts) {
+            if (text.isVisible() && text.getText().isEmpty()) {
+                status = new Status(IStatus.ERROR, "Wizard", "Textfields can't be empty");
+            }
+        }
+        setStatus(status);
+        // TODO validation resource syntax
+    }
+
+    private Resources createDefaultResources() {
+        Resources resources = TyphonDLFactory.eINSTANCE.createResources();
+        resources.setLimitCPU("0.5");
+        resources.setLimitMemory("512M");
+        resources.setReservationCPU("0.25");
+        resources.setReservationMemory("256M");
+        return resources;
     }
 
     /**
      * The Area inside the helm group. Here the {@link HelmList} is handled.
      */
     private void helmArea() {
-        if (db.getHelm() != null) {
+        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null) {
             if (helmGroup == null) {
-                helmGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                helmGroup = new Group(main, SWT.READ_ONLY);
                 helmGroup.setLayout(new GridLayout(2, false));
                 helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 helmGroup.setText("Helm settings");
@@ -132,7 +413,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private void parameterArea() {
         if (!db.getParameters().isEmpty()) {
             if (parameterGroup == null) {
-                parameterGroup = new Group((Composite) this.getControl(), SWT.READ_ONLY);
+                parameterGroup = new Group(main, SWT.READ_ONLY);
                 parameterGroup.setLayout(new GridLayout(2, false));
                 parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 parameterGroup.setText("Parameters");
@@ -224,28 +505,30 @@ public class CreationDatabasePage extends MyWizardPage {
      * 
      * @param main Composite to put the group in
      */
-    private void imageArea(Composite main) {
-        Group group = new Group(main, SWT.READ_ONLY);
-        group.setLayout(new GridLayout(2, false));
-        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        group.setText("Image");
-
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        new Label(group, NONE).setText("image used:");
-        imageText = new Text(group, SWT.BORDER);
-        String imageTextValue = getImageValue();
-        imageText.setText(imageTextValue);
-        imageText.setLayoutData(gridDataFields);
-        imageText.addModifyListener(e -> {
-            if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
-                db.setImage(null);
-            } else {
-                IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                image.setValue(imageText.getText());
-                db.setImage(image);
+    private void imageArea() {
+        if (!db.isExternal()) {
+            if (imageGroup == null) {
+                imageGroup = new Group(main, SWT.READ_ONLY);
+                imageGroup.setLayout(new GridLayout(2, false));
+                imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                imageGroup.setText("Image");
             }
-        });
-
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            new Label(imageGroup, NONE).setText("image used:");
+            imageText = new Text(imageGroup, SWT.BORDER);
+            String imageTextValue = getImageValue();
+            imageText.setText(imageTextValue);
+            imageText.setLayoutData(gridDataFields);
+            imageText.addModifyListener(e -> {
+                if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
+                    db.setImage(null);
+                } else {
+                    IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    image.setValue(imageText.getText());
+                    db.setImage(image);
+                }
+            });
+        }
     }
 
     /**
@@ -258,95 +541,8 @@ public class CreationDatabasePage extends MyWizardPage {
         return db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
     }
 
-    /**
-     * The Area inside the templateCariable group. Here the
-     * {@link TemplateBuffer#getVariables()} are handled.
-     */
-    private void templateVariableArea() {
-        if (buffer != null) {
-            List<TemplateVariable> variablesList = new ArrayList<>(Arrays.asList(buffer.getVariables()));
-
-            // this is the database.name, which should not be changed, so it is removed from
-            // the list:
-            if (db.isExternal()) {
-                variablesList.removeIf(variable -> variable.getOffsets()[0] == 17);
-            } else {
-                variablesList.removeIf(variable -> variable.getOffsets()[0] == 9);
-            }
-            if (templateVariableGroup == null && !variablesList.isEmpty()) {
-                templateVariableGroup = new Group(((Composite) this.getControl()), SWT.READ_ONLY);
-                templateVariableGroup.setLayout(new GridLayout(2, false));
-                templateVariableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                templateVariableGroup.setText("Template Variables");
-            }
-
-            if (!variablesList.isEmpty()) {
-                GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
-                // create a field for each variable:
-                for (TemplateVariable templateVariable : variablesList) {
-                    new Label(templateVariableGroup, NONE).setText(templateVariable.getName() + ":");
-                    Text text = new Text(templateVariableGroup, SWT.BORDER);
-                    text.setText(templateVariable.getName());
-                    text.setLayoutData(gridDataFields);
-                    text.addModifyListener(e -> {
-                        int variableIndex = variablesList.indexOf(templateVariable);
-                        int oldLenght = templateVariable.getLength();
-                        // replace old value in template variable
-                        templateVariable.setValue(text.getText());
-                        int newLength = templateVariable.getLength();
-                        // replace old value in pattern string
-                        String newPattern = updatePattern(templateVariable, buffer.getString(), oldLenght);
-                        // correct offset of other variables if this variable is not the last one
-                        if (variableIndex != variablesList.size() - 1) {
-                            for (int i = variableIndex + 1; i < variablesList.size(); i++) {
-                                variablesList.get(i).setOffsets(
-                                        new int[] { variablesList.get(i).getOffsets()[0] + newLength - oldLenght });
-                            }
-                        }
-                        buffer.setContent(newPattern, variablesList.toArray(new TemplateVariable[0]));
-                        updateDB(db, buffer);
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * Replaces old variable value with new one
-     * 
-     * @param templateVariable The TemplateVariable with the new value
-     * @param oldPattern       The old Pattern
-     * @param oldLength        The length of the old variable value
-     * @return The updated Pattern
-     */
-    private String updatePattern(TemplateVariable templateVariable, String oldPattern, int oldLength) {
-        int offset = templateVariable.getOffsets()[0];
-        return oldPattern.substring(0, offset) + templateVariable.getValues()[0]
-                + oldPattern.substring(offset + oldLength);
-    }
-
-    /**
-     * updates the {@link DB} model entity in the <code>result</code> map
-     * 
-     * @param db             The {@link DB} to be updated
-     * @param templateBuffer The source for the updated {@link TemplateVariable}s
-     */
-    private void updateDB(DB db, TemplateBuffer templateBuffer) {
-        DB newDB = PreferenceReader.getModelObject(TyphonDLFactory.eINSTANCE.createDB(), templateBuffer);
-        db.getParameters().clear();
-        db.getParameters().addAll(newDB.getParameters());
-    }
-
     public String getDBName() {
         return db.getName();
-    }
-
-    /**
-     * Updates the Text showing the image value
-     */
-    public void updateImageValue() {
-        imageText.setText(getImageValue());
     }
 
     /**
@@ -382,7 +578,7 @@ public class CreationDatabasePage extends MyWizardPage {
             group.setVisible(false);
         } else {
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setVisible(false);
+            group.setVisible(true);
         }
 
     }
@@ -404,11 +600,30 @@ public class CreationDatabasePage extends MyWizardPage {
      * page have to be updated.
      */
     public void updateAllAreas() {
+        setDescription("Database Type: " + db.getType().getName());
         updateGroup(helmGroup, this::helmArea);
         updateGroup(parameterGroup, this::parameterArea);
-        updateGroup(templateVariableGroup, this::templateVariableArea);
-        updateImageValue();
-        ((Composite) this.getControl()).layout();
+        updateGroup(addressGroup, this::addressArea);
+        updateGroup(imageGroup, this::imageArea);
+        updateGroup(resourceGroup, this::resourceArea);
+        // TODO update container
+        main.layout();
+    }
+
+    public int getChosenTemplate() {
+        return this.chosenTemplate;
+    }
+
+    public void setChosenTemplate(int chosenTemplate) {
+        this.chosenTemplate = chosenTemplate;
+    }
+
+    public void setDB(DB db) {
+        this.db = db;
+    }
+
+    public Pair<DB, Container> getResultPair() {
+        return new Pair<DB, Container>(db, container);
     }
 
 }

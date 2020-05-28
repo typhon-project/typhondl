@@ -98,6 +98,9 @@ spec:
         - name: [aContainer.name.toLower()/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
           [aContainer.ports.printPorts()/]
+[if (aContainer.resources <> null)]
+          [aContainer.resources.print()/]
+[/if]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
@@ -136,6 +139,20 @@ spec:
 [/file]
 [/for]
 [/template]
+
+[template public print(aResources : Resources) post (trim())]
+resources:
+  limits:
+    memory: "[aResources.limitMemory.convertMemoryToKubernetes()/]"
+    cpu: "[aResources.limitCPU.convertCPUToKubernetes()/]"
+[if (aResources.reservationCPU <> null)]
+  requests:
+    memory: "[aResources.reservationMemory.convertMemoryToKubernetes()/]"
+    cpu: "[aResources.reservationCPU.convertCPUToKubernetes()/]"
+[/if]
+[/template]
+
+
 
 [template public printMongoJob(aContainer : Container) post (trim())]
 [if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
@@ -181,6 +198,9 @@ spec:
         - name: [aContainer.name.toLower()/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
           [aContainer.ports.printPorts()/]
+[if (aContainer.resources <> null)]
+          [aContainer.resources.print()/]
+[/if]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
@@ -253,8 +273,7 @@ env:
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))][else]
-Arrays not defined yet
+[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes'))._or(arg.name.equalsIgnoreCase('restart')))][else]
 [/if]
 [/template]
 

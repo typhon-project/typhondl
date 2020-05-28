@@ -41,10 +41,9 @@ public class PreferenceReader {
      * TyphonDL Template pages. Also checks the dbType
      * 
      * @param metatype \in {relationaldb, documentdb, graphdb, keyvaluedb}
-     * @return A list of valid TemplateBuffers containing the template pattern and
-     *         the template variables
+     * @return A list of valid template DBs
      */
-    public static ArrayList<Pair<DB, TemplateBuffer>> getBuffers(String metatype) {
+    public static ArrayList<DB> getBuffers(String metatype) {
         TemplateStore templateStore = Activator.getDefault().getInjector("de.atb.typhondl.xtext.TyphonDL")
                 .getInstance(TemplateStore.class);
         // load the DB and DBType templates
@@ -69,7 +68,7 @@ public class PreferenceReader {
                 dbTypes.add(dbtype);
             }
         }
-        ArrayList<Pair<DB, TemplateBuffer>> buffers = new ArrayList<>();
+        ArrayList<DB> templates = new ArrayList<>();
         for (int i = 0; i < dbTemplates.length; i++) {
             TemplateBuffer buffer = getTemplateBuffer(dbTemplates[i]);
             // for now the buffer variables do not contain the DBType
@@ -81,14 +80,14 @@ public class PreferenceReader {
                             || buffer.getString().toLowerCase().contains(supportedType.getName().toLowerCase() + "{")) {
                         db.setName(dbTemplates[i].getName());
                         db.setType(supportedType);
-                        buffers.add(new Pair<DB, TemplateBuffer>(db, buffer));
+                        templates.add(db);
                     }
                 }
             } else {
                 // TODO warning about error in template?
             }
         }
-        return buffers;
+        return templates;
     }
 
     /**

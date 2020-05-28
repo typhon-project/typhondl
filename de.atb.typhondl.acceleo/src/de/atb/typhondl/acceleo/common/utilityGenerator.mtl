@@ -97,7 +97,9 @@ aContainer.getHelmList().chartName
 aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')
 /]
 
+[query public convertCPUToKubernetes(aCPUString : String) : String = self /]
 
+[query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]
 
 
 

@@ -98,8 +98,18 @@ Container:
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
 	(ports=Ports)?
+	(resources=Resources)?
 	(properties+=Property)*
 	'}';
+
+Resources:
+	'resources' '{'
+	   'limitCPU' '=' limitCPU=Value ';'
+	   'limitMemory' '=' limitMemory=Value ';'
+	   ('reservationCPU' '=' reservationCPU=Value ';')?
+	   ('reservationMemory' '=' reservationMemory=Value ';')?
+	'}'
+;
 
 Ports:
 	{Ports}
