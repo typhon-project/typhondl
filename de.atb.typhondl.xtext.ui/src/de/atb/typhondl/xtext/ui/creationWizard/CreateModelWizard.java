@@ -200,12 +200,14 @@ public class CreateModelWizard extends Wizard {
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
-                    if (databasePage.getControl() != null && (((CreationDBMSPage) page).hasFieldChanged(db.getName())
-                            || databasePage.getChosenTemplate() != this.chosenTemplate)) {
+                    if (((CreationDBMSPage) page).hasFieldChanged(db.getName())
+                            || databasePage.getChosenTemplate() != this.chosenTemplate) {
                         databasePage.setChosenTemplate(this.chosenTemplate);
                         databasePage.setDB(db);
-                        databasePage.updateAllAreas();
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
+                        if (databasePage.getControl() != null) {
+                            databasePage.updateAllAreas();
+                        }
                     }
                 }
             }
