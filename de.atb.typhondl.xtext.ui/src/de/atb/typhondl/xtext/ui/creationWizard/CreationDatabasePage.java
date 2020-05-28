@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
-import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
@@ -39,6 +38,7 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -54,7 +54,6 @@ public class CreationDatabasePage extends MyWizardPage {
     private DB db;
     private Container container;
     private Group parameterGroup;
-    private Group templateVariableGroup;
     private Group helmGroup;
     private Text imageText;
     private int chosenTemplate;
@@ -83,9 +82,6 @@ public class CreationDatabasePage extends MyWizardPage {
         Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
         String containerName = createContainerName(db.getName());
         newContainer.setName(containerName);
-        ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
-        containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
-        newContainer.setType(containerType);
         Reference reference = TyphonDLFactory.eINSTANCE.createReference();
         reference.setReference(db);
         newContainer.setDeploys(reference);
@@ -610,6 +606,7 @@ public class CreationDatabasePage extends MyWizardPage {
         updateGroup(addressGroup, this::addressArea);
         updateGroup(imageGroup, this::imageArea);
         updateGroup(resourceGroup, this::resourceArea);
+        // TODO update container
         main.layout();
     }
 
@@ -623,6 +620,10 @@ public class CreationDatabasePage extends MyWizardPage {
 
     public void setDB(DB db) {
         this.db = db;
+    }
+
+    public Pair<DB, Container> getResultPair() {
+        return new Pair<DB, Container>(db, container);
     }
 
 }

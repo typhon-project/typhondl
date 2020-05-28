@@ -112,7 +112,7 @@ public class ModelCreator {
      * @param properties     The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
-    public IFile createDLmodel(HashMap<DB, ArrayList<Container>> result, int chosenTemplate, Properties properties) {
+    public IFile createDLmodel(HashMap<DB, Container> result, int chosenTemplate, Properties properties) {
 
         // create main model
         DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -201,10 +201,9 @@ public class ModelCreator {
         cluster.getApplications().add(application);
 
         for (DB db : result.keySet()) {
-            for (Container containerToAdd : result.get(db)) {
-                containerToAdd.setType(containerType);
-                application.getContainers().add(containerToAdd);
-            }
+            Container container = result.get(db);
+            container.setType(containerType);
+            application.getContainers().add(container);
         }
 
         /*

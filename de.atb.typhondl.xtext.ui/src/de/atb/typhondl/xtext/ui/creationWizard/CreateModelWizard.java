@@ -18,6 +18,7 @@ import org.eclipse.xtext.ui.util.FileOpener;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -50,7 +51,6 @@ public class CreateModelWizard extends Wizard {
 
     private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
     private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
-    private final String PAGENAME_CONTAINER = "Container";
     private final String PAGENAME_ANALYTICS = "Analytics";
 
     /**
@@ -118,8 +118,7 @@ public class CreateModelWizard extends Wizard {
         }
         Properties properties;
         properties = this.mainPage.getProperties();
-        HashMap<DB, ArrayList<Container>> result = ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER))
-                .getResult();
+        HashMap<DB, Container> result = getDabasesAndContainers();
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
         IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
@@ -142,23 +141,34 @@ public class CreateModelWizard extends Wizard {
         return true;
     }
 
+    private HashMap<DB, Container> getDabasesAndContainers() {
+        HashMap<DB, Container> result = new HashMap<>();
+        for (IWizardPage page : this.getPages()) {
+            if (page.getName().contains(PAGENAME_DATABASE)) {
+                Pair<DB, Container> fromDatabasePage = ((CreationDatabasePage) page).getResultPair();
+                result.put(fromDatabasePage.firstValue, fromDatabasePage.secondValue);
+            }
+        }
+        return result;
+    }
+
     /**
      * TODO Checks if the TyphonDL Creation Wizard can finish.
      * 
      * @return <code>false</code> if
      *         <li>the current page is the Main Page or</li>
      *         <li>the current page is the DBMSPage or</li>
-     *         <li>the current page is a DatabasePage or</li>
-     *         <li>the current page is the ContainerPage and the useAnalytics
-     *         checkbox is checked</li>
+     *         <li>the current page is a DatabasePage and the next page as well</li>
      *         <p>
      *         Otherwise {@link Wizard#canFinish()}.
      */
     @Override
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
-        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationDatabasePage) {
+        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage) {
+            return false;
+        }
+        if (currentPage instanceof CreationDatabasePage && currentPage.getNextPage() instanceof CreationDatabasePage) {
             return false;
         }
         return super.canFinish();
@@ -198,14 +208,6 @@ public class CreateModelWizard extends Wizard {
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                     }
                 }
-            }
-            if (!pageExists(PAGENAME_CONTAINER)) {
-                CreationContainerPage newPage = new CreationContainerPage(PAGENAME_CONTAINER, result,
-                        this.chosenTemplate);
-                newPage.setWizard(this);
-                addPage(newPage);
-            } else {
-                ((CreationContainerPage) this.getPage(PAGENAME_CONTAINER)).setDBs(result);
             }
             // skip other DBMS pages
             IWizardPage nextPage = super.getNextPage(page);
