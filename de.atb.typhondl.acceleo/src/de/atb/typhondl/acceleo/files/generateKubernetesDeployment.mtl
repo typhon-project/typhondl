@@ -273,8 +273,7 @@ env:
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes')))][else]
-Arrays not defined yet
+[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes'))._or(arg.name.equalsIgnoreCase('restart')))][else]
 [/if]
 [/template]
 
