@@ -33,6 +33,9 @@ services:
 [/if]
 [if (aContainer.ports <> null)]
     [aContainer.ports.print()/]
+[/if]
+[if (aContainer.resources <> null)]
+    [aContainer.resources.print()/]
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
@@ -71,6 +74,9 @@ services:
 [/if]
 [if (aContainer.ports <> null)]
     [aContainer.ports.print()/]
+[/if]
+[if (aContainer.resources <> null)]
+	[aContainer.resources.print()/]
 [/if]    
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
@@ -117,6 +123,19 @@ networks:
 [for (reference : Cluster_Network | networks.references)]
   - [reference.name/]
 [/for]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
+deploy:
+  resources:
+    limits:
+      cpu: '[aResources.limitCPU/]'
+      memory: [aResources.limitMemory/]
+[if (aResources.reservationCPU <> null)]
+    reservations:
+      cpu: '[aResources.reservationCPU/]'
+      memory: [aResources.reservationMemory/]
+[/if]
 [/template]
 
 [template public print(aProperty : Property) post (trim()) ]
