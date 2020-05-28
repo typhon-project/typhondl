@@ -34,6 +34,7 @@ import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Resources;
@@ -64,6 +65,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private int pageWidth;
     private Group imageGroup;
     private Properties properties;
+    private Group portGroup;
 
     public CreationDatabasePage(String pageName, DB db, int chosenTemplate, int pageWidth) {
         super(pageName);
@@ -150,6 +152,12 @@ public class CreationDatabasePage extends MyWizardPage {
             resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             resourceGroup.setText("Container Resources");
             resourceArea();
+
+            portGroup = new Group(main, SWT.READ_ONLY);
+            portGroup.setLayout(new GridLayout(1, false));
+            portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            portGroup.setText("Container Resources");
+            portArea();
         }
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -166,11 +174,15 @@ public class CreationDatabasePage extends MyWizardPage {
                 addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
                 addressGroup.setText("Database Address");
             }
-            clearAddress();
-            Key_Values address = TyphonDLFactory.eINSTANCE.createKey_Values();
-            address.setName("address");
-            address.setValue("https://example.com");
-            db.getParameters().add(address);
+            Key_Values address;
+            if (getAddress() == null) {
+                address = TyphonDLFactory.eINSTANCE.createKey_Values();
+                address.setName("address");
+                address.setValue("https://example.com");
+                db.getParameters().add(address);
+            } else {
+                address = getAddress();
+            }
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             new Label(addressGroup, NONE).setText("Database Address: ");
             Text addressText = new Text(addressGroup, SWT.BORDER);
@@ -180,40 +192,66 @@ public class CreationDatabasePage extends MyWizardPage {
             addressText.addModifyListener(e -> {
                 address.setValue(addressText.getText());
             });
+            this.container = null;
         } else {
             clearAddress();
         }
     }
 
-    private void clearAddress() {
-        Property address = db.getParameters().stream()
+    private Key_Values getAddress() {
+        return (Key_Values) db.getParameters().stream()
                 .filter(parameter -> parameter.getName().equalsIgnoreCase("address")).findFirst().orElse(null);
+    }
+
+    private void clearAddress() {
+        Property address = getAddress();
         if (address != null) {
             db.getParameters().remove(address);
         }
     }
 
-    // TODO
-//    private void portArea() {
-//        // Ports
-//        Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
-//        Key_Values port = TyphonDLFactory.eINSTANCE.createKey_Values();
-//        port.setName("target");
-//        String targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
-//        port.setValue(targetPort);
-//        ports.getKey_values().add(port);
-//        container.setPorts(ports);
-//        new Label(group, NONE).setText("Container port: ");
-//        Text portText = new Text(group, SWT.BORDER);
-//        portText.setText(targetPort);
-//        portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
-//        portText.setLayoutData(gridDataFields);
-//        portText.addModifyListener(e -> {
-//            port.setValue(portText.getText());
-//            validate();
-//        });
-//        notEmptyTexts.add(portText);
-//    }
+    private void portArea() {
+        if (!db.isExternal()) {
+            if (portGroup == null) {
+                portGroup = new Group(main, SWT.READ_ONLY);
+                portGroup.setLayout(new GridLayout(1, false));
+                portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                portGroup.setText("Port");
+            }
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            if (container == null) {
+                this.container = createDBContainer();
+            }
+            String targetPort = "";
+            Key_Values port;
+            if (this.container.getPorts() == null) {
+                Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
+                port = TyphonDLFactory.eINSTANCE.createKey_Values();
+                port.setName("target");
+                targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
+                port.setValue(targetPort);
+                ports.getKey_values().add(port);
+                container.setPorts(ports);
+            } else {
+                port = container.getPorts().getKey_values().stream()
+                        .filter(key -> key.getName().equalsIgnoreCase("target")).findFirst().orElse(null);
+                if (port != null) {
+                    targetPort = port.getValue();
+                }
+            }
+
+            new Label(portGroup, NONE).setText("Container port: ");
+            Text portText = new Text(portGroup, SWT.BORDER);
+            portText.setText(targetPort);
+            portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
+            portText.setLayoutData(gridDataFields);
+            portText.addModifyListener(e -> {
+                port.setValue(portText.getText());
+                validate();
+            });
+            notEmptyTexts.add(portText);
+        }
+    }
 
     private void resourceArea() {
         if (!db.isExternal()) {
@@ -226,6 +264,10 @@ public class CreationDatabasePage extends MyWizardPage {
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             gridDataChecks.horizontalSpan = 2;
+
+            if (container == null) {
+                this.container = createDBContainer();
+            }
 
             Resources resources = createDefaultResources();
             notEmptyTexts = new ArrayList<>();
@@ -606,7 +648,7 @@ public class CreationDatabasePage extends MyWizardPage {
         updateGroup(addressGroup, this::addressArea);
         updateGroup(imageGroup, this::imageArea);
         updateGroup(resourceGroup, this::resourceArea);
-        // TODO update container
+        updateGroup(portGroup, this::portArea);
         main.layout();
     }
 
