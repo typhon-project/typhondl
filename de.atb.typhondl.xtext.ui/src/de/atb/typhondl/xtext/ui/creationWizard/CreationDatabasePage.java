@@ -1,10 +1,12 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
@@ -20,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -36,6 +39,7 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -60,6 +64,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private Composite main;
     private int pageWidth;
     private Group imageGroup;
+    private Properties properties;
 
     public CreationDatabasePage(String pageName, DB db, int chosenTemplate, int pageWidth) {
         super(pageName);
@@ -67,6 +72,11 @@ public class CreationDatabasePage extends MyWizardPage {
         this.chosenTemplate = chosenTemplate;
         this.container = createDBContainer();
         this.pageWidth = pageWidth;
+        try {
+            this.properties = PropertiesLoader.loadProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Container createDBContainer() {
@@ -187,6 +197,28 @@ public class CreationDatabasePage extends MyWizardPage {
         }
     }
 
+    // TODO
+//    private void portArea() {
+//        // Ports
+//        Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
+//        Key_Values port = TyphonDLFactory.eINSTANCE.createKey_Values();
+//        port.setName("target");
+//        String targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
+//        port.setValue(targetPort);
+//        ports.getKey_values().add(port);
+//        container.setPorts(ports);
+//        new Label(group, NONE).setText("Container port: ");
+//        Text portText = new Text(group, SWT.BORDER);
+//        portText.setText(targetPort);
+//        portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
+//        portText.setLayoutData(gridDataFields);
+//        portText.addModifyListener(e -> {
+//            port.setValue(portText.getText());
+//            validate();
+//        });
+//        notEmptyTexts.add(portText);
+//    }
+
     private void resourceArea() {
         if (!db.isExternal()) {
             if (resourceGroup == null) {
@@ -244,7 +276,7 @@ public class CreationDatabasePage extends MyWizardPage {
             Label resCPULabel = new Label(reservationComposite, NONE);
             resCPULabel.setText("reservationCPU: ");
             Text resCPUText = new Text(reservationComposite, SWT.BORDER);
-            resCPUText.setText("0.25");
+            resCPUText.setText(resources.getReservationCPU());
             resCPUText.setLayoutData(gridDataFields);
             resCPUText.addModifyListener(e -> {
                 resources.setReservationCPU(resCPUText.getText());
@@ -254,7 +286,7 @@ public class CreationDatabasePage extends MyWizardPage {
             Label resMemLabel = new Label(reservationComposite, NONE);
             resMemLabel.setText("reservationMemory: ");
             Text resMemText = new Text(reservationComposite, SWT.BORDER);
-            resMemText.setText("256M");
+            resMemText.setText(resources.getReservationMemory());
             resMemText.setLayoutData(gridDataFields);
             resMemText.addModifyListener(e -> {
                 resources.setReservationMemory(resMemText.getText());
@@ -271,101 +303,51 @@ public class CreationDatabasePage extends MyWizardPage {
                     limitComposite.setVisible(useLimits);
                     main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
                     ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    if (useLimits) {
+                        Resources newResources = container.getResources();
+                        if (newResources == null) {
+                            newResources = TyphonDLFactory.eINSTANCE.createResources();
+                        }
+                        newResources.setLimitCPU(limCPUText.getText());
+                        newResources.setLimitMemory(limMemText.getText());
+                        // TODO check if necessary:
+                        container.setResources(newResources);
+                        validate();
+                    } else {
+                        reservationCheck.setSelection(false);
+                        reservationCheck.notifyListeners(13, new Event());
+                        container.setResources(null);
+                    }
                 }
             });
-
-//
-//            limitCheck.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e) {
-//                    // set the textfields visible, resize window
-//                    boolean useLimits = limitCheck.getSelection();
-//                    limitData.exclude = !useLimits;
-//                    limitComposite.setVisible(useLimits);
-//                    main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
-//                    scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
-//                    // add or remove objects from model
-//                    if (useLimits) {
-//                        resourceList.getProperties().add(limitList);
-//                        switch (clusterType) {
-//                        case "DockerCompose":
-//                            addListToList(deployList, resourceList);
-//                            addListToContainer(container, deployList);
-//                            break;
-//                        case "Kubernetes":
-//                            addListToContainer(container, resourceList);
-//                        default:
-//                            break;
-//                        }
-//                    } else {
-//                        switch (clusterType) {
-//                        case "DockerCompose":
-//                            removePropertyFromList(resourceList, limitList);
-//                            if (resourceList.getProperties().isEmpty()) {
-//                                removePropertyFromList(deployList, resourceList);
-//                                if (deployList.getProperties().isEmpty()) {
-//                                    removePropertyFromContainer(container, deployList);
-//                                }
-//                            }
-//                            break;
-//                        case "Kubernetes":
-//                            removePropertyFromList(resourceList, limitList);
-//                            if (resourceList.getProperties().isEmpty()) {
-//                                removePropertyFromContainer(container, resourceList);
-//                            }
-//                        default:
-//                            break;
-//                        }
-//                    }
-//                    validate();
-//                }
-//            });
-//
-//            reservationCheck.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e) {
-//                    // set the textfields visible, resize window
-//                    boolean useReservations = reservationCheck.getSelection();
-//                    reservationData.exclude = !useReservations;
-//                    reservationComposite.setVisible(useReservations);
-//                    main.setSize(main.computeSize(WIDTH, SWT.DEFAULT));
-//                    scrolling.setMinSize(main.computeSize(WIDTH, SWT.DEFAULT));
-//                    // add or remove objects from model
-//                    if (useReservations) {
-//                        resourceList.getProperties().add(reservationList);
-//                        switch (clusterType) {
-//                        case "DockerCompose":
-//                            addListToList(deployList, resourceList);
-//                            addListToContainer(container, deployList);
-//                            break;
-//                        case "Kubernetes":
-//                            addListToContainer(container, resourceList);
-//                        default:
-//                            break;
-//                        }
-//                    } else {
-//                        switch (clusterType) {
-//                        case "DockerCompose":
-//                            removePropertyFromList(resourceList, reservationList);
-//                            if (resourceList.getProperties().isEmpty()) {
-//                                removePropertyFromList(deployList, resourceList);
-//                                if (deployList.getProperties().isEmpty()) {
-//                                    removePropertyFromContainer(container, deployList);
-//                                }
-//                            }
-//                            break;
-//                        case "Kubernetes":
-//                            removePropertyFromList(resourceList, reservationList);
-//                            if (resourceList.getProperties().isEmpty()) {
-//                                removePropertyFromContainer(container, resourceList);
-//                            }
-//                        default:
-//                            break;
-//                        }
-//                    }
-//                    validate();
-//                }
-//            });
+            reservationCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // set the textfields visible, resize window
+                    boolean useReservations = reservationCheck.getSelection();
+                    reservationData.exclude = !useReservations;
+                    reservationComposite.setVisible(useReservations);
+                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+                    if (useReservations) {
+                        limitCheck.setSelection(true);
+                        limitCheck.notifyListeners(13, new Event());
+                        // TODO check if this can be null:
+                        Resources newResources = container.getResources();
+                        newResources.setReservationCPU(resCPUText.getText());
+                        newResources.setReservationMemory(resMemText.getText());
+                        container.setResources(newResources);
+                        validate();
+                    } else {
+                        Resources newResources = container.getResources();
+                        if (newResources != null) {
+                            newResources.setReservationCPU(null);
+                            newResources.setReservationMemory(null);
+                            container.setResources(newResources);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -384,6 +366,8 @@ public class CreationDatabasePage extends MyWizardPage {
         Resources resources = TyphonDLFactory.eINSTANCE.createResources();
         resources.setLimitCPU("0.5");
         resources.setLimitMemory("512M");
+        resources.setReservationCPU("0.25");
+        resources.setReservationMemory("256M");
         return resources;
     }
 
