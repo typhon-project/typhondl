@@ -77,9 +77,10 @@ public class CreateModelWizard extends Wizard {
     }
 
     /**
-     * Two pages are initially added:
+     * Two types of pages are initially added:
      * <li>Main Page {@link CreationMainPage}</li>
-     * <li>DBMS Page {@link CreationDBMSPage}</li>
+     * <li>one DBMS Page {@link CreationDBMSPage} for every
+     * {@link SupportedTechnologies}</li>
      */
     @Override
     public void addPages() {
