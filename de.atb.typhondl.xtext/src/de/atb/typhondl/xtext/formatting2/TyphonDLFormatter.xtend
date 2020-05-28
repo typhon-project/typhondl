@@ -26,6 +26,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.ClusterType
 import de.atb.typhondl.xtext.typhonDL.Ports
 import de.atb.typhondl.xtext.typhonDL.HelmList
+import de.atb.typhondl.xtext.typhonDL.Resources
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -186,10 +187,23 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		container.deploys.append[newLine]
 		container.networks.append[newLine]
 		container.ports.format
+		container.resources.format
 		
 		for (property : container.properties) {
 			property.format
 		}
+	}
+	
+	def dispatch void format(Resources resources, extension IFormattableDocument document) {
+	    interior(
+            resources.regionFor.keyword('{').append[newLine],
+            resources.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        resources.regionFor.keyword('limitCPU').prepend[newLine]
+        resources.regionFor.keyword('limitMemory').prepend[newLine]
+        resources.regionFor.keyword('reservationCPU').prepend[newLine]
+        resources.regionFor.keyword('reservationMemory').prepend[newLine]
 	}
 
 	def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {
