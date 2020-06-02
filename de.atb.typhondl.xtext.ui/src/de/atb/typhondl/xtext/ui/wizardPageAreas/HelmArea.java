@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.creationWizard;
+package de.atb.typhondl.xtext.ui.wizardPageAreas;
 
 import java.util.HashMap;
 

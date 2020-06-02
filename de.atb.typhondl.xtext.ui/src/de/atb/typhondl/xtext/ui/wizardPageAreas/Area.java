@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.creationWizard;
+package de.atb.typhondl.xtext.ui.wizardPageAreas;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
 
-abstract class Area {
+public abstract class Area {
 
     protected DB db;
     protected Container container;
@@ -128,7 +128,10 @@ abstract class Area {
         }
     }
 
-    public void updateArea() {
+    public void updateArea(DB db, Container container, int chosenTechnology) {
+        this.db = db;
+        this.container = container;
+        this.chosenTechnology = chosenTechnology;
         if (group != null) {
             disposeChildren();
         }
