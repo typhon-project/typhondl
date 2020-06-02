@@ -34,7 +34,7 @@ public class CredentialsArea extends Area {
         }
         if (credentials != null) {
             new Label(group, SWT.NONE).setText("Username:");
-            if (credentials.getUsername().equalsIgnoreCase("username")) {
+            if (credentials.getUsername().equalsIgnoreCase("chooseUsername")) {
                 Text usernameText = new Text(group, SWT.BORDER);
                 usernameText.setLayoutData(gridDataFields);
                 usernameText.setText("choseUsername");
