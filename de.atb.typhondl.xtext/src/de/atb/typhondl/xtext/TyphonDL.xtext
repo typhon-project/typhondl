@@ -49,8 +49,8 @@ HelmList:
 Credentials:
 	{Credentials}
 	'credentials' '{'
-	  ('username' '=' username=Value ';')?
-	  ('password' '=' password=Value ';')?
+	  ('username' '=' username=Value ';')
+	  ('password' '=' password=Value ';')
 	'}';
 
 PlatformType:
