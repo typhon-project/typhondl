@@ -50,7 +50,7 @@ Credentials:
 	{Credentials}
 	'credentials' '{'
 	  ('username' '=' username=Value ';')?
-	  ('password' '=' password=Value ';')
+	  ('password' '=' password=Value ';')?
 	'}';
 
 PlatformType:

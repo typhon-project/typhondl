@@ -166,7 +166,7 @@ public abstract class Area {
      * @param group
      * @param isVisible
      */
-    private void setGroupVisible() {
+    protected void setGroupVisible() {
         if (group.getChildren().length == 0) {
             GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
             excludeData.exclude = true;

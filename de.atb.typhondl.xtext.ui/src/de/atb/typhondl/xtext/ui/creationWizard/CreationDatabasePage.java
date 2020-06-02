@@ -20,6 +20,7 @@ import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.CredentialsArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
@@ -102,6 +103,10 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     private void addAreasToList() {
+        if (!isInList(CredentialsArea.class)) {
+            areas.add(new CredentialsArea(db, container, chosenTechnology, main, properties));
+        }
+
         if (!isInList(HelmArea.class)
                 && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null && !db.isExternal()) {
