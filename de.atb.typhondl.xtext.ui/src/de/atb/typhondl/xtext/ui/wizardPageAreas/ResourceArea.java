@@ -19,8 +19,6 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class ResourceArea extends Area {
 
-    private final int pageWidth = 607;
-
     public ResourceArea(DB db, Container container, int chosenTechnology, Composite parent) {
         super(db, container, chosenTechnology, parent, "Container Resources", null);
     }

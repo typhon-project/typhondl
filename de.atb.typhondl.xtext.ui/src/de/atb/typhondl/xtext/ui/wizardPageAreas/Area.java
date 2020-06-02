@@ -33,6 +33,7 @@ public abstract class Area {
     protected Composite parent;
     protected Group group;
     protected Properties properties;
+    protected static final int pageWidth = 607;
 
     protected Area(DB db, Container container, int chosenTechnology, Composite parent, String groupName,
             Properties properties) {

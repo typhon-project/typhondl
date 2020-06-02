@@ -22,8 +22,6 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ReplicaArea extends Area {
 
-    private final int pageWidth = 607;
-
     public ReplicaArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
         super(db, container, chosenTechnology, parent, "Replication", properties);
     }
