@@ -26,13 +26,19 @@
     <genClasses ecoreClass="TyphonDL.ecore#//Type"/>
     <genClasses ecoreClass="TyphonDL.ecore#//DB">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/namespace"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/helm"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/credentials"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//HelmList">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/repoName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/repoAddress"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/chartName"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//HelmList/parameters"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Credentials">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Credentials/username"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Credentials/password"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//PlatformType"/>
     <genClasses ecoreClass="TyphonDL.ecore#//ClusterType"/>
@@ -59,9 +65,6 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Cluster_Network/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Cluster_Network/key_values"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Container_Network">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container_Network/references"/>
-    </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Application">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Application/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Application/containers"/>
@@ -75,7 +78,20 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/networks"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/ports"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/resources"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/namespace"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Reference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Reference/reference"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Dependency">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Dependency/reference"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Container_Network">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container_Network/references"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Ports">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/key_values"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Resources">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/limitCPU"/>
@@ -83,14 +99,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationCPU"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationMemory"/>
     </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Ports">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/key_values"/>
-    </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Dependency">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Dependency/reference"/>
-    </genClasses>
-    <genClasses ecoreClass="TyphonDL.ecore#//Reference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Reference/reference"/>
+    <genClasses ecoreClass="TyphonDL.ecore#//Namespace">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Namespace/value"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Property">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Property/name"/>

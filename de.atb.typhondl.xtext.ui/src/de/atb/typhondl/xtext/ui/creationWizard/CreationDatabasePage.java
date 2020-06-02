@@ -2,19 +2,14 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -31,8 +26,6 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
@@ -54,10 +47,9 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private Container container;
-    private Group parameterGroup;
     private Group helmGroup;
     private Text imageText;
-    private int chosenTemplate;
+    private int chosenTechnology;
     private Group resourceGroup;
     private Group addressGroup;
     private ArrayList<Text> notEmptyTexts;
@@ -66,11 +58,12 @@ public class CreationDatabasePage extends MyWizardPage {
     private Group imageGroup;
     private Properties properties;
     private Group portGroup;
+    private PropertyArea propertyArea;
 
-    public CreationDatabasePage(String pageName, DB db, int chosenTemplate, int pageWidth) {
+    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, int pageWidth) {
         super(pageName);
         this.db = db;
-        this.chosenTemplate = chosenTemplate;
+        this.chosenTechnology = chosenTechnology;
         this.container = createDBContainer();
         this.pageWidth = pageWidth;
         try {
@@ -115,7 +108,7 @@ public class CreationDatabasePage extends MyWizardPage {
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+        if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null && !db.isExternal()) {
             helmGroup = new Group(main, SWT.READ_ONLY);
             helmGroup.setLayout(new GridLayout(2, false));
@@ -133,11 +126,8 @@ public class CreationDatabasePage extends MyWizardPage {
         }
 
         if (!db.getParameters().isEmpty()) {
-            parameterGroup = new Group(main, SWT.READ_ONLY);
-            parameterGroup.setLayout(new GridLayout(2, false));
-            parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            parameterGroup.setText("Parameters");
-            parameterArea();
+            propertyArea = new PropertyArea(db, container, chosenTechnology, main);
+            propertyArea.createArea();
         }
 
         if (db.isExternal()) {
@@ -413,7 +403,7 @@ public class CreationDatabasePage extends MyWizardPage {
      * The Area inside the helm group. Here the {@link HelmList} is handled.
      */
     private void helmArea() {
-        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
+        if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null) {
             if (helmGroup == null) {
                 helmGroup = new Group(main, SWT.READ_ONLY);
@@ -439,12 +429,12 @@ public class CreationDatabasePage extends MyWizardPage {
             nameText.setLayoutData(gridDataFields);
             nameText.addModifyListener(e -> helmList.setChartName(nameText.getText()));
             HashMap<String, Property> properties = new HashMap<>();
-            for (Property property : helmList.getParameters()) {
-                addPropertyToList(property.getName(), property, properties);
-            }
-            if (!helmList.getParameters().isEmpty()) {
-                addPropertyFieldsToGroup(helmGroup, properties);
-            }
+//            for (Property property : helmList.getParameters()) {
+//                addPropertyToList(property.getName(), property, properties);
+//            }
+//            if (!helmList.getParameters().isEmpty()) {
+//                addPropertyFieldsToGroup(helmGroup, properties);
+//            }
         }
     }
 
@@ -454,92 +444,8 @@ public class CreationDatabasePage extends MyWizardPage {
      */
     private void parameterArea() {
         if (!db.getParameters().isEmpty()) {
-            if (parameterGroup == null) {
-                parameterGroup = new Group(main, SWT.READ_ONLY);
-                parameterGroup.setLayout(new GridLayout(2, false));
-                parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                parameterGroup.setText("Parameters");
-            }
-            HashMap<String, Property> properties = new HashMap<>();
-            for (Property property : db.getParameters()) {
-                addPropertyToList(property.getName(), property, properties);
-            }
-            addPropertyFieldsToGroup(parameterGroup, properties);
+
         }
-    }
-
-    /**
-     * Creates a Label and a Text with {@link ModifyListener} for each Property
-     * 
-     * @param group
-     * @param properties
-     */
-    private void addPropertyFieldsToGroup(Group group, HashMap<String, Property> properties) {
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        ArrayList<String> names = new ArrayList<>(properties.keySet());
-        Collections.sort(names);
-        for (String name : names) {
-            new Label(group, NONE).setText(name + ":");
-            Property property = properties.get(name);
-            Text propertyText = new Text(group, SWT.BORDER);
-            propertyText.setLayoutData(gridDataFields);
-            if (Key_Values.class.isInstance(property)) {
-                Key_Values key_Values = (Key_Values) property;
-                propertyText.setText(key_Values.getValue());
-                propertyText.addModifyListener(e -> key_Values.setValue(propertyText.getText()));
-            } else {
-                Key_ValueArray key_ValueArray = (Key_ValueArray) property;
-                propertyText.setText(fromArray(key_ValueArray.getValues()));
-                propertyText.addModifyListener(e -> key_ValueArray.getValues().addAll(toArray(propertyText.getText())));
-            }
-        }
-    }
-
-    /**
-     * Finds all {@link Key_Values} and {@link Key_ValueArray}s inside the property
-     * list, gives them the right name and adds them to a list
-     * 
-     * @param name       Name of the Property
-     * @param property   The Property to add to the list
-     * @param properties
-     */
-    private void addPropertyToList(String name, Property property, HashMap<String, Property> properties) {
-        if (Key_KeyValueList.class.isInstance(property)) {
-            for (Property subProperty : ((Key_KeyValueList) property).getProperties()) {
-                addPropertyToList(name + "." + subProperty.getName(), subProperty, properties);
-            }
-        } else {
-            properties.put(name, property);
-        }
-    }
-
-    /**
-     * Turns Text text into List to be set as {@link Key_ValueArray#getValues()}
-     * 
-     * @param text the text taken from the Text
-     * @return text as List
-     */
-    private List<String> toArray(String text) {
-        return Arrays.asList(text.split(","));
-    }
-
-    /**
-     * Turns values of {@link Key_ValueArray} into String with comma separated
-     * values
-     * 
-     * @param values values of a {@link Key_ValueArray}
-     * @return Comma separated String
-     */
-    private String fromArray(EList<String> values) {
-        if (!values.isEmpty()) {
-            String arrayString = values.get(0);
-            values.remove(0);
-            for (String string : values) {
-                arrayString += "," + string;
-            }
-            return arrayString;
-        } else
-            return "";
     }
 
     /**
@@ -652,12 +558,12 @@ public class CreationDatabasePage extends MyWizardPage {
         main.layout();
     }
 
-    public int getChosenTemplate() {
-        return this.chosenTemplate;
+    public int getChosenTechnology() {
+        return this.chosenTechnology;
     }
 
-    public void setChosenTemplate(int chosenTemplate) {
-        this.chosenTemplate = chosenTemplate;
+    public void setChosenTechnology(int chosenTechnology) {
+        this.chosenTechnology = chosenTechnology;
     }
 
     public void setDB(DB db) {
