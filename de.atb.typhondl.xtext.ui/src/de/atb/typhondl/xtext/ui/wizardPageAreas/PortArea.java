@@ -44,6 +44,8 @@ public class PortArea extends Area {
             Key_Values targetPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             targetPort.setName("target");
             targetPort.setValue(properties.getProperty(db.getType().getName().toLowerCase() + ".port"));
+            ports.getKey_values().add(targetPort);
+            ports.getKey_values().add(publishedPort);
 
             Composite hiddenComposite = new Composite(group, SWT.NONE);
             hiddenComposite.setLayout(new GridLayout(2, false));
@@ -59,9 +61,9 @@ public class PortArea extends Area {
             targetPortText.addModifyListener(e -> {
                 targetPort.setValue(targetPortText.getText());
             });
-            new Label(hiddenComposite, SWT.NONE).setText("Container port: ");
+            new Label(hiddenComposite, SWT.NONE).setText("Published port: ");
             Text publishedPortText = new Text(hiddenComposite, SWT.BORDER);
-            publishedPortText.setText(targetPort.getValue());
+            publishedPortText.setText(publishedPort.getValue());
             publishedPortText.setToolTipText("This is the port that will be exposed to the outside");
             publishedPortText.setLayoutData(gridDataFields);
             publishedPortText.addModifyListener(e -> {
