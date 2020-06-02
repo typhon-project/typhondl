@@ -2,7 +2,6 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -16,7 +15,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -24,7 +22,6 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
@@ -47,7 +44,6 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private Container container;
-    private Group helmGroup;
     private Text imageText;
     private int chosenTechnology;
     private Group resourceGroup;
@@ -59,6 +55,8 @@ public class CreationDatabasePage extends MyWizardPage {
     private Properties properties;
     private Group portGroup;
     private PropertyArea propertyArea;
+    private HelmArea helmArea;
+    private ArrayList<Area> areas;
 
     public CreationDatabasePage(String pageName, DB db, int chosenTechnology, int pageWidth) {
         super(pageName);
@@ -66,6 +64,7 @@ public class CreationDatabasePage extends MyWizardPage {
         this.chosenTechnology = chosenTechnology;
         this.container = createDBContainer();
         this.pageWidth = pageWidth;
+        areas = new ArrayList<>();
         try {
             this.properties = PropertiesLoader.loadProperties();
         } catch (IOException e) {
@@ -110,45 +109,40 @@ public class CreationDatabasePage extends MyWizardPage {
 
         if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null && !db.isExternal()) {
-            helmGroup = new Group(main, SWT.READ_ONLY);
-            helmGroup.setLayout(new GridLayout(2, false));
-            helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            helmGroup.setText("Helm settings");
-            helmArea();
+            areas.add(new HelmArea(db, container, chosenTechnology, main));
         }
-
-        if (!db.isExternal()) {
-            imageGroup = new Group(main, SWT.READ_ONLY);
-            imageGroup.setLayout(new GridLayout(2, false));
-            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            imageGroup.setText("Image");
-            imageArea();
-        }
+//
+//        if (!db.isExternal()) {
+//            imageGroup = new Group(main, SWT.READ_ONLY);
+//            imageGroup.setLayout(new GridLayout(2, false));
+//            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//            imageGroup.setText("Image");
+//            imageArea();
+//        }
 
         if (!db.getParameters().isEmpty()) {
-            propertyArea = new PropertyArea(db, container, chosenTechnology, main);
-            propertyArea.createArea();
+            areas.add(new PropertyArea(db, container, chosenTechnology, main));
         }
 
-        if (db.isExternal()) {
-            addressGroup = new Group(main, SWT.READ_ONLY);
-            addressGroup.setLayout(new GridLayout(2, false));
-            addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            addressGroup.setText("Database Address");
-            addressArea();
-        } else {
-            resourceGroup = new Group(main, SWT.READ_ONLY);
-            resourceGroup.setLayout(new GridLayout(1, false));
-            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            resourceGroup.setText("Container Resources");
-            resourceArea();
-
-            portGroup = new Group(main, SWT.READ_ONLY);
-            portGroup.setLayout(new GridLayout(1, false));
-            portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            portGroup.setText("Container Resources");
-            portArea();
-        }
+//        if (db.isExternal()) {
+//            addressGroup = new Group(main, SWT.READ_ONLY);
+//            addressGroup.setLayout(new GridLayout(2, false));
+//            addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//            addressGroup.setText("Database Address");
+//            addressArea();
+//        } else {
+//            resourceGroup = new Group(main, SWT.READ_ONLY);
+//            resourceGroup.setLayout(new GridLayout(1, false));
+//            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//            resourceGroup.setText("Container Resources");
+//            resourceArea();
+//
+//            portGroup = new Group(main, SWT.READ_ONLY);
+//            portGroup.setLayout(new GridLayout(1, false));
+//            portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//            portGroup.setText("Container Resources");
+//            portArea();
+//        }
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -400,55 +394,6 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     /**
-     * The Area inside the helm group. Here the {@link HelmList} is handled.
-     */
-    private void helmArea() {
-        if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null) {
-            if (helmGroup == null) {
-                helmGroup = new Group(main, SWT.READ_ONLY);
-                helmGroup.setLayout(new GridLayout(2, false));
-                helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                helmGroup.setText("Helm settings");
-            }
-            HelmList helmList = db.getHelm();
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            new Label(helmGroup, SWT.NONE).setText("Repository Address:");
-            Text addressText = new Text(helmGroup, SWT.BORDER);
-            addressText.setText(helmList.getRepoAddress());
-            addressText.setLayoutData(gridDataFields);
-            addressText.addModifyListener(e -> helmList.setRepoAddress(addressText.getText()));
-            new Label(helmGroup, SWT.NONE).setText("Repository Name:");
-            Text repoNameText = new Text(helmGroup, SWT.BORDER);
-            repoNameText.setText(helmList.getRepoName());
-            repoNameText.setLayoutData(gridDataFields);
-            repoNameText.addModifyListener(e -> helmList.setRepoName(repoNameText.getText()));
-            new Label(helmGroup, SWT.NONE).setText("Chart Name:");
-            Text nameText = new Text(helmGroup, SWT.BORDER);
-            nameText.setText(helmList.getChartName());
-            nameText.setLayoutData(gridDataFields);
-            nameText.addModifyListener(e -> helmList.setChartName(nameText.getText()));
-            HashMap<String, Property> properties = new HashMap<>();
-//            for (Property property : helmList.getParameters()) {
-//                addPropertyToList(property.getName(), property, properties);
-//            }
-//            if (!helmList.getParameters().isEmpty()) {
-//                addPropertyFieldsToGroup(helmGroup, properties);
-//            }
-        }
-    }
-
-    /**
-     * The Area inside the parameter group. Here the {@link DB#getParameters()} are
-     * handled.
-     */
-    private void parameterArea() {
-        if (!db.getParameters().isEmpty()) {
-
-        }
-    }
-
-    /**
      * The image group, here the image can be edited
      * 
      * @param main Composite to put the group in
@@ -494,67 +439,15 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     /**
-     * Updates each group with the given areaMethod
-     * 
-     * @param group
-     * @param areaMethod
-     */
-    public void updateGroup(Group group, Runnable areaMethod) {
-        if (group != null) {
-            disposeChildren(group);
-        }
-        areaMethod.run();
-        if (group != null) {
-            setGroupVisible(group);
-            group.layout();
-            group.getParent().layout(true);
-        }
-    }
-
-    /**
-     * If the given group has no children (i.e. no Labels or Texts) the empty group
-     * should be hidden.
-     * 
-     * @param group
-     * @param isVisible
-     */
-    private void setGroupVisible(Group group) {
-        if (group.getChildren().length == 0) {
-            GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
-            excludeData.exclude = true;
-            group.setLayoutData(excludeData);
-            group.setVisible(false);
-        } else {
-            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setVisible(true);
-        }
-
-    }
-
-    /**
-     * Disposes all Labels and Texts of the given group
-     * 
-     * @param group
-     */
-    private void disposeChildren(Group group) {
-        for (Control control : group.getChildren()) {
-            control.dispose();
-        }
-    }
-
-    /**
      * Updates the database page. <br>
      * After something has changed on the DBMS page, the widgets on the database
      * page have to be updated.
      */
     public void updateAllAreas() {
         setDescription("Database Type: " + db.getType().getName());
-        updateGroup(helmGroup, this::helmArea);
-        updateGroup(parameterGroup, this::parameterArea);
-        updateGroup(addressGroup, this::addressArea);
-        updateGroup(imageGroup, this::imageArea);
-        updateGroup(resourceGroup, this::resourceArea);
-        updateGroup(portGroup, this::portArea);
+        for (Area area : areas) {
+            area.updateArea();
+        }
         main.layout();
     }
 

@@ -12,6 +12,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -31,11 +32,13 @@ abstract class Area {
     protected Composite parent;
     protected Group group;
 
-    protected Area(DB db, Container container, int chosenTechnology, Composite parent) {
+    protected Area(DB db, Container container, int chosenTechnology, Composite parent, String groupName) {
         this.db = db;
         this.container = container;
         this.chosenTechnology = chosenTechnology;
         this.parent = parent;
+        createGroup(groupName);
+        createArea();
     }
 
     public void createGroup(String text) {
@@ -127,13 +130,43 @@ abstract class Area {
 
     public void updateArea() {
         if (group != null) {
-            disposeChildren(group);
+            disposeChildren();
         }
-        areaMethod.run();
+        createArea();
         if (group != null) {
-            setGroupVisible(group);
+            setGroupVisible();
             group.layout();
             group.getParent().layout(true);
+        }
+    }
+
+    /**
+     * Disposes all Labels and Texts of the given group
+     * 
+     * @param group
+     */
+    private void disposeChildren() {
+        for (Control control : group.getChildren()) {
+            control.dispose();
+        }
+    }
+
+    /**
+     * If the given group has no children (i.e. no Labels or Texts) the empty group
+     * should be hidden.
+     * 
+     * @param group
+     * @param isVisible
+     */
+    private void setGroupVisible() {
+        if (group.getChildren().length == 0) {
+            GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            excludeData.exclude = true;
+            group.setLayoutData(excludeData);
+            group.setVisible(false);
+        } else {
+            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+            group.setVisible(true);
         }
     }
 
