@@ -1,5 +1,0 @@
-database VehicleMetadataDB : MariaDB {
-	environment {
-		MYSQL_ROOT_PASSWORD = password ;
-	}
-}
