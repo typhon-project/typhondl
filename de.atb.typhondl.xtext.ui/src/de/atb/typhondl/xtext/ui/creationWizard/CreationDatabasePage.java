@@ -24,6 +24,7 @@ import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ReplicaArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
 /**
@@ -126,6 +127,10 @@ public class CreationDatabasePage extends MyWizardPage {
         if (!isInList(PortArea.class) && !db.isExternal()) {
             areas.add(new PortArea(db, container, chosenTechnology, main, properties));
         }
+
+        if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()) {
+            areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
+        }
     }
 
     private <T> boolean isInList(Class<T> areaClass) {
@@ -135,6 +140,12 @@ public class CreationDatabasePage extends MyWizardPage {
             }
         }
         return false;
+    }
+
+    private String getReplicationProperty() {
+        String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
+                + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
+        return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 
     public String getDBName() {

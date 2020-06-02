@@ -17,7 +17,7 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 public class HelmArea extends Area {
 
     public HelmArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Helm Charts");
+        super(db, container, chosenTechnology, parent, "Helm Charts", null);
     }
 
     @Override

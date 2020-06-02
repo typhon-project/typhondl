@@ -14,7 +14,7 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 public class ImageArea extends Area {
 
     public ImageArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Image used");
+        super(db, container, chosenTechnology, parent, "Image used", null);
     }
 
     @Override

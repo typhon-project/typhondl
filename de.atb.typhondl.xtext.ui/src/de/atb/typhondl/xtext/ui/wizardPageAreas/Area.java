@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.swt.SWT;
@@ -31,12 +32,15 @@ public abstract class Area {
     protected int chosenTechnology;
     protected Composite parent;
     protected Group group;
+    protected Properties properties;
 
-    protected Area(DB db, Container container, int chosenTechnology, Composite parent, String groupName) {
+    protected Area(DB db, Container container, int chosenTechnology, Composite parent, String groupName,
+            Properties properties) {
         this.db = db;
         this.container = container;
         this.chosenTechnology = chosenTechnology;
         this.parent = parent;
+        this.properties = properties;
         createGroup(groupName);
         createArea();
     }
@@ -129,6 +133,9 @@ public abstract class Area {
     }
 
     public void updateArea() {
+        if (group == null) {
+            System.out.println("SCREEEEEEEAM---------------------------------------------");
+        }
         if (group != null) {
             disposeChildren();
         }

@@ -15,7 +15,7 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 public class AddressArea extends Area {
 
     public AddressArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Database Address");
+        super(db, container, chosenTechnology, parent, "Database Address", null);
     }
 
     @Override

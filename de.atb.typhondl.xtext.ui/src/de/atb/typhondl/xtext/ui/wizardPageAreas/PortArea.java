@@ -16,11 +16,8 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class PortArea extends Area {
 
-    private Properties properties;
-
     public PortArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
-        super(db, container, chosenTechnology, parent, "Ports");
-        this.properties = properties;
+        super(db, container, chosenTechnology, parent, "Ports", properties);
     }
 
     @Override

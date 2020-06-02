@@ -11,7 +11,7 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 public class PropertyArea extends Area {
 
     public PropertyArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Parameters");
+        super(db, container, chosenTechnology, parent, "Parameters", null);
     }
 
     @Override
