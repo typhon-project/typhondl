@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Composite;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Reference;
-import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
@@ -24,6 +23,7 @@ import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -106,12 +106,11 @@ public class CreationDatabasePage extends MyWizardPage {
         if (db.isExternal()) {
             areas.add(new AddressArea(db, container, chosenTechnology, main));
         }
-//        } else {
-//            resourceGroup = new Group(main, SWT.READ_ONLY);
-//            resourceGroup.setLayout(new GridLayout(1, false));
-//            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//            resourceGroup.setText("Container Resources");
-//            resourceArea();
+
+        if (!db.isExternal()) {
+            areas.add(new ResourceArea(db, container, chosenTechnology, main));
+        }
+
 //
 //            portGroup = new Group(main, SWT.READ_ONLY);
 //            portGroup.setLayout(new GridLayout(1, false));
@@ -168,162 +167,6 @@ public class CreationDatabasePage extends MyWizardPage {
 //            notEmptyTexts.add(portText);
 //        }
 //    }
-
-//    private void resourceArea() {
-//        if (!db.isExternal()) {
-//            if (resourceGroup == null) {
-//                resourceGroup = new Group(main, SWT.READ_ONLY);
-//                resourceGroup.setLayout(new GridLayout(1, false));
-//                resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//                resourceGroup.setText("Container Resources");
-//            }
-//            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-//            GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-//            gridDataChecks.horizontalSpan = 2;
-//
-//            if (container == null) {
-//                this.container = createDBContainer();
-//            }
-//
-//            Resources resources = createDefaultResources();
-//            notEmptyTexts = new ArrayList<>();
-//
-//            Button limitCheck = new Button(resourceGroup, SWT.CHECK);
-//            limitCheck.setText("Set container resource limits");
-//            limitCheck.setLayoutData(gridDataChecks);
-//            // create invisible Limit Composite in each resource composite
-//            Composite limitComposite = new Composite(resourceGroup, NONE);
-//            limitComposite.setLayout(new GridLayout(2, false));
-//            GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
-//            limitData.exclude = true;
-//            limitComposite.setLayoutData(limitData);
-//            Label limCPULabel = new Label(limitComposite, NONE);
-//            limCPULabel.setText("limitCPU: ");
-//            Text limCPUText = new Text(limitComposite, SWT.BORDER);
-//            limCPUText.setText(resources.getLimitCPU());
-//            limCPUText.setLayoutData(gridDataFields);
-//            limCPUText.addModifyListener(e -> {
-//                resources.setLimitCPU(limCPUText.getText());
-//                validate();
-//            });
-//            notEmptyTexts.add(limCPUText);
-//            Label limMemLabel = new Label(limitComposite, NONE);
-//            limMemLabel.setText("limitMemory: ");
-//            Text limMemText = new Text(limitComposite, SWT.BORDER);
-//            limMemText.setText(resources.getLimitMemory());
-//            limMemText.setLayoutData(gridDataFields);
-//            limMemText.addModifyListener(e -> {
-//                resources.setLimitMemory(limMemText.getText());
-//                validate();
-//            });
-//            notEmptyTexts.add(limMemText);
-//
-//            Button reservationCheck = new Button(resourceGroup, SWT.CHECK);
-//            reservationCheck.setText("Set container resource reservations (this will set limits as well)");
-//            reservationCheck.setLayoutData(gridDataChecks);
-//            // create invisible Reservation Composite in each resource composite
-//            Composite reservationComposite = new Composite(resourceGroup, NONE);
-//            reservationComposite.setLayout(new GridLayout(2, false));
-//            GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
-//            reservationData.exclude = true;
-//            reservationComposite.setLayoutData(reservationData);
-//            Label resCPULabel = new Label(reservationComposite, NONE);
-//            resCPULabel.setText("reservationCPU: ");
-//            Text resCPUText = new Text(reservationComposite, SWT.BORDER);
-//            resCPUText.setText(resources.getReservationCPU());
-//            resCPUText.setLayoutData(gridDataFields);
-//            resCPUText.addModifyListener(e -> {
-//                resources.setReservationCPU(resCPUText.getText());
-//                validate();
-//            });
-//            notEmptyTexts.add(resCPUText);
-//            Label resMemLabel = new Label(reservationComposite, NONE);
-//            resMemLabel.setText("reservationMemory: ");
-//            Text resMemText = new Text(reservationComposite, SWT.BORDER);
-//            resMemText.setText(resources.getReservationMemory());
-//            resMemText.setLayoutData(gridDataFields);
-//            resMemText.addModifyListener(e -> {
-//                resources.setReservationMemory(resMemText.getText());
-//                validate();
-//            });
-//            notEmptyTexts.add(resMemText);
-//
-//            limitCheck.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e) {
-//                    // set the textfields visible, resize window
-//                    boolean useLimits = limitCheck.getSelection();
-//                    limitData.exclude = !useLimits;
-//                    limitComposite.setVisible(useLimits);
-//                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
-//                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-//                    if (useLimits) {
-//                        Resources newResources = container.getResources();
-//                        if (newResources == null) {
-//                            newResources = TyphonDLFactory.eINSTANCE.createResources();
-//                        }
-//                        newResources.setLimitCPU(limCPUText.getText());
-//                        newResources.setLimitMemory(limMemText.getText());
-//                        // TODO check if necessary:
-//                        container.setResources(newResources);
-//                        validate();
-//                    } else {
-//                        reservationCheck.setSelection(false);
-//                        reservationCheck.notifyListeners(13, new Event());
-//                        container.setResources(null);
-//                    }
-//                }
-//            });
-//            reservationCheck.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e) {
-//                    // set the textfields visible, resize window
-//                    boolean useReservations = reservationCheck.getSelection();
-//                    reservationData.exclude = !useReservations;
-//                    reservationComposite.setVisible(useReservations);
-//                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
-//                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-//                    if (useReservations) {
-//                        limitCheck.setSelection(true);
-//                        limitCheck.notifyListeners(13, new Event());
-//                        // TODO check if this can be null:
-//                        Resources newResources = container.getResources();
-//                        newResources.setReservationCPU(resCPUText.getText());
-//                        newResources.setReservationMemory(resMemText.getText());
-//                        container.setResources(newResources);
-//                        validate();
-//                    } else {
-//                        Resources newResources = container.getResources();
-//                        if (newResources != null) {
-//                            newResources.setReservationCPU(null);
-//                            newResources.setReservationMemory(null);
-//                            container.setResources(newResources);
-//                        }
-//                    }
-//                }
-//            });
-//        }
-//    }
-
-//    private void validate() {
-//        Status status = null;
-//        for (Text text : notEmptyTexts) {
-//            if (text.isVisible() && text.getText().isEmpty()) {
-//                status = new Status(IStatus.ERROR, "Wizard", "Textfields can't be empty");
-//            }
-//        }
-//        setStatus(status);
-//        // TODO validation resource syntax
-//    }
-
-    private Resources createDefaultResources() {
-        Resources resources = TyphonDLFactory.eINSTANCE.createResources();
-        resources.setLimitCPU("0.5");
-        resources.setLimitMemory("512M");
-        resources.setReservationCPU("0.25");
-        resources.setReservationMemory("256M");
-        return resources;
-    }
 
     public String getDBName() {
         return db.getName();
