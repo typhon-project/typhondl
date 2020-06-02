@@ -106,8 +106,20 @@ Container:
 	(ports=Ports)?
 	(resources=Resources)?
 	(namespace=Namespace)?
+	(replication=Replication)?
 	(properties+=Property)*
 	'}';
+
+Replication:
+    'replication' '{'
+        'replicas' '=' replicas=INT ';'
+        'mode' '=' mode=Modes ';'
+    '}'
+;
+
+enum Modes:
+    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet'
+;
 
 Reference:
 	'deploys' reference=[Services];

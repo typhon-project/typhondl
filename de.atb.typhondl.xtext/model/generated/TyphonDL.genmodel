@@ -6,6 +6,10 @@
     complianceLevel="8.0" copyrightFields="false" runtimeVersion="2.20">
   <genPackages prefix="TyphonDL" basePackage="de.atb.typhondl.xtext" disposableProviderFactory="true"
       fileExtensions="tdl" ecorePackage="TyphonDL.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="TyphonDL.ecore#//Modes">
+      <genEnumLiterals ecoreEnumLiteral="TyphonDL.ecore#//Modes/MULTIPRIMARY"/>
+      <genEnumLiterals ecoreEnumLiteral="TyphonDL.ecore#//Modes/REPLICASET"/>
+    </genEnums>
     <genClasses ecoreClass="TyphonDL.ecore#//DeploymentModel">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DeploymentModel/guiMetaInformation"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DeploymentModel/elements"/>
@@ -79,7 +83,12 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/ports"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/resources"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/namespace"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/replication"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Replication">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Replication/replicas"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Replication/mode"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Reference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Reference/reference"/>

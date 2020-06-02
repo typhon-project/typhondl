@@ -97,8 +97,18 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="namespace" eType="#//Namespace"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="replication" eType="#//Replication"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Replication">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="replicas" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mode" eType="#//Modes"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Modes">
+    <eLiterals name="MULTIPRIMARY" literal="multiPrimary"/>
+    <eLiterals name="REPLICASET" value="1" literal="replicaSet"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Services"/>

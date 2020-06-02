@@ -3,14 +3,26 @@ package de.atb.typhondl.xtext.ui.wizardPageAreas;
 import java.util.Properties;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
+import de.atb.typhondl.xtext.typhonDL.Modes;
+import de.atb.typhondl.xtext.typhonDL.Replication;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ReplicaArea extends Area {
+
+    private final int pageWidth = 607;
 
     public ReplicaArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
         super(db, container, chosenTechnology, parent, "Replication", properties);
@@ -19,16 +31,87 @@ public class ReplicaArea extends Area {
     @Override
     public void createArea() {
         if (!db.isExternal() && !getReplicationProperty().isEmpty()) {
-            switch (getReplicationProperty()) {
-            case "backup":
-                createBackupArea();
-                break;
-            case "multi":
-                createMultiPrimaryArea();
-                break;
-            default:
-                break;
-            }
+
+            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            gridDataChecks.horizontalSpan = 2;
+
+            Button checkbox = new Button(group, SWT.CHECK);
+            checkbox.setText(getCheckboxText());
+            checkbox.setLayoutData(gridDataChecks);
+
+            container.setReplication(null);
+            Replication replication = createDefaultReplication();
+            Composite hiddenComposite = new Composite(group, SWT.NONE);
+            hiddenComposite.setLayout(new GridLayout(2, false));
+            GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            hiddenData.exclude = true;
+            hiddenComposite.setLayoutData(hiddenData);
+
+            new Label(hiddenComposite, SWT.NONE).setText("Number of total Replicas:");
+            Text replicaText = new Text(hiddenComposite, SWT.BORDER);
+            replicaText.setLayoutData(gridDataFields);
+            replicaText.setText(Integer.toString(replication.getReplicas()));
+            replicaText.addModifyListener(e -> {
+                replication.setReplicas(Integer.parseInt(replicaText.getText()));
+            });
+            new Label(hiddenComposite, SWT.NONE).setText("Replication Mode:");
+            // TODO have a combo here in case more modes are available
+            new Label(hiddenComposite, SWT.NONE).setText(replication.getMode().getName());
+
+            checkbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // set the textfields visible, resize window
+                    boolean useReplication = checkbox.getSelection();
+                    hiddenData.exclude = !useReplication;
+                    hiddenComposite.setVisible(useReplication);
+                    parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                    ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                    if (useReplication) {
+                        Replication newReplication = container.getReplication();
+                        if (newReplication == null) {
+                            newReplication = TyphonDLFactory.eINSTANCE.createReplication();
+                        }
+                        newReplication.setReplicas(Integer.parseInt(replicaText.getText()));
+                        newReplication.setMode(getReplicationMode());
+                        container.setReplication(newReplication);
+                    } else {
+                        container.setReplication(null);
+                    }
+                }
+            });
+
+        }
+    }
+
+    private Replication createDefaultReplication() {
+        Replication replication;
+        replication = TyphonDLFactory.eINSTANCE.createReplication();
+        replication.setReplicas(3);
+        replication.setMode(getReplicationMode());
+        return replication;
+    }
+
+    private Modes getReplicationMode() {
+        switch (getReplicationProperty()) {
+        case "replicaset":
+            return Modes.REPLICASET;
+        case "multi":
+            return Modes.MULTIPRIMARY;
+        default:
+            return null;
+        }
+    }
+
+    private String getCheckboxText() {
+        switch (getReplicationProperty()) {
+        case "replicaset":
+            return "Create Replicas to serve as backup (Primary/Replica setup)";
+        case "multi":
+            return "Create a multi Primary setup for high availability";
+        default:
+            return "";
         }
     }
 
@@ -36,16 +119,6 @@ public class ReplicaArea extends Area {
         String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
                 + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
         return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
-    }
-
-    private void createMultiPrimaryArea() {
-        new Label(group, SWT.NONE).setText("multi");
-
-    }
-
-    private void createBackupArea() {
-        new Label(group, SWT.NONE).setText("backup");
-
     }
 
 }
