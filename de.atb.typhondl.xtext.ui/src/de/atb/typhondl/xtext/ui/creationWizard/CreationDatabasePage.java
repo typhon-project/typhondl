@@ -40,6 +40,7 @@ public class CreationDatabasePage extends MyWizardPage {
     private int pageWidth;
     private Properties properties;
     private ArrayList<Area> areas;
+    private Composite main;
 
     public CreationDatabasePage(String pageName, DB db, int chosenTechnology, int pageWidth) {
         super(pageName);
@@ -83,33 +84,14 @@ public class CreationDatabasePage extends MyWizardPage {
         setTitle("Database settings for " + db.getName());
         setDescription("Database Type: " + db.getType().getName());
         ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
-        Composite main = new Composite(scrolling, SWT.NONE);
+        main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
         scrolling.setExpandVertical(true);
         scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null && !db.isExternal()) {
-            areas.add(new HelmArea(db, container, chosenTechnology, main));
-        }
-
-        if (!db.isExternal()) {
-            areas.add(new ImageArea(db, container, chosenTechnology, main));
-        }
-
-        if (!db.getParameters().isEmpty()) {
-            areas.add(new PropertyArea(db, container, chosenTechnology, main));
-        }
-
-        if (db.isExternal()) {
-            areas.add(new AddressArea(db, container, chosenTechnology, main));
-        }
-
-        if (!db.isExternal()) {
-            areas.add(new ResourceArea(db, container, chosenTechnology, main));
-        }
+        addAreasToList();
 
 //
 //            portGroup = new Group(main, SWT.READ_ONLY);
@@ -123,6 +105,40 @@ public class CreationDatabasePage extends MyWizardPage {
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
 
         setControl(scrolling);
+    }
+
+    private void addAreasToList() {
+        if (!isInList(HelmArea.class)
+                && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null && !db.isExternal()) {
+            areas.add(new HelmArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(ImageArea.class) && !db.isExternal()) {
+            areas.add(new ImageArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty()) {
+            areas.add(new PropertyArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(AddressArea.class) && db.isExternal()) {
+            areas.add(new AddressArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(ResourceArea.class) && !db.isExternal()) {
+            areas.add(new ResourceArea(db, container, chosenTechnology, main));
+        }
+
+    }
+
+    private <T> boolean isInList(Class<T> areaClass) {
+        for (Area area : areas) {
+            if (areaClass.isInstance(area)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 //    private void portArea() {
@@ -179,8 +195,9 @@ public class CreationDatabasePage extends MyWizardPage {
      */
     public void updateAllAreas() {
         setDescription("Database Type: " + db.getType().getName());
+        addAreasToList();
         for (Area area : areas) {
-            area.updateArea(db, container, chosenTechnology);
+            area.updateArea();
         }
         ((Composite) this.getControl()).layout();
     }

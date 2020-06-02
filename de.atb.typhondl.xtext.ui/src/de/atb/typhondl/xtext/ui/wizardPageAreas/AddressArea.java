@@ -42,7 +42,6 @@ public class AddressArea extends Area {
             addressText.addModifyListener(e -> {
                 address.setValue(addressText.getText());
             });
-            this.container = null;
         } else {
             clearAddress();
         }

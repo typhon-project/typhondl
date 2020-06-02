@@ -1,7 +1,5 @@
 package de.atb.typhondl.xtext.ui.wizardPageAreas;
 
-import java.util.regex.Pattern;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,7 +14,6 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
@@ -38,10 +35,7 @@ public class ResourceArea extends Area {
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             gridDataChecks.horizontalSpan = 2;
 
-            if (container == null) {
-                this.container = createDBContainer();
-            }
-
+            container.setResources(null);
             Resources resources = createDefaultResources();
 
             Button limitCheck = new Button(group, SWT.CHECK);
@@ -148,7 +142,6 @@ public class ResourceArea extends Area {
                 }
             });
         }
-
     }
 
     private Resources createDefaultResources() {
@@ -158,28 +151,5 @@ public class ResourceArea extends Area {
         resources.setReservationCPU("0.25");
         resources.setReservationMemory("256M");
         return resources;
-    }
-
-    private Container createDBContainer() {
-        Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
-        String containerName = createContainerName(db.getName());
-        newContainer.setName(containerName);
-        Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-        reference.setReference(db);
-        newContainer.setDeploys(reference);
-        return newContainer;
-    }
-
-    /**
-     * Names of container have to be DNS subdomain names (see DL #31)
-     * 
-     * @param name
-     * @return
-     */
-    private String createContainerName(String name) {
-        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
-        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
-        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
-        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 }
