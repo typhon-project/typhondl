@@ -202,8 +202,10 @@ public class ModelCreator {
 
         for (DB db : result.keySet()) {
             Container container = result.get(db);
-            container.setType(containerType);
-            application.getContainers().add(container);
+            if (container != null) {
+                container.setType(containerType);
+                application.getContainers().add(container);
+            }
         }
 
         /*
