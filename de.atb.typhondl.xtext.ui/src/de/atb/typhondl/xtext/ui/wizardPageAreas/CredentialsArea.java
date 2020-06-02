@@ -23,26 +23,28 @@ public class CredentialsArea extends Area {
     @Override
     public void createArea() {
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        GridData gridDataLabels = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
 
         Credentials credentials;
         if (db.getCredentials() != null) {
             credentials = db.getCredentials();
         } else {
             credentials = setCredentials();
+            db.setCredentials(credentials);
         }
         if (credentials != null) {
             new Label(group, SWT.NONE).setText("Username:");
             if (credentials.getUsername().equalsIgnoreCase("username")) {
                 Text usernameText = new Text(group, SWT.BORDER);
                 usernameText.setLayoutData(gridDataFields);
-                usernameText.setText(credentials.getUsername());
+                usernameText.setText("choseUsername");
                 usernameText.addModifyListener(e -> {
                     credentials.setUsername(usernameText.getText());
                 });
             } else {
                 Label userNameLabel = new Label(group, SWT.NONE);
                 userNameLabel.setText(credentials.getUsername());
-                userNameLabel.setLayoutData(gridDataFields);
+                userNameLabel.setLayoutData(gridDataLabels);
             }
 
             new Label(group, SWT.NONE).setText("Password:");
