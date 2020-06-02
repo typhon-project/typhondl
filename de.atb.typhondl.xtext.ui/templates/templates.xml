@@ -19,20 +19,22 @@
     default image = cassandra:latest;
 }</template>
 <template id="db_mariadb" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MariaDB" enabled="true" name="MariaDB">database ${databaseName} : MariaDB {
-    environment {
-        MYSQL_ROOT_PASSWORD = ${password} ;
+    credentials {
+        username = root;
+        password = choosePassword;
     }
 }	
 </template>
 <template id="db_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Mongo" enabled="true" name="Mongo">database ${databaseName} : Mongo {
-    environment {
-        MONGO_INITDB_ROOT_USERNAME = ${username} ;
-        MONGO_INITDB_ROOT_PASSWORD = ${password} ;
+    credentials {
+        username = chooseUsername;
+        password = choosePassword;
     }
 }</template>
 <template id="db_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MySQL" enabled="true" name="MySQL">database ${databaseName} : MySQL {
-    environment {
-        MYSQL_ROOT_PASSWORD = ${password} ;
+    credentials {
+        username = root;
+        password = choosePassword;
     }
 }</template>
 <template id="db_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mariadb-galera" enabled="true" name="MariaDBGalera">database ${name} : mariadbgalera {
@@ -41,15 +43,17 @@
         repoAddress = https://charts.bitnami.com/bitnami;
         chartName = mariadb-galera;
     }
-    environment {
-        MYSQL_ROOT_PASSWORD = ${password};
+    credentials {
+        username = root;
+        password = choosePassword;
     }
 }</template>
 <template id="db_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Cassandra" enabled="true" name="Cassandra">database ${name} : Cassandra {
 }</template>
 <template id="db_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Neo4j" enabled="true" name="Neo4j">database ${name} : Neo4j {
-    environment {
-        NEO4J_AUTH = neo4j/${password};
+    credentials {
+        username = neo4j;
+        password = choosePassword;
     }
 }</template>
 </templates>
