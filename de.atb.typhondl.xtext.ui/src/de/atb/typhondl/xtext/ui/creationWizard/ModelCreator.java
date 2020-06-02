@@ -202,7 +202,7 @@ public class ModelCreator {
 
         for (DB db : result.keySet()) {
             Container container = result.get(db);
-            if (container != null) {
+            if (!db.isExternal()) {
                 container.setType(containerType);
                 application.getContainers().add(container);
             }

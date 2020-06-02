@@ -22,6 +22,7 @@ import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
@@ -93,14 +94,6 @@ public class CreationDatabasePage extends MyWizardPage {
 
         addAreasToList();
 
-//
-//            portGroup = new Group(main, SWT.READ_ONLY);
-//            portGroup.setLayout(new GridLayout(1, false));
-//            portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//            portGroup.setText("Container Resources");
-//            portArea();
-//        }
-
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
 
@@ -130,6 +123,9 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new ResourceArea(db, container, chosenTechnology, main));
         }
 
+        if (!isInList(PortArea.class) && !db.isExternal()) {
+            areas.add(new PortArea(db, container, chosenTechnology, main, properties));
+        }
     }
 
     private <T> boolean isInList(Class<T> areaClass) {
@@ -140,49 +136,6 @@ public class CreationDatabasePage extends MyWizardPage {
         }
         return false;
     }
-
-//    private void portArea() {
-//        if (!db.isExternal()) {
-//            if (portGroup == null) {
-//                portGroup = new Group(main, SWT.READ_ONLY);
-//                portGroup.setLayout(new GridLayout(1, false));
-//                portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//                portGroup.setText("Port");
-//            }
-//            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-//            if (container == null) {
-//                this.container = createDBContainer();
-//            }
-//            String targetPort = "";
-//            Key_Values port;
-//            if (this.container.getPorts() == null) {
-//                Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
-//                port = TyphonDLFactory.eINSTANCE.createKey_Values();
-//                port.setName("target");
-//                targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
-//                port.setValue(targetPort);
-//                ports.getKey_values().add(port);
-//                container.setPorts(ports);
-//            } else {
-//                port = container.getPorts().getKey_values().stream()
-//                        .filter(key -> key.getName().equalsIgnoreCase("target")).findFirst().orElse(null);
-//                if (port != null) {
-//                    targetPort = port.getValue();
-//                }
-//            }
-//
-//            new Label(portGroup, NONE).setText("Container port: ");
-//            Text portText = new Text(portGroup, SWT.BORDER);
-//            portText.setText(targetPort);
-//            portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
-//            portText.setLayoutData(gridDataFields);
-//            portText.addModifyListener(e -> {
-//                port.setValue(portText.getText());
-//                validate();
-//            });
-//            notEmptyTexts.add(portText);
-//        }
-//    }
 
     public String getDBName() {
         return db.getName();

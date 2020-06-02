@@ -128,10 +128,6 @@ public abstract class Area {
         }
     }
 
-//    public void updateArea(DB db, Container container, int chosenTechnology) {
-//        this.db = db;
-//        this.container = container;
-//        this.chosenTechnology = chosenTechnology;
     public void updateArea() {
         if (group != null) {
             disposeChildren();
