@@ -31,7 +31,9 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
-	(helm=HelmList)?
+	(namespace=Namespace)?
+	(helm=HelmList)?	
+	(credentials=Credentials)?
 	(parameters+=Property)*
 	'}';
 
@@ -43,6 +45,13 @@ HelmList:
 	  (parameters+=Property)*
 	'}'
 ;
+
+Credentials:
+	{Credentials}
+	'credentials' '{'
+	  ('username' '=' username=Value ';')?
+	  ('password' '=' password=Value ';')
+	'}';
 
 PlatformType:
 	'platformtype' name=Name;
@@ -82,9 +91,6 @@ Cluster_Network:
 	(key_values+=Key_Values)*
 	'}')?;
 
-Container_Network:
-	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
-
 Application:
 	{Application}
 	'application' name=Name '{'
@@ -99,7 +105,23 @@ Container:
 	(networks=Container_Network)?
 	(ports=Ports)?
 	(resources=Resources)?
+	(namespace=Namespace)?
 	(properties+=Property)*
+	'}';
+
+Reference:
+	'deploys' reference=[Services];
+
+Dependency:
+	'depends_on' reference=[Container]; 
+
+Container_Network:
+	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
+
+Ports:
+	{Ports}
+	'ports' '{'
+	(key_values+=Key_Values)+
 	'}';
 
 Resources:
@@ -111,17 +133,9 @@ Resources:
 	'}'
 ;
 
-Ports:
-	{Ports}
-	'ports' '{'
-	(key_values+=Key_Values)+
-	'}';
-
-Dependency:
-	'depends_on' reference=[Container]; 
-
-Reference:
-	'deploys' reference=[Services];
+Namespace:
+	'namespace' '=' value=Value ';'
+;
 
 Property:
 	Key_Values | Key_ValueArray | Key_KeyValueList;
