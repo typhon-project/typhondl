@@ -22,6 +22,7 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
 
 /**
@@ -93,14 +94,10 @@ public class CreationDatabasePage extends MyWizardPage {
                 && db.getHelm() != null && !db.isExternal()) {
             areas.add(new HelmArea(db, container, chosenTechnology, main));
         }
-//
-//        if (!db.isExternal()) {
-//            imageGroup = new Group(main, SWT.READ_ONLY);
-//            imageGroup.setLayout(new GridLayout(2, false));
-//            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//            imageGroup.setText("Image");
-//            imageArea();
-//        }
+
+        if (!db.isExternal()) {
+            areas.add(new ImageArea(db, container, chosenTechnology, main));
+        }
 
         if (!db.getParameters().isEmpty()) {
             areas.add(new PropertyArea(db, container, chosenTechnology, main));
@@ -326,47 +323,6 @@ public class CreationDatabasePage extends MyWizardPage {
         resources.setReservationCPU("0.25");
         resources.setReservationMemory("256M");
         return resources;
-    }
-
-    /**
-     * The image group, here the image can be edited
-     * 
-     * @param main Composite to put the group in
-     */
-//    private void imageArea() {
-//        if (!db.isExternal()) {
-//            if (imageGroup == null) {
-//                imageGroup = new Group(main, SWT.READ_ONLY);
-//                imageGroup.setLayout(new GridLayout(2, false));
-//                imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//                imageGroup.setText("Image");
-//            }
-//            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-//            new Label(imageGroup, NONE).setText("image used:");
-//            imageText = new Text(imageGroup, SWT.BORDER);
-//            String imageTextValue = getImageValue();
-//            imageText.setText(imageTextValue);
-//            imageText.setLayoutData(gridDataFields);
-//            imageText.addModifyListener(e -> {
-//                if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
-//                    db.setImage(null);
-//                } else {
-//                    IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-//                    image.setValue(imageText.getText());
-//                    db.setImage(image);
-//                }
-//            });
-//        }
-//    }
-
-    /**
-     * Returns the correct image value
-     * 
-     * @return The database's image value if an image is given in the database,
-     *         otherwise the dbtype's image value
-     */
-    private String getImageValue() {
-        return db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
     }
 
     public String getDBName() {
