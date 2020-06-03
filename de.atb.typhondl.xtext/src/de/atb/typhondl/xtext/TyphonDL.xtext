@@ -33,9 +33,17 @@ DB:
 	(image=IMAGE)?
 	(namespace=Namespace)?
 	(helm=HelmList)?	
+	(environment=Environment)?
 	(credentials=Credentials)?
 	(parameters+=Property)*
 	'}';
+
+Environment:
+	{Environment} 
+	'environment' '{'
+	   (parameters+=Property)*
+	'}'
+;
 
 HelmList:
 	'helm' '{'

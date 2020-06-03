@@ -32,7 +32,11 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/namespace"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/helm"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/environment"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DB/credentials"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Environment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Environment/parameters"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//HelmList">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//HelmList/repoName"/>
