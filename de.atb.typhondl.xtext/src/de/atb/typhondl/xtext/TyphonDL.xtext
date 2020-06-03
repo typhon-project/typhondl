@@ -31,7 +31,7 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
-	(namespace=Namespace)?
+	(uri=URI)?
 	(helm=HelmList)?	
 	(credentials=Credentials)?
 	(parameters+=Property)*
@@ -105,7 +105,7 @@ Container:
 	(networks=Container_Network)?
 	(ports=Ports)?
 	(resources=Resources)?
-	(namespace=Namespace)?
+	(uri=URI)?
 	(properties+=Property)*
 	'}';
 
@@ -133,8 +133,8 @@ Resources:
 	'}'
 ;
 
-Namespace:
-	'namespace' '=' value=Value ';'
+URI:
+	'uri' '=' value=Value ';'
 ;
 
 Property:
