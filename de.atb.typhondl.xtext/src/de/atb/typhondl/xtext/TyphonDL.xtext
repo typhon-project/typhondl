@@ -106,7 +106,10 @@ Container:
 	(ports=Ports)?
 	(resources=Resources)?
 	(uri=URI)?
+<<<<<<< HEAD
 	(replication=Replication)?
+=======
+>>>>>>> 99e293bafc3bf8a90b5ac80b245a5bd3d9d6b5e6
 	(properties+=Property)*
 	'}';
 
