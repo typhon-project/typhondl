@@ -2,46 +2,30 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.HelmList;
-import de.atb.typhondl.xtext.typhonDL.IMAGE;
-import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
-import de.atb.typhondl.xtext.typhonDL.Ports;
-import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
-import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ReplicaArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -54,25 +38,19 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private Container container;
-    private Group parameterGroup;
-    private Group helmGroup;
-    private Text imageText;
-    private int chosenTemplate;
-    private Group resourceGroup;
-    private Group addressGroup;
-    private ArrayList<Text> notEmptyTexts;
-    private Composite main;
+    private int chosenTechnology;
     private int pageWidth;
-    private Group imageGroup;
     private Properties properties;
-    private Group portGroup;
+    private ArrayList<Area> areas;
+    private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, int chosenTemplate, int pageWidth) {
+    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, int pageWidth) {
         super(pageName);
         this.db = db;
-        this.chosenTemplate = chosenTemplate;
+        this.chosenTechnology = chosenTechnology;
         this.container = createDBContainer();
         this.pageWidth = pageWidth;
+        areas = new ArrayList<>();
         try {
             this.properties = PropertiesLoader.loadProperties();
         } catch (IOException e) {
@@ -108,57 +86,14 @@ public class CreationDatabasePage extends MyWizardPage {
         setTitle("Database settings for " + db.getName());
         setDescription("Database Type: " + db.getType().getName());
         ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
-        this.main = new Composite(scrolling, SWT.NONE);
+        main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
         scrolling.setExpandVertical(true);
         scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
-        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null && !db.isExternal()) {
-            helmGroup = new Group(main, SWT.READ_ONLY);
-            helmGroup.setLayout(new GridLayout(2, false));
-            helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            helmGroup.setText("Helm settings");
-            helmArea();
-        }
-
-        if (!db.isExternal()) {
-            imageGroup = new Group(main, SWT.READ_ONLY);
-            imageGroup.setLayout(new GridLayout(2, false));
-            imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            imageGroup.setText("Image");
-            imageArea();
-        }
-
-        if (!db.getParameters().isEmpty()) {
-            parameterGroup = new Group(main, SWT.READ_ONLY);
-            parameterGroup.setLayout(new GridLayout(2, false));
-            parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            parameterGroup.setText("Parameters");
-            parameterArea();
-        }
-
-        if (db.isExternal()) {
-            addressGroup = new Group(main, SWT.READ_ONLY);
-            addressGroup.setLayout(new GridLayout(2, false));
-            addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            addressGroup.setText("Database Address");
-            addressArea();
-        } else {
-            resourceGroup = new Group(main, SWT.READ_ONLY);
-            resourceGroup.setLayout(new GridLayout(1, false));
-            resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            resourceGroup.setText("Container Resources");
-            resourceArea();
-
-            portGroup = new Group(main, SWT.READ_ONLY);
-            portGroup.setLayout(new GridLayout(1, false));
-            portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            portGroup.setText("Container Resources");
-            portArea();
-        }
+        addAreasToList();
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -166,474 +101,55 @@ public class CreationDatabasePage extends MyWizardPage {
         setControl(scrolling);
     }
 
-    private void addressArea() {
-        if (db.isExternal()) {
-            if (addressGroup == null) {
-                addressGroup = new Group(main, SWT.READ_ONLY);
-                addressGroup.setLayout(new GridLayout(2, false));
-                addressGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                addressGroup.setText("Database Address");
-            }
-            Key_Values address;
-            if (getAddress() == null) {
-                address = TyphonDLFactory.eINSTANCE.createKey_Values();
-                address.setName("address");
-                address.setValue("https://example.com");
-                db.getParameters().add(address);
-            } else {
-                address = getAddress();
-            }
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            new Label(addressGroup, NONE).setText("Database Address: ");
-            Text addressText = new Text(addressGroup, SWT.BORDER);
-            addressText.setText(address.getValue());
-            addressText.setToolTipText("Give the address under which the polystore can reach the database");
-            addressText.setLayoutData(gridDataFields);
-            addressText.addModifyListener(e -> {
-                address.setValue(addressText.getText());
-            });
-            this.container = null;
-        } else {
-            clearAddress();
+    private void addAreasToList() {
+        if (!isInList(HelmArea.class)
+                && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
+                && db.getHelm() != null && !db.isExternal()) {
+            areas.add(new HelmArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(ImageArea.class) && !db.isExternal()) {
+            areas.add(new ImageArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty()) {
+            areas.add(new PropertyArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(AddressArea.class) && db.isExternal()) {
+            areas.add(new AddressArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(ResourceArea.class) && !db.isExternal()) {
+            areas.add(new ResourceArea(db, container, chosenTechnology, main));
+        }
+
+        if (!isInList(PortArea.class) && !db.isExternal()) {
+            areas.add(new PortArea(db, container, chosenTechnology, main, properties));
+        }
+
+        if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()) {
+            areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
         }
     }
 
-    private Key_Values getAddress() {
-        return (Key_Values) db.getParameters().stream()
-                .filter(parameter -> parameter.getName().equalsIgnoreCase("address")).findFirst().orElse(null);
-    }
-
-    private void clearAddress() {
-        Property address = getAddress();
-        if (address != null) {
-            db.getParameters().remove(address);
-        }
-    }
-
-    private void portArea() {
-        if (!db.isExternal()) {
-            if (portGroup == null) {
-                portGroup = new Group(main, SWT.READ_ONLY);
-                portGroup.setLayout(new GridLayout(1, false));
-                portGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                portGroup.setText("Port");
-            }
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            if (container == null) {
-                this.container = createDBContainer();
-            }
-            String targetPort = "";
-            Key_Values port;
-            if (this.container.getPorts() == null) {
-                Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
-                port = TyphonDLFactory.eINSTANCE.createKey_Values();
-                port.setName("target");
-                targetPort = properties.getProperty(db.getType().getName().toLowerCase() + ".port");
-                port.setValue(targetPort);
-                ports.getKey_values().add(port);
-                container.setPorts(ports);
-            } else {
-                port = container.getPorts().getKey_values().stream()
-                        .filter(key -> key.getName().equalsIgnoreCase("target")).findFirst().orElse(null);
-                if (port != null) {
-                    targetPort = port.getValue();
-                }
-            }
-
-            new Label(portGroup, NONE).setText("Container port: ");
-            Text portText = new Text(portGroup, SWT.BORDER);
-            portText.setText(targetPort);
-            portText.setToolTipText("This is the port that will be exposed inside the network/cluster");
-            portText.setLayoutData(gridDataFields);
-            portText.addModifyListener(e -> {
-                port.setValue(portText.getText());
-                validate();
-            });
-            notEmptyTexts.add(portText);
-        }
-    }
-
-    private void resourceArea() {
-        if (!db.isExternal()) {
-            if (resourceGroup == null) {
-                resourceGroup = new Group(main, SWT.READ_ONLY);
-                resourceGroup.setLayout(new GridLayout(1, false));
-                resourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                resourceGroup.setText("Container Resources");
-            }
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            gridDataChecks.horizontalSpan = 2;
-
-            if (container == null) {
-                this.container = createDBContainer();
-            }
-
-            Resources resources = createDefaultResources();
-            notEmptyTexts = new ArrayList<>();
-
-            Button limitCheck = new Button(resourceGroup, SWT.CHECK);
-            limitCheck.setText("Set container resource limits");
-            limitCheck.setLayoutData(gridDataChecks);
-            // create invisible Limit Composite in each resource composite
-            Composite limitComposite = new Composite(resourceGroup, NONE);
-            limitComposite.setLayout(new GridLayout(2, false));
-            GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
-            limitData.exclude = true;
-            limitComposite.setLayoutData(limitData);
-            Label limCPULabel = new Label(limitComposite, NONE);
-            limCPULabel.setText("limitCPU: ");
-            Text limCPUText = new Text(limitComposite, SWT.BORDER);
-            limCPUText.setText(resources.getLimitCPU());
-            limCPUText.setLayoutData(gridDataFields);
-            limCPUText.addModifyListener(e -> {
-                resources.setLimitCPU(limCPUText.getText());
-                validate();
-            });
-            notEmptyTexts.add(limCPUText);
-            Label limMemLabel = new Label(limitComposite, NONE);
-            limMemLabel.setText("limitMemory: ");
-            Text limMemText = new Text(limitComposite, SWT.BORDER);
-            limMemText.setText(resources.getLimitMemory());
-            limMemText.setLayoutData(gridDataFields);
-            limMemText.addModifyListener(e -> {
-                resources.setLimitMemory(limMemText.getText());
-                validate();
-            });
-            notEmptyTexts.add(limMemText);
-
-            Button reservationCheck = new Button(resourceGroup, SWT.CHECK);
-            reservationCheck.setText("Set container resource reservations (this will set limits as well)");
-            reservationCheck.setLayoutData(gridDataChecks);
-            // create invisible Reservation Composite in each resource composite
-            Composite reservationComposite = new Composite(resourceGroup, NONE);
-            reservationComposite.setLayout(new GridLayout(2, false));
-            GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
-            reservationData.exclude = true;
-            reservationComposite.setLayoutData(reservationData);
-            Label resCPULabel = new Label(reservationComposite, NONE);
-            resCPULabel.setText("reservationCPU: ");
-            Text resCPUText = new Text(reservationComposite, SWT.BORDER);
-            resCPUText.setText(resources.getReservationCPU());
-            resCPUText.setLayoutData(gridDataFields);
-            resCPUText.addModifyListener(e -> {
-                resources.setReservationCPU(resCPUText.getText());
-                validate();
-            });
-            notEmptyTexts.add(resCPUText);
-            Label resMemLabel = new Label(reservationComposite, NONE);
-            resMemLabel.setText("reservationMemory: ");
-            Text resMemText = new Text(reservationComposite, SWT.BORDER);
-            resMemText.setText(resources.getReservationMemory());
-            resMemText.setLayoutData(gridDataFields);
-            resMemText.addModifyListener(e -> {
-                resources.setReservationMemory(resMemText.getText());
-                validate();
-            });
-            notEmptyTexts.add(resMemText);
-
-            limitCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    // set the textfields visible, resize window
-                    boolean useLimits = limitCheck.getSelection();
-                    limitData.exclude = !useLimits;
-                    limitComposite.setVisible(useLimits);
-                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
-                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-                    if (useLimits) {
-                        Resources newResources = container.getResources();
-                        if (newResources == null) {
-                            newResources = TyphonDLFactory.eINSTANCE.createResources();
-                        }
-                        newResources.setLimitCPU(limCPUText.getText());
-                        newResources.setLimitMemory(limMemText.getText());
-                        // TODO check if necessary:
-                        container.setResources(newResources);
-                        validate();
-                    } else {
-                        reservationCheck.setSelection(false);
-                        reservationCheck.notifyListeners(13, new Event());
-                        container.setResources(null);
-                    }
-                }
-            });
-            reservationCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    // set the textfields visible, resize window
-                    boolean useReservations = reservationCheck.getSelection();
-                    reservationData.exclude = !useReservations;
-                    reservationComposite.setVisible(useReservations);
-                    main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
-                    ((ScrolledComposite) getControl()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-                    if (useReservations) {
-                        limitCheck.setSelection(true);
-                        limitCheck.notifyListeners(13, new Event());
-                        // TODO check if this can be null:
-                        Resources newResources = container.getResources();
-                        newResources.setReservationCPU(resCPUText.getText());
-                        newResources.setReservationMemory(resMemText.getText());
-                        container.setResources(newResources);
-                        validate();
-                    } else {
-                        Resources newResources = container.getResources();
-                        if (newResources != null) {
-                            newResources.setReservationCPU(null);
-                            newResources.setReservationMemory(null);
-                            container.setResources(newResources);
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    private void validate() {
-        Status status = null;
-        for (Text text : notEmptyTexts) {
-            if (text.isVisible() && text.getText().isEmpty()) {
-                status = new Status(IStatus.ERROR, "Wizard", "Textfields can't be empty");
+    private <T> boolean isInList(Class<T> areaClass) {
+        for (Area area : areas) {
+            if (areaClass.isInstance(area)) {
+                return true;
             }
         }
-        setStatus(status);
-        // TODO validation resource syntax
+        return false;
     }
 
-    private Resources createDefaultResources() {
-        Resources resources = TyphonDLFactory.eINSTANCE.createResources();
-        resources.setLimitCPU("0.5");
-        resources.setLimitMemory("512M");
-        resources.setReservationCPU("0.25");
-        resources.setReservationMemory("256M");
-        return resources;
-    }
-
-    /**
-     * The Area inside the helm group. Here the {@link HelmList} is handled.
-     */
-    private void helmArea() {
-        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null) {
-            if (helmGroup == null) {
-                helmGroup = new Group(main, SWT.READ_ONLY);
-                helmGroup.setLayout(new GridLayout(2, false));
-                helmGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                helmGroup.setText("Helm settings");
-            }
-            HelmList helmList = db.getHelm();
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            new Label(helmGroup, SWT.NONE).setText("Repository Address:");
-            Text addressText = new Text(helmGroup, SWT.BORDER);
-            addressText.setText(helmList.getRepoAddress());
-            addressText.setLayoutData(gridDataFields);
-            addressText.addModifyListener(e -> helmList.setRepoAddress(addressText.getText()));
-            new Label(helmGroup, SWT.NONE).setText("Repository Name:");
-            Text repoNameText = new Text(helmGroup, SWT.BORDER);
-            repoNameText.setText(helmList.getRepoName());
-            repoNameText.setLayoutData(gridDataFields);
-            repoNameText.addModifyListener(e -> helmList.setRepoName(repoNameText.getText()));
-            new Label(helmGroup, SWT.NONE).setText("Chart Name:");
-            Text nameText = new Text(helmGroup, SWT.BORDER);
-            nameText.setText(helmList.getChartName());
-            nameText.setLayoutData(gridDataFields);
-            nameText.addModifyListener(e -> helmList.setChartName(nameText.getText()));
-            HashMap<String, Property> properties = new HashMap<>();
-            for (Property property : helmList.getParameters()) {
-                addPropertyToList(property.getName(), property, properties);
-            }
-            if (!helmList.getParameters().isEmpty()) {
-                addPropertyFieldsToGroup(helmGroup, properties);
-            }
-        }
-    }
-
-    /**
-     * The Area inside the parameter group. Here the {@link DB#getParameters()} are
-     * handled.
-     */
-    private void parameterArea() {
-        if (!db.getParameters().isEmpty()) {
-            if (parameterGroup == null) {
-                parameterGroup = new Group(main, SWT.READ_ONLY);
-                parameterGroup.setLayout(new GridLayout(2, false));
-                parameterGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                parameterGroup.setText("Parameters");
-            }
-            HashMap<String, Property> properties = new HashMap<>();
-            for (Property property : db.getParameters()) {
-                addPropertyToList(property.getName(), property, properties);
-            }
-            addPropertyFieldsToGroup(parameterGroup, properties);
-        }
-    }
-
-    /**
-     * Creates a Label and a Text with {@link ModifyListener} for each Property
-     * 
-     * @param group
-     * @param properties
-     */
-    private void addPropertyFieldsToGroup(Group group, HashMap<String, Property> properties) {
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        ArrayList<String> names = new ArrayList<>(properties.keySet());
-        Collections.sort(names);
-        for (String name : names) {
-            new Label(group, NONE).setText(name + ":");
-            Property property = properties.get(name);
-            Text propertyText = new Text(group, SWT.BORDER);
-            propertyText.setLayoutData(gridDataFields);
-            if (Key_Values.class.isInstance(property)) {
-                Key_Values key_Values = (Key_Values) property;
-                propertyText.setText(key_Values.getValue());
-                propertyText.addModifyListener(e -> key_Values.setValue(propertyText.getText()));
-            } else {
-                Key_ValueArray key_ValueArray = (Key_ValueArray) property;
-                propertyText.setText(fromArray(key_ValueArray.getValues()));
-                propertyText.addModifyListener(e -> key_ValueArray.getValues().addAll(toArray(propertyText.getText())));
-            }
-        }
-    }
-
-    /**
-     * Finds all {@link Key_Values} and {@link Key_ValueArray}s inside the property
-     * list, gives them the right name and adds them to a list
-     * 
-     * @param name       Name of the Property
-     * @param property   The Property to add to the list
-     * @param properties
-     */
-    private void addPropertyToList(String name, Property property, HashMap<String, Property> properties) {
-        if (Key_KeyValueList.class.isInstance(property)) {
-            for (Property subProperty : ((Key_KeyValueList) property).getProperties()) {
-                addPropertyToList(name + "." + subProperty.getName(), subProperty, properties);
-            }
-        } else {
-            properties.put(name, property);
-        }
-    }
-
-    /**
-     * Turns Text text into List to be set as {@link Key_ValueArray#getValues()}
-     * 
-     * @param text the text taken from the Text
-     * @return text as List
-     */
-    private List<String> toArray(String text) {
-        return Arrays.asList(text.split(","));
-    }
-
-    /**
-     * Turns values of {@link Key_ValueArray} into String with comma separated
-     * values
-     * 
-     * @param values values of a {@link Key_ValueArray}
-     * @return Comma separated String
-     */
-    private String fromArray(EList<String> values) {
-        if (!values.isEmpty()) {
-            String arrayString = values.get(0);
-            values.remove(0);
-            for (String string : values) {
-                arrayString += "," + string;
-            }
-            return arrayString;
-        } else
-            return "";
-    }
-
-    /**
-     * The image group, here the image can be edited
-     * 
-     * @param main Composite to put the group in
-     */
-    private void imageArea() {
-        if (!db.isExternal()) {
-            if (imageGroup == null) {
-                imageGroup = new Group(main, SWT.READ_ONLY);
-                imageGroup.setLayout(new GridLayout(2, false));
-                imageGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                imageGroup.setText("Image");
-            }
-            GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-            new Label(imageGroup, NONE).setText("image used:");
-            imageText = new Text(imageGroup, SWT.BORDER);
-            String imageTextValue = getImageValue();
-            imageText.setText(imageTextValue);
-            imageText.setLayoutData(gridDataFields);
-            imageText.addModifyListener(e -> {
-                if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
-                    db.setImage(null);
-                } else {
-                    IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                    image.setValue(imageText.getText());
-                    db.setImage(image);
-                }
-            });
-        }
-    }
-
-    /**
-     * Returns the correct image value
-     * 
-     * @return The database's image value if an image is given in the database,
-     *         otherwise the dbtype's image value
-     */
-    private String getImageValue() {
-        return db.getImage() == null ? db.getType().getImage().getValue() : db.getImage().getValue();
+    private String getReplicationProperty() {
+        String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
+                + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
+        return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 
     public String getDBName() {
         return db.getName();
-    }
-
-    /**
-     * Updates each group with the given areaMethod
-     * 
-     * @param group
-     * @param areaMethod
-     */
-    public void updateGroup(Group group, Runnable areaMethod) {
-        if (group != null) {
-            disposeChildren(group);
-        }
-        areaMethod.run();
-        if (group != null) {
-            setGroupVisible(group);
-            group.layout();
-            group.getParent().layout(true);
-        }
-    }
-
-    /**
-     * If the given group has no children (i.e. no Labels or Texts) the empty group
-     * should be hidden.
-     * 
-     * @param group
-     * @param isVisible
-     */
-    private void setGroupVisible(Group group) {
-        if (group.getChildren().length == 0) {
-            GridData excludeData = new GridData(SWT.FILL, SWT.FILL, true, false);
-            excludeData.exclude = true;
-            group.setLayoutData(excludeData);
-            group.setVisible(false);
-        } else {
-            group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            group.setVisible(true);
-        }
-
-    }
-
-    /**
-     * Disposes all Labels and Texts of the given group
-     * 
-     * @param group
-     */
-    private void disposeChildren(Group group) {
-        for (Control control : group.getChildren()) {
-            control.dispose();
-        }
     }
 
     /**
@@ -643,21 +159,19 @@ public class CreationDatabasePage extends MyWizardPage {
      */
     public void updateAllAreas() {
         setDescription("Database Type: " + db.getType().getName());
-        updateGroup(helmGroup, this::helmArea);
-        updateGroup(parameterGroup, this::parameterArea);
-        updateGroup(addressGroup, this::addressArea);
-        updateGroup(imageGroup, this::imageArea);
-        updateGroup(resourceGroup, this::resourceArea);
-        updateGroup(portGroup, this::portArea);
-        main.layout();
+        addAreasToList();
+        for (Area area : areas) {
+            area.updateArea();
+        }
+        ((Composite) this.getControl()).layout();
     }
 
-    public int getChosenTemplate() {
-        return this.chosenTemplate;
+    public int getChosenTechnology() {
+        return this.chosenTechnology;
     }
 
-    public void setChosenTemplate(int chosenTemplate) {
-        this.chosenTemplate = chosenTemplate;
+    public void setChosenTechnology(int chosenTechnology) {
+        this.chosenTechnology = chosenTechnology;
     }
 
     public void setDB(DB db) {

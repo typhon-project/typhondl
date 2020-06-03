@@ -201,8 +201,8 @@ public class CreateModelWizard extends Wizard {
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
                     if (((CreationDBMSPage) page).hasFieldChanged(db.getName())
-                            || databasePage.getChosenTemplate() != this.chosenTemplate) {
-                        databasePage.setChosenTemplate(this.chosenTemplate);
+                            || databasePage.getChosenTechnology() != this.chosenTemplate) {
+                        databasePage.setChosenTechnology(this.chosenTemplate);
                         databasePage.setDB(db);
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                         if (databasePage.getControl() != null) {
