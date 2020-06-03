@@ -1,6 +1,7 @@
 database TextWarningData : mongo {
-	environment {
-		MONGO_INITDB_ROOT_USERNAME = admin ;
-		MONGO_INITDB_ROOT_PASSWORD = admin ;
+	uri = testuri-TextWarningData ;	
+	credentials {
+		username = admin ;
+		password = admin ;
 	}
 }
