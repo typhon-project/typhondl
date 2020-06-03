@@ -1,9 +1,14 @@
 package de.atb.typhondl.xtext.ui.wizardPageAreas;
 
+import java.security.SecureRandom;
 import java.util.Properties;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -16,14 +21,19 @@ import de.atb.typhondl.xtext.ui.utilities.Pair;
 
 public class CredentialsArea extends Area {
 
+    private Text usernameText;
+    private Text passwordText;
+
     public CredentialsArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
         super(db, container, chosenTechnology, parent, "Credentials", properties);
     }
 
     @Override
     public void createArea() {
+        group.setLayout(new GridLayout(3, false));
         GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         GridData gridDataLabels = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
+        gridDataLabels.horizontalSpan = 2;
 
         Credentials credentials;
         if (db.getCredentials() != null) {
@@ -35,24 +45,34 @@ public class CredentialsArea extends Area {
         if (credentials != null) {
             new Label(group, SWT.NONE).setText("Username:");
             if (credentials.getUsername().equalsIgnoreCase("chooseUsername")) {
-                Text usernameText = new Text(group, SWT.BORDER);
+                usernameText = new Text(group, SWT.BORDER);
                 usernameText.setLayoutData(gridDataFields);
                 usernameText.setText("choseUsername");
                 usernameText.addModifyListener(e -> {
                     credentials.setUsername(usernameText.getText());
                 });
+                new Label(group, SWT.NONE).setText("Can't be \"username\" / \"password\"");
             } else {
-                Label userNameLabel = new Label(group, SWT.NONE);
-                userNameLabel.setText(credentials.getUsername());
-                userNameLabel.setLayoutData(gridDataLabels);
+                new Label(group, SWT.NONE).setText(credentials.getUsername());
+                new Label(group, SWT.NONE).setText("Password can't be \"password\"");
             }
 
             new Label(group, SWT.NONE).setText("Password:");
-            Text passwordText = new Text(group, SWT.BORDER);
+            passwordText = new Text(group, SWT.BORDER);
             passwordText.setLayoutData(gridDataFields);
             passwordText.setText(credentials.getPassword());
             passwordText.addModifyListener(e -> {
                 credentials.setPassword(passwordText.getText());
+            });
+            Button createPassword = new Button(group, SWT.PUSH);
+            createPassword.setText("Create a random password");
+            createPassword.setLayoutData(gridDataFields);
+            createPassword.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    passwordText.setText(createPassword(16));
+                    credentials.setPassword(passwordText.getText());
+                }
             });
         } else {
             setGroupVisible();
@@ -82,4 +102,14 @@ public class CredentialsArea extends Area {
         }
     }
 
+    private static String createPassword(int length) {
+        String dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        String result = "";
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(dic.length());
+            result += dic.charAt(index);
+        }
+        return result;
+    }
 }
