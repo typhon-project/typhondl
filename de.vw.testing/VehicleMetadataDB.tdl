@@ -1,5 +1,4 @@
 database VehicleMetadataDB : mariadb {
-	uri = testuri-VehicleMetadataDB ;
 	credentials {
 		password = Password ;
 	}

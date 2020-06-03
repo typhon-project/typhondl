@@ -1,5 +1,4 @@
 database VehicleDataDB : mongo {
-	uri = testuri-VehicleDataDB ;
 	credentials {
 		username = Username ;
 		password = Password ;

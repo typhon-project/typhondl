@@ -1,5 +1,4 @@
-database TextWarningData : mongo {
-	uri = testuri-TextWarningData ;	
+database TextWarningData : mongo {	
 	credentials {
 		username = admin ;
 		password = admin ;
