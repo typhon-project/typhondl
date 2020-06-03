@@ -1,5 +1,5 @@
 database VehicleDataDB : mongo {
-	uri = testuri-VehicleDataDB ;
+	uri = http://localhost:32444 ;
 	credentials {
 		username = Username ;
 		password = Password ;

@@ -36,7 +36,6 @@ platform platformName : localhost {
 				ports {
 					target = 27017 ;
 				}
-				uri = vehicledatadb:27017 ;
 			}
 		}
 	}
