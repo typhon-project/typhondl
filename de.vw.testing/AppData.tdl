@@ -1,0 +1,5 @@
+database AppData : mariadb {
+	credentials {
+		password = Password ;
+	}
+}

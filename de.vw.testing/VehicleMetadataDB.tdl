@@ -1,0 +1,5 @@
+database VehicleMetadataDB : mariadb {
+	credentials {
+		password = Password ;
+	}
+}
