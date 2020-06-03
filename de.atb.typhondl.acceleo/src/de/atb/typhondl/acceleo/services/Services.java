@@ -38,6 +38,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Environment;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
@@ -392,17 +393,16 @@ public class Services {
         polystoredb.setName(properties.getProperty("db.name"));
         polystoredb.setType(mongo);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
-            Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-            polystoredb_environment.setName("environment");
-            Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
-            polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
-            polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
-            polystoredb_environment.getProperties().add(polystoredb_environment_3);
-            polystoredb.getParameters().add(polystoredb_environment);
+            Environment polystoredb_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
+            Key_Values polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+            polystoredb_environment_1.setName("MONGO_INITDB_DATABASE");
+            polystoredb_environment_1.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+            polystoredb_environment.getParameters().add(polystoredb_environment_1);
+            polystoredb.setEnvironment(polystoredb_environment);
         }
         Credentials credentials = TyphonDLFactory.eINSTANCE.createCredentials();
         credentials.setUsername("admin");
-        credentials.setPassword(createPassword(10));
+        credentials.setPassword(createPassword(16));
         polystoredb.setCredentials(credentials);
         model.getElements().add(polystoredb);
         Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
