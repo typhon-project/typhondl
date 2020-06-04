@@ -31,12 +31,6 @@ platform platformName : localhost {
 				}
 				uri = appdata:3306 ;
 			}
-			container vehicledatadb : Docker {
-				deploys VehicleDataDB
-				ports {
-					target = 27017 ;
-				}
-			}
 		}
 	}
 }
