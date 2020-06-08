@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -463,6 +464,15 @@ public class Services {
         polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
         polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
         polystore_api_container.setPorts(polystore_api_container_ports);
+        Key_ValueArray polystore_api_entrypoint = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+        polystore_api_entrypoint.setName("entrypoint");
+        polystore_api_entrypoint.getValues().add("wait-for-it");
+        polystore_api_entrypoint.getValues().add("polystore-mongo:27017");
+        polystore_api_entrypoint.getValues().add("-t");
+        polystore_api_entrypoint.getValues().add("'60'");
+        polystore_api_entrypoint.getValues().add("--");
+        polystore_api_entrypoint.getValues().addAll(Arrays.asList(properties.getProperty("api.entrypoint").split(",")));
+        polystore_api_container.getProperties().add(polystore_api_entrypoint);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             Key_Values polystore_api_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
             polystore_api_container_restart.setName("restart");
