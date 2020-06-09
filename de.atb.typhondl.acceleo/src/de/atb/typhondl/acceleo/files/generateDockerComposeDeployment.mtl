@@ -17,7 +17,6 @@ version: '3.7'
 [/if]
 services:
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (not(aContainer.isPolystoreContainer()))]
   [aContainer.name/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.print()/]
@@ -42,6 +41,8 @@ services:
     [aProperty.print()/]
 [/for]
 [/if]
+[if (aContainer.replication <> null)]
+[aContainer.printReplication()/]
 [/if]
 [if (aContainer.name.toLower() = 'kafka')]
 [aCluster.generateAnalyticsFiles()/]
@@ -49,6 +50,26 @@ services:
 [/for]
 [/file]
 [/for]
+[/template]
+
+[template public printReplication(aContainer : Container)]
+[if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
+  [aContainer.printMongoRep()/]
+[/if]
+[/template]
+
+[template public printMongoRep(aContainer : Container)]
+  command: mongod --replSet [aContainer.name/]Replset
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+[aContainer.name/]-replica[i/]:
+  image: mongo
+  command: mongod --replSet [aContainer.name/]Replset
+[/if][/for]
+[/template]
+
+[template public newContainerTemplate (aContainer : Container) ]
+command: mongod --replSet [aContainer.name/]Replset
 [/template]
 
 [template public print(aPorts : Ports) post (trim())]
@@ -145,7 +166,7 @@ image: [db.type.image.value/]
 [template public printCredentials(aDB : DB) post (trim())]
 environment:
 [if (aDB.type.name.toLower().allowsUsername())]
-  [aDB.type.name.toLower().getUsernameKey()/][aDB.credentials.username/]
+  [aDB.type.name.toLower().getUsernameKey()/] [aDB.credentials.username/]
 [/if]  
   [aDB.type.name.toLower().getPasswordKey()/][aDB.credentials.password/]
 [if (aDB.environment <> null)]
