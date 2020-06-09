@@ -31,11 +31,19 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
-	(namespace=Namespace)?
+	(uri=URI)?
 	(helm=HelmList)?	
+	(environment=Environment)?
 	(credentials=Credentials)?
 	(parameters+=Property)*
 	'}';
+
+Environment:
+	{Environment} 
+	'environment' '{'
+	   (parameters+=Property)*
+	'}'
+;
 
 HelmList:
 	'helm' '{'
@@ -49,7 +57,7 @@ HelmList:
 Credentials:
 	{Credentials}
 	'credentials' '{'
-	  ('username' '=' username=Value ';')?
+	  ('username' '=' username=Value ';')
 	  ('password' '=' password=Value ';')
 	'}';
 
@@ -105,7 +113,7 @@ Container:
 	(networks=Container_Network)?
 	(ports=Ports)?
 	(resources=Resources)?
-	(namespace=Namespace)?
+	(uri=URI)?
 	(replication=Replication)?
 	(properties+=Property)*
 	'}';
@@ -145,8 +153,8 @@ Resources:
 	'}'
 ;
 
-Namespace:
-	'namespace' '=' value=Value ';'
+URI:
+	'uri' '=' value=Value ';'
 ;
 
 Property:

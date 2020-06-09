@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,10 +33,12 @@ import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
+import de.atb.typhondl.xtext.typhonDL.Credentials;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Environment;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
@@ -389,23 +392,18 @@ public class Services {
         DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
         polystoredb.setName(properties.getProperty("db.name"));
         polystoredb.setType(mongo);
-        Key_KeyValueList polystoredb_environment = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
-        polystoredb_environment.setName("environment");
-        Key_Values polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-        polystoredb_environment_1.setName("MONGO_INITDB_ROOT_USERNAME");
-        polystoredb_environment_1.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_USERNAME"));
-        polystoredb_environment.getProperties().add(polystoredb_environment_1);
-        Key_Values polystoredb_environment_2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-        polystoredb_environment_2.setName("MONGO_INITDB_ROOT_PASSWORD");
-        polystoredb_environment_2.setValue(properties.getProperty("db.environment.MONGO_INITDB_ROOT_PASSWORD"));
-        polystoredb_environment.getProperties().add(polystoredb_environment_2);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
-            Key_Values polystoredb_environment_3 = TyphonDLFactory.eINSTANCE.createKey_Values();
-            polystoredb_environment_3.setName("MONGO_INITDB_DATABASE");
-            polystoredb_environment_3.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
-            polystoredb_environment.getProperties().add(polystoredb_environment_3);
+            Environment polystoredb_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
+            Key_Values polystoredb_environment_1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+            polystoredb_environment_1.setName("MONGO_INITDB_DATABASE");
+            polystoredb_environment_1.setValue(properties.getProperty("db.environment.MONGO_INITDB_DATABASE"));
+            polystoredb_environment.getParameters().add(polystoredb_environment_1);
+            polystoredb.setEnvironment(polystoredb_environment);
         }
-        polystoredb.getParameters().add(polystoredb_environment);
+        Credentials credentials = TyphonDLFactory.eINSTANCE.createCredentials();
+        credentials.setUsername("admin");
+        credentials.setPassword(createPassword(16));
+        polystoredb.setCredentials(credentials);
         model.getElements().add(polystoredb);
         Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();
         poystoredbReference.setReference(polystoredb);
@@ -668,6 +666,17 @@ public class Services {
             application.getContainers().add(authAllContainer);
         }
         return model;
+    }
+
+    private static String createPassword(int length) {
+        String dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        String result = "";
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(dic.length());
+            result += dic.charAt(index);
+        }
+        return result;
     }
 
     /**

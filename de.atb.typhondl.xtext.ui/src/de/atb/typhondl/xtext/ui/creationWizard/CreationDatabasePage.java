@@ -15,11 +15,14 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.CredentialsArea;
+import de.atb.typhondl.xtext.ui.wizardPageAreas.EnvironmentArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
@@ -48,24 +51,34 @@ public class CreationDatabasePage extends MyWizardPage {
         super(pageName);
         this.db = db;
         this.chosenTechnology = chosenTechnology;
-        this.container = createDBContainer();
-        this.pageWidth = pageWidth;
-        areas = new ArrayList<>();
         try {
             this.properties = PropertiesLoader.loadProperties();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.container = createDBContainer();
+        this.pageWidth = pageWidth;
+        areas = new ArrayList<>();
     }
 
     private Container createDBContainer() {
+        if (db.isExternal()) {
+            return null;
+        }
         Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
         String containerName = createContainerName(db.getName());
         newContainer.setName(containerName);
         Reference reference = TyphonDLFactory.eINSTANCE.createReference();
         reference.setReference(db);
         newContainer.setDeploys(reference);
+        URI uri = TyphonDLFactory.eINSTANCE.createURI();
+        uri.setValue(containerName + ":" + getPort());
+        newContainer.setUri(uri);
         return newContainer;
+    }
+
+    private String getPort() {
+        return properties.getProperty(db.getType().getName().toLowerCase() + ".port");
     }
 
     /**
@@ -102,26 +115,34 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     private void addAreasToList() {
+        if (!isInList(CredentialsArea.class)) {
+            areas.add(new CredentialsArea(db, main, properties));
+        }
+
+        if (!isInList(EnvironmentArea.class) && !db.isExternal() && db.getEnvironment() != null) {
+            areas.add(new EnvironmentArea(db, chosenTechnology, main));
+        }
+
         if (!isInList(HelmArea.class)
                 && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null && !db.isExternal()) {
-            areas.add(new HelmArea(db, container, chosenTechnology, main));
+            areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
         if (!isInList(ImageArea.class) && !db.isExternal()) {
-            areas.add(new ImageArea(db, container, chosenTechnology, main));
+            areas.add(new ImageArea(db, main));
         }
 
         if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty()) {
-            areas.add(new PropertyArea(db, container, chosenTechnology, main));
+            areas.add(new PropertyArea(db, main));
         }
 
         if (!isInList(AddressArea.class) && db.isExternal()) {
-            areas.add(new AddressArea(db, container, chosenTechnology, main));
+            areas.add(new AddressArea(db, main));
         }
 
         if (!isInList(ResourceArea.class) && !db.isExternal()) {
-            areas.add(new ResourceArea(db, container, chosenTechnology, main));
+            areas.add(new ResourceArea(db, container, main));
         }
 
         if (!isInList(PortArea.class) && !db.isExternal()) {

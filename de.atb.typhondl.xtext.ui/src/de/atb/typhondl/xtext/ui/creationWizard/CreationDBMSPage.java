@@ -35,8 +35,10 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
 
+import de.atb.typhondl.xtext.typhonDL.Credentials;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Environment;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
@@ -306,7 +308,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template);
                 newDB.setExternal(useExternalDatabase);
-                clearEverythingExceptTypeAndEnvironment(newDB);
+                clearEverythingExceptTypeAndCredentials(newDB);
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
@@ -350,7 +352,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 }
                 if (externalDatabaseCheck.getSelection()) {
                     newDB.setExternal(true);
-                    clearEverythingExceptTypeAndEnvironment(newDB);
+                    clearEverythingExceptTypeAndCredentials(newDB);
                 }
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
@@ -360,18 +362,13 @@ public class CreationDBMSPage extends MyWizardPage {
     }
 
     /**
-     * When using a helm chart, the db does not need any properties. The API still
-     * has to know about the username and password so the environment is kept
+     * When a database is external, the API still has to know about the username and
+     * password so every property except the address and credentials are removed
      * 
      * @param newDB
      */
-    protected void clearEverythingExceptTypeAndEnvironment(DB newDB) {
-        Property environment = EcoreUtil2.copy(newDB.getParameters().stream()
-                .filter(parameter -> parameter.getName().equalsIgnoreCase("environment")).findFirst().orElse(null));
+    protected void clearEverythingExceptTypeAndCredentials(DB newDB) {
         newDB.getParameters().clear();
-        if (environment != null) {
-            newDB.getParameters().add(environment);
-        }
         newDB.setHelm(null);
         newDB.setImage(null);
     }
@@ -458,7 +455,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template);
                 newDB.setExternal(useExternalDatabase);
-                clearEverythingExceptTypeAndEnvironment(newDB);
+                clearEverythingExceptTypeAndCredentials(newDB);
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
                 validate();
@@ -475,7 +472,7 @@ public class CreationDBMSPage extends MyWizardPage {
                 DB newDB = useBufferOnDB(db, template);
                 if (externalDatabaseCheck.getSelection()) {
                     newDB.setExternal(true);
-                    clearEverythingExceptTypeAndEnvironment(newDB);
+                    clearEverythingExceptTypeAndCredentials(newDB);
                 }
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
@@ -554,6 +551,18 @@ public class CreationDBMSPage extends MyWizardPage {
         if (templateDB.getHelm() != null) {
             HelmList helm = EcoreUtil.copy(templateDB.getHelm());
             db.setHelm(helm);
+        }
+        if (templateDB.getCredentials() != null) {
+            Credentials credentials = EcoreUtil.copy(templateDB.getCredentials());
+            db.setCredentials(credentials);
+        }
+        if (templateDB.getEnvironment() != null) {
+            Environment environment = EcoreUtil.copy(templateDB.getEnvironment());
+            db.setEnvironment(environment);
+        }
+        if (templateDB.getUri() != null) {
+            de.atb.typhondl.xtext.typhonDL.URI uri = EcoreUtil.copy(templateDB.getUri());
+            db.setUri(uri);
         }
         return db;
     }

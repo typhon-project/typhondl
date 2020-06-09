@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  vehiclemetadatadb:
+    image: mariadb:latest
+  textwarningdata:
+    image: mongo:latest
+  appdata:
+    image: mariadb:latest
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_DATABASE: admin
+    ports:
+      - target: 27017
+    volumes:
+      - ./models/:/docker-entrypoint-initdb.d
