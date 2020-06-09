@@ -41,7 +41,7 @@ DB:
 Environment:
 	{Environment} 
 	'environment' '{'
-	   (parameters+=Property)*
+	   (parameters+=Key_Values)+
 	'}'
 ;
 
