@@ -4,14 +4,13 @@ import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Composite;
 
-import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
 
 public class EnvironmentArea extends Area {
 
-    public EnvironmentArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Environment", null);
+    public EnvironmentArea(DB db, int chosenTechnology, Composite parent) {
+        super(db, null, chosenTechnology, parent, "Environment", null);
     }
 
     @Override

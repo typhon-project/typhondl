@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Property;
@@ -16,8 +15,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class HelmArea extends Area {
 
-    public HelmArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Helm Charts", null);
+    public HelmArea(DB db, int chosenTechnology, Composite parent) {
+        super(db, null, chosenTechnology, parent, "Helm Charts", null);
     }
 
     @Override

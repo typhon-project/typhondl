@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.Credentials;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
@@ -24,8 +23,8 @@ public class CredentialsArea extends Area {
     private Text usernameText;
     private Text passwordText;
 
-    public CredentialsArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
-        super(db, container, chosenTechnology, parent, "Credentials", properties);
+    public CredentialsArea(DB db, Composite parent, Properties properties) {
+        super(db, null, -1, parent, "Credentials", properties);
     }
 
     @Override

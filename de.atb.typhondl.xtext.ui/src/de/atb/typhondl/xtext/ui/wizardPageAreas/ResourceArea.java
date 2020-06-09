@@ -19,8 +19,8 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class ResourceArea extends Area {
 
-    public ResourceArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Container Resources", null);
+    public ResourceArea(DB db, Container container, Composite parent) {
+        super(db, container, -1, parent, "Container Resources", null);
     }
 
     @Override

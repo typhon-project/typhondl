@@ -6,15 +6,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
 public class ImageArea extends Area {
 
-    public ImageArea(DB db, Container container, int chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Image used", null);
+    public ImageArea(DB db, Composite parent) {
+        super(db, null, -1, parent, "Image used", null);
     }
 
     @Override

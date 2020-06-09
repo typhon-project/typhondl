@@ -61,6 +61,9 @@ public class CreationDatabasePage extends MyWizardPage {
     }
 
     private Container createDBContainer() {
+        if (db.isExternal()) {
+            return null;
+        }
         Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
         String containerName = createContainerName(db.getName());
         newContainer.setName(containerName);
@@ -105,33 +108,33 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private void addAreasToList() {
         if (!isInList(CredentialsArea.class)) {
-            areas.add(new CredentialsArea(db, container, chosenTechnology, main, properties));
+            areas.add(new CredentialsArea(db, main, properties));
         }
 
-        if (!isInList(EnvironmentArea.class) && db.getEnvironment() != null) {
-            areas.add(new EnvironmentArea(db, container, chosenTechnology, main));
+        if (!isInList(EnvironmentArea.class) && !db.isExternal() && db.getEnvironment() != null) {
+            areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
         if (!isInList(HelmArea.class)
                 && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
                 && db.getHelm() != null && !db.isExternal()) {
-            areas.add(new HelmArea(db, container, chosenTechnology, main));
+            areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
         if (!isInList(ImageArea.class) && !db.isExternal()) {
-            areas.add(new ImageArea(db, container, chosenTechnology, main));
+            areas.add(new ImageArea(db, main));
         }
 
         if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty()) {
-            areas.add(new PropertyArea(db, container, chosenTechnology, main));
+            areas.add(new PropertyArea(db, main));
         }
 
         if (!isInList(AddressArea.class) && db.isExternal()) {
-            areas.add(new AddressArea(db, container, chosenTechnology, main));
+            areas.add(new AddressArea(db, main));
         }
 
         if (!isInList(ResourceArea.class) && !db.isExternal()) {
-            areas.add(new ResourceArea(db, container, chosenTechnology, main));
+            areas.add(new ResourceArea(db, container, main));
         }
 
         if (!isInList(PortArea.class) && !db.isExternal()) {
