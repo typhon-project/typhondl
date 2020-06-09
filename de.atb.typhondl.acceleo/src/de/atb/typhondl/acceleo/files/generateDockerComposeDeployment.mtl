@@ -7,7 +7,7 @@
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 	
-[file ('databases.yaml', false, 'UTF-8')]
+[file ('docker-compose.yaml', false, 'UTF-8')]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
@@ -43,61 +43,10 @@ services:
 [/for]
 [/if]
 [/if]
-[/for]
-[/file]
-[file ('polystore.yaml', false, 'UTF-8')]
-version: '3.7'
-
-[if (aCluster.networks <> null)]
-[for (aNetwork : Cluster_Network | aCluster.networks)]
-[aNetwork.print()/]
-[/for]
-[/if]
-services:
-[for (aContainer : Container | aCluster.applications.containers)]
-[if ((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
 [if (aContainer.name.toLower() = 'kafka')]
 [aCluster.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name/]:
-[if (aContainer.deploys <> null)]
-    [aContainer.deploys.reference.print()/]
-[/if]
-[if (aContainer.depends_on <> null)]
-[for (aDependency : Dependency | aContainer.depends_on)]
-    depends_on: 
-      - [aDependency.reference.name/]
 [/for]
-[/if]
-[if (aContainer.networks <> null)]
-    [aContainer.networks.print()/]
-[/if]
-[if (aContainer.ports <> null)]
-    [aContainer.ports.print()/]
-[/if]
-[if (aContainer.resources <> null)]
-	[aContainer.resources.print()/]
-[/if]    
-[if (aContainer.properties <> null)]
-[for (aProperty : Property | aContainer.properties)]
-    [aProperty.print()/]
-[/for]
-[/if]
-[/if]
-[/for]
-[/file]
-[file ('deploy.sh', false, 'UTF-8')]
-#!/bin/bash
-echo "Pulling latest images"
-docker-compose -f databases.yaml pull
-docker-compose -f polystore.yaml pull
-echo "Starting the Polystore user databases and metadata database"
-docker-compose -f databases.yaml up -d
-sleep 15
-echo "Start Polystore components"
-docker-compose -f polystore.yaml up -d
-echo "Typhon Polystore installation completed."
-echo "It may take a few minutes for all services to be up and running."
 [/file]
 [/for]
 [/template]
