@@ -560,6 +560,10 @@ public class CreationDBMSPage extends MyWizardPage {
             Environment environment = EcoreUtil.copy(templateDB.getEnvironment());
             db.setEnvironment(environment);
         }
+        if (templateDB.getUri() != null) {
+            de.atb.typhondl.xtext.typhonDL.URI uri = EcoreUtil.copy(templateDB.getUri());
+            db.setUri(uri);
+        }
         return db;
     }
 
