@@ -181,6 +181,7 @@ public class CreationDatabasePage extends MyWizardPage {
     public void updateAllAreas() {
         setDescription("Database Type: " + db.getType().getName());
         addAreasToList();
+        // TODO check if container == null and create one if !db.isExternal
         for (Area area : areas) {
             area.updateArea();
         }
