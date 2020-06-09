@@ -15,6 +15,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -50,14 +51,14 @@ public class CreationDatabasePage extends MyWizardPage {
         super(pageName);
         this.db = db;
         this.chosenTechnology = chosenTechnology;
-        this.container = createDBContainer();
-        this.pageWidth = pageWidth;
-        areas = new ArrayList<>();
         try {
             this.properties = PropertiesLoader.loadProperties();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.container = createDBContainer();
+        this.pageWidth = pageWidth;
+        areas = new ArrayList<>();
     }
 
     private Container createDBContainer() {
@@ -70,7 +71,14 @@ public class CreationDatabasePage extends MyWizardPage {
         Reference reference = TyphonDLFactory.eINSTANCE.createReference();
         reference.setReference(db);
         newContainer.setDeploys(reference);
+        URI uri = TyphonDLFactory.eINSTANCE.createURI();
+        uri.setValue(containerName + ":" + getPort());
+        newContainer.setUri(uri);
         return newContainer;
+    }
+
+    private String getPort() {
+        return properties.getProperty(db.getType().getName().toLowerCase() + ".port");
     }
 
     /**

@@ -70,6 +70,7 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		db.helm.format
 		db.credentials.format
 		db.environment.format
+		db.uri.append[newLine]
 		for (property : db.parameters) {
 			property.format
 			property.append[newLine]
