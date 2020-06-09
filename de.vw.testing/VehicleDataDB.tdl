@@ -1,6 +1,7 @@
-database VehicleDataDB : Mongo {
+external database VehicleDataDB : Mongo {
+    uri = http://localhost:32444 ;
 	credentials {
-		username = chooseUsername ;
-		password = choosePassword ;
+		username = admin ;
+		password = iDnn802E3CTJfR6F ;
 	}
 }

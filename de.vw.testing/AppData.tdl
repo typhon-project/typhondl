@@ -1,6 +1,6 @@
 database AppData : MariaDB {
-	environment { test1 = test ; } credentials {
+	credentials {
 		username = root ;
-		password = choosePassword ;
+		password = OIhVShfp7sqriQIF ;
 	}
 }

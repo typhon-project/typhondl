@@ -7,4 +7,5 @@
   <semanticResources>VehicleDataDB.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
   <semanticResources>ads.tdl</semanticResources>
+  <semanticResources>test/test.xmi</semanticResources>
 </viewpoint:DAnalysis>

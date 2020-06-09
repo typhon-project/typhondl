@@ -1,6 +1,6 @@
 database VehicleMetadataDB : MariaDB {
-	environment { test1 = zweidrei ; } credentials {
+	credentials {
 		username = root ;
-		password = ZfRGSBhWOlkmFMhp ;
+		password = pQXLqUV8EpNkcqeq ;
 	}
 }
