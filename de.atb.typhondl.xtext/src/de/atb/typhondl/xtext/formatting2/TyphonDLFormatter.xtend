@@ -28,6 +28,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports
 import de.atb.typhondl.xtext.typhonDL.HelmList
 import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.Credentials
+import de.atb.typhondl.xtext.typhonDL.Environment
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -68,11 +69,21 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		db.image.format
 		db.helm.format
 		db.credentials.format
+		db.environment.format
 		for (property : db.parameters) {
 			property.format
 			property.append[newLine]
 		}
 	}
+	
+    def dispatch void format(Environment environment, extension IFormattableDocument document) {
+        interior(
+            environment.regionFor.keyword('{').append[newLine],
+            environment.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        environment.parameters.format
+    }	
 	
 	def dispatch void format(Credentials credentials, extension IFormattableDocument document) {
 	    interior(
