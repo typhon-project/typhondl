@@ -101,5 +101,7 @@ aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSW
 
 [query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]
 
-
+[query public allowsUsername(typeName: String) : Boolean =  
+typeName = 'mongo'
+/]
 

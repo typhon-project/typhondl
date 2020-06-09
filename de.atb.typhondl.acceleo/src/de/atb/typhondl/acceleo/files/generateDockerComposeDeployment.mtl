@@ -22,7 +22,7 @@ services:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.print()/]
 [/if]
-[if (aContainer.depends_on <> null)]
+[if (not aContainer.depends_on -> isEmpty())]
 [for (aDependency : Dependency | aContainer.depends_on)]
     depends_on: 
       - [aDependency.reference.name/]
@@ -37,7 +37,7 @@ services:
 [if (aContainer.resources <> null)]
     [aContainer.resources.print()/]
 [/if]    
-[if (aContainer.properties <> null)]
+[if (not aContainer.properties -> isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.print()/]
 [/for]
@@ -92,9 +92,8 @@ deploy:
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
-[if (aProperty.name.equalsIgnoreCase('print'))][else]
 [aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
-[/if][/if]
+[/if]
 [/template]
 
 [template public print(aProperty : Key_KeyValueList)  post (trim())]
@@ -135,9 +134,47 @@ image: [db.type.image.value/]
 [aProperty.print()/]
 [/for]
 [/if]
+[if (db.credentials <> null)]
+[db.printCredentials()/]
+[/if]
+[if ((db.environment <> null) and (db.credentials = null))]
+[db.environment.print()/]
+[/if]
 [/template]
 
-[template public generateAnalyticsFiles(aCluster : Cluster)]
+[template public printCredentials(aDB : DB) post (trim())]
+environment:
+[if (aDB.type.name.toLower().allowsUsername())]
+  [aDB.type.name.toLower().getUsernameKey()/][aDB.credentials.username/]
+[/if]  
+  [aDB.type.name.toLower().getPasswordKey()/][aDB.credentials.password/]
+[if (aDB.environment <> null)]
+[for (aProperty : Property | aDB.environment.parameters)]
+  [aProperty.print()/]
+[/for]
+[/if]
+[/template]
+
+[template public getUsernameKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')]
+MONGO_INITDB_ROOT_USERNAME: 
+[/if]
+[/template]
+
+[template public getPasswordKey(aTypeName : String)]
+[if (aTypeName = 'mongo')]MONGO_INITDB_ROOT_PASSWORD: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))]MYSQL_ROOT_PASSWORD: [elseif (aTypeName = 'neo4j')]NEO4J_AUTH: neo4j/
+[/if]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+environment:
+[for (aProperty : Property | aEnvironment.parameters)]
+  [aProperty.print()/]
+[/for] 
+[/template]
+
+
+[template public generateAnalyticsFiles(aCluster : Cluster) post (trim())]
 [file ('Dockerfile', false, 'UTF-8')]
 FROM openjdk:8u212-jre-alpine
 
