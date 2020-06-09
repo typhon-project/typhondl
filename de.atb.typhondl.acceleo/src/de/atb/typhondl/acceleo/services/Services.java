@@ -420,12 +420,10 @@ public class Services {
             polystoredb_container.getProperties().add(polystoredb_container_volume);
         }
 
-        Key_Values polystoredb_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-        polystoredb_container_port.setName("target");
-        polystoredb_container_port.setValue(properties.getProperty("db.port"));
-        Ports polystoredb_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-        polystoredb_container_ports.getKey_values().add(polystoredb_container_port);
-        polystoredb_container.setPorts(polystoredb_container_ports);
+        de.atb.typhondl.xtext.typhonDL.URI polystoredb_container_uri = TyphonDLFactory.eINSTANCE.createURI();
+        polystoredb_container_uri
+                .setValue(properties.getProperty("db.containername") + ":" + properties.getProperty("db.port"));
+        polystoredb_container.setUri(polystoredb_container_uri);
 
         // polystore_api
         Software polystore_api;
@@ -442,6 +440,12 @@ public class Services {
         polystore_api_container.setName(properties.getProperty("api.containername"));
         polystore_api_container.setType(containerType);
         polystore_api_container.setDeploys(polystore_api_reference);
+
+        de.atb.typhondl.xtext.typhonDL.URI polystore_api_container_uri = TyphonDLFactory.eINSTANCE.createURI();
+        polystore_api_container_uri
+                .setValue(properties.getProperty("api.containername") + ":" + properties.getProperty("api.port"));
+        polystore_api_container.setUri(polystore_api_container_uri);
+
         Key_Values polystore_api_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
         polystore_api_container_port.setName("target");
         polystore_api_container_port.setValue(properties.getProperty("api.port"));
@@ -452,16 +456,18 @@ public class Services {
         polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
         polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
         polystore_api_container.setPorts(polystore_api_container_ports);
-        Key_ValueArray polystore_api_entrypoint = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-        polystore_api_entrypoint.setName("entrypoint");
-        polystore_api_entrypoint.getValues().add("wait-for-it");
-        polystore_api_entrypoint.getValues().add("polystore-mongo:27017");
-        polystore_api_entrypoint.getValues().add("-t");
-        polystore_api_entrypoint.getValues().add("'60'");
-        polystore_api_entrypoint.getValues().add("--");
-        polystore_api_entrypoint.getValues().addAll(Arrays.asList(properties.getProperty("api.entrypoint").split(",")));
-        polystore_api_container.getProperties().add(polystore_api_entrypoint);
+
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
+            Key_ValueArray polystore_api_entrypoint = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+            polystore_api_entrypoint.setName("entrypoint");
+            polystore_api_entrypoint.getValues().add("wait-for-it");
+            polystore_api_entrypoint.getValues().add("polystore-mongo:27017");
+            polystore_api_entrypoint.getValues().add("-t");
+            polystore_api_entrypoint.getValues().add("'60'");
+            polystore_api_entrypoint.getValues().add("--");
+            polystore_api_entrypoint.getValues()
+                    .addAll(Arrays.asList(properties.getProperty("api.entrypoint").split(",")));
+            polystore_api_container.getProperties().add(polystore_api_entrypoint);
             Key_Values polystore_api_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
             polystore_api_container_restart.setName("restart");
             polystore_api_container_restart.setValue("always");
@@ -497,6 +503,10 @@ public class Services {
         polystore_ui_container.setType(containerType);
         polystore_ui_container.setDeploys(polystore_ui_reference);
         polystore_ui_container.getDepends_on().add(polystore_api_dependency);
+        de.atb.typhondl.xtext.typhonDL.URI polystore_ui_container_uri = TyphonDLFactory.eINSTANCE.createURI();
+        polystore_ui_container_uri
+                .setValue(properties.getProperty("ui.containername") + ":" + properties.getProperty("ui.port"));
+        polystore_ui_container.setUri(polystore_ui_container_uri);
         Key_Values polystore_ui_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
         polystore_ui_container_port.setName("target");
         polystore_ui_container_port.setValue(properties.getProperty("ui.port"));
@@ -529,12 +539,9 @@ public class Services {
         model.getElements().add(qlserver);
         Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
         qlserver_container.setName(properties.getProperty("qlserver.containername"));
-        Key_Values qlserver_container_port = TyphonDLFactory.eINSTANCE.createKey_Values();
-        qlserver_container_port.setName("target");
-        qlserver_container_port.setValue(properties.getProperty("qlserver.port"));
-        Ports qlserver_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-        qlserver_container_ports.getKey_values().add(qlserver_container_port);
-        qlserver_container.setPorts(qlserver_container_ports);
+        de.atb.typhondl.xtext.typhonDL.URI qlserver_container_uri = TyphonDLFactory.eINSTANCE.createURI();
+        qlserver_container_uri.setValue(properties.getProperty("qlserver.port"));
+        qlserver_container.setUri(qlserver_container_uri);
         qlserver_container.setDeploys(qlserver_reference);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             Key_Values qlserver_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -573,6 +580,7 @@ public class Services {
             Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
             zookeeper_reference.setReference(zookeeper);
 
+            // TODO which container to talk to? zookeeper or kafka?
             Container zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
             zookeeper_container.setName(properties.getProperty("analytics.zookeeper.containername"));
             zookeeper_container.setType(containerType);
