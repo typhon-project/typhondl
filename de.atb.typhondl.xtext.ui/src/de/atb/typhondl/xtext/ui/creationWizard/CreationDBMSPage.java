@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 import de.atb.typhondl.xtext.typhonDL.Credentials;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Environment;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
@@ -554,6 +555,10 @@ public class CreationDBMSPage extends MyWizardPage {
         if (templateDB.getCredentials() != null) {
             Credentials credentials = EcoreUtil.copy(templateDB.getCredentials());
             db.setCredentials(credentials);
+        }
+        if (templateDB.getEnvironment() != null) {
+            Environment environment = EcoreUtil.copy(templateDB.getEnvironment());
+            db.setEnvironment(environment);
         }
         return db;
     }
