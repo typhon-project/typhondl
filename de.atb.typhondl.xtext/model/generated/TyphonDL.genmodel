@@ -9,6 +9,7 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="TyphonDL.ecore#//Modes">
       <genEnumLiterals ecoreEnumLiteral="TyphonDL.ecore#//Modes/MULTIPRIMARY"/>
       <genEnumLiterals ecoreEnumLiteral="TyphonDL.ecore#//Modes/REPLICASET"/>
+      <genEnumLiterals ecoreEnumLiteral="TyphonDL.ecore#//Modes/STATELESS"/>
     </genEnums>
     <genClasses ecoreClass="TyphonDL.ecore#//DeploymentModel">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//DeploymentModel/guiMetaInformation"/>

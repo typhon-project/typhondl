@@ -126,7 +126,7 @@ Replication:
 ;
 
 enum Modes:
-    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet'
+    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
 ;
 
 Reference:
