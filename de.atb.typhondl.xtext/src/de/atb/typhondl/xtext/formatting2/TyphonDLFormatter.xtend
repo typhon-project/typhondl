@@ -214,7 +214,7 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		container.ports.format
 		container.resources.format
 		container.replication.format
-		
+		container.uri.append[newLine]
 		for (property : container.properties) {
 			property.format
 		}
