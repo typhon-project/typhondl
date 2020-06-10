@@ -55,6 +55,7 @@ services:
 [template public printReplication(aContainer : Container)]
 [if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
   [aContainer.printMongoRep()/]
+[aContainer.printMongoInitFiles()/]
 [/if]
 [/template]
 
@@ -66,10 +67,53 @@ services:
   image: mongo
   command: mongod --replSet [aContainer.name/]Replset
 [/if][/for]
+rsinit:
+  build:
+    context: .
+    dockerfile: [aContainer.name/]/rsinit
+  entrypoint: ['['/]
+    'sh', 
+    '-c', 
+    'init_set.sh'
+    [']'/] 
 [/template]
 
-[template public newContainerTemplate (aContainer : Container) ]
-command: mongod --replSet [aContainer.name/]Replset
+[template public printMongoInitFiles(aContainer : Container)]
+[file (aContainer.name + '/init_set.sh', false, 'UTF-8')]
+#!/bin/bash
+echo "sleeping for 10 seconds"
+sleep 10
+
+echo init_set.sh time now: `date +"%T" `
+mongo --host [aContainer.uri.value/] <<EOF
+  var cfg = {
+    "_id": "[aContainer.name/]Replset",
+    "version": 1,
+    "members": ['['/]
+      {
+        "_id": 0,
+        "host": "[aContainer.uri.value/]"
+      }
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+      ,{
+        "_id": [i/],
+        "host": "[aContainer.name/]-replica[i/]:27017"
+      }
+[/if][/for]
+    [']'/]
+  };
+  rs.initiate(cfg);
+EOF
+[/file]
+
+[file (aContainer.name + '/rsinit', false, 'UTF-8')]
+FROM mongo
+
+ADD [aContainer.name/]/init_set.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/init_set.sh
+[/file]
 [/template]
 
 [template public print(aPorts : Ports) post (trim())]
