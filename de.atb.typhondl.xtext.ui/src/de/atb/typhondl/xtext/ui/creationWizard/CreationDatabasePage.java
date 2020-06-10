@@ -106,6 +106,8 @@ public class CreationDatabasePage extends MyWizardPage {
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
+        this.container = createDBContainer();
+
         addAreasToList();
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -182,8 +184,8 @@ public class CreationDatabasePage extends MyWizardPage {
      */
     public void updateAllAreas() {
         setDescription("Database Type: " + db.getType().getName());
+        this.container = createDBContainer();
         addAreasToList();
-        // TODO check if container == null and create one if !db.isExternal
         for (Area area : areas) {
             area.updateArea();
         }
