@@ -119,7 +119,8 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new CredentialsArea(db, main, properties));
         }
 
-        if (!isInList(EnvironmentArea.class) && !db.isExternal() && db.getEnvironment() != null) {
+        if (!isInList(EnvironmentArea.class) && !db.isExternal() && db.getEnvironment() != null
+                && db.getHelm() == null) {
             areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
@@ -129,27 +130,28 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
-        if (!isInList(ImageArea.class) && !db.isExternal()) {
+        if (!isInList(ImageArea.class) && !db.isExternal() && db.getHelm() == null) {
             areas.add(new ImageArea(db, main));
         }
 
-        if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty()) {
+        if (!isInList(PropertyArea.class) && !db.getParameters().isEmpty() && db.getHelm() == null) {
             areas.add(new PropertyArea(db, main));
         }
 
-        if (!isInList(AddressArea.class) && db.isExternal()) {
+        if (!isInList(AddressArea.class) && db.isExternal() && db.getHelm() == null) {
             areas.add(new AddressArea(db, main));
         }
 
-        if (!isInList(ResourceArea.class) && !db.isExternal()) {
+        if (!isInList(ResourceArea.class) && !db.isExternal() && db.getHelm() == null) {
             areas.add(new ResourceArea(db, container, main));
         }
 
-        if (!isInList(PortArea.class) && !db.isExternal()) {
+        if (!isInList(PortArea.class) && !db.isExternal() && db.getHelm() == null) {
             areas.add(new PortArea(db, container, chosenTechnology, main, properties));
         }
 
-        if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()) {
+        if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()
+                && db.getHelm() == null) {
             areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
         }
     }
