@@ -19,7 +19,6 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
-echo "Apply Helm Charts"
 [for (aContainer : Container | aCluster.applications.containers)]
 [if (not(aContainer.deploys.oclIsUndefined()))]
 [if (aContainer.containsDB())]
@@ -77,30 +76,29 @@ echo "Polystore installation completed."
 
 [file ('polystore.yaml', false, 'UTF-8')]
 [for (aContainer : Container | aCluster.applications.containers)]
-[if ((aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
+[if ((aContainer.name = 'typhon-polystore-service')._or(aContainer.name = 'polystore-ui')._or(aContainer.name = 'typhonql-server'))]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [aContainer.name.toLower()/]-deployment
+  name: [aContainer.name/]-deployment
 spec:
-[if (aContainer.findReplicas() <> null)]
-  replicas: [aContainer.findReplicas().value/]
-[/if]
+[if (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+replicas: [aContainer.replication.replicas/]
+[/if][/if]
   selector:
     matchLabels:
-      app: [aContainer.name.toLower()/]-pod
+      app: [aContainer.name/]-pod
   template:
     metadata:
       labels:
-        app: [aContainer.name.toLower()/]-pod
+        app: [aContainer.name/]-pod
     spec:
       containers:
-        - name: [aContainer.name.toLower()/]-container
+        - name: [aContainer.name/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
-          [aContainer.ports.printPorts()/]
-[if (aContainer.resources <> null)]
-          [aContainer.resources.print()/]
-[/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
 [if (aContainer.properties <> null)]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
@@ -110,19 +108,19 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: [aContainer.name.toLower()/]
+  name: [aContainer.name/]
 spec:
-[if (aContainer.ports.getPublishedPort()<>null)]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
   type: NodePort
-[/if] 
+[/if][/if]
   ports:
-    - port: [aContainer.ports.getTargetPort().value/]
-      targetPort: [aContainer.ports.getTargetPort().value/]
-[if (aContainer.ports.getPublishedPort()<>null)]
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
       nodePort: [aContainer.ports.getPublishedPort().value/]
-[/if]
+[/if][/if]
   selector:
-    app: [aContainer.name.toLower()/]-pod
+    app: [aContainer.name/]-pod
 ---
 [/if]
 [/for]
@@ -152,8 +150,6 @@ resources:
 [/if]
 [/template]
 
-
-
 [template public printMongoJob(aContainer : Container) post (trim())]
 [if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
 kind: Job
@@ -181,27 +177,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [aContainer.name.toLower()/]-deployment
+  name: [aContainer.name/]-deployment
 spec:
-[if (aContainer.findReplicas() <> null)]
-  replicas: [aContainer.findReplicas().value/]
-[/if]
   selector:
     matchLabels:
-      app: [aContainer.name.toLower()/]-pod
+      app: [aContainer.name/]-pod
   template:
     metadata:
       labels:
-        app: [aContainer.name.toLower()/]-pod
+        app: [aContainer.name/]-pod
     spec:
       containers:
-        - name: [aContainer.name.toLower()/]-container
-          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
-          [aContainer.ports.printPorts()/]
-[if (aContainer.resources <> null)]
-          [aContainer.resources.print()/]
-[/if]
-[if (aContainer.properties <> null)]
+        - name: [aContainer.name/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/]
+          [aContainer.printDatabase()/][/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+[if (not aContainer.properties->isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
 [/for]
@@ -210,7 +202,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: [aContainer.name.toLower()/]
+  name: [aContainer.name/]
 spec:
 [if (aContainer.ports.getPublishedPort()<>null)]
   type: NodePort
@@ -222,10 +214,21 @@ spec:
       nodePort: [aContainer.ports.getPublishedPort().value/]
 [/if]
   selector:
-    app: [aContainer.name.toLower()/]-pod
+    app: [aContainer.name/]-pod
 ---
 [aContainer.printMongoJob()/]
 [/if]
+[/template]
+
+[template public printDatabase(aContainer : Container) ]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.credentials <> null)]
+[aDB.printCredentials()/]
+[/if]
+[if ((aDB.environment <> null) and (aDB.credentials = null))]
+[aDB.environment.print()/]
+[/if]
+[/let]
 [/template]
 
 [template public helmMoreIfs(aContainer : Container) post (trim())]
@@ -234,13 +237,57 @@ spec:
 [/if]
 [/template]
 
+[template public printCredentials(aDB : DB) post (trim())]
+environment:
+[if (aDB.type.name.toLower().allowsUsername())]
+  - name: [aDB.type.name.toLower().getUsernameKey()/] 
+    value: [aDB.credentials.username/]
+[/if]  
+  - name: [aDB.type.name.toLower().getPasswordKey()/]
+    value: [aDB.credentials.password/]
+[if (aDB.environment <> null)]
+[for (aProperty : Key_Values | aDB.environment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for]
+[/if]
+[/template]
+
+[template public getUsernameKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')]
+[aTypeName.getMongoUsernameKey()/]: 
+[/if]
+[/template]
+
+[template public getPasswordKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/]: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/]: [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/]
+[/if]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+environment:
+[for (aProperty : Key_Values | aEnvironment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for] 
+[/template]
+
 [template public printHelmCommand(aContainer : Container) post (trim())]
 helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
-helm install [aContainer.name.toLower()/] --set fullnameOverride=[aContainer.name.toLower()/] --set rootUser.password=[aContainer.getMySQLPassword().value/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+helm install [aContainer.name/] --set fullnameOverride=[aContainer.name/] [aContainer.addCredentials()/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+[/template]
+
+[template public addCredentials (aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.type.name.toLower() = 'mariadbgalera')]
+--set rootUser.password=[aDB.credentials.password/]
+[/if][/let]
 [/template]
 
 [template public printPolystoreMongo(aContainer : Container) post (trim())]
-mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aContainer.getMongoRootUser().value/] -p [aContainer.getMongoRootPassword().value/] admin --eval '[aContainer.getMongoPrint()/]';
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aDB.credentials.username/] -p [aDB.credentials.password/] admin --eval '[aContainer.getMongoPrint()/]';
+[/let]
 [/template]
 
 [template public printPublishedPorts(aPorts : Ports)]
@@ -257,33 +304,28 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[if (arg.name.equalsIgnoreCase('replicas')._or(arg.name.equalsIgnoreCase('print')))][else]
 [arg.name/]: [arg.value/]
-[/if]
 [/template]
 
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
-[if (arg.name.equalsIgnoreCase('environment')._or(arg.name.equalsIgnoreCase('env')))]
-env:
-[for (aKey_Values : Property | arg.properties)]
-  - name: [aKey_Values.oclAsType(Key_Values).name/]
-    value: [aKey_Values.oclAsType(Key_Values).value/]
+[arg.name/]:
+[for (aProperty : Property | arg.properties)]
+  [aProperty.printKubernetes()/]
 [/for]
-[/if]
 [/template]
 
 [template public printKubernetes(arg : Key_ValueArray) post (trim())]
-[if (arg.name.equalsIgnoreCase('volume')._or(arg.name.equalsIgnoreCase('volumes'))._or(arg.name.equalsIgnoreCase('restart')))][else]
-[/if]
+[arg.name/]:
+[for (aValue : String | arg.values)]
+  - [aValue/]
+[/for]
 [/template]
-
-
 
 [template public printImage(aService : Services) post (trim())]
 	template_expression
 [/template]
 
-[template public printImage(aSoftware : Software) post (trim())]
+[template public printImageAndProperties(aSoftware : Software) post (trim())]
 image: [aSoftware.image.value/]
 [for (aProperty : Property | aSoftware.parameters)]
 [aProperty.printKubernetes()/]
@@ -292,7 +334,4 @@ image: [aSoftware.image.value/]
 
 [template public printImage(aDB : DB) post (trim())]
 image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
-[for (aProperty : Property | aDB.parameters)]
-[aProperty.printKubernetes()/]
-[/for]
 [/template]
