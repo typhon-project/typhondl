@@ -51,7 +51,7 @@ public class ReplicaArea extends Area {
             replicaText.setLayoutData(gridDataFields);
             replicaText.setText(Integer.toString(replication.getReplicas()));
             replicaText.addModifyListener(e -> {
-                replication.setReplicas(Integer.parseInt(replicaText.getText()));
+                container.getReplication().setReplicas(getNumber(replicaText.getText()));
             });
             new Label(hiddenComposite, SWT.NONE).setText("Replication Mode:");
             // TODO have a combo here in case more modes are available
@@ -71,7 +71,7 @@ public class ReplicaArea extends Area {
                         if (newReplication == null) {
                             newReplication = TyphonDLFactory.eINSTANCE.createReplication();
                         }
-                        newReplication.setReplicas(Integer.parseInt(replicaText.getText()));
+                        newReplication.setReplicas(getNumber(replicaText.getText()));
                         newReplication.setMode(getReplicationMode());
                         container.setReplication(newReplication);
                     } else {
@@ -81,6 +81,10 @@ public class ReplicaArea extends Area {
             });
 
         }
+    }
+
+    private int getNumber(String string) {
+        return string.isEmpty() ? 0 : Integer.parseInt(string);
     }
 
     private Replication createDefaultReplication() {
