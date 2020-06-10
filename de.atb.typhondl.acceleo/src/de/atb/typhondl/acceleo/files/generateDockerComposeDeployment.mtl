@@ -222,12 +222,12 @@ environment:
 
 [template public getUsernameKey(aTypeName : String) post (trim())]
 [if (aTypeName = 'mongo')]
-MONGO_INITDB_ROOT_USERNAME: 
+[aTypeName.getMongoUsernameKey()/]: 
 [/if]
 [/template]
 
 [template public getPasswordKey(aTypeName : String)]
-[if (aTypeName = 'mongo')]MONGO_INITDB_ROOT_PASSWORD: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))]MYSQL_ROOT_PASSWORD: [elseif (aTypeName = 'neo4j')]NEO4J_AUTH: neo4j/
+[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/]: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/]: [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/]
 [/if]
 [/template]
 
