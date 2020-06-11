@@ -540,7 +540,8 @@ public class Services {
         Container qlserver_container = TyphonDLFactory.eINSTANCE.createContainer();
         qlserver_container.setName(properties.getProperty("qlserver.containername"));
         de.atb.typhondl.xtext.typhonDL.URI qlserver_container_uri = TyphonDLFactory.eINSTANCE.createURI();
-        qlserver_container_uri.setValue(properties.getProperty("qlserver.port"));
+        qlserver_container_uri.setValue(
+                properties.getProperty("qlserver.containername") + ":" + properties.getProperty("qlserver.port"));
         qlserver_container.setUri(qlserver_container_uri);
         qlserver_container.setDeploys(qlserver_reference);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {

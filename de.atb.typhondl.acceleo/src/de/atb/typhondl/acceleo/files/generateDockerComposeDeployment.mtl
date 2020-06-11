@@ -210,24 +210,13 @@ image: [db.type.image.value/]
 [template public printCredentials(aDB : DB) post (trim())]
 environment:
 [if (aDB.type.name.toLower().allowsUsername())]
-  [aDB.type.name.toLower().getUsernameKey()/] [aDB.credentials.username/]
+  [aDB.type.name.toLower().getUsernameKey()/]: [aDB.credentials.username/]
 [/if]  
-  [aDB.type.name.toLower().getPasswordKey()/][aDB.credentials.password/]
+  [aDB.type.name.toLower().getPasswordKey()/]: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
 [if (aDB.environment <> null)]
 [for (aProperty : Property | aDB.environment.parameters)]
   [aProperty.print()/]
 [/for]
-[/if]
-[/template]
-
-[template public getUsernameKey(aTypeName : String) post (trim())]
-[if (aTypeName = 'mongo')]
-[aTypeName.getMongoUsernameKey()/]: 
-[/if]
-[/template]
-
-[template public getPasswordKey(aTypeName : String)]
-[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/]: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/]: [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/]
 [/if]
 [/template]
 

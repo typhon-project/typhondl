@@ -96,7 +96,7 @@ replicas: [aContainer.replication.replicas/]
     spec:
       containers:
         - name: [aContainer.name/]-container
-          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.oclAsType(Software).printImageAndProperties()/][/if]
           [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
           [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
 [if (aContainer.properties <> null)]
@@ -189,8 +189,8 @@ spec:
     spec:
       containers:
         - name: [aContainer.name/]-container
-          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/]
-          [aContainer.printDatabase()/][/if]
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [if (aContainer.deploys <> null)][aContainer.printDatabase()/][/if]
           [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
           [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
 [if (not aContainer.properties->isEmpty())]
@@ -204,15 +204,15 @@ apiVersion: v1
 metadata:
   name: [aContainer.name/]
 spec:
-[if (aContainer.ports.getPublishedPort()<>null)]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
   type: NodePort
-[/if] 
+[/if][/if]
   ports:
-    - port: [aContainer.ports.getTargetPort().value/]
-      targetPort: [aContainer.ports.getTargetPort().value/]
-[if (aContainer.ports.getPublishedPort()<>null)]
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
       nodePort: [aContainer.ports.getPublishedPort().value/]
-[/if]
+[/if][/if]
   selector:
     app: [aContainer.name/]-pod
 ---
@@ -220,7 +220,7 @@ spec:
 [/if]
 [/template]
 
-[template public printDatabase(aContainer : Container) ]
+[template public printDatabase(aContainer : Container) post (trim())]
 [let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
 [if (aDB.credentials <> null)]
 [aDB.printCredentials()/]
@@ -244,24 +244,15 @@ environment:
     value: [aDB.credentials.username/]
 [/if]  
   - name: [aDB.type.name.toLower().getPasswordKey()/]
-    value: [aDB.credentials.password/]
-[if (aDB.environment <> null)]
-[for (aProperty : Key_Values | aDB.environment.parameters)]
+    value: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)][aDB.environment.printNameValuePair()/][/if]
+[/template]
+
+[template public printNameValuePair(aEnvironment : Environment) post (trim())]
+[for (aProperty : Key_Values | aEnvironment.parameters)]
   - name: [aProperty.name/]
     value: [aProperty.value/]
 [/for]
-[/if]
-[/template]
-
-[template public getUsernameKey(aTypeName : String) post (trim())]
-[if (aTypeName = 'mongo')]
-[aTypeName.getMongoUsernameKey()/]: 
-[/if]
-[/template]
-
-[template public getPasswordKey(aTypeName : String) post (trim())]
-[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/]: [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/]: [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/]
-[/if]
 [/template]
 
 [template public print(aEnvironment : Environment) post (trim())]
@@ -286,12 +277,12 @@ helm install [aContainer.name/] --set fullnameOverride=[aContainer.name/] [aCont
 
 [template public printPolystoreMongo(aContainer : Container) post (trim())]
 [let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
-mongo --host [aContainer.name/] --port [aContainer.ports.getTargetPort().value/] -u [aDB.credentials.username/] -p [aDB.credentials.password/] admin --eval '[aContainer.getMongoPrint()/]';
+mongo --host [aContainer.name/] --port [aContainer.uri.getPort()/] -u [aDB.credentials.username/] -p [aDB.credentials.password/] admin --eval '[aContainer.getMongoPrint()/]';
 [/let]
 [/template]
 
 [template public printPublishedPorts(aPorts : Ports)]
-	template_expression
+published port
 [/template]
 
 [template public printPorts(aPorts : Ports)]
@@ -304,7 +295,7 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[arg.name/]: [arg.value/]
+[if (not (arg.name = 'print'))][arg.name/]: [arg.value/][/if]
 [/template]
 
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
@@ -322,7 +313,7 @@ something went wrong with a Property
 [/template]
 
 [template public printImage(aService : Services) post (trim())]
-	template_expression
+something wrong with serviceimage
 [/template]
 
 [template public printImageAndProperties(aSoftware : Software) post (trim())]
@@ -332,6 +323,6 @@ image: [aSoftware.image.value/]
 [/for]
 [/template]
 
-[template public printImage(aDB : DB) post (trim())]
+[template public printImage(aDB : DB)]
 image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
 [/template]

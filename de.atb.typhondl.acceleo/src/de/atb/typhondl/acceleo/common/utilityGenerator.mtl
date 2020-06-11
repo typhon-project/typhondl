@@ -86,10 +86,25 @@ typeName = 'mongo'
 /]
 
 [query public getPort(aURI : URI) : String =
-aURI.value.substring(aURI.value.indexOf(':'))
+aURI.value.substring(aURI.value.indexOf(':')+1)
 /]
 
 [query public getMongoUsernameKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_USERNAME'/]
 [query public getMongoPasswordKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_PASSWORD'/]
 [query public getMariaDBPasswordKey(aTypeName : String) : String = 'MYSQL_ROOT_PASSWORD'/]
-[query public getNeo4jPasswordKey(aTypeName : String) : String = 'NEO4J_AUTH: neo4j/'/]
+[query public getNeo4jPasswordKey(aTypeName : String) : String = 'NEO4J_AUTH'/]
+
+[template public getPasswordPreValue(aTypeName : String) post (trim())]
+[if (aTypeName = 'neo4j')]neo4j/[/if]
+[/template]
+
+[template public getPasswordKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/] [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/] [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/][/if]
+[/template]
+
+
+[template public getUsernameKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')]
+[aTypeName.getMongoUsernameKey()/]
+[/if]
+[/template]
