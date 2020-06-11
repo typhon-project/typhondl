@@ -35,8 +35,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * Creates an instance of the {@link CreationAnalyticsPage}
      * 
      * @param pageName   the name of the page
-     * @param properties the {@link Properties} extracted from the
-     *                   polystore.properties file
+     * @param properties
      */
     protected CreationAnalyticsPage(String pageName, Properties properties, int chosenTemplate) {
         super(pageName);
@@ -76,10 +75,9 @@ public class CreationAnalyticsPage extends MyWizardPage {
      */
     public class KafkaConfigEditor {
         public List<InputField> dockerComposeFields = Arrays.asList(
-                new InputField("Zookeeper Port: ", "analytics.zookeeper.publishedPort"),
-                new InputField("Kafka Port: ", "analytics.kafka.publishedPort"),
-                new InputField("Kafka Listeners: ", "analytics.kafka.listeners"),
-                new InputField("Kafka Inter Broker Listener Name: ", "analytics.kafka.listenerName"));
+                new InputField("Kafka version: ", "analytics.kafka.version"),
+                new InputField("Kafka host: ", "analytics.kafka.avertisedHost"),
+                new InputField("Kafka port: ", "analytics.kafka.port"));
         public List<InputField> kubernetesFields = Arrays.asList(
                 new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
                 new InputField("Flink taskmanager memory process size: ",
@@ -91,12 +89,14 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 new InputField("Logglevel hadoop: ", "analytics.logging.hadoop"),
                 new InputField("Logglevel zookeeper: ", "analytics.logging.zookeeper"),
                 new InputField("Logglevel flink: ", "analytics.logging.flink"),
-                new InputField("Logging flink target: ", "analytics.logging.fling.target"),
+                new InputField("Logging flink target: ", "analytics.logging.flink.target"),
                 new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
                 new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
                 new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
                 new InputField("Kafka version: ", "analytics.kafka.version"),
-                new InputField("Kafka nodeport: ", "analytics.kafka.port"));
+                new InputField("Kafka nodeport: ", "analytics.kafka.port"),
+                new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
+                new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
     }
 
     @Override
@@ -129,7 +129,9 @@ public class CreationAnalyticsPage extends MyWizardPage {
         for (InputField inputField : fields) {
             new Label(main, NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
-            text.setText(properties.getProperty(inputField.propertyName));
+            String property = properties.getProperty(inputField.propertyName);
+            System.out.println(property);
+            text.setText(property);
             text.setLayoutData(gridData);
             text.addModifyListener(e -> {
                 properties.setProperty(inputField.propertyName, text.getText());
@@ -145,8 +147,8 @@ public class CreationAnalyticsPage extends MyWizardPage {
         return properties;
     }
 
-    public void updateFields(int chosenTechnology) {
-        createFields();
+    public void updateData(Properties properties) {
+        this.properties = properties;
     }
 
 }
