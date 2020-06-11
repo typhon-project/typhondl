@@ -556,6 +556,7 @@ public class Services {
         // Analytics, see https://github.com/typhon-project/typhondl/issues/6
         if (properties.get("polystore.useAnalytics").equals("true")) {
             String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
+            String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
             String kafkaPort = properties.getProperty("analytics.kafka.publishedPort");
             String kafkaInsidePort = properties.getProperty("analytics.kafka.insidePort");
             String kafkaAdvertisedHost = properties.getProperty("analytics.kafka.avertisedHost");
@@ -581,7 +582,6 @@ public class Services {
             Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
             zookeeper_reference.setReference(zookeeper);
 
-            // TODO which container to talk to? zookeeper or kafka?
             Container zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
             zookeeper_container.setName(properties.getProperty("analytics.zookeeper.containername"));
             zookeeper_container.setType(containerType);
@@ -591,7 +591,7 @@ public class Services {
             zookeeper_container_ports1.setValue(zookeeperPort);
             Key_Values zookeeper_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
             zookeeper_container_ports2.setName("target");
-            zookeeper_container_ports2.setValue(properties.getProperty("analytics.zookeeper.port"));
+            zookeeper_container_ports2.setValue(zookeeperTargetPort);
             Ports zookeeper_container_port = TyphonDLFactory.eINSTANCE.createPorts();
             zookeeper_container_port.getKey_values().add(zookeeper_container_ports1);
             zookeeper_container_port.getKey_values().add(zookeeper_container_ports2);
@@ -628,7 +628,7 @@ public class Services {
             kafka_environment.setName("environment");
             Key_Values KAFKA_ZOOKEEPER_CONNECT = TyphonDLFactory.eINSTANCE.createKey_Values();
             KAFKA_ZOOKEEPER_CONNECT.setName("KAFKA_ZOOKEEPER_CONNECT");
-            KAFKA_ZOOKEEPER_CONNECT.setValue("zookeeper:" + zookeeperPort);
+            KAFKA_ZOOKEEPER_CONNECT.setValue("zookeeper:" + zookeeperTargetPort);
             kafka_environment.getProperties().add(KAFKA_ZOOKEEPER_CONNECT);
             Key_Values KAFKA_ADVERTISED_HOST_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
             KAFKA_ADVERTISED_HOST_NAME.setName("KAFKA_ADVERTISED_HOST_NAME");
