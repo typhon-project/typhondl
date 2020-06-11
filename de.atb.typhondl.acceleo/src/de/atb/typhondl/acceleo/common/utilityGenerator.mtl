@@ -33,24 +33,8 @@ aPorts.key_values->any(key | key.name='published')
 aPorts.key_values->any(key | key.name='target') 
 /]
 
-[query public findReplicas(aContainer : Container) : Key_Values =
-aContainer.properties->any(key | key.name='replicas')
-/]
-
 [query public getMongoPrint(aContainer : Container) : String =
 aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
-/]
-
-[query public getEnvironmentList(aContainer : Container) : Key_KeyValueList = 
-aContainer.deploys.reference.parameters->any(key | (key.name='env')._or(key.name='environment'))
-/]
-
-[query public getMongoRootUser(aContainer : Container) : Key_Values =
-aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_USERNAME')
-/]
-
-[query public getMongoRootPassword(aContainer : Container) : Key_Values =
-aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_PASSWORD')
 /]
 
 [query public getKubeconfig(aCluster : Cluster) : Key_Values =
@@ -93,13 +77,34 @@ aContainer.getHelmList().repoName
 aContainer.getHelmList().chartName
 /]
 
-[query public getMySQLPassword(aContainer : Container) : Key_Values =
-aContainer.getEnvironmentList().properties->any(key | key.name='MYSQL_ROOT_PASSWORD')
-/]
-
 [query public convertCPUToKubernetes(aCPUString : String) : String = self /]
 
 [query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]
 
+[query public allowsUsername(typeName: String) : Boolean =  
+typeName = 'mongo'
+/]
+
+[query public getPort(aURI : URI) : String =
+aURI.value.substring(aURI.value.indexOf(':')+1)
+/]
+
+[query public getMongoUsernameKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_USERNAME'/]
+[query public getMongoPasswordKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_PASSWORD'/]
+[query public getMariaDBPasswordKey(aTypeName : String) : String = 'MYSQL_ROOT_PASSWORD'/]
+[query public getNeo4jPasswordKey(aTypeName : String) : String = 'NEO4J_AUTH'/]
+
+[template public getPasswordPreValue(aTypeName : String) post (trim())]
+[if (aTypeName = 'neo4j')]neo4j/[/if]
+[/template]
+
+[template public getPasswordKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/] [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/] [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/][/if]
+[/template]
 
 
+[template public getUsernameKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')]
+[aTypeName.getMongoUsernameKey()/]
+[/if]
+[/template]

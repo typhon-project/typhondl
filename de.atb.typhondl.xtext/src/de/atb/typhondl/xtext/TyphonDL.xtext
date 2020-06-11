@@ -41,7 +41,7 @@ DB:
 Environment:
 	{Environment} 
 	'environment' '{'
-	   (parameters+=Property)*
+	   (parameters+=Key_Values)+
 	'}'
 ;
 
@@ -126,7 +126,7 @@ Replication:
 ;
 
 enum Modes:
-    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet'
+    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
 ;
 
 Reference:

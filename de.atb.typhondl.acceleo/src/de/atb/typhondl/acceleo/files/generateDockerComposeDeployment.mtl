@@ -7,7 +7,7 @@
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 	
-[file ('databases.yaml', false, 'UTF-8')]
+[file ('docker-compose.yaml', false, 'UTF-8')]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
@@ -17,12 +17,11 @@ version: '3.7'
 [/if]
 services:
 [for (aContainer : Container | aCluster.applications.containers)]
-[if (not(aContainer.isPolystoreContainer()))]
   [aContainer.name/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.print()/]
 [/if]
-[if (aContainer.depends_on <> null)]
+[if (not aContainer.depends_on -> isEmpty())]
 [for (aDependency : Dependency | aContainer.depends_on)]
     depends_on: 
       - [aDependency.reference.name/]
@@ -37,69 +36,84 @@ services:
 [if (aContainer.resources <> null)]
     [aContainer.resources.print()/]
 [/if]    
-[if (aContainer.properties <> null)]
+[if (not aContainer.properties -> isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.print()/]
 [/for]
 [/if]
+[if (aContainer.replication <> null)]
+[aContainer.printReplication()/]
 [/if]
-[/for]
-[/file]
-[file ('polystore.yaml', false, 'UTF-8')]
-version: '3.7'
-
-[if (aCluster.networks <> null)]
-[for (aNetwork : Cluster_Network | aCluster.networks)]
-[aNetwork.print()/]
-[/for]
-[/if]
-services:
-[for (aContainer : Container | aCluster.applications.containers)]
-[if ((aContainer.name.toLower() = 'kafka')._or(aContainer.name.toLower() = 'zookeeper')._or(aContainer.name.toLower() = 'authall')._or(aContainer.name.toLower() = 'typhon-polystore-service')._or(aContainer.name.toLower() = 'polystore-ui')._or(aContainer.name.toLower() = 'typhonql-server'))]
 [if (aContainer.name.toLower() = 'kafka')]
 [aCluster.generateAnalyticsFiles()/]
 [/if]
-  [aContainer.name/]:
-[if (aContainer.deploys <> null)]
-    [aContainer.deploys.reference.print()/]
-[/if]
-[if (aContainer.depends_on <> null)]
-[for (aDependency : Dependency | aContainer.depends_on)]
-    depends_on: 
-      - [aDependency.reference.name/]
-[/for]
-[/if]
-[if (aContainer.networks <> null)]
-    [aContainer.networks.print()/]
-[/if]
-[if (aContainer.ports <> null)]
-    [aContainer.ports.print()/]
-[/if]
-[if (aContainer.resources <> null)]
-	[aContainer.resources.print()/]
-[/if]    
-[if (aContainer.properties <> null)]
-[for (aProperty : Property | aContainer.properties)]
-    [aProperty.print()/]
-[/for]
-[/if]
-[/if]
 [/for]
 [/file]
-[file ('deploy.sh', false, 'UTF-8')]
+[/for]
+[/template]
+
+[template public printReplication(aContainer : Container)]
+[if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
+  [aContainer.printMongoRep()/]
+[aContainer.printMongoInitFiles()/]
+[/if]
+[/template]
+
+[template public printMongoRep(aContainer : Container)]
+  command: mongod --replSet [aContainer.name/]Replset
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+[aContainer.name/]-replica[i/]:
+  image: mongo
+  command: mongod --replSet [aContainer.name/]Replset
+[/if][/for]
+rsinit:
+  build:
+    context: .
+    dockerfile: [aContainer.name/]/rsinit
+  entrypoint: ['['/]
+    'sh', 
+    '-c', 
+    'init_set.sh'
+    [']'/] 
+[/template]
+
+[template public printMongoInitFiles(aContainer : Container)]
+[file (aContainer.name + '/init_set.sh', false, 'UTF-8')]
 #!/bin/bash
-echo "Pulling latest images"
-docker-compose -f databases.yaml pull
-docker-compose -f polystore.yaml pull
-echo "Starting the Polystore user databases and metadata database"
-docker-compose -f databases.yaml up -d
-sleep 15
-echo "Start Polystore components"
-docker-compose -f polystore.yaml up -d
-echo "Typhon Polystore installation completed."
-echo "It may take a few minutes for all services to be up and running."
+echo "sleeping for 10 seconds"
+sleep 10
+
+echo init_set.sh time now: `date +"%T" `
+mongo --host [aContainer.uri.value/] <<EOF
+  var cfg = {
+    "_id": "[aContainer.name/]Replset",
+    "version": 1,
+    "members": ['['/]
+      {
+        "_id": 0,
+        "host": "[aContainer.uri.value/]"
+      }
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+      ,{
+        "_id": [i/],
+        "host": "[aContainer.name/]-replica[i/]:27017"
+      }
+[/if][/for]
+    [']'/]
+  };
+  rs.initiate(cfg);
+EOF
 [/file]
-[/for]
+
+[file (aContainer.name + '/rsinit', false, 'UTF-8')]
+FROM mongo
+
+ADD [aContainer.name/]/init_set.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/init_set.sh
+[/file]
 [/template]
 
 [template public print(aPorts : Ports) post (trim())]
@@ -143,9 +157,8 @@ deploy:
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
-[if (aProperty.name.equalsIgnoreCase('print'))][else]
 [aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
-[/if][/if]
+[/if]
 [/template]
 
 [template public print(aProperty : Key_KeyValueList)  post (trim())]
@@ -186,9 +199,36 @@ image: [db.type.image.value/]
 [aProperty.print()/]
 [/for]
 [/if]
+[if (db.credentials <> null)]
+[db.printCredentials()/]
+[/if]
+[if ((db.environment <> null) and (db.credentials = null))]
+[db.environment.print()/]
+[/if]
 [/template]
 
-[template public generateAnalyticsFiles(aCluster : Cluster)]
+[template public printCredentials(aDB : DB) post (trim())]
+environment:
+[if (aDB.type.name.toLower().allowsUsername())]
+  [aDB.type.name.toLower().getUsernameKey()/]: [aDB.credentials.username/]
+[/if]  
+  [aDB.type.name.toLower().getPasswordKey()/]: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)]
+[for (aProperty : Property | aDB.environment.parameters)]
+  [aProperty.print()/]
+[/for]
+[/if]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+environment:
+[for (aProperty : Property | aEnvironment.parameters)]
+  [aProperty.print()/]
+[/for] 
+[/template]
+
+
+[template public generateAnalyticsFiles(aCluster : Cluster) post (trim())]
 [file ('Dockerfile', false, 'UTF-8')]
 FROM openjdk:8u212-jre-alpine
 

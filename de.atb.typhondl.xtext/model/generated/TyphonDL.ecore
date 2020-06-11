@@ -36,7 +36,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Environment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
-        eType="#//Property" containment="true"/>
+        eType="#//Key_Values" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="HelmList">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="repoName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -113,6 +113,7 @@
   <eClassifiers xsi:type="ecore:EEnum" name="Modes">
     <eLiterals name="MULTIPRIMARY" literal="multiPrimary"/>
     <eLiterals name="REPLICASET" value="1" literal="replicaSet"/>
+    <eLiterals name="STATELESS" value="2" literal="stateless"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Services"/>
