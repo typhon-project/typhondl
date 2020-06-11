@@ -119,6 +119,8 @@ public class CreateModelWizard extends Wizard {
         Properties properties;
         properties = this.mainPage.getProperties();
         HashMap<DB, Container> result = getDabasesAndContainers();
+        // TODO remove, if replication works with authentication:
+        result = removeMongoCredentialsIfReplicated(result);
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
         IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
@@ -139,6 +141,19 @@ public class CreateModelWizard extends Wizard {
             e.printStackTrace();
         }
         return true;
+    }
+
+    private HashMap<DB, Container> removeMongoCredentialsIfReplicated(HashMap<DB, Container> result) {
+        for (DB db : result.keySet()) {
+            if (db.getType().getName().equalsIgnoreCase("mongo")) {
+                if (result.get(db).getReplication() != null) {
+                    db.setCredentials(null);
+                    MessageDialog.openInformation(this.getShell(), "Wizard",
+                            "In this version replication of mongo does not allow authentication");
+                }
+            }
+        }
+        return result;
     }
 
     private HashMap<DB, Container> getDabasesAndContainers() {
