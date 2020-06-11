@@ -21,7 +21,9 @@ Services:
 
 Software:
 	(external?='external')? 'software' name=Name '{'
-	(image=IMAGE)
+	(image=IMAGE)?
+	(uri=URI)?
+	(environment=Environment)?
 	(parameters+=Property)*
 	'}';
 
