@@ -18,7 +18,7 @@ public class ImageArea extends Area {
 
     @Override
     public void createArea() {
-        if (!db.isExternal()) {
+        if (!db.isExternal() && db.getHelm() == null) {
             if (group == null) {
                 createGroup("Image used");
             }

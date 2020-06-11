@@ -49,6 +49,10 @@
     }
 }</template>
 <template id="db_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Cassandra" enabled="true" name="Cassandra">database ${name} : Cassandra {
+    environment {
+        MAX_HEAP_SIZE = 1G;
+        HEAP_NEWSIZE = 400M;
+    }
 }</template>
 <template id="db_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Neo4j" enabled="true" name="Neo4j">database ${name} : Neo4j {
     credentials {

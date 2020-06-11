@@ -134,9 +134,6 @@ public abstract class Area {
     }
 
     public void updateArea() {
-        if (group == null) {
-            System.out.println("SCREEEEEEEAM---------------------------------------------");
-        }
         if (group != null) {
             disposeChildren();
         }

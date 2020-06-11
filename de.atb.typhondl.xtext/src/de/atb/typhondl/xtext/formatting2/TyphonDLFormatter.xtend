@@ -29,6 +29,7 @@ import de.atb.typhondl.xtext.typhonDL.HelmList
 import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.Credentials
 import de.atb.typhondl.xtext.typhonDL.Environment
+import de.atb.typhondl.xtext.typhonDL.Replication
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -212,10 +213,21 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		container.networks.append[newLine]
 		container.ports.format
 		container.resources.format
-		
+		container.replication.format
+		container.uri.append[newLine]
 		for (property : container.properties) {
 			property.format
 		}
+	}
+	
+	def dispatch void format(Replication replication, extension IFormattableDocument document) {
+	    interior(
+            replication.regionFor.keyword('{').append[newLine],
+            replication.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        replication.regionFor.keyword('replicas').prepend[newLine]
+        replication.regionFor.keyword('mode').prepend[newLine]
 	}
 	
 	def dispatch void format(Resources resources, extension IFormattableDocument document) {
