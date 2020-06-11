@@ -28,7 +28,7 @@ public class PortArea extends Area {
 
     @Override
     public void createArea() {
-        if (!db.isExternal()) {
+        if (!db.isExternal() && db.getHelm() == null) {
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             gridDataChecks.horizontalSpan = 2;

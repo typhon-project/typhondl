@@ -25,7 +25,7 @@ public class ResourceArea extends Area {
 
     @Override
     public void createArea() {
-        if (!db.isExternal()) {
+        if (!db.isExternal() && db.getHelm() == null) {
             if (group == null) {
                 createGroup("Container Resources");
             }

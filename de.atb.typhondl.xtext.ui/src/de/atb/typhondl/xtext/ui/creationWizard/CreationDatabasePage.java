@@ -187,6 +187,7 @@ public class CreationDatabasePage extends MyWizardPage {
         this.container = createDBContainer();
         addAreasToList();
         for (Area area : areas) {
+            area.updateData(db, container, chosenTechnology);
             area.updateArea();
         }
         ((Composite) this.getControl()).layout();
