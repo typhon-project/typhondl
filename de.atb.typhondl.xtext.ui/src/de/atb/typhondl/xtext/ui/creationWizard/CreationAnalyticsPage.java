@@ -1,5 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -10,6 +11,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Optional page for the TyphonDL {@link CreateModelWizard}. The properties for
@@ -25,6 +28,8 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * The polystore.properties
      */
     private Properties properties;
+    private int chosenTemplate;
+    private Composite main;
 
     /**
      * Creates an instance of the {@link CreationAnalyticsPage}
@@ -33,9 +38,10 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * @param properties the {@link Properties} extracted from the
      *                   polystore.properties file
      */
-    protected CreationAnalyticsPage(String pageName, Properties properties) {
+    protected CreationAnalyticsPage(String pageName, Properties properties, int chosenTemplate) {
         super(pageName);
         this.properties = properties;
+        this.chosenTemplate = chosenTemplate;
     }
 
     /**
@@ -69,25 +75,58 @@ public class CreationAnalyticsPage extends MyWizardPage {
      *
      */
     public class KafkaConfigEditor {
-        public List<InputField> fields = Arrays.asList(
+        public List<InputField> dockerComposeFields = Arrays.asList(
                 new InputField("Zookeeper Port: ", "analytics.zookeeper.publishedPort"),
                 new InputField("Kafka Port: ", "analytics.kafka.publishedPort"),
                 new InputField("Kafka Listeners: ", "analytics.kafka.listeners"),
                 new InputField("Kafka Inter Broker Listener Name: ", "analytics.kafka.listenerName"));
+        public List<InputField> kubernetesFields = Arrays.asList(
+                new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
+                new InputField("Flink taskmanager memory process size: ",
+                        "analytics.flink.taskmanager.memory.process.size"),
+                new InputField("Logglevel rootlogger: ", "analytics.logging.rootlogger"),
+                new InputField("Logging root target: ", "analytics.logging.rootlogger.target"),
+                new InputField("Logglevel akka: ", "analytics.logging.akka"),
+                new InputField("Logglevel kafka: ", "analytics.logging.kafka"),
+                new InputField("Logglevel hadoop: ", "analytics.logging.hadoop"),
+                new InputField("Logglevel zookeeper: ", "analytics.logging.zookeeper"),
+                new InputField("Logglevel flink: ", "analytics.logging.flink"),
+                new InputField("Logging flink target: ", "analytics.logging.fling.target"),
+                new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
+                new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
+                new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
+                new InputField("Kafka version: ", "analytics.kafka.version"),
+                new InputField("Kafka nodeport: ", "analytics.kafka.port"));
     }
 
     @Override
     public void createControl(Composite parent) {
 
         setTitle("Configure Data Analytics");
-        Composite main = new Composite(parent, SWT.NONE);
+        main = new Composite(parent, SWT.NONE);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(2, false));
+
+        createFields();
+
+        setControl(main);
+    }
+
+    private void createFields() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
-        KafkaConfigEditor editor = new KafkaConfigEditor();
-
-        for (InputField inputField : editor.fields) {
+        List<InputField> fields;
+        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+        case "DockerCompose":
+            fields = new KafkaConfigEditor().dockerComposeFields;
+            break;
+        case "Kubernetes":
+            fields = new KafkaConfigEditor().kubernetesFields;
+            break;
+        default:
+            fields = new ArrayList<>();
+            break;
+        }
+        for (InputField inputField : fields) {
             new Label(main, NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
             text.setText(properties.getProperty(inputField.propertyName));
@@ -96,8 +135,6 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 properties.setProperty(inputField.propertyName, text.getText());
             });
         }
-
-        setControl(main);
     }
 
     /**
@@ -106,6 +143,10 @@ public class CreationAnalyticsPage extends MyWizardPage {
      */
     public Properties getProperties() {
         return properties;
+    }
+
+    public void updateFields(int chosenTechnology) {
+        createFields();
     }
 
 }
