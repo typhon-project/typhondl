@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -17,7 +16,6 @@ import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
-import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
@@ -47,15 +45,11 @@ public class CreationDatabasePage extends MyWizardPage {
     private ArrayList<Area> areas;
     private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, int pageWidth) {
+    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, Properties properties, int pageWidth) {
         super(pageName);
         this.db = db;
         this.chosenTechnology = chosenTechnology;
-        try {
-            this.properties = PropertiesLoader.loadProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.properties = properties;
         this.container = createDBContainer();
         this.pageWidth = pageWidth;
         areas = new ArrayList<>();
