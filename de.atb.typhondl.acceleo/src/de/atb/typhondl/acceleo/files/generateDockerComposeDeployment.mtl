@@ -54,17 +54,15 @@ services:
 
 [template public printReplication(aContainer : Container)]
 [if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
-  [aContainer.printMongoRep()/]
-[aContainer.printMongoInitFiles()/]
-[/if]
+  [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
 [/template]
 
-[template public printMongoRep(aContainer : Container)]
+[template public printMongoRep(aContainer : Container) post(trim())]
   command: mongod --replSet [aContainer.name/]Replset
 [for (Sequence{1,2,3,4,5,6,7,8,9,10})]
 [if (i <= aContainer.replication.replicas)]
 [aContainer.name/]-replica[i/]:
-  image: mongo
+  [aContainer.deploys.reference.oclAsType(DB).printImage()/]
   command: mongod --replSet [aContainer.name/]Replset
 [/if][/for]
 rsinit:
@@ -157,8 +155,7 @@ deploy:
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
-[aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for]
-[/if]
+[aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for][/if]
 [/template]
 
 [template public print(aProperty : Key_KeyValueList)  post (trim())]
@@ -188,12 +185,7 @@ image: [software.image.value/]
 [/template]
 
 [template public print(db : DB)  post (trim())]
-[if (db.image <> null)]
-image: [db.image.value/]
-[/if]
-[if (db.image = null)]
-image: [db.type.image.value/]
-[/if]
+[db.printImage()/]
 [if (db.parameters <> null)]
 [for (aProperty : Property | db.parameters)]
 [aProperty.print()/]
@@ -204,6 +196,15 @@ image: [db.type.image.value/]
 [/if]
 [if ((db.environment <> null) and (db.credentials = null))]
 [db.environment.print()/]
+[/if]
+[/template]
+
+[template public printImage(db : DB) post (trim())]
+[if (db.image <> null)]
+image: [db.image.value/]
+[/if]
+[if (db.image = null)]
+image: [db.type.image.value/]
 [/if]
 [/template]
 
