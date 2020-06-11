@@ -173,8 +173,6 @@ public class CreationMainPage extends MyWizardPage {
                 chosenTemplate = templateCombo.getSelectionIndex();
                 String templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
                 if (templateName.equals("Kubernetes")) {
-                    checkbox.setEnabled(false);
-                    checkbox.setSelection(false);
                     properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
                     properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
                     properties.setProperty("ui.environment.API_PORT", "\"30061\"");
@@ -183,7 +181,6 @@ public class CreationMainPage extends MyWizardPage {
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
                 } else {
-                    checkbox.setEnabled(true);
                     properties.setProperty("ui.environment.API_HOST", "localhost");
                     properties.setProperty("ui.environment.API_PORT", "8080");
                     properties.setProperty("api.publishedPort", "8080");
