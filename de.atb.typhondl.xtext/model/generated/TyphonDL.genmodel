@@ -79,7 +79,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Application/containers"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Container">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Container/external"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Container/name"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/deploys"/>
