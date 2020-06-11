@@ -92,7 +92,7 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public void addPages() {
-        mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
+        mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI(), properties);
         mainPage.setWizard(this);
         addPage(mainPage);
 

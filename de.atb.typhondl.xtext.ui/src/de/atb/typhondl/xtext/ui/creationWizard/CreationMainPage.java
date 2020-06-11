@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,10 +18,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -36,6 +35,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  *
  */
 public class CreationMainPage extends MyWizardPage {
+
+    private static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
 
     /**
      * URI to the selected ML model
@@ -83,20 +84,21 @@ public class CreationMainPage extends MyWizardPage {
      */
     private Text portText;
 
+    private Button createScripts;
+
+    private Button useExisting;
+
     /**
      * Creates an instance of the {@link CreationMainPage}
      * 
      * @param pageName    the name of the page
      * @param MLmodelPath the URI to the selected ML model
+     * @param properties
      */
-    protected CreationMainPage(String pageName, URI MLmodelPath) {
+    protected CreationMainPage(String pageName, URI MLmodelPath, Properties properties) {
         super(pageName);
         this.MLmodelPath = MLmodelPath;
-        try {
-            this.properties = PropertiesLoader.loadProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.properties = properties;
     }
 
     @Override
@@ -120,9 +122,6 @@ public class CreationMainPage extends MyWizardPage {
      */
     private void createHeader(Composite main) {
         setTitle("Create a TyphonDL model");
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
 
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 
@@ -151,10 +150,6 @@ public class CreationMainPage extends MyWizardPage {
      * @param main the composite in which the fields are created
      */
     private void createCombo(Composite main) {
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
-
         Label templateLabel = new Label(main, SWT.NONE);
         templateLabel.setText("Template: ");
         templateCombo = new Combo(main, SWT.READ_ONLY);
@@ -198,22 +193,67 @@ public class CreationMainPage extends MyWizardPage {
      * @param main the composite in which the fields are created
      */
     private void createAdditions(Composite main) {
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
+        Group group = new Group(main, SWT.NONE);
+        group.setLayout(new GridLayout(2, false));
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+        layoutData.horizontalSpan = 2;
+        group.setLayoutData(layoutData);
+        group.setText("Analytics Component");
 
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         gridData.horizontalSpan = 2;
 
-        checkbox = new Button(main, SWT.CHECK);
+        checkbox = new Button(group, SWT.CHECK);
         checkbox.setText("Use Typhon Data Analytics");
         checkbox.setSelection(false);
         checkbox.setLayoutData(gridData);
         checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
+
+        Composite hidden = new Composite(group, SWT.NONE);
+        hidden.setLayout(new GridLayout(2, false));
+        GridData hiddenData = layoutData;
+        hiddenData.exclude = true;
+        hiddenData.horizontalSpan = 2;
+        hidden.setLayoutData(hiddenData);
+
+        createScripts = new Button(hidden, SWT.CHECK);
+        createScripts.setText("Create new Deployment Scripts");
+        createScripts.setSelection(true);
+        createScripts.setLayoutData(gridData);
+        createScripts.setToolTipText("Check if you want to get the Analytics component generated");
+        createScripts.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean doCreateScripts = createScripts.getSelection();
+                useExisting.setSelection(!doCreateScripts);
+                properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(doCreateScripts));
+            }
+        });
+
+        useExisting = new Button(hidden, SWT.CHECK);
+        useExisting.setText("Use existing (and running) Analytics component");
+        useExisting.setSelection(false);
+        useExisting.setLayoutData(gridData);
+        useExisting.setToolTipText("Check if you already have the Analytics component running somewhere");
+        useExisting.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean doCreateScripts = !useExisting.getSelection();
+                createScripts.setSelection(doCreateScripts);
+                properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(doCreateScripts));
+            }
+        });
+
         checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
+                boolean useAnalytics = checkbox.getSelection();
+                properties.setProperty("polystore.useAnalytics", String.valueOf(useAnalytics));
+                if (useAnalytics) {
+                    hiddenData.exclude = false;
+                    hidden.setVisible(true);
+                    group.layout();
+                }
             }
         });
     }
