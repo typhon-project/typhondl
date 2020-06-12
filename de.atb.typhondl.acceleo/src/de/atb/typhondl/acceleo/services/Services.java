@@ -2,8 +2,12 @@ package de.atb.typhondl.acceleo.services;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -167,12 +171,18 @@ public class Services {
         model = addPolystoreToModel(path, model, properties);
         Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
         String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer);
-        if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
-            downloadKafkaFiles();
-        }
         URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
+        String folder = file.getLocation().toOSString().replace(file.getName(),
+                DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2));
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(),
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
+        if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
+            try {
+                downloadKafkaFiles(folder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         String mongoInsertStatement = createMongoCommands(DLPath,
                 Paths.get(file.getLocation().toOSString().replace(file.getName(), getMLmodelPath(model))));
         switch (clusterType) {
@@ -192,9 +202,52 @@ public class Services {
         return model;
     }
 
-    private static void downloadKafkaFiles() {
-        // TODO Auto-generated method stub
+    private static void downloadKafkaFiles(String folder) throws IOException {
+        InputStream input = null;
+        OutputStream output = null;
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL("http://typhon.clmsuk.com/static/analyticsKubernetes.zip");
+            connection = (HttpURLConnection) url.openConnection();
+            connection.connect();
 
+            // expect HTTP 200 OK, so we don't mistakenly save error report
+            // instead of the file
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                System.out.println(
+                        "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage());
+            }
+
+            // this will be useful to display download percentage
+            // might be -1: server did not report the length
+            int fileLength = connection.getContentLength();
+
+            // download the file
+            input = connection.getInputStream();
+            output = new FileOutputStream(folder + "/analytics.zip");
+
+            byte data[] = new byte[4096];
+            long total = 0;
+            int count;
+            while ((count = input.read(data)) != -1) {
+                total += count;
+                output.write(data, 0, count);
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        } finally {
+            try {
+                if (output != null)
+                    output.close();
+                if (input != null)
+                    input.close();
+            } catch (IOException ignored) {
+                System.out.println("EXCEPTION!");
+            }
+
+            if (connection != null)
+                connection.disconnect();
+        }
     }
 
     /**
