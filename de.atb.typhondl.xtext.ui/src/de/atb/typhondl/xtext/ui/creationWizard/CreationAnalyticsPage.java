@@ -76,8 +76,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
     public class KafkaConfigEditor {
         public List<InputField> dockerComposeFields = Arrays.asList(
                 new InputField("Kafka version: ", "analytics.kafka.version"),
-                new InputField("Kafka host: ", "analytics.kafka.avertisedHost"),
-                new InputField("Kafka port: ", "analytics.kafka.port"));
+                new InputField("Kafka uri: ", "analytics.kafka.uri"));
         public List<InputField> kubernetesFields = Arrays.asList(
                 new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
                 new InputField("Flink taskmanager memory process size: ",
@@ -94,7 +93,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
                 new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
                 new InputField("Kafka version: ", "analytics.kafka.version"),
-                new InputField("Kafka nodeport: ", "analytics.kafka.port"),
+                new InputField("Kafka uri: ", "analytics.kafka.uri"),
                 new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
                 new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
     }
