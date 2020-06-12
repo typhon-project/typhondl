@@ -218,8 +218,11 @@ public class CreateModelWizard extends Wizard {
                         addPage(newPage);
                     }
                 } else {
-                    ((CreationAnalyticsPage) this.getPage(getAnalyticsPageName(this.chosenTemplate)))
-                            .updateData(properties);
+                    CreationAnalyticsPage creationAnalyticsPage = (CreationAnalyticsPage) this
+                            .getPage(getAnalyticsPageName(this.chosenTemplate));
+                    if (creationAnalyticsPage.getControl() != null) {
+                        creationAnalyticsPage.updateData(properties);
+                    }
                 }
                 return this.getPage(getAnalyticsPageName(this.chosenTemplate));
             } else {

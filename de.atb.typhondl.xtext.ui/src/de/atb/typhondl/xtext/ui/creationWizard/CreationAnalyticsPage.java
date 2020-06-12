@@ -24,12 +24,14 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class CreationAnalyticsPage extends MyWizardPage {
 
+    private static final String ANALYTICS_KAFKA_URI = "analytics.kafka.uri";
     /**
      * The polystore.properties
      */
     private Properties properties;
     private int chosenTemplate;
     private Composite main;
+    private Text kafkaURIText;
 
     /**
      * Creates an instance of the {@link CreationAnalyticsPage}
@@ -74,9 +76,8 @@ public class CreationAnalyticsPage extends MyWizardPage {
      *
      */
     public class KafkaConfigEditor {
-        public List<InputField> dockerComposeFields = Arrays.asList(
-                new InputField("Kafka version: ", "analytics.kafka.version"),
-                new InputField("Kafka uri: ", "analytics.kafka.uri"));
+        public List<InputField> dockerComposeFields = Arrays
+                .asList(new InputField("Kafka version: ", "analytics.kafka.version"));
         public List<InputField> kubernetesFields = Arrays.asList(
                 new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
                 new InputField("Flink taskmanager memory process size: ",
@@ -93,7 +94,6 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
                 new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
                 new InputField("Kafka version: ", "analytics.kafka.version"),
-                new InputField("Kafka uri: ", "analytics.kafka.uri"),
                 new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
                 new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
     }
@@ -113,6 +113,26 @@ public class CreationAnalyticsPage extends MyWizardPage {
 
     private void createFields() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        new Label(main, NONE).setText("Kafka URI: ");
+        kafkaURIText = new Text(main, SWT.BORDER);
+        kafkaURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+        kafkaURIText.setLayoutData(gridData);
+        kafkaURIText.addModifyListener(e -> {
+            properties.setProperty(ANALYTICS_KAFKA_URI, kafkaURIText.getText());
+        });
+
+        for (InputField inputField : getInputFields()) {
+            new Label(main, NONE).setText(inputField.label);
+            Text text = new Text(main, SWT.BORDER);
+            text.setText(properties.getProperty(inputField.propertyName));
+            text.setLayoutData(gridData);
+            text.addModifyListener(e -> {
+                properties.setProperty(inputField.propertyName, text.getText());
+            });
+        }
+    }
+
+    private List<InputField> getInputFields() {
         List<InputField> fields;
         switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
         case "DockerCompose":
@@ -125,17 +145,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
             fields = new ArrayList<>();
             break;
         }
-        for (InputField inputField : fields) {
-            new Label(main, NONE).setText(inputField.label);
-            Text text = new Text(main, SWT.BORDER);
-            String property = properties.getProperty(inputField.propertyName);
-            System.out.println(property);
-            text.setText(property);
-            text.setLayoutData(gridData);
-            text.addModifyListener(e -> {
-                properties.setProperty(inputField.propertyName, text.getText());
-            });
-        }
+        return fields;
     }
 
     /**
@@ -148,6 +158,11 @@ public class CreationAnalyticsPage extends MyWizardPage {
 
     public void updateData(Properties properties) {
         this.properties = properties;
+        updateKafkaURI();
+    }
+
+    private void updateKafkaURI() {
+        kafkaURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
     }
 
 }

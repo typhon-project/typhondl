@@ -185,6 +185,7 @@ public class CreationMainPage extends MyWizardPage {
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
                 }
+                setKafkaProperties();
             }
         });
     }
@@ -254,7 +255,7 @@ public class CreationMainPage extends MyWizardPage {
                     createScripts = true;
                     analyticsContained = false;
                 }
-                setProperties();
+                setKafkaProperties();
             }
         });
         createScriptsCheckExternal.addSelectionListener(new SelectionAdapter() {
@@ -271,7 +272,7 @@ public class CreationMainPage extends MyWizardPage {
                     createScripts = true;
                     analyticsContained = true;
                 }
-                setProperties();
+                setKafkaProperties();
             }
         });
         useExistingCheck.addSelectionListener(new SelectionAdapter() {
@@ -288,7 +289,7 @@ public class CreationMainPage extends MyWizardPage {
                     createScripts = true;
                     analyticsContained = true;
                 }
-                setProperties();
+                setKafkaProperties();
             }
         });
 
@@ -312,12 +313,12 @@ public class CreationMainPage extends MyWizardPage {
         });
     }
 
-    private void setProperties() {
+    private void setKafkaProperties() {
         properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
         properties.setProperty(ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(ANALYTICS_KAFKA_URI, "kafka:29092");
+                properties.setProperty(ANALYTICS_KAFKA_URI, getKafkaURI());
                 analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
                 analyticsURIText.setEditable(false);
             } else {
@@ -329,6 +330,17 @@ public class CreationMainPage extends MyWizardPage {
             properties.setProperty(ANALYTICS_KAFKA_URI, "localhost:29092");
             analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
             analyticsURIText.setEditable(true);
+        }
+    }
+
+    private String getKafkaURI() {
+        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+        case "DockerCompose":
+            return "kafka:29092";
+        case "Kubernetes":
+            return "typhon-cluster-kafka-bootstrap:9092";
+        default:
+            return "";
         }
     }
 
