@@ -29,6 +29,10 @@ import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -64,6 +68,9 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
  */
 public class Services {
 
+    private static final String ANALYTICS_KUBERNETES_ZIP_FILENAME = "analyticsKubernetes.zip";
+    private static final String ANALYTICS_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/"
+            + ANALYTICS_KUBERNETES_ZIP_FILENAME;
     private static final int BUFFER_SIZE = 4096;
 
     /**
@@ -211,15 +218,19 @@ public class Services {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
-        String analyticsZipPath = folder + "/analyticsKubernetes.zip";
+        String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
+        IWorkbench wb = PlatformUI.getWorkbench();
+        IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
         try {
-            URL url = new URL("http://typhon.clmsuk.com/static/analyticsKubernetes.zip");
+            URL url = new URL(ANALYTICS_ZIP_ADDRESS);
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
             // expect HTTP 200 OK, so we don't mistakenly save error report
             // instead of the file
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                MessageDialog.openError(win.getShell(), "Scripts", "Analytics files could not be downloaded at "
+                        + ANALYTICS_ZIP_ADDRESS + ", please check your internet connection and try again");
                 System.out.println(
                         "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage());
             }
@@ -254,7 +265,9 @@ public class Services {
                 connection.disconnect();
         }
 
-        unzip(analyticsZipPath, folder);
+        if (input != null) {
+            unzip(analyticsZipPath, folder);
+        }
     }
 
     private static void unzip(String zipFilePath, String destDirectory) throws IOException {
