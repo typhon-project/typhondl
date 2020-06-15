@@ -1,6 +1,5 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,10 +18,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -36,6 +35,14 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  *
  */
 public class CreationMainPage extends MyWizardPage {
+
+    private static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
+
+    private static final String ANALYTICS_KAFKA_URI = "analytics.kafka.uri";
+
+    private static final String POLYSTORE_USE_ANALYTICS = "polystore.useAnalytics";
+
+    private static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
 
     /**
      * URI to the selected ML model
@@ -69,11 +76,6 @@ public class CreationMainPage extends MyWizardPage {
     private Properties properties;
 
     /**
-     * The checkbox to activate the use of the Typhon Analytics component
-     */
-    private Button checkbox;
-
-    /**
      * The textfield to enter the API IP address
      */
     private Text hostText;
@@ -83,58 +85,66 @@ public class CreationMainPage extends MyWizardPage {
      */
     private Text portText;
 
+    private Composite main;
+
+    private boolean useAnalytics;
+    private boolean createScripts;
+    private boolean analyticsContained;
+
+    private Text analyticsURIText;
+
     /**
      * Creates an instance of the {@link CreationMainPage}
      * 
      * @param pageName    the name of the page
      * @param MLmodelPath the URI to the selected ML model
+     * @param properties
      */
-    protected CreationMainPage(String pageName, URI MLmodelPath) {
+    protected CreationMainPage(String pageName, URI MLmodelPath, Properties properties) {
         super(pageName);
         this.MLmodelPath = MLmodelPath;
-        try {
-            this.properties = PropertiesLoader.loadProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.properties = properties;
+        this.useAnalytics = false;
+        this.createScripts = false;
+        this.analyticsContained = true;
     }
 
     @Override
     public void createControl(Composite parent) {
-        Composite main = new Composite(parent, SWT.NONE);
+        setTitle("Create a TyphonDL model");
+        setDescription("From ML model " + MLmodelPath.getPath());
+        main = new Composite(parent, SWT.NONE);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        main.setLayout(new GridLayout(2, false));
-        createHeader(main);
-        createCombo(main);
-        createAdditions(main);
-        createPolystoreSpecs(main);
+        main.setLayout(new GridLayout(1, false));
+
+        addGroups();
+
         setControl(main);
     }
 
-    /**
-     * Creates the first two rows of the main page:
-     * <li>The folder label to show where the DL model will be saved.</li>
-     * <li>The textfield to enter the DL model name</li>
-     * 
-     * @param main the composite in which the fields are created
-     */
-    private void createHeader(Composite main) {
-        setTitle("Create a TyphonDL model");
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
+    private void addGroups() {
+        createMainGroup();
+        createAnalyticsGroup();
+        createConnectionGroup();
 
+    }
+
+    private void createMainGroup() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 
-        Label folderLabel = new Label(main, SWT.NONE);
-        folderLabel.setText("Folder: ");
-        Label folderText = new Label(main, SWT.NONE);
+        Group mainGroup = new Group(main, SWT.READ_ONLY);
+        mainGroup.setLayout(new GridLayout(2, false));
+        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        mainGroup.setText("General");
+
+        new Label(mainGroup, SWT.NONE).setText("Folder: ");
+        Label folderText = new Label(mainGroup, SWT.NONE);
         folderText.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false));
         folderText.setText(Paths.get(MLmodelPath).getParent().toString());
 
-        Label fileLabel = new Label(main, SWT.NONE);
+        Label fileLabel = new Label(mainGroup, SWT.NONE);
         fileLabel.setText("Name: ");
-        fileText = new Text(main, SWT.BORDER);
+        fileText = new Text(mainGroup, SWT.BORDER);
         fileText.setLayoutData(gridData);
         fileText.setFocus();
         fileText.addModifyListener(e -> {
@@ -142,22 +152,9 @@ public class CreationMainPage extends MyWizardPage {
             this.DLmodelName = fileText.getText();
         });
         validate();
-    }
 
-    /**
-     * Creates technology choosing combo and sets initial polystore.properties.<br>
-     * TODO change to not hardcoded?
-     * 
-     * @param main the composite in which the fields are created
-     */
-    private void createCombo(Composite main) {
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
-
-        Label templateLabel = new Label(main, SWT.NONE);
-        templateLabel.setText("Template: ");
-        templateCombo = new Combo(main, SWT.READ_ONLY);
+        new Label(mainGroup, SWT.NONE).setText("Template: ");
+        templateCombo = new Combo(mainGroup, SWT.READ_ONLY);
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
             itemList.add(tech.getDisplayedName());
@@ -173,9 +170,7 @@ public class CreationMainPage extends MyWizardPage {
                 chosenTemplate = templateCombo.getSelectionIndex();
                 String templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
                 if (templateName.equals("Kubernetes")) {
-                    checkbox.setEnabled(false);
-                    checkbox.setSelection(false);
-                    properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
+                    properties.setProperty(POLYSTORE_USE_ANALYTICS, String.valueOf(useAnalytics));
                     properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
                     properties.setProperty("ui.environment.API_PORT", "\"30061\"");
                     properties.setProperty("api.publishedPort", "30061");
@@ -183,7 +178,6 @@ public class CreationMainPage extends MyWizardPage {
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
                 } else {
-                    checkbox.setEnabled(true);
                     properties.setProperty("ui.environment.API_HOST", "localhost");
                     properties.setProperty("ui.environment.API_PORT", "8080");
                     properties.setProperty("api.publishedPort", "8080");
@@ -191,58 +185,183 @@ public class CreationMainPage extends MyWizardPage {
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
                 }
+                setKafkaProperties();
             }
         });
     }
 
-    /**
-     * Creates the checkbox to select Typhon Analytics component
-     * 
-     * @param main the composite in which the fields are created
-     */
-    private void createAdditions(Composite main) {
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
-
+    private void createAnalyticsGroup() {
+        Group analyticsGroup = new Group(main, SWT.READ_ONLY);
+        analyticsGroup.setLayout(new GridLayout(1, false));
+        analyticsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        analyticsGroup.setText("Analytics Component");
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        gridData.horizontalSpan = 2;
 
-        checkbox = new Button(main, SWT.CHECK);
+        Button checkbox = new Button(analyticsGroup, SWT.CHECK);
         checkbox.setText("Use Typhon Data Analytics");
         checkbox.setSelection(false);
         checkbox.setLayoutData(gridData);
         checkbox.setToolTipText("Check if you want to include Data Analytics in your deployment");
+
+        Composite hidden = new Composite(analyticsGroup, SWT.NONE);
+        hidden.setLayout(new GridLayout(1, false));
+        GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenData.exclude = true;
+        hidden.setLayoutData(hiddenData);
+
+        Button createScriptsCheck = new Button(hidden, SWT.CHECK);
+        createScriptsCheck.setText("Create new Analytics Deployment Scripts");
+        createScriptsCheck.setSelection(true);
+        createScriptsCheck.setLayoutData(gridData);
+        createScriptsCheck.setToolTipText(
+                "Check if you want to get the Analytics deployment generated to run on the same machine as the Polystore");
+
+        Button createScriptsCheckExternal = new Button(hidden, SWT.CHECK);
+        createScriptsCheckExternal
+                .setText("Create new separate Analytics Deployment Scripts - to run on a different machine");
+        createScriptsCheckExternal.setSelection(false);
+        createScriptsCheckExternal.setLayoutData(gridData);
+        createScriptsCheckExternal.setToolTipText(
+                "Check if you want to get the Analytics deployment generated to run on a different machine than the Polystore");
+
+        Button useExistingCheck = new Button(hidden, SWT.CHECK);
+        useExistingCheck.setText("Use existing Analytics component (no scripts get generated for Analytics)");
+        useExistingCheck.setSelection(false);
+        useExistingCheck.setLayoutData(gridData);
+        useExistingCheck.setToolTipText("Check if you already have the Analytics component running somewhere");
+
+        new Label(hidden, SWT.NONE).setText("Analytics URI: ");
+        analyticsURIText = new Text(hidden, SWT.BORDER);
+        analyticsURIText.setLayoutData(gridData);
+        analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+        analyticsURIText.addModifyListener(e -> {
+            properties.setProperty(ANALYTICS_KAFKA_URI, analyticsURIText.getText());
+        });
+
+        // TODO necessary for displaying the useExisting checkbox. Only remove if fixed:
+        new Label(hidden, SWT.NONE).setText("test");
+
+        createScriptsCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (createScriptsCheck.getSelection()) {
+                    useExistingCheck.setSelection(false);
+                    createScriptsCheckExternal.setSelection(false);
+                    createScripts = true;
+                    analyticsContained = true;
+                } else {
+                    useExistingCheck.setSelection(false);
+                    createScriptsCheckExternal.setSelection(true);
+                    createScripts = true;
+                    analyticsContained = false;
+                }
+                setKafkaProperties();
+            }
+        });
+        createScriptsCheckExternal.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (createScriptsCheckExternal.getSelection()) {
+                    useExistingCheck.setSelection(false);
+                    createScriptsCheck.setSelection(false);
+                    createScripts = true;
+                    analyticsContained = false;
+                } else {
+                    useExistingCheck.setSelection(false);
+                    createScriptsCheck.setSelection(true);
+                    createScripts = true;
+                    analyticsContained = true;
+                }
+                setKafkaProperties();
+            }
+        });
+        useExistingCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (useExistingCheck.getSelection()) {
+                    createScriptsCheckExternal.setSelection(false);
+                    createScriptsCheck.setSelection(false);
+                    createScripts = false;
+                    analyticsContained = false;
+                } else {
+                    createScriptsCheckExternal.setSelection(false);
+                    createScriptsCheck.setSelection(true);
+                    createScripts = true;
+                    analyticsContained = true;
+                }
+                setKafkaProperties();
+            }
+        });
+
         checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                properties.setProperty("polystore.useAnalytics", String.valueOf(checkbox.getSelection()));
+                useAnalytics = checkbox.getSelection();
+                properties.setProperty(POLYSTORE_USE_ANALYTICS, String.valueOf(useAnalytics));
+                createScripts = createScriptsCheck.getSelection();
+                properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
+                if (useAnalytics) {
+                    hiddenData.exclude = false;
+                    hidden.setVisible(true);
+                    analyticsGroup.getParent().layout(true);
+                } else {
+                    hiddenData.exclude = true;
+                    hidden.setVisible(false);
+                    analyticsGroup.getParent().layout(true);
+                }
             }
         });
     }
 
+    private void setKafkaProperties() {
+        properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
+        properties.setProperty(ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
+        if (createScripts) {
+            if (analyticsContained) {
+                properties.setProperty(ANALYTICS_KAFKA_URI, getKafkaURI());
+                analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+                analyticsURIText.setEditable(false);
+            } else {
+                properties.setProperty(ANALYTICS_KAFKA_URI, "localhost:29092");
+                analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+                analyticsURIText.setEditable(true);
+            }
+        } else {
+            properties.setProperty(ANALYTICS_KAFKA_URI, "localhost:29092");
+            analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+            analyticsURIText.setEditable(true);
+        }
+    }
+
+    private String getKafkaURI() {
+        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
+        case "DockerCompose":
+            return "kafka:29092";
+        case "Kubernetes":
+            return "typhon-cluster-kafka-bootstrap:9092";
+        default:
+            return "";
+        }
+    }
+
     /**
      * Creates fields to enter the API specs
-     * 
-     * @param main the composite in which the fields are created
      */
-    private void createPolystoreSpecs(Composite main) {
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        main.setLayout(layout);
-
+    private void createConnectionGroup() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        Group connectionGroup = new Group(main, SWT.READ_ONLY);
+        connectionGroup.setLayout(new GridLayout(2, false));
+        connectionGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        connectionGroup.setText("API connection");
 
-        Label hostLabel = new Label(main, SWT.NONE);
-        hostLabel.setText("Api Host: ");
-        hostText = new Text(main, SWT.BORDER);
+        new Label(connectionGroup, SWT.NONE).setText("Api Host: ");
+        hostText = new Text(connectionGroup, SWT.BORDER);
         hostText.setLayoutData(gridData);
         hostText.setText(properties.getProperty("ui.environment.API_HOST"));
         hostText.addModifyListener(e -> properties.setProperty("ui.environment.API_HOST", hostText.getText()));
 
-        Label portLabel = new Label(main, SWT.NONE);
-        portLabel.setText("Api Port: ");
-        portText = new Text(main, SWT.BORDER);
+        new Label(connectionGroup, SWT.NONE).setText("Api Port: ");
+        portText = new Text(connectionGroup, SWT.BORDER);
         portText.setLayoutData(gridData);
         portText.setText(properties.getProperty("ui.environment.API_PORT"));
         portText.addModifyListener(e -> {
@@ -285,7 +404,11 @@ public class CreationMainPage extends MyWizardPage {
      *         otherwise
      */
     public boolean getUseAnalytics() {
-        return Boolean.parseBoolean((String) properties.get("polystore.useAnalytics"));
+        return useAnalytics;
+    }
+
+    public boolean getCreateScripts() {
+        return createScripts;
     }
 
     /**

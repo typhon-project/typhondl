@@ -1,6 +1,6 @@
 database TextWarningData : Mongo {
 	credentials {
-		username = me ;
-		password = uZ0exoGw8HYaGd7B ;
+		username = chooseUsername ;
+		password = choosePassword ;
 	}
 }

@@ -19,6 +19,7 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -64,6 +65,8 @@ public class CreateModelWizard extends Wizard {
      */
     private int chosenTemplate;
 
+    private Properties properties;
+
     /**
      * Creates an instance of <code>CreateModelWizard</code>
      * 
@@ -74,6 +77,11 @@ public class CreateModelWizard extends Wizard {
         setDefaultPageImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "icons/TYPHON Logo Small.png"));
         setWindowTitle("TyphonDL Creation Wizard");
         this.MLmodel = MLmodel;
+        try {
+            this.properties = PropertiesLoader.loadProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -84,7 +92,7 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public void addPages() {
-        mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI());
+        mainPage = new CreationMainPage("Create new DL model", MLmodel.getLocationURI(), properties);
         mainPage.setWizard(this);
         addPage(mainPage);
 
@@ -116,8 +124,6 @@ public class CreateModelWizard extends Wizard {
                 return false;
             }
         }
-        Properties properties;
-        properties = this.mainPage.getProperties();
         HashMap<DB, Container> result = getDabasesAndContainers();
         // TODO remove, if replication works with authentication:
         result = removeMongoCredentialsIfReplicated(result);
@@ -202,6 +208,29 @@ public class CreateModelWizard extends Wizard {
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
+            this.properties = ((CreationMainPage) page).getProperties();
+            if (properties.get("polystore.useAnalytics").equals("true")) {
+                if (!analyticsPagesExist()) {
+                    for (SupportedTechnologies value : SupportedTechnologies.values()) {
+                        CreationAnalyticsPage newPage = new CreationAnalyticsPage(
+                                PAGENAME_ANALYTICS + value.getClusterType(), properties, value.ordinal());
+                        newPage.setWizard(this);
+                        addPage(newPage);
+                    }
+                } else {
+                    CreationAnalyticsPage creationAnalyticsPage = (CreationAnalyticsPage) this
+                            .getPage(getAnalyticsPageName(this.chosenTemplate));
+                    if (creationAnalyticsPage.getControl() != null) {
+                        creationAnalyticsPage.updateData(properties);
+                    }
+                }
+                return this.getPage(getAnalyticsPageName(this.chosenTemplate));
+            } else {
+                return this.getPage(getDBMSPageName(this.chosenTemplate));
+            }
+        }
+        if (page instanceof CreationAnalyticsPage) {
+            this.properties = ((CreationAnalyticsPage) page).getProperties();
             return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {
@@ -210,7 +239,7 @@ public class CreateModelWizard extends Wizard {
                 String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
                     CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, chosenTemplate,
-                            pageWidth);
+                            properties, pageWidth);
                     databasePage.setWizard(this);
                     addPage(databasePage);
                 } else {
@@ -228,7 +257,7 @@ public class CreateModelWizard extends Wizard {
             }
             // skip other DBMS pages
             IWizardPage nextPage = super.getNextPage(page);
-            while (nextPage instanceof CreationDBMSPage) {
+            while (nextPage instanceof CreationDBMSPage || nextPage instanceof CreationAnalyticsPage) {
                 nextPage = super.getNextPage(nextPage);
             }
             return nextPage;
@@ -245,6 +274,14 @@ public class CreateModelWizard extends Wizard {
      */
     private boolean pageExists(String pageName) {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
+    }
+
+    private boolean analyticsPagesExist() {
+        return pageExists(getAnalyticsPageName(0));
+    }
+
+    private String getAnalyticsPageName(int templateOrdinal) {
+        return PAGENAME_ANALYTICS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
     }
 
     private String getDBMSPageName(int templateOrdinal) {

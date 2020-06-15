@@ -41,8 +41,8 @@ aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
 aCluster.properties->any(key | key.name.equalsIgnoreCase('kubeconfig'))
 /]
 
-[query public useAnalytics(aCluster : Cluster) : Boolean =
-aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<>null
+[query public useAnalytics(aDeploymentModel : DeploymentModel) : Boolean =
+aDeploymentModel.getKafkaSoftware()<>null
 /]
 
 [query public isPolystoreContainer(aContainer : Container) : Boolean = 
@@ -88,6 +88,16 @@ typeName = 'mongo'
 [query public getPort(aURI : URI) : String =
 aURI.value.substring(aURI.value.indexOf(':')+1)
 /]
+
+[query public getKafkaSoftware(aDeploymentModel : DeploymentModel) : Software = 
+aDeploymentModel.elements->filter(typhonDL::Software)->any(software | software.name.equalsIgnoreCase('kafka'))
+/]
+
+[query public getKubeconfig(aKafka : Software) : Key_Values =
+aKafka.parameters->filter(typhonDL::Key_Values)->any(key | key.name.equalsIgnoreCase('kubeconfig'))
+ /]
+
+
 
 [query public getMongoUsernameKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_USERNAME'/]
 [query public getMongoPasswordKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_PASSWORD'/]
