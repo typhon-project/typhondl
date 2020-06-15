@@ -152,7 +152,7 @@ public class CreateModelWizard extends Wizard {
     private HashMap<DB, Container> removeMongoCredentialsIfReplicated(HashMap<DB, Container> result) {
         for (DB db : result.keySet()) {
             if (db.getType().getName().equalsIgnoreCase("mongo")) {
-                if (result.get(db).getReplication() != null) {
+                if (result.get(db) != null && result.get(db).getReplication() != null) {
                     db.setCredentials(null);
                     MessageDialog.openInformation(this.getShell(), "Wizard",
                             "In this version replication of mongo does not allow authentication");
@@ -186,7 +186,8 @@ public class CreateModelWizard extends Wizard {
     @Override
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
-        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage) {
+        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
+                || currentPage instanceof CreationAnalyticsPage) {
             return false;
         }
         if (currentPage instanceof CreationDatabasePage && currentPage.getNextPage() instanceof CreationDatabasePage) {
