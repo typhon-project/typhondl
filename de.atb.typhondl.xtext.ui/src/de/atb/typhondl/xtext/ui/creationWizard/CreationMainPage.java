@@ -233,7 +233,7 @@ public class CreationMainPage extends MyWizardPage {
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
-        analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+        analyticsURIText.setText(getKafkaURI());
         analyticsURIText.addModifyListener(e -> {
             properties.setProperty(ANALYTICS_KAFKA_URI, analyticsURIText.getText());
         });
