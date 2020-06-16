@@ -52,13 +52,14 @@ public class HelmArea extends Area {
             valueText.setLayoutData(gridDataFields);
             valueText.setToolTipText("give the path to your own values.yaml");
             valueText.addModifyListener(e -> {
-                if (valueText.getText() != helmList.getRepoName()) {
+                if (!valueText.getText().equalsIgnoreCase(helmList.getRepoName())) {
                     if (hasValuesFile(helmList)) {
                         updateValuesFile(helmList, valueText.getText());
                     } else {
                         helmList.getParameters().add(createValueFileKey_Values(valueText.getText()));
                     }
-
+                } else {
+                    removeValuesFile(helmList);
                 }
             });
             for (Property property : helmList.getParameters()) {
@@ -70,17 +71,26 @@ public class HelmArea extends Area {
         }
     }
 
+    private void removeValuesFile(HelmList helmList) {
+        if (hasValuesFile(helmList)) {
+            helmList.getParameters().remove(getValuesFile(helmList));
+        }
+    }
+
     private void updateValuesFile(HelmList helmList, String text) {
-        Key_Values valuesFile = (Key_Values) helmList.getParameters().stream()
-                .filter(parameter -> parameter.getName().equalsIgnoreCase("valuesFile")).findFirst().orElse(null);
+        Key_Values valuesFile = getValuesFile(helmList);
         if (valuesFile != null) {
             valuesFile.setValue(text);
         }
     }
 
+    private Key_Values getValuesFile(HelmList helmList) {
+        return (Key_Values) helmList.getParameters().stream()
+                .filter(parameter -> parameter.getName().equalsIgnoreCase("valuesFile")).findFirst().orElse(null);
+    }
+
     private boolean hasValuesFile(HelmList helmList) {
-        return helmList.getParameters().stream()
-                .anyMatch(parameter -> parameter.getName().equalsIgnoreCase("valuesFile"));
+        return getValuesFile(helmList) != null;
     }
 
     private Key_Values createValueFileKey_Values(String text) {
