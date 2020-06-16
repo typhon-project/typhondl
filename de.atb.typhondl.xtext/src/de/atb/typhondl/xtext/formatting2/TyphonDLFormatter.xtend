@@ -108,7 +108,7 @@ class TyphonDLFormatter extends AbstractFormatter2 {
         helmList.regionFor.keyword('chartName').prepend[newLine]
 	    for (property : helmList.parameters) {
 	        property.format
-	        property.append[newLine]
+	        property.prepend[newLine]
 	    }    
 	}
 	
