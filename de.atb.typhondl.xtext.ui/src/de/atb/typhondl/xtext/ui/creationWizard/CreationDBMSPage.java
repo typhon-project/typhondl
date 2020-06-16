@@ -411,7 +411,7 @@ public class CreationDBMSPage extends MyWizardPage {
 
         new Label(group, NONE).setText("Choose Template:");
         Combo combo = new Combo(group, SWT.READ_ONLY);
-        combo.setItems(dbTemplateNames);
+        combo.setItems(removeHelmTemplates(dbTemplateNames));
         combo.setText(dbTemplateNames[0]);
         // set initial dbTemplate
         if (!existingModelCheck.getSelection()) {
@@ -479,6 +479,16 @@ public class CreationDBMSPage extends MyWizardPage {
                 validate();
             }
         });
+    }
+
+    private String[] removeHelmTemplates(String[] dbTemplateNames) {
+        ArrayList<String> listWithoutHelm = new ArrayList<>();
+        for (String string : dbTemplateNames) {
+            if (!string.toLowerCase().contains("helm")) {
+                listWithoutHelm.add(string);
+            }
+        }
+        return listWithoutHelm.toArray(new String[0]);
     }
 
     /**
