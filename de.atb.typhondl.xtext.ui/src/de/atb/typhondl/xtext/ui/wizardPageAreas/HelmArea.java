@@ -63,7 +63,9 @@ public class HelmArea extends Area {
                 }
             });
             for (Property property : helmList.getParameters()) {
-                addPropertyToList(property.getName(), property, properties);
+                if (!property.equals(getValuesFile(helmList))) {
+                    addPropertyToList(property.getName(), property, properties);
+                }
             }
             if (!helmList.getParameters().isEmpty()) {
                 addPropertyFieldsToGroup(group, properties);
