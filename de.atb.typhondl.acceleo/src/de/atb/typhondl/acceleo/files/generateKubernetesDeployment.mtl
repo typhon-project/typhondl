@@ -312,8 +312,12 @@ helm install [aContainer.name/][aContainer.printValuesFile()/] --set fullnameOve
 
 [template public addCredentials (aContainer : Container) post (trim())]
 [let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
-[if (aDB.type.name.toLower() = 'mariadbgalera')]
+[if (aDB.type.name.toLower() = 'mariadbgalera' or aDB.type.name.toLower() = 'mariadb')]
 --set rootUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'mongo' or aDB.type.name.toLower() = 'mongosharded')]
+--set mongodbRootPassword=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'cassandra')]
+--set dbUser.user=[aDB.credentials.username/],dbUser.password=[aDB.credentials.password/]
 [/if][/let]
 [/template]
 
