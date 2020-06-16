@@ -77,6 +77,15 @@ aContainer.getHelmList().repoName
 aContainer.getHelmList().chartName
 /]
 
+[query public hasHelmValuesFile(aContainer : Container) : Boolean = 
+not aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('valuesFile')).oclIsUndefined()
+/]
+
+[query public getHelmValuesFile(aContainer : Container) : String =
+aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('valuesFile')).oclAsType(Key_Values).value
+/]
+
+
 [query public convertCPUToKubernetes(aCPUString : String) : String = self /]
 
 [query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]

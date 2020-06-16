@@ -303,7 +303,11 @@ environment:
 
 [template public printHelmCommand(aContainer : Container) post (trim())]
 helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
-helm install [aContainer.name/] --set fullnameOverride=[aContainer.name/] [aContainer.addCredentials()/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+helm install [aContainer.name/][aContainer.printValuesFile()/] --set fullnameOverride=[aContainer.name/] [aContainer.addCredentials()/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+[/template]
+
+[template public printValuesFile(aContainer : Container)]
+[if (aContainer.hasHelmValuesFile())] -f [aContainer.getHelmValuesFile()/][/if]
 [/template]
 
 [template public addCredentials (aContainer : Container) post (trim())]
