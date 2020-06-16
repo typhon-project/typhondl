@@ -6,16 +6,16 @@
 <template id="dbType_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo using the latest image from Docker Hub" enabled="true" name="MongoType">dbtype Mongo {
     default image = mongo:latest;
 }</template>
-<template id="dbType_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MySQL using the latest image from Docker Hub" enabled="true" name="MySQLType">dbtype MySQL {
-    default image = mysql:latest;
+<template id="dbType_mongosharded" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo Sharded using the bitnami image" enabled="true" name="MongoShardedType">dbtype MongoSharded {
+    default image = bitnami/mongodb-sharded;
 }</template>
-<template id="dbType_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MariaDB Galera using the bitnami image" enabled="true" name="MariaDBGalera">dbtype mariadbgalera {
+<template id="dbType_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MariaDB Galera using the bitnami image" enabled="true" name="MariaDBGaleraType">dbtype mariadbgalera {
     default image = bitnami/mariadb-galera;
 }</template>
-<template id="dbType_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Neo4j using the latest image from Docker Hub" enabled="true" name="Neo4j">dbtype Neo4j {
+<template id="dbType_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Neo4j using the latest image from Docker Hub" enabled="true" name="Neo4jType">dbtype Neo4j {
     default image = neo4j:latest;
 }</template>
-<template id="dbType_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Cassandra using the latest image from Docker Hub" enabled="true" name="Cassandra">dbtype Cassandra {
+<template id="dbType_cassandra" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Cassandra using the latest image from Docker Hub" enabled="true" name="CassandraType">dbtype Cassandra {
     default image = cassandra:latest;
 }</template>
 <template id="db_mariadb" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MariaDB" enabled="true" name="MariaDB">database ${databaseName} : MariaDB {
@@ -31,13 +31,7 @@
         password = choosePassword;
     }
 }</template>
-<template id="db_mysql" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for MySQL" enabled="true" name="MySQL">database ${databaseName} : MySQL {
-    credentials {
-        username = root;
-        password = choosePassword;
-    }
-}</template>
-<template id="db_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mariadb-galera" enabled="true" name="MariaDBGalera">database ${name} : mariadbgalera {
+<template id="db_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mariadb-galera" enabled="true" name="HelmMariaDBGalera">database ${name} : mariadbgalera {
     helm {
         repoName = bitnami;
         repoAddress = https://charts.bitnami.com/bitnami;
@@ -57,6 +51,53 @@
 <template id="db_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Neo4j" enabled="true" name="Neo4j">database ${name} : Neo4j {
     credentials {
         username = neo4j;
+        password = choosePassword;
+    }
+}</template>
+<template id="db_mongosharded" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mongo-sharded" enabled="true" name="HelmMongoSharded">database ${name} : mongosharded {
+    helm {
+        repoName = bitnami;
+        repoAddress = https://charts.bitnami.com/bitnami;
+        chartName = mongodb-sharded;
+    }
+    credentials {
+        username = root;
+        password = choosePassword;
+    }
+}</template>
+<template id="db_mongohelm" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mongo" enabled="true" name="HelmMongo">database ${name} : mongo {
+    image = bitnami/mongodb:latest
+    helm {
+        repoName = bitnami;
+        repoAddress = https://charts.bitnami.com/bitnami;
+        chartName = mongodb;
+    }
+    credentials {
+        username = root;
+        password = choosePassword;
+    }
+}</template>
+<template id="db_mariadbhelm" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for mariadb" enabled="true" name="HelmMariaDB">database ${name} : mariadb {
+    image = bitnami/mariadb:latest;
+    helm {
+        repoName = bitnami;
+        repoAddress = https://charts.bitnami.com/bitnami;
+        chartName = mariadb;
+    }
+    credentials {
+        username = root;
+        password = choosePassword;
+    }
+}</template>
+<template id="db_cassandrahelm" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the bitnami helmchart for cassandra" enabled="true" name="HelmCassandra">database ${name} : cassandra {
+    image = bitnami/cassandra:latest;
+    helm {
+        repoName = bitnami;
+        repoAddress = https://charts.bitnami.com/bitnami;
+        chartName = cassandra;
+    }
+    credentials {
+        username = chooseUsername;
         password = choosePassword;
     }
 }</template>
