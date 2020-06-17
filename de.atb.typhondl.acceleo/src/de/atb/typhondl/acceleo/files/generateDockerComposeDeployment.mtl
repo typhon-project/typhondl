@@ -54,18 +54,18 @@ services:
 
 [template public printReplication(aContainer : Container)]
 [if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
+    command: mongod --replSet [aContainer.name/]Replset
   [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
 [/template]
 
 [template public printMongoRep(aContainer : Container) post(trim())]
-  command: mongod --replSet [aContainer.name/]Replset
 [for (Sequence{1,2,3,4,5,6,7,8,9,10})]
 [if (i <= aContainer.replication.replicas)]
 [aContainer.name/]-replica[i/]:
   [aContainer.deploys.reference.oclAsType(DB).printImage()/]
   command: mongod --replSet [aContainer.name/]Replset
 [/if][/for]
-rsinit:
+[aContainer.name/]-rsinit:
   build:
     context: .
     dockerfile: [aContainer.name/]/rsinit
