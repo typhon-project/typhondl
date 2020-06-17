@@ -6,7 +6,7 @@
 <template id="dbType_mongo" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo using the latest image from Docker Hub" enabled="true" name="MongoType">dbtype Mongo {
     default image = mongo:latest;
 }</template>
-<template id="dbType_mongosharded" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo Sharded using the bitnami image" enabled="true" name="MongoShardedType">dbtype MongoSharded {
+<template id="dbType_mongosharded" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype Mongo Sharded using the bitnami image" enabled="true" name="MongoShardedType">dbtype mongosharded {
     default image = bitnami/mongodb-sharded;
 }</template>
 <template id="dbType_mariadbgalera" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DBType" deleted="false" description="Default template for dbtype MariaDB Galera using the bitnami image" enabled="true" name="MariaDBGaleraType">dbtype mariadbgalera {
@@ -98,6 +98,17 @@
     }
     credentials {
         username = chooseUsername;
+        password = choosePassword;
+    }
+}</template>
+<template id="db_neo4jhelm" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default template for using the neo4j helmchart" enabled="true" name="HelmNeo4j">database ${name} : Neo4j {
+    helm {
+        repoName = neo4j;
+        repoAddress = "https://neo4j-contrib.github.io/neo4j-helm/";
+        chartName = neo4j --version 4.0.4-1;
+    }
+    credentials {
+        username = neo4j;
         password = choosePassword;
     }
 }</template>

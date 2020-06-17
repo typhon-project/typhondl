@@ -318,6 +318,8 @@ helm install [aContainer.name/][aContainer.printValuesFile()/] --set fullnameOve
 --set mongodbRootPassword=[aDB.credentials.password/]
 [elseif (aDB.type.name.toLower() = 'cassandra')]
 --set dbUser.user=[aDB.credentials.username/],dbUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'neo5j')]
+--set acceptLicenseAgreement=yes --set neo4jPassword=[aDB.credentials.password/]
 [/if][/let]
 [/template]
 
