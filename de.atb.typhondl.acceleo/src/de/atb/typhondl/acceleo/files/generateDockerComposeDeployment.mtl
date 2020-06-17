@@ -141,11 +141,11 @@ networks:
 deploy:
   resources:
     limits:
-      cpu: '[aResources.limitCPU/]'
+      cpus: '[aResources.limitCPU/]'
       memory: [aResources.limitMemory/]
 [if (aResources.reservationCPU <> null)]
     reservations:
-      cpu: '[aResources.reservationCPU/]'
+      cpus: '[aResources.reservationCPU/]'
       memory: [aResources.reservationMemory/]
 [/if]
 [/template]
