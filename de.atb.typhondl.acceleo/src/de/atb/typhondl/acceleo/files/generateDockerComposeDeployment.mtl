@@ -176,7 +176,7 @@ deploy:
 [/template]
 
 [template public print(software : Software)  post (trim())]
-image: [software.image.value/]
+[if (software.image <> null)]image: [software.image.value/][/if]
 [if (software.parameters <> null)]
 [for (aProperty : Property | software.parameters)]
 [aProperty.print()/]
