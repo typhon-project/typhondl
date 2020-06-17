@@ -1,6 +1,6 @@
 database AppData : MariaDB {
 	credentials {
 		username = root ;
-		password = choosePassword ;
+		password = zcRMpfw8dJSFa94I ;
 	}
 }

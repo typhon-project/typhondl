@@ -3,9 +3,6 @@
   <semanticResources>weather_warning_ML.tml</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
-  <semanticResources>VehicleMetadataDB.tdl</semanticResources>
   <semanticResources>VehicleDataDB.tdl</semanticResources>
-  <semanticResources>TextWarningData.tdl</semanticResources>
-  <semanticResources>Test.tdl</semanticResources>
-  <semanticResources>Test/Test.xmi</semanticResources>
+  <semanticResources>deploymentModel/deploymentModel.xmi</semanticResources>
 </viewpoint:DAnalysis>
