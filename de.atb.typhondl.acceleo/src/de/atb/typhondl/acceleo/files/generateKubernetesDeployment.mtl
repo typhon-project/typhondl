@@ -122,7 +122,7 @@ metadata:
 spec:
 [if (aContainer.replication <> null)]
 [if (aContainer.replication.mode = Modes::STATELESS)]
-replicas: [aContainer.replication.replicas/]
+  replicas: [aContainer.replication.replicas/]
 [/if][/if]
   selector:
     matchLabels:
