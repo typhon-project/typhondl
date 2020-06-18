@@ -1,57 +1,26 @@
 version: '3.7'
 
 services:
-  appdata:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: zcRMpfw8dJSFa94I
   vehicledatadb:
     image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica1:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica2:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica3:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-rsinit:
-    build:
-      context: .
-      dockerfile: vehicledatadb/rsinit
-    entrypoint: [
-      'sh', 
-      '-c', 
-      'init_set.sh'
-      ]
-      
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: h0tcJ86u13c5LSrs
+  appdata:
+    image: mariadb:latest
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: M3XW1DnE8KUhzslv
   textwarningdata:
     image: mongo:latest
     environment:
-      MONGO_INITDB_ROOT_USERNAME: meAgain
-      MONGO_INITDB_ROOT_PASSWORD: qq9avNFBCZGQ6QjT
-    ports:
-      - target: 27017
-        published: 27017
-  vehiclemetadatadb:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: Z6SA8eEVBPi9nKuW
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: 3RqVuEj5jLjl5wB7
   polystore-mongo:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: 7Mq1XHQHhC0C2dEp
+      MONGO_INITDB_ROOT_PASSWORD: h5XOPQKoXDZUxnuP
       MONGO_INITDB_DATABASE: admin
     volumes:
       - ./models/:/docker-entrypoint-initdb.d
