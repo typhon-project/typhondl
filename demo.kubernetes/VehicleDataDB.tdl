@@ -1,0 +1,6 @@
+database VehicleDataDB : Mongo {
+	credentials {
+		username = me ;
+		password = Byxl7AN2ue3Ixom5 ;
+	}
+}
