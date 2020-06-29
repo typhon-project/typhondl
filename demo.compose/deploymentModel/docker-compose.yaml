@@ -48,7 +48,7 @@ services:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: RPzIWVsRDVjwpEm6
+      MONGO_INITDB_ROOT_PASSWORD: Mh95TduEKJWsjICQ
       MONGO_INITDB_DATABASE: admin
     volumes:
       - ./models/:/docker-entrypoint-initdb.d
@@ -87,7 +87,14 @@ services:
       - target: 2181
         published: 2181
   kafka:
-    
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://kafka:29092, INSIDE://:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on: 
       - zookeeper
     ports:

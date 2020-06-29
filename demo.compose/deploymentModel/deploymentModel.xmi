@@ -119,7 +119,7 @@
     <environment>
       <parameters name="MONGO_INITDB_DATABASE" value="admin"/>
     </environment>
-    <credentials username="admin" password="RPzIWVsRDVjwpEm6"/>
+    <credentials username="admin" password="Mh95TduEKJWsjICQ"/>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_api">
     <image value="clms/typhon-polystore-api:latest"/>
@@ -137,7 +137,17 @@
   <elements xsi:type="typhonDL:Software" name="zookeeper">
     <image value="wurstmeister/zookeeper"/>
   </elements>
-  <elements xsi:type="typhonDL:Software" name="Kafka"/>
+  <elements xsi:type="typhonDL:Software" name="Kafka">
+    <environment>
+      <parameters name="KAFKA_ZOOKEEPER_CONNECT" value="zookeeper:2181"/>
+      <parameters name="KAFKA_ADVERTISED_HOST_NAME" value="kafka"/>
+      <parameters name="KAFKA_LISTENERS" value="OUTSIDE://:29092, INSIDE://:9092"/>
+      <parameters name="KAFKA_LISTENER_SECURITY_PROTOCOL_MAP" value="INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT"/>
+      <parameters name="KAFKA_INTER_BROKER_LISTENER_NAME" value="INSIDE"/>
+      <parameters name="KAFKA_ADVERTISED_LISTENERS" value="OUTSIDE://kafka:29092, INSIDE://:9092"/>
+      <parameters name="KAFKA_AUTO_CREATE_TOPICS_ENABLE" value="&quot;true&quot;"/>
+    </environment>
+  </elements>
   <elements xsi:type="typhonDL:Software" name="authAll">
     <image value="zolotas4/typhon-analytics-auth-all"/>
   </elements>

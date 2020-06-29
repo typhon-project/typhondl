@@ -681,7 +681,7 @@ public class Services {
 
         String kafkaURI = properties.getProperty("analytics.kafka.uri");
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
-        String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':') - 1);
+        String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("DockerCompose")) {
             String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
             String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
@@ -766,6 +766,7 @@ public class Services {
                 KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
                 kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
                 Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
+                kafka.setEnvironment(kafka_environment);
                 kafka_reference.setReference(kafka);
 
                 Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();

@@ -182,6 +182,9 @@ deploy:
 [aProperty.print()/]
 [/for]
 [/if]
+[if (software.environment <> null)]
+[software.environment.print()/]
+[/if]
 [/template]
 
 [template public print(db : DB)  post (trim())]
