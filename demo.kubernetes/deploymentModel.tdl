@@ -1,0 +1,34 @@
+import weatherModel.xmi
+import VehicleMetadataDB.tdl
+import VehicleDataDB.tdl
+import AppData.tdl
+import TextWarningData.tdl
+import dbTypes.tdl
+containertype Docker
+clustertype Kubernetes
+platformtype AWS
+platform platformName : AWS {
+	cluster clusterName : Kubernetes {
+	    kubeConfig = myKubeConfig.kubeconfig;
+		application Polystore {
+			container vehicledatadb : Docker {
+				deploys VehicleDataDB
+				resources {
+					limitCPU = 0.5 ;
+					limitMemory = 512M ;
+					reservationCPU = 0.25 ;
+					reservationMemory = 256M ;
+				}
+				uri = vehicledatadb:27017 ;
+			}
+			container appdata : Docker {
+				deploys AppData
+				uri = appdata:3306 ;
+			}
+			container textwarningdata : Docker {
+				deploys TextWarningData
+				uri = textwarningdata:27017 ;
+			}
+		}
+	}
+}

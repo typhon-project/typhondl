@@ -1,0 +1,108 @@
+version: '3.7'
+
+services:
+  vehicledatadb:
+    image: mongo:latest
+    command: mongod --replSet vehicledatadbReplset
+  vehicledatadb-replica1:
+    image: mongo:latest
+    command: mongod --replSet vehicledatadbReplset
+  vehicledatadb-replica2:
+    image: mongo:latest
+    command: mongod --replSet vehicledatadbReplset
+  vehicledatadb-replica3:
+    image: mongo:latest
+    command: mongod --replSet vehicledatadbReplset
+  vehicledatadb-rsinit:
+    build:
+      context: .
+      dockerfile: vehicledatadb/rsinit
+    entrypoint: [
+      'sh', 
+      '-c', 
+      'init_set.sh'
+      ]
+      
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: j3yl3oxObCiNa9N7
+    ports:
+      - target: 27017
+        published: 27017
+  appdata:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: nm6wJoldmGqLFrq4
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    network_mode: bridge
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: Mh95TduEKJWsjICQ
+      MONGO_INITDB_DATABASE: admin
+    volumes:
+      - ./models/:/docker-entrypoint-initdb.d
+  typhon-polystore-service:
+    image: clms/typhon-polystore-api:latest
+    ports:
+      - target: 8080
+        published: 8080
+    entrypoint:
+      - wait-for-it
+      - polystore-mongo:27017
+      - -t
+      - '60'
+      - --
+      - java
+      - -cp
+      - /app/resources:/app/classes:/app/libs/*
+      - com.clms.typhonapi.Application
+    restart: always
+  polystore-ui:
+    image: clms/typhon-polystore-ui:latest
+    environment:
+      API_PORT: 8080
+      API_HOST: localhost
+    depends_on: 
+      - typhon-polystore-service
+    ports:
+      - target: 4200
+        published: 4200
+  typhonql-server:
+    image: swatengineering/typhonql-server
+    restart: always
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - target: 2181
+        published: 2181
+  kafka:
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://kafka:29092, INSIDE://:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on: 
+      - zookeeper
+    ports:
+      - target: 32100
+        published: 29092
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  authAll:
+    image: zolotas4/typhon-analytics-auth-all

@@ -1,0 +1,42 @@
+import weatherModel.xmi
+import VehicleDataDB.tdl
+import VehicleMetadataDB.tdl
+import TextWarningData.tdl
+import AppData.tdl
+import dbTypes.tdl
+containertype Docker
+clustertype DockerCompose
+platformtype localhost
+platform platformName : localhost {
+	cluster clusterName : DockerCompose {
+		application Polystore {
+			container vehicledatadb : Docker {
+				deploys VehicleDataDB
+				uri = vehicledatadb:27017 ;
+				replication {
+					replicas = 3 ;
+					mode = replicaSet ;
+				}
+			}
+			container textwarningdata : Docker {
+				deploys TextWarningData
+				ports {
+					target = 27017 ;
+					published = 27017 ;
+				}
+				uri = textwarningdata:27017 ;
+			}
+			container appdata : Docker {
+				deploys AppData
+				resources {
+					limitCPU = 0.5 ;
+					limitMemory = 512M ;
+					reservationCPU = 0.25 ;
+					reservationMemory = 256M ;
+				}
+				uri = appdata:3306 ;
+				network_mode =bridge;
+			}
+		}
+	}
+}

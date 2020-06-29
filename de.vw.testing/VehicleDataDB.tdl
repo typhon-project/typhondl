@@ -1,6 +1,6 @@
 database VehicleDataDB : Mongo {
-	environment {
-		MONGO_INITDB_ROOT_USERNAME = username ;
-		MONGO_INITDB_ROOT_PASSWORD = password ;
+	credentials {
+		username = me ;
+		password = h0tcJ86u13c5LSrs ;
 	}
 }

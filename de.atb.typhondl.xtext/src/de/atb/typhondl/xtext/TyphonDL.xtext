@@ -21,7 +21,9 @@ Services:
 
 Software:
 	(external?='external')? 'software' name=Name '{'
-	(image=IMAGE)
+	(image=IMAGE)?
+	(uri=URI)?
+	(environment=Environment)?
 	(parameters+=Property)*
 	'}';
 
@@ -31,7 +33,34 @@ Type:
 DB:
 	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
+	(uri=URI)?
+	(helm=HelmList)?	
+	(environment=Environment)?
+	(credentials=Credentials)?
 	(parameters+=Property)*
+	'}';
+
+Environment:
+	{Environment} 
+	'environment' '{'
+	   (parameters+=Key_Values)+
+	'}'
+;
+
+HelmList:
+	'helm' '{'
+	  'repoName' '=' repoName=Value ';'
+	  'repoAddress' '=' repoAddress=Value ';'
+	  'chartName' '=' chartName=Value ';'
+	  (parameters+=Property)*
+	'}'
+;
+
+Credentials:
+	{Credentials}
+	'credentials' '{'
+	  ('username' '=' username=Value ';')
+	  ('password' '=' password=Value ';')
 	'}';
 
 PlatformType:
@@ -72,9 +101,6 @@ Cluster_Network:
 	(key_values+=Key_Values)*
 	'}')?;
 
-Container_Network:
-	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
-
 Application:
 	{Application}
 	'application' name=Name '{'
@@ -83,13 +109,36 @@ Application:
 
 Container:
 	{Container}
-	(external?='external')? 'container' name=Name ':' (type=[ContainerType])? '{'
+	'container' name=Name ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
 	(ports=Ports)?
+	(resources=Resources)?
+	(uri=URI)?
+	(replication=Replication)?
 	(properties+=Property)*
 	'}';
+
+Replication:
+    'replication' '{'
+        'replicas' '=' replicas=INT ';'
+        'mode' '=' mode=Modes ';'
+    '}'
+;
+
+enum Modes:
+    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
+;
+
+Reference:
+	'deploys' reference=[Services];
+
+Dependency:
+	'depends_on' reference=[Container]; 
+
+Container_Network:
+	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
 
 Ports:
 	{Ports}
@@ -97,11 +146,18 @@ Ports:
 	(key_values+=Key_Values)+
 	'}';
 
-Dependency:
-	'depends_on' reference=[Container]; 
+Resources:
+	'resources' '{'
+	   'limitCPU' '=' limitCPU=Value ';'
+	   'limitMemory' '=' limitMemory=Value ';'
+	   ('reservationCPU' '=' reservationCPU=Value ';')?
+	   ('reservationMemory' '=' reservationMemory=Value ';')?
+	'}'
+;
 
-Reference:
-	'deploys' reference=[Services];
+URI:
+	'uri' '=' value=Value ';'
+;
 
 Property:
 	Key_Values | Key_ValueArray | Key_KeyValueList;

@@ -25,6 +25,11 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import de.atb.typhondl.xtext.typhonDL.Key_Values
 import de.atb.typhondl.xtext.typhonDL.ClusterType
 import de.atb.typhondl.xtext.typhonDL.Ports
+import de.atb.typhondl.xtext.typhonDL.HelmList
+import de.atb.typhondl.xtext.typhonDL.Resources
+import de.atb.typhondl.xtext.typhonDL.Credentials
+import de.atb.typhondl.xtext.typhonDL.Environment
+import de.atb.typhondl.xtext.typhonDL.Replication
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -63,10 +68,48 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			[indent]
 		)
 		db.image.format
+		db.helm.format
+		db.credentials.format
+		db.environment.format
+		db.uri.append[newLine]
 		for (property : db.parameters) {
 			property.format
 			property.append[newLine]
 		}
+	}
+	
+    def dispatch void format(Environment environment, extension IFormattableDocument document) {
+        interior(
+            environment.regionFor.keyword('{').append[newLine],
+            environment.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        environment.parameters.format
+    }	
+	
+	def dispatch void format(Credentials credentials, extension IFormattableDocument document) {
+	    interior(
+            credentials.regionFor.keyword('{').append[newLine],
+            credentials.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        credentials.regionFor.keyword('username').prepend[newLine]
+        credentials.regionFor.keyword('password').prepend[newLine]
+	}
+	
+	def dispatch void format(HelmList helmList, extension IFormattableDocument document) {
+	    interior(
+	        helmList.regionFor.keyword('{').append[newLine],
+            helmList.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+	    )
+	    helmList.regionFor.keyword('repoName').prepend[newLine]
+        helmList.regionFor.keyword('repoAddress').prepend[newLine]
+        helmList.regionFor.keyword('chartName').prepend[newLine]
+	    for (property : helmList.parameters) {
+	        property.format
+	        property.prepend[newLine]
+	    }    
 	}
 	
 	def dispatch void format(Ports ports, extension IFormattableDocument document) {
@@ -169,10 +212,34 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		container.deploys.append[newLine]
 		container.networks.append[newLine]
 		container.ports.format
-		
+		container.resources.format
+		container.replication.format
+		container.uri.append[newLine]
 		for (property : container.properties) {
 			property.format
 		}
+	}
+	
+	def dispatch void format(Replication replication, extension IFormattableDocument document) {
+	    interior(
+            replication.regionFor.keyword('{').append[newLine],
+            replication.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        replication.regionFor.keyword('replicas').prepend[newLine]
+        replication.regionFor.keyword('mode').prepend[newLine]
+	}
+	
+	def dispatch void format(Resources resources, extension IFormattableDocument document) {
+	    interior(
+            resources.regionFor.keyword('{').append[newLine],
+            resources.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        resources.regionFor.keyword('limitCPU').prepend[newLine]
+        resources.regionFor.keyword('limitMemory').prepend[newLine]
+        resources.regionFor.keyword('reservationCPU').prepend[newLine]
+        resources.regionFor.keyword('reservationMemory').prepend[newLine]
 	}
 
 	def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {

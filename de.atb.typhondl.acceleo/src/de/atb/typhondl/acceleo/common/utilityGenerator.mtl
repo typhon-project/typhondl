@@ -33,32 +33,97 @@ aPorts.key_values->any(key | key.name='published')
 aPorts.key_values->any(key | key.name='target') 
 /]
 
-[query public findReplicas(aContainer : Container) : Key_Values =
-aContainer.properties->any(key | key.name='replicas')
-/]
-
 [query public getMongoPrint(aContainer : Container) : String =
 aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
-/]
-
-[query public getEnvironmentList(aContainer : Container) : Key_KeyValueList = 
-aContainer.deploys.reference.parameters->any(key | (key.name='env')._or(key.name='environment'))
-/]
-
-[query public getMongoRootUser(aContainer : Container) : Key_Values =
-aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_USERNAME')
-/]
-
-[query public getMongoRootPassword(aContainer : Container) : Key_Values =
-aContainer.getEnvironmentList().properties->any(key | key.name='MONGO_INITDB_ROOT_PASSWORD')
 /]
 
 [query public getKubeconfig(aCluster : Cluster) : Key_Values =
 aCluster.properties->any(key | key.name.equalsIgnoreCase('kubeconfig'))
 /]
 
-[query public useAnalytics(aCluster : Cluster) : Boolean =
-aCluster.applications.containers->any(key | key.name.equalsIgnoreCase('kafka'))<>null
+[query public useAnalytics(aDeploymentModel : DeploymentModel) : Boolean =
+aDeploymentModel.getKafkaSoftware()<>null
+/]
+
+[query public isPolystoreContainer(aContainer : Container) : Boolean = 
+((aContainer.name.toLower() = 'kafka')
+    ._or(aContainer.name.toLower() = 'zookeeper')
+    ._or(aContainer.name.toLower() = 'authall')
+    ._or(aContainer.name.toLower() = 'typhon-polystore-service')
+    ._or(aContainer.name.toLower() = 'polystore-ui')
+    ._or(aContainer.name.toLower() = 'typhonql-server')) 
+/]
+
+[query public containsDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
+
+
+[query public useHelmChart(aContainer : Container) : Boolean =  
+not(aContainer.getHelmList().oclIsUndefined())
+/]
+
+[query public getHelmList(aContainer : Container) : HelmList =  
+aContainer.deploys.reference.oclAsType(DB).helm
+/]
+
+[query public getHelmRepoAddress(aContainer : Container) : String =
+aContainer.getHelmList().repoAddress
+/]
+
+[query public getHelmRepoName(aContainer : Container) : String = 
+aContainer.getHelmList().repoName
+/]
+
+[query public getHelmChart(aContainer : Container) : String = 
+aContainer.getHelmList().chartName
+/]
+
+[query public hasHelmValuesFile(aContainer : Container) : Boolean = 
+not aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('valuesFile')).oclIsUndefined()
+/]
+
+[query public getHelmValuesFile(aContainer : Container) : String =
+aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('valuesFile')).oclAsType(Key_Values).value
 /]
 
 
+[query public convertCPUToKubernetes(aCPUString : String) : String = self /]
+
+[query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]
+
+[query public allowsUsername(typeName: String) : Boolean =  
+typeName = 'mongo'
+/]
+
+[query public getPort(aURI : URI) : String =
+aURI.value.substring(aURI.value.indexOf(':')+1)
+/]
+
+[query public getKafkaSoftware(aDeploymentModel : DeploymentModel) : Software = 
+aDeploymentModel.elements->filter(typhonDL::Software)->any(software | software.name.equalsIgnoreCase('kafka'))
+/]
+
+[query public getKubeconfig(aKafka : Software) : Key_Values =
+aKafka.parameters->filter(typhonDL::Key_Values)->any(key | key.name.equalsIgnoreCase('kubeconfig'))
+ /]
+
+
+
+[query public getMongoUsernameKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_USERNAME'/]
+[query public getMongoPasswordKey(aTypeName : String) : String = 'MONGO_INITDB_ROOT_PASSWORD'/]
+[query public getMariaDBPasswordKey(aTypeName : String) : String = 'MYSQL_ROOT_PASSWORD'/]
+[query public getNeo4jPasswordKey(aTypeName : String) : String = 'NEO4J_AUTH'/]
+
+[template public getPasswordPreValue(aTypeName : String) post (trim())]
+[if (aTypeName = 'neo4j')]neo4j/[/if]
+[/template]
+
+[template public getPasswordKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')][aTypeName.getMongoPasswordKey()/] [elseif ((aTypeName = 'mariadb') or (aTypeName = 'mysql'))][aTypeName.getMariaDBPasswordKey()/] [elseif (aTypeName = 'neo4j')][getNeo4jPasswordKey()/][/if]
+[/template]
+
+
+[template public getUsernameKey(aTypeName : String) post (trim())]
+[if (aTypeName = 'mongo')]
+[aTypeName.getMongoUsernameKey()/]
+[/if]
+[/template]

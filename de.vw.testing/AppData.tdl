@@ -1,5 +1,7 @@
 database AppData : MariaDB {
-	environment {
-		MYSQL_ROOT_PASSWORD = password ;
+	credentials {
+		username = root ;
+		password = M3XW1DnE8KUhzslv ;
 	}
+	network_mode = bridge ;
 }

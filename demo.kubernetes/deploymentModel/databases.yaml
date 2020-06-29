@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicledatadb-deployment
+spec:
+  selector:
+    matchLabels:
+      app: vehicledatadb-pod
+  template:
+    metadata:
+      labels:
+        app: vehicledatadb-pod
+    spec:
+      containers:
+        - name: vehicledatadb-container
+          image: mongo:latest
+          environment:
+            - name: MONGO_INITDB_ROOT_USERNAME 
+              value: me
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: Byxl7AN2ue3Ixom5
+          
+          resources:
+            limits:
+              memory: "512M"
+              cpu: "0.5"
+            requests:
+              memory: "256M"
+              cpu: "0.25"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: vehicledatadb
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: vehicledatadb-pod
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: textwarningdata-deployment
+spec:
+  selector:
+    matchLabels:
+      app: textwarningdata-pod
+  template:
+    metadata:
+      labels:
+        app: textwarningdata-pod
+    spec:
+      containers:
+        - name: textwarningdata-container
+          image: mongo:latest
+          environment:
+            - name: MONGO_INITDB_ROOT_USERNAME 
+              value: me
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: tZd0bqXvqkF1oJxk
+          
+          
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: textwarningdata
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: textwarningdata-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-mongo-deployment
+spec:
+  selector:
+    matchLabels:
+      app: polystore-mongo-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-mongo-pod
+    spec:
+      containers:
+        - name: polystore-mongo-container
+          image: mongo:latest
+          environment:
+            - name: MONGO_INITDB_ROOT_USERNAME 
+              value: admin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: vwBmk1DNAM3H32VG
+          
+          
+          
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: polystore-mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: polystore-mongo-pod
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ["/bin/sh", "-c"]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              mongo --host polystore-mongo --port 27017 -u admin -p vwBmk1DNAM3H32VG admin --eval 'db.models.insert([{"_id":UUID(), "version":1, "initializedDatabases":false, "initializedConnections":true, "contents":"<?xml version=\"1.0\" encoding=\"UTF-8\"?><typhonDL:DeploymentModel xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:typhonDL=\"http://www.typhon.org/dsls/xtext/TyphonDL\">  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"weatherModel.xmi\"/>  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"VehicleMetadataDB.tdl\"/>  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"VehicleDataDB.tdl\"/>  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"AppData.tdl\"/>  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"TextWarningData.tdl\"/>  <guiMetaInformation xsi:type=\"typhonDL:Import\" relativePath=\"dbTypes.tdl\"/>  <elements xsi:type=\"typhonDL:ContainerType\" name=\"Docker\"/>  <elements xsi:type=\"typhonDL:ClusterType\" name=\"Kubernetes\"/>  <elements xsi:type=\"typhonDL:PlatformType\" name=\"AWS\"/>  <elements xsi:type=\"typhonDL:Platform\" name=\"platformName\" type=\"//@elements.2\">    <clusters name=\"clusterName\" type=\"//@elements.1\">      <properties xsi:type=\"typhonDL:Key_Values\" name=\"kubeConfig\" value=\"myKubeConfig.kubeconfig\"/>      <applications name=\"Polystore\">        <containers name=\"vehicledatadb\" type=\"//@elements.0\">          <deploys reference=\"//@elements.5\"/>          <resources limitCPU=\"0.5\" limitMemory=\"512M\" reservationCPU=\"0.25\" reservationMemory=\"256M\"/>          <uri value=\"vehicledatadb:27017\"/>        </containers>        <containers name=\"appdata\" type=\"//@elements.0\">          <deploys reference=\"//@elements.6\"/>          <uri value=\"appdata:3306\"/>        </containers>        <containers name=\"textwarningdata\" type=\"//@elements.0\">          <deploys reference=\"//@elements.7\"/>          <uri value=\"textwarningdata:27017\"/>        </containers>        <containers name=\"polystore-mongo\" type=\"//@elements.0\">          <deploys reference=\"//@elements.11\"/>          <uri value=\"polystore-mongo:27017\"/>        </containers>        <containers name=\"typhon-polystore-service\" type=\"//@elements.0\">          <deploys reference=\"//@elements.12\"/>          <ports>            <key_values name=\"target\" value=\"8080\"/>            <key_values name=\"published\" value=\"30061\"/>          </ports>          <uri value=\"typhon-polystore-service:8080\"/>        </containers>        <containers name=\"polystore-ui\" type=\"//@elements.0\">          <deploys reference=\"//@elements.13\"/>          <depends_on reference=\"//@elements.3/@clusters.0/@applications.0/@containers.4\"/>          <ports>            <key_values name=\"target\" value=\"4200\"/>            <key_values name=\"published\" value=\"30075\"/>          </ports>          <uri value=\"polystore-ui:4200\"/>        </containers>        <containers name=\"typhonql-server\">          <deploys reference=\"//@elements.14\"/>          <uri value=\"typhonql-server:7000\"/>        </containers>      </applications>    </clusters>  </elements>  <elements xsi:type=\"typhonDL:DB\" name=\"VehicleMetadataDB\" external=\"true\" type=\"//@elements.8\">    <uri value=\"https://example.com:35465\"/>    <credentials username=\"root\" password=\"existingPasword\"/>  </elements>  <elements xsi:type=\"typhonDL:DB\" name=\"VehicleDataDB\" type=\"//@elements.9\">    <credentials username=\"me\" password=\"Byxl7AN2ue3Ixom5\"/>  </elements>  <elements xsi:type=\"typhonDL:DB\" name=\"AppData\" type=\"//@elements.10\">    <helm repoName=\"bitnami\" repoAddress=\"https://charts.bitnami.com/bitnami\" chartName=\"mariadb-galera\">      <parameters xsi:type=\"typhonDL:Key_Values\" name=\"valuesFile\" value=\"appdata/values.yaml\"/>    </helm>    <credentials username=\"root\" password=\"Rrcv0nPqmeYDM2mj\"/>  </elements>  <elements xsi:type=\"typhonDL:DB\" name=\"TextWarningData\" type=\"//@elements.9\">    <credentials username=\"me\" password=\"tZd0bqXvqkF1oJxk\"/>  </elements>  <elements xsi:type=\"typhonDL:DBType\" name=\"MariaDB\">    <image value=\"mariadb:latest\"/>  </elements>  <elements xsi:type=\"typhonDL:DBType\" name=\"Mongo\">    <image value=\"mongo:latest\"/>  </elements>  <elements xsi:type=\"typhonDL:DBType\" name=\"mariadbgalera\">    <image value=\"bitnami/mariadb-galera\"/>  </elements>  <elements xsi:type=\"typhonDL:DB\" name=\"polystore_db\" type=\"//@elements.9\">    <credentials username=\"admin\" password=\"vwBmk1DNAM3H32VG\"/>  </elements>  <elements xsi:type=\"typhonDL:Software\" name=\"polystore_api\">    <image value=\"clms/typhon-polystore-api:latest\"/>  </elements>  <elements xsi:type=\"typhonDL:Software\" name=\"polystore_ui\">    <image value=\"clms/typhon-polystore-ui:latest\"/>    <parameters xsi:type=\"typhonDL:Key_KeyValueList\" name=\"environment\">      <properties xsi:type=\"typhonDL:Key_Values\" name=\"API_PORT\" value=\"&quot;30061&quot;\"/>      <properties xsi:type=\"typhonDL:Key_Values\" name=\"API_HOST\" value=\"&quot;192.168.99.101&quot;\"/>    </parameters>  </elements>  <elements xsi:type=\"typhonDL:Software\" name=\"polystore_ql\">    <image value=\"swatengineering/typhonql-server\"/>  </elements>  <elements xsi:type=\"typhonDL:Software\" name=\"Kafka\"/></typhonDL:DeploymentModel>", "type":"DL", "dateReceived":ISODate(), "_class":"com.clms.typhonapi.models.Model" }, {"_id":UUID(), "version":1, "initializedDatabases":false, "initializedConnections":false, "contents":"<?xml version=\"1.0\" encoding=\"ASCII\"?><typhonml:Model xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:typhonml=\"http://org.typhon.dsls.typhonml.sirius\">  <entities name=\"VehicleWeatherData\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"timeStamp\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"vehicle_position\">      <type xsi:type=\"typhonml:PointType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"temperature\">      <type xsi:type=\"typhonml:FloatType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"rain_Intensity\">      <type xsi:type=\"typhonml:FloatType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"solar_Intensity\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <relations name=\"metadata\" type=\"//@entities.1\" cardinality=\"one\" opposite=\"//@entities.1/@relations.0\"/>  </entities>  <entities name=\"VehicleMetadata\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"VIN\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"brand\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"model\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"constr_year\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"color\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"t_sensor_h\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"engine_type\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <relations name=\"vehicle_weather_data\" type=\"//@entities.0\" cardinality=\"zero_many\" isContainment=\"true\"/>    <relations name=\"vehicle_esp_data\" type=\"//@entities.2\" cardinality=\"zero_many\" isContainment=\"true\"/>  </entities>  <entities name=\"ESP\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"timeStamp\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"vehicle_position\">      <type xsi:type=\"typhonml:PointType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"esp_edl\">      <type xsi:type=\"typhonml:BoolType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"esp_idd\">      <type xsi:type=\"typhonml:BoolType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"esp_abs\">      <type xsi:type=\"typhonml:BoolType\"/>    </attributes>    <relations name=\"metadata\" type=\"//@entities.1\" cardinality=\"one\" opposite=\"//@entities.1/@relations.1\"/>  </entities>  <entities name=\"App\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"VIN\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"timeStamp\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"vehicle_position\">      <type xsi:type=\"typhonml:PointType\"/>    </attributes>    <relations name=\"esp\" type=\"//@entities.2\" cardinality=\"zero_many\" isContainment=\"true\"/>    <relations name=\"warnings\" type=\"//@entities.4\" cardinality=\"zero_many\" isContainment=\"true\"/>  </entities>  <entities name=\"WarningWeatherData\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"time_start\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"time_end\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"warningType\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"severity\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"area\">      <type xsi:type=\"typhonml:PolygonType\"/>    </attributes>  </entities>  <entities name=\"TextWarning\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"timeStamp\">      <type xsi:type=\"typhonml:DatetimeType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"warning\">      <type xsi:type=\"typhonml:TextType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"extractedWarning\">      <type xsi:type=\"typhonml:FreetextType\">        <tasks workflowName=\"workflow1\" type=\"RelationExtraction\"/>        <tasks workflowName=\"workflow1\" type=\"TermExtraction\"/>      </type>    </attributes>  </entities>  <entities name=\"ExtractedWarning\">    <attributes xsi:type=\"typhonml:Attribute\" name=\"ORGANIZATION\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"WEATHER_EVENT\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"WEATHER_EVENT_INTENSITY\">      <type xsi:type=\"typhonml:FloatType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"WEATHER_EVENT_COUNT\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"LOCATION\">      <type xsi:type=\"typhonml:PointType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"WARNING_LEVEL\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"DAY\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"DATE\">      <type xsi:type=\"typhonml:DateType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"TIME\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"DISTANCE\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"DIRECTION\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"SPEED\">      <type xsi:type=\"typhonml:FloatType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"SIZE\">      <type xsi:type=\"typhonml:StringType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"TEMPERATURE\">      <type xsi:type=\"typhonml:FloatType\"/>    </attributes>    <attributes xsi:type=\"typhonml:Attribute\" name=\"NUMBER\">      <type xsi:type=\"typhonml:IntType\"/>    </attributes>  </entities>  <databases xsi:type=\"typhonml:RelationalDB\" name=\"VehicleMetadataDB\">    <tables name=\"VehicleMetadataDB\" entity=\"//@entities.1\">      <indexSpec name=\"metadataIndex\" attributes=\"//@entities.1/@attributes.0\"/>      <idSpec attributes=\"//@entities.1/@attributes.0\"/>    </tables>  </databases>  <databases xsi:type=\"typhonml:DocumentDB\" name=\"VehicleDataDB\">    <collections name=\"VehicleWeatherDataDB\" entity=\"//@entities.0\"/>    <collections name=\"ESPDB\" entity=\"//@entities.2\"/>  </databases>  <databases xsi:type=\"typhonml:RelationalDB\" name=\"AppData\">    <tables name=\"AppDB\" entity=\"//@entities.3\">      <indexSpec name=\"appIndex\" attributes=\"//@entities.3/@attributes.0\"/>    </tables>    <tables name=\"AnalyticsDB\" entity=\"//@entities.6\">      <indexSpec name=\"analyticsIndex\" attributes=\"//@entities.6/@attributes.14\"/>    </tables>  </databases>  <databases xsi:type=\"typhonml:DocumentDB\" name=\"TextWarningData\">    <collections name=\"TextWarningDB\" entity=\"//@entities.5\"/>    <collections name=\"WarningWeatherDB\" entity=\"//@entities.4\"/>  </databases></typhonml:Model>", "type":"ML", "dateReceived":ISODate(), "_class":"com.clms.typhonapi.models.Model" }]);';
+      restartPolicy: Never
+---

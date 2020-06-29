@@ -1,5 +1,7 @@
-database VehicleMetadataDB : MariaDB {
-	environment {
-		MYSQL_ROOT_PASSWORD = password ;
+external database VehicleMetadataDB : MariaDB {
+	uri = https://example.com:12345 ;
+	credentials {
+		username = root ;
+		password = existingPassword ;
 	}
 }
