@@ -48,7 +48,7 @@ services:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: Mh95TduEKJWsjICQ
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: admin
     volumes:
       - ./models/:/docker-entrypoint-initdb.d

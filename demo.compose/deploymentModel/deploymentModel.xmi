@@ -119,7 +119,7 @@
     <environment>
       <parameters name="MONGO_INITDB_DATABASE" value="admin"/>
     </environment>
-    <credentials username="admin" password="Mh95TduEKJWsjICQ"/>
+    <credentials username="admin" password="admin"/>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_api">
     <image value="clms/typhon-polystore-api:latest"/>

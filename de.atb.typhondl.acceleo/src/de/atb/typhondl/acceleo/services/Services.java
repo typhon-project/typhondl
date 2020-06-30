@@ -526,7 +526,7 @@ public class Services {
         }
         Credentials credentials = TyphonDLFactory.eINSTANCE.createCredentials();
         credentials.setUsername("admin");
-        credentials.setPassword(createPassword(16));
+        credentials.setPassword("admin");
         polystoredb.setCredentials(credentials);
         model.getElements().add(polystoredb);
         Reference poystoredbReference = TyphonDLFactory.eINSTANCE.createReference();

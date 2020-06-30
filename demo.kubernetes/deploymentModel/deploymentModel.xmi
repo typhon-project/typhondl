@@ -80,7 +80,7 @@
     <image value="bitnami/mariadb-galera"/>
   </elements>
   <elements xsi:type="typhonDL:DB" name="polystore_db" type="//@elements.9">
-    <credentials username="admin" password="vwBmk1DNAM3H32VG"/>
+    <credentials username="admin" password="admin"/>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_api">
     <image value="clms/typhon-polystore-api:latest"/>
