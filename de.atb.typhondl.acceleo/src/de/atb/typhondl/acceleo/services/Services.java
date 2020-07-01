@@ -223,13 +223,6 @@ public class Services {
 
     private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath, Properties properties)
             throws IOException {
-        // TODO
-//        new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
-//        new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
-//        new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
-//        new InputField("Kafka version: ", "analytics.kafka.version"),
-//        new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
-//        new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
         Path flinkConfigMapPath = Paths.get(
                 analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
         HashMap<String, String> flinkPropertyMap = new HashMap<>();
@@ -254,6 +247,67 @@ public class Services {
             }
         }
         Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.CREATE);
+
+        if (!properties.get("analytics.flink.rest.port").equals("automatic")) {
+            Path flinkRestServicePath = Paths
+                    .get(analyticsZipPath + File.separator + "flink" + File.separator + "jobmanager-rest-service.yaml");
+            List<String> flinkRestService = Files.readAllLines(flinkRestServicePath);
+            List<String> newListWithAddedNodePort = new ArrayList<>();
+            for (int i = 0; i < flinkRestService.size(); i++) {
+                newListWithAddedNodePort.add(flinkRestService.get(i));
+                if (flinkRestService.get(i).contains("targetPort")) {
+                    newListWithAddedNodePort.add("    nodePort: " + properties.get("analytics.flink.rest.port"));
+                }
+            }
+            Files.write(flinkRestServicePath, newListWithAddedNodePort, StandardOpenOption.CREATE);
+        }
+
+        if (!properties.get("analytics.flink.taskmanager.replicas").equals("2")) {
+            Path flinkTaskmanagerPath = Paths
+                    .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
+            List<String> flinkTaskmanager = Files.readAllLines(flinkTaskmanagerPath);
+            for (int i = 0; i < flinkTaskmanager.size(); i++) {
+                if (flinkTaskmanager.get(i).contains("replicas")) {
+                    flinkTaskmanager.set(i, replaceOldValueWithNewValue(flinkTaskmanager.get(i), "replicas:",
+                            properties.getProperty("analytics.flink.taskmanager.replicas")));
+                }
+            }
+            Files.write(flinkTaskmanagerPath, flinkTaskmanager, StandardOpenOption.CREATE);
+        }
+
+        HashMap<String, String> kafkaClusterPropertyMap = new HashMap<>();
+        kafkaClusterPropertyMap.put("replicas", "analytics.kafka.cluster.replicas");
+        kafkaClusterPropertyMap.put("version:", "analytics.kafka.version");
+        kafkaClusterPropertyMap.put("size:", "analytics.kafka.storageclaim");
+        Path kafkaClusterPath = Paths
+                .get(analyticsZipPath + File.separator + "flink" + File.separator + "typhon-cluster.yaml");
+        List<String> kafkaCluster = Files.readAllLines(kafkaClusterPath);
+        int zookeeperIndex = getZookeeperIndex(kafkaCluster);
+        for (int i = 0; i < zookeeperIndex; i++) {
+            for (String propertyNameInFile : kafkaClusterPropertyMap.keySet()) {
+                String string = kafkaCluster.get(i);
+                if (string.contains(propertyNameInFile)) {
+                    kafkaCluster.set(i, replaceOldValueWithNewValue(string, propertyNameInFile,
+                            properties.getProperty(kafkaClusterPropertyMap.get(propertyNameInFile))));
+                }
+            }
+        }
+        for (int i = zookeeperIndex; i < kafkaCluster.size(); i++) {
+            if (kafkaCluster.get(i).contains("size")) {
+                kafkaCluster.set(i, replaceOldValueWithNewValue(kafkaCluster.get(i), "size:",
+                        properties.getProperty("analytics.zookeeper.storageclaim")));
+            }
+        }
+        Files.write(kafkaClusterPath, kafkaCluster, StandardOpenOption.CREATE);
+    }
+
+    private static int getZookeeperIndex(List<String> kafkaCluster) {
+        for (int i = 0; i < kafkaCluster.size(); i++) {
+            if (kafkaCluster.get(i).contains("zookeeper")) {
+                return i;
+            }
+        }
+        return 1;
     }
 
     private static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
