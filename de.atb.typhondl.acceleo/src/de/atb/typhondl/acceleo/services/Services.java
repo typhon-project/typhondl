@@ -16,6 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -190,7 +191,12 @@ public class Services {
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
         if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
             try {
-                downloadKafkaFiles(folder);
+                String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
+                InputStream input = downloadKafkaFiles(analyticsZipPath);
+                if (input != null) {
+                    unzip(analyticsZipPath, folder);
+                }
+                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -214,11 +220,55 @@ public class Services {
         return model;
     }
 
-    private static void downloadKafkaFiles(String folder) throws IOException {
+    private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath) throws IOException {
+        // TODO
+//        new InputField("Logglevel flink: ", "analytics.logging.flink"),
+//        new InputField("Logging flink target: ", "analytics.logging.flink.target"),
+//        new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
+//        new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
+//        new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
+//        new InputField("Kafka version: ", "analytics.kafka.version"),
+//        new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
+//        new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
+        Path configMapPath = Paths.get(
+                analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
+
+        HashMap<String, String> propertyMap = new HashMap<>();
+        propertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
+        propertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
+        propertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
+        propertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger.target");
+        propertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
+        propertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
+        propertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
+        propertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
+        propertyMap.put("log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
+                "analytics.logging.flink");
+        propertyMap.put("log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
+                "analytics.logging.flink.target");
+
+        List<String> flinkConfigmap = Files.readAllLines(configMapPath);
+        for (int i = 0; i < flinkConfigmap.size(); i++) {
+            for (String property : propertyMap.keySet()) {
+                String string = flinkConfigmap.get(i);
+                if (string.contains(property)) {
+                    flinkConfigmap.set(i, replaceOldValueWithNewValue(string, property));
+                }
+            }
+        }
+        flinkConfigmap.stream().forEach(System.out::println);
+
+//        Files.write(configMapPath, collect, StandardOpenOption.CREATE);
+    }
+
+    private static String replaceOldValueWithNewValue(String string, String property) {
+        return "test";
+    }
+
+    private static InputStream downloadKafkaFiles(String analyticsZipPath) throws IOException {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
-        String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
         try {
@@ -264,10 +314,7 @@ public class Services {
             if (connection != null)
                 connection.disconnect();
         }
-
-        if (input != null) {
-            unzip(analyticsZipPath, folder);
-        }
+        return input;
     }
 
     private static void unzip(String zipFilePath, String destDirectory) throws IOException {
