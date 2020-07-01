@@ -196,8 +196,10 @@ public class Services {
                 if (input != null) {
                     unzip(analyticsZipPath, folder);
                 }
-                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
-                        properties);
+                if (clusterType.equalsIgnoreCase("Kubernetes")) {
+                    applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
+                            properties);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -224,39 +226,36 @@ public class Services {
     private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath, Properties properties)
             throws IOException {
         // TODO
-//        new InputField("Logglevel flink: ", "analytics.logging.flink"),
-//        new InputField("Logging flink target: ", "analytics.logging.flink.target"),
 //        new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
 //        new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
 //        new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
 //        new InputField("Kafka version: ", "analytics.kafka.version"),
 //        new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
 //        new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
-        Path configMapPath = Paths.get(
+        Path flinkConfigMapPath = Paths.get(
                 analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
-
-        HashMap<String, String> propertyMap = new HashMap<>();
-        propertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
-        propertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
-        propertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
-        propertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
-        propertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
-        propertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
-        propertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
-        propertyMap.put("log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
+        HashMap<String, String> flinkPropertyMap = new HashMap<>();
+        flinkPropertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
+        flinkPropertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
+        flinkPropertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
+        flinkPropertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
+        flinkPropertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
+        flinkPropertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
+        flinkPropertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
+        flinkPropertyMap.put(
+                "log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
                 "analytics.logging.flink");
-
-        List<String> flinkConfigmap = Files.readAllLines(configMapPath);
+        List<String> flinkConfigmap = Files.readAllLines(flinkConfigMapPath);
         for (int i = 0; i < flinkConfigmap.size(); i++) {
-            for (String propertyNameInFile : propertyMap.keySet()) {
+            for (String propertyNameInFile : flinkPropertyMap.keySet()) {
                 String string = flinkConfigmap.get(i);
                 if (string.contains(propertyNameInFile)) {
                     flinkConfigmap.set(i, replaceOldValueWithNewValue(string, propertyNameInFile,
-                            properties.getProperty(propertyMap.get(propertyNameInFile))));
+                            properties.getProperty(flinkPropertyMap.get(propertyNameInFile))));
                 }
             }
         }
-        Files.write(configMapPath, flinkConfigmap, StandardOpenOption.CREATE);
+        Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.CREATE);
     }
 
     private static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
@@ -819,6 +818,10 @@ public class Services {
                 kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
                 Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
                 kafka.setEnvironment(kafka_environment);
+                Key_Values kafka_version = TyphonDLFactory.eINSTANCE.createKey_Values();
+                kafka_version.setName("version");
+                kafka_version.setValue(properties.getProperty("analytics.kafka.version"));
+                kafka.getParameters().add(kafka_version);
                 kafka_reference.setReference(kafka);
 
                 Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
