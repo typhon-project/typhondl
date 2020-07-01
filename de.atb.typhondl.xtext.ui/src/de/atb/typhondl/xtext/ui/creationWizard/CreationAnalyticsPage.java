@@ -93,7 +93,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
                 new InputField("Kafka version: ", "analytics.kafka.version"),
                 new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
-                new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
+                new InputField("zookeeper storage claim: ", "analytics.zookeeper.storageclaim"));
     }
 
     @Override
