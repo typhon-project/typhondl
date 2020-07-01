@@ -56,8 +56,8 @@ aDeploymentModel.getKafkaSoftware()<>null
 
 [query public containsDB(aContainer : Container) : Boolean = aContainer.deploys.reference.oclIsTypeOf(DB) /]
 
-[query public getKafkaVersion(aContainer : Container) : Key_Values =
-aContainer.deploys.reference.oclAsType(Software).parameters->any(key | key.name.equalsIgnoreCase('version'))
+[query public getKafkaVersion(aContainer : Container) : String =
+aContainer.deploys.reference.oclAsType(Software).parameters->any(key | key.name.equalsIgnoreCase('version')).oclAsType(Key_Values).value
 /]
 
 

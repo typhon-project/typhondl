@@ -236,7 +236,7 @@ environment:
 [file ('Dockerfile', false, 'UTF-8')]
 FROM openjdk:8u212-jre-alpine
 
-ARG kafka_version=[aContainer.getKafkaVersion().value/]
+ARG kafka_version=[aContainer.getKafkaVersion()/]
 ARG scala_version=2.12
 ARG glibc_version=2.29-r0
 ARG vcs_ref=unspecified

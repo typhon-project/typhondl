@@ -196,10 +196,8 @@ public class Services {
                 if (input != null) {
                     unzip(analyticsZipPath, folder);
                 }
-                if (clusterType.equalsIgnoreCase("Kubernetes")) {
-                    applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
-                            properties);
-                }
+                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
+                        properties);
             } catch (IOException e) {
                 e.printStackTrace();
             }
