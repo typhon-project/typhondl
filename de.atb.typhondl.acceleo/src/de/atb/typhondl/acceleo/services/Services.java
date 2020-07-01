@@ -796,7 +796,7 @@ public class Services {
                 kafka_container.setUri(kafkaURIObject);
 
                 Software flink_jobmanager = TyphonDLFactory.eINSTANCE.createSoftware();
-                flink_jobmanager.setName("FlinkTJobmanager");
+                flink_jobmanager.setName("FlinkJobmanager");
                 IMAGE flink_image = TyphonDLFactory.eINSTANCE.createIMAGE();
                 flink_image.setValue("flink:latest");
                 flink_jobmanager.setImage(flink_image);
