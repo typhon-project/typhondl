@@ -196,7 +196,8 @@ public class Services {
                 if (input != null) {
                     unzip(analyticsZipPath, folder);
                 }
-                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')));
+                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
+                        properties);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -220,7 +221,8 @@ public class Services {
         return model;
     }
 
-    private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath) throws IOException {
+    private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath, Properties properties)
+            throws IOException {
         // TODO
 //        new InputField("Logglevel flink: ", "analytics.logging.flink"),
 //        new InputField("Logging flink target: ", "analytics.logging.flink.target"),
@@ -237,32 +239,35 @@ public class Services {
         propertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
         propertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
         propertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
-        propertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger.target");
         propertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
         propertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
         propertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
         propertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
         propertyMap.put("log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
                 "analytics.logging.flink");
-        propertyMap.put("log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
-                "analytics.logging.flink.target");
 
         List<String> flinkConfigmap = Files.readAllLines(configMapPath);
         for (int i = 0; i < flinkConfigmap.size(); i++) {
-            for (String property : propertyMap.keySet()) {
+            for (String propertyNameInFile : propertyMap.keySet()) {
                 String string = flinkConfigmap.get(i);
-                if (string.contains(property)) {
-                    flinkConfigmap.set(i, replaceOldValueWithNewValue(string, property));
+                if (string.contains(propertyNameInFile)) {
+                    flinkConfigmap.set(i, replaceOldValueWithNewValue(string, propertyNameInFile,
+                            properties.getProperty(propertyMap.get(propertyNameInFile))));
                 }
             }
         }
-        flinkConfigmap.stream().forEach(System.out::println);
-
-//        Files.write(configMapPath, collect, StandardOpenOption.CREATE);
+        Files.write(configMapPath, flinkConfigmap, StandardOpenOption.CREATE);
     }
 
-    private static String replaceOldValueWithNewValue(String string, String property) {
-        return "test";
+    private static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
+        String separator = propertyNameInFile.substring(propertyNameInFile.length() - 1, propertyNameInFile.length());
+        String target = string.substring(string.indexOf(separator) + 1);
+        if (separator.equals(":")) {
+            return string.replace(target, " " + property);
+        } else if (separator.equals("=")) {
+            return string.replace(target, property);
+        }
+        return "ERROR";
     }
 
     private static InputStream downloadKafkaFiles(String analyticsZipPath) throws IOException {
