@@ -276,11 +276,11 @@ public class Services {
         }
 
         HashMap<String, String> kafkaClusterPropertyMap = new HashMap<>();
-        kafkaClusterPropertyMap.put("replicas", "analytics.kafka.cluster.replicas");
+        kafkaClusterPropertyMap.put("replicas:", "analytics.kafka.cluster.replicas");
         kafkaClusterPropertyMap.put("version:", "analytics.kafka.version");
         kafkaClusterPropertyMap.put("size:", "analytics.kafka.storageclaim");
         Path kafkaClusterPath = Paths
-                .get(analyticsZipPath + File.separator + "flink" + File.separator + "typhon-cluster.yaml");
+                .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
         List<String> kafkaCluster = Files.readAllLines(kafkaClusterPath);
         int zookeeperIndex = getZookeeperIndex(kafkaCluster);
         for (int i = 0; i < zookeeperIndex; i++) {
@@ -327,6 +327,7 @@ public class Services {
         HttpURLConnection connection = null;
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+        MessageDialog.openInformation(win.getShell(), "Scripts", "Analytics files are now getting downloaded");
         try {
             URL url = new URL(ANALYTICS_ZIP_ADDRESS);
             connection = (HttpURLConnection) url.openConnection();
