@@ -104,5 +104,25 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  jobmanager:
+    image: flink:latest
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    ports:
+      - target: 8081
+        published: 8081
+    command: jobmanager
+    expose:
+      - 6123
+  taskmanager:
+    image: flink:latest
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    depends_on: 
+      - jobmanager
+    command: taskmanager
+    expose:
+      - 6121
+      - 6122
   authAll:
     image: zolotas4/typhon-analytics-auth-all

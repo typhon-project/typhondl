@@ -92,8 +92,28 @@
             <values>/var/run/docker.sock:/var/run/docker.sock</values>
           </properties>
         </containers>
-        <containers name="authAll" type="//@elements.0">
+        <containers name="jobmanager">
           <deploys reference="//@elements.16"/>
+          <ports>
+            <key_values name="published" value="8081"/>
+            <key_values name="target" value="8081"/>
+          </ports>
+          <properties xsi:type="typhonDL:Key_Values" name="command" value="jobmanager"/>
+          <properties xsi:type="typhonDL:Key_ValueArray" name="expose">
+            <values>6123</values>
+          </properties>
+        </containers>
+        <containers name="taskmanager">
+          <deploys reference="//@elements.17"/>
+          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.9"/>
+          <properties xsi:type="typhonDL:Key_Values" name="command" value="taskmanager"/>
+          <properties xsi:type="typhonDL:Key_ValueArray" name="expose">
+            <values>6121</values>
+            <values>6122</values>
+          </properties>
+        </containers>
+        <containers name="authAll" type="//@elements.0">
+          <deploys reference="//@elements.18"/>
         </containers>
       </applications>
     </clusters>
@@ -146,6 +166,18 @@
       <parameters name="KAFKA_INTER_BROKER_LISTENER_NAME" value="INSIDE"/>
       <parameters name="KAFKA_ADVERTISED_LISTENERS" value="OUTSIDE://kafka:29092, INSIDE://:9092"/>
       <parameters name="KAFKA_AUTO_CREATE_TOPICS_ENABLE" value="&quot;true&quot;"/>
+    </environment>
+  </elements>
+  <elements xsi:type="typhonDL:Software" name="FlinkTJobmanager">
+    <image value="flink:latest"/>
+    <environment>
+      <parameters name="JOB_MANAGER_RPC_ADDRESS" value="jobmanager"/>
+    </environment>
+  </elements>
+  <elements xsi:type="typhonDL:Software" name="FlinkTaskmanager">
+    <image value="flink:latest"/>
+    <environment>
+      <parameters name="JOB_MANAGER_RPC_ADDRESS" value="jobmanager"/>
     </environment>
   </elements>
   <elements xsi:type="typhonDL:Software" name="authAll">

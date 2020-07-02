@@ -336,7 +336,7 @@ public class CreationMainPage extends MyWizardPage {
     private String getKafkaURI() {
         switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
         case "DockerCompose":
-            return "kafka:29092";
+            return "localhost:29092";
         case "Kubernetes":
             return "typhon-cluster-kafka-bootstrap:9092";
         default:
