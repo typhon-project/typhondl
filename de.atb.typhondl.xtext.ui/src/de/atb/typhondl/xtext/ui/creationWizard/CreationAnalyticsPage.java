@@ -103,19 +103,17 @@ public class CreationAnalyticsPage extends MyWizardPage {
                 new InputField("Flink taskmanager memory process size: ",
                         "analytics.flink.taskmanager.memory.process.size"),
                 new InputField("Logglevel rootlogger: ", "analytics.logging.rootlogger"),
-                new InputField("Logging root target: ", "analytics.logging.rootlogger.target"),
                 new InputField("Logglevel akka: ", "analytics.logging.akka"),
                 new InputField("Logglevel kafka: ", "analytics.logging.kafka"),
                 new InputField("Logglevel hadoop: ", "analytics.logging.hadoop"),
                 new InputField("Logglevel zookeeper: ", "analytics.logging.zookeeper"),
                 new InputField("Logglevel flink: ", "analytics.logging.flink"),
-                new InputField("Logging flink target: ", "analytics.logging.flink.target"),
                 new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
                 new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
                 new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
                 new InputField("Kafka version: ", "analytics.kafka.version"),
                 new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
-                new InputField("zookeeper storage claim: ", "analytics.kafka.storageclaim"));
+                new InputField("zookeeper storage claim: ", "analytics.zookeeper.storageclaim"));
     }
 
     @Override

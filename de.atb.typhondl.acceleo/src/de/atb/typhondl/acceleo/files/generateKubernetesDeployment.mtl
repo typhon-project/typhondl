@@ -343,7 +343,7 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_Values) post (trim())]
-[if (not (arg.name = 'print'))][arg.name/]: [arg.value/][/if]
+[if (not ((arg.name = 'print') or (arg.name = 'version')))][arg.name/]: [arg.value/][/if]
 [/template]
 
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
