@@ -246,7 +246,7 @@ public class Services {
                 }
             }
         }
-        Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.CREATE);
+        Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.TRUNCATE_EXISTING);
 
         if (!properties.get("analytics.flink.rest.port").equals("automatic")) {
             Path flinkRestServicePath = Paths
@@ -259,7 +259,7 @@ public class Services {
                     newListWithAddedNodePort.add("    nodePort: " + properties.get("analytics.flink.rest.port"));
                 }
             }
-            Files.write(flinkRestServicePath, newListWithAddedNodePort, StandardOpenOption.CREATE);
+            Files.write(flinkRestServicePath, newListWithAddedNodePort, StandardOpenOption.TRUNCATE_EXISTING);
         }
 
         if (!properties.get("analytics.flink.taskmanager.replicas").equals("2")) {
@@ -272,7 +272,7 @@ public class Services {
                             properties.getProperty("analytics.flink.taskmanager.replicas")));
                 }
             }
-            Files.write(flinkTaskmanagerPath, flinkTaskmanager, StandardOpenOption.CREATE);
+            Files.write(flinkTaskmanagerPath, flinkTaskmanager, StandardOpenOption.TRUNCATE_EXISTING);
         }
 
         HashMap<String, String> kafkaClusterPropertyMap = new HashMap<>();
@@ -298,7 +298,7 @@ public class Services {
                         properties.getProperty("analytics.zookeeper.storageclaim")));
             }
         }
-        Files.write(kafkaClusterPath, kafkaCluster, StandardOpenOption.CREATE);
+        Files.write(kafkaClusterPath, kafkaCluster, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     private static int getZookeeperIndex(List<String> kafkaCluster) {
@@ -438,7 +438,7 @@ public class Services {
             }
         }
         try {
-            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
