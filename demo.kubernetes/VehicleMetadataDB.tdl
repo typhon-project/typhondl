@@ -1,7 +1,6 @@
-external database VehicleMetadataDB : MariaDB {
-	uri = https://example.com:35465 ;
+database VehicleMetadataDB : MariaDB {
 	credentials {
 		username = root ;
-		password = existingPasword ;
+		password = ptPOGobvFbcP0iWl ;
 	}
 }

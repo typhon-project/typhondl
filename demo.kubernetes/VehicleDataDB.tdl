@@ -1,6 +1,11 @@
-database VehicleDataDB : Mongo {
+database VehicleDataDB : mongosharded {
+	helm {
+		repoName = bitnami ;
+		repoAddress = https://charts.bitnami.com/bitnami ;
+		chartName = mongodb-sharded ;
+	}
 	credentials {
-		username = me ;
-		password = Byxl7AN2ue3Ixom5 ;
+		username = root ;
+		password = km2ZKCTDnFkegtkf ;
 	}
 }

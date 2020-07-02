@@ -23,18 +23,18 @@ services:
       'init_set.sh'
       ]
       
+  vehiclemetadatadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
+    ports:
+      - target: 3306
+        published: 3306
   textwarningdata:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: me
-      MONGO_INITDB_ROOT_PASSWORD: j3yl3oxObCiNa9N7
-    ports:
-      - target: 27017
-        published: 27017
-  appdata:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: nm6wJoldmGqLFrq4
+      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
     deploy:
       resources:
         limits:
@@ -43,7 +43,11 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
+  appdata:
+    image: mariadb:latest
     network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: crwxlFQZ6N0MXUzS
   polystore-mongo:
     image: mongo:latest
     environment:
@@ -89,16 +93,16 @@ services:
   kafka:
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://kafka:29092, INSIDE://:9092
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on: 
       - zookeeper
     ports:
-      - target: 32100
+      - target: 29092
         published: 29092
     build: .
     volumes:
