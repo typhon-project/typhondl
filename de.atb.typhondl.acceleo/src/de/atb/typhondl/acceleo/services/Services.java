@@ -1,5 +1,25 @@
 package de.atb.typhondl.acceleo.services;
 
+/*-
+ * #%L
+ * de.atb.typhondl.acceleo
+ * %%
+ * Copyright (C) 2018 - 2020 ATB
+ * %%
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is
+ * available at https://www.gnu.org/software/classpath/license.html.
+ * 
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ * #L%
+ */
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +36,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -190,7 +211,13 @@ public class Services {
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
         if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
             try {
-                downloadKafkaFiles(folder);
+                String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
+                InputStream input = downloadKafkaFiles(analyticsZipPath);
+                if (input != null) {
+                    unzip(analyticsZipPath, folder);
+                }
+                applyPropertiesToAnalyticsFiles(analyticsZipPath.substring(0, analyticsZipPath.lastIndexOf('.')),
+                        properties);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -214,13 +241,113 @@ public class Services {
         return model;
     }
 
-    private static void downloadKafkaFiles(String folder) throws IOException {
+    private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath, Properties properties)
+            throws IOException {
+        Path flinkConfigMapPath = Paths.get(
+                analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
+        HashMap<String, String> flinkPropertyMap = new HashMap<>();
+        flinkPropertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
+        flinkPropertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
+        flinkPropertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
+        flinkPropertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
+        flinkPropertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
+        flinkPropertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
+        flinkPropertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
+        flinkPropertyMap.put(
+                "log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
+                "analytics.logging.flink");
+        List<String> flinkConfigmap = Files.readAllLines(flinkConfigMapPath);
+        for (int i = 0; i < flinkConfigmap.size(); i++) {
+            for (String propertyNameInFile : flinkPropertyMap.keySet()) {
+                String string = flinkConfigmap.get(i);
+                if (string.contains(propertyNameInFile)) {
+                    flinkConfigmap.set(i, replaceOldValueWithNewValue(string, propertyNameInFile,
+                            properties.getProperty(flinkPropertyMap.get(propertyNameInFile))));
+                }
+            }
+        }
+        Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.TRUNCATE_EXISTING);
+
+        if (!properties.get("analytics.flink.rest.port").equals("automatic")) {
+            Path flinkRestServicePath = Paths
+                    .get(analyticsZipPath + File.separator + "flink" + File.separator + "jobmanager-rest-service.yaml");
+            List<String> flinkRestService = Files.readAllLines(flinkRestServicePath);
+            List<String> newListWithAddedNodePort = new ArrayList<>();
+            for (int i = 0; i < flinkRestService.size(); i++) {
+                newListWithAddedNodePort.add(flinkRestService.get(i));
+                if (flinkRestService.get(i).contains("targetPort")) {
+                    newListWithAddedNodePort.add("    nodePort: " + properties.get("analytics.flink.rest.port"));
+                }
+            }
+            Files.write(flinkRestServicePath, newListWithAddedNodePort, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+
+        if (!properties.get("analytics.flink.taskmanager.replicas").equals("2")) {
+            Path flinkTaskmanagerPath = Paths
+                    .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
+            List<String> flinkTaskmanager = Files.readAllLines(flinkTaskmanagerPath);
+            for (int i = 0; i < flinkTaskmanager.size(); i++) {
+                if (flinkTaskmanager.get(i).contains("replicas")) {
+                    flinkTaskmanager.set(i, replaceOldValueWithNewValue(flinkTaskmanager.get(i), "replicas:",
+                            properties.getProperty("analytics.flink.taskmanager.replicas")));
+                }
+            }
+            Files.write(flinkTaskmanagerPath, flinkTaskmanager, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+
+        HashMap<String, String> kafkaClusterPropertyMap = new HashMap<>();
+        kafkaClusterPropertyMap.put("replicas:", "analytics.kafka.cluster.replicas");
+        kafkaClusterPropertyMap.put("version:", "analytics.kafka.version");
+        kafkaClusterPropertyMap.put("size:", "analytics.kafka.storageclaim");
+        Path kafkaClusterPath = Paths
+                .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
+        List<String> kafkaCluster = Files.readAllLines(kafkaClusterPath);
+        int zookeeperIndex = getZookeeperIndex(kafkaCluster);
+        for (int i = 0; i < zookeeperIndex; i++) {
+            for (String propertyNameInFile : kafkaClusterPropertyMap.keySet()) {
+                String string = kafkaCluster.get(i);
+                if (string.contains(propertyNameInFile)) {
+                    kafkaCluster.set(i, replaceOldValueWithNewValue(string, propertyNameInFile,
+                            properties.getProperty(kafkaClusterPropertyMap.get(propertyNameInFile))));
+                }
+            }
+        }
+        for (int i = zookeeperIndex; i < kafkaCluster.size(); i++) {
+            if (kafkaCluster.get(i).contains("size")) {
+                kafkaCluster.set(i, replaceOldValueWithNewValue(kafkaCluster.get(i), "size:",
+                        properties.getProperty("analytics.zookeeper.storageclaim")));
+            }
+        }
+        Files.write(kafkaClusterPath, kafkaCluster, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    private static int getZookeeperIndex(List<String> kafkaCluster) {
+        for (int i = 0; i < kafkaCluster.size(); i++) {
+            if (kafkaCluster.get(i).contains("zookeeper")) {
+                return i;
+            }
+        }
+        return 1;
+    }
+
+    private static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
+        String separator = propertyNameInFile.substring(propertyNameInFile.length() - 1, propertyNameInFile.length());
+        String target = string.substring(string.indexOf(separator) + 1);
+        if (separator.equals(":")) {
+            return string.replace(target, " " + property);
+        } else if (separator.equals("=")) {
+            return string.replace(target, property);
+        }
+        return "ERROR";
+    }
+
+    private static InputStream downloadKafkaFiles(String analyticsZipPath) throws IOException {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
-        String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+        MessageDialog.openInformation(win.getShell(), "Scripts", "Analytics files are now getting downloaded");
         try {
             URL url = new URL(ANALYTICS_ZIP_ADDRESS);
             connection = (HttpURLConnection) url.openConnection();
@@ -264,10 +391,7 @@ public class Services {
             if (connection != null)
                 connection.disconnect();
         }
-
-        if (input != null) {
-            unzip(analyticsZipPath, folder);
-        }
+        return input;
     }
 
     private static void unzip(String zipFilePath, String destDirectory) throws IOException {
@@ -767,6 +891,10 @@ public class Services {
                 kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
                 Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
                 kafka.setEnvironment(kafka_environment);
+                Key_Values kafka_version = TyphonDLFactory.eINSTANCE.createKey_Values();
+                kafka_version.setName("version");
+                kafka_version.setValue(properties.getProperty("analytics.kafka.version"));
+                kafka.getParameters().add(kafka_version);
                 kafka_reference.setReference(kafka);
 
                 Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();

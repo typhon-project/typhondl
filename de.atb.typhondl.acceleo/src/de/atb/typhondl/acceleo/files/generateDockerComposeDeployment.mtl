@@ -45,7 +45,7 @@ services:
 [aContainer.printReplication()/]
 [/if]
 [if (aContainer.name.toLower() = 'kafka')]
-[aCluster.generateAnalyticsFiles()/]
+[aContainer.generateAnalyticsFiles()/]
 [/if]
 [/for]
 [/file]
@@ -155,7 +155,7 @@ deploy:
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
-[aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for][/if]
+[if (not aProperty.name.equalsIgnoreCase('version'))][aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for][/if][/if]
 [/template]
 
 [template public print(aProperty : Key_KeyValueList)  post (trim())]
@@ -232,11 +232,11 @@ environment:
 [/template]
 
 
-[template public generateAnalyticsFiles(aCluster : Cluster) post (trim())]
+[template public generateAnalyticsFiles(aContainer : Container) post (trim())]
 [file ('Dockerfile', false, 'UTF-8')]
 FROM openjdk:8u212-jre-alpine
 
-ARG kafka_version=2.3.0
+ARG kafka_version=[aContainer.getKafkaVersion()/]
 ARG scala_version=2.12
 ARG glibc_version=2.29-r0
 ARG vcs_ref=unspecified

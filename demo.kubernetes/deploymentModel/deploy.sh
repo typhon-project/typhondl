@@ -1,5 +1,5 @@
 #!/bin/bash
-kubeconfig="--kubeconfig=myKubeConfig.kubeconfig"
+kubeconfig=""
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 if [ -n "$kubeconfig" ]; then
@@ -10,9 +10,11 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install vehicledatadb --set fullnameOverride=vehicledatadb --set mongodbRootPassword=km2ZKCTDnFkegtkf bitnami/mongodb-sharded -n typhon
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install appdata -f appdata/values.yaml --set fullnameOverride=appdata --set rootUser.password=Rrcv0nPqmeYDM2mj bitnami/mariadb-galera -n typhon
+helm install appdata --set fullnameOverride=appdata --set rootUser.password=P0Sx5M1p0yMPzDWW bitnami/mariadb-galera -n typhon
 
 
 echo "----------------------------------------------------------------------------"

@@ -1,9 +1,12 @@
+dbtype mongosharded {
+	default image = bitnami/mongodb-sharded;
+}
 dbtype MariaDB {
 	default image = mariadb:latest;
 }
-dbtype Mongo {
-	default image = mongo:latest;
-}
 dbtype mariadbgalera {
 	default image = bitnami/mariadb-galera;
+}
+dbtype Mongo {
+	default image = mongo:latest;
 }
