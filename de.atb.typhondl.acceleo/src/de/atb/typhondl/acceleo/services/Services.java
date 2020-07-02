@@ -438,7 +438,7 @@ public class Services {
             }
         }
         try {
-            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
         }
