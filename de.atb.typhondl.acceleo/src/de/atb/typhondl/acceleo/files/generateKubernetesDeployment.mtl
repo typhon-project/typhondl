@@ -276,7 +276,7 @@ spec:
 [/template]
 
 [template public printCredentials(aDB : DB) post (trim())]
-environment:
+env:
 [if (aDB.type.name.toLower().allowsUsername())]
   - name: [aDB.type.name.toLower().getUsernameKey()/] 
     value: [aDB.credentials.username/]
@@ -294,7 +294,7 @@ environment:
 [/template]
 
 [template public print(aEnvironment : Environment) post (trim())]
-environment:
+env:
 [for (aProperty : Key_Values | aEnvironment.parameters)]
   - name: [aProperty.name/]
     value: [aProperty.value/]
