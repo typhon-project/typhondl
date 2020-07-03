@@ -369,6 +369,7 @@ image: [aSoftware.image.value/]
 [for (aProperty : Property | aSoftware.parameters)]
 [aProperty.printKubernetes()/]
 [/for]
+[if (aSoftware.environment<>null)][aSoftware.environment.print()/][/if]
 [/template]
 
 [template public printImage(aDB : DB)]
