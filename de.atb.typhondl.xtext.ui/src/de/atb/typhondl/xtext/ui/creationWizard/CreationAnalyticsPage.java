@@ -135,9 +135,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
         kafkaURIText = new Text(main, SWT.BORDER);
         kafkaURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
         kafkaURIText.setLayoutData(gridData);
-        kafkaURIText.addModifyListener(e -> {
-            properties.setProperty(ANALYTICS_KAFKA_URI, kafkaURIText.getText());
-        });
+        kafkaURIText.setEditable(false);
 
         for (InputField inputField : getInputFields()) {
             new Label(main, NONE).setText(inputField.label);
