@@ -190,7 +190,6 @@ public class CreationMainPage extends MyWizardPage {
                 chosenTemplate = templateCombo.getSelectionIndex();
                 String templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
                 if (templateName.equals("Kubernetes")) {
-                    properties.setProperty(POLYSTORE_USE_ANALYTICS, String.valueOf(useAnalytics));
                     properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
                     properties.setProperty("ui.environment.API_PORT", "\"30061\"");
                     properties.setProperty("api.publishedPort", "30061");
@@ -324,6 +323,7 @@ public class CreationMainPage extends MyWizardPage {
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
                     analyticsGroup.getParent().layout(true);
+                    setKafkaProperties();
                 } else {
                     hiddenData.exclude = true;
                     hidden.setVisible(false);

@@ -47,9 +47,11 @@ spec:
       containers:
         - name: polystore-ui-container
           image: clms/typhon-polystore-ui:latest
-          environment:
-            API_PORT: "30061"
-            API_HOST: "192.168.99.101"
+          env:
+            - name: API_PORT
+              value: "30061"
+            - name: API_HOST
+              value: "192.168.99.101"
           ports:
             - containerPort: 4200 
           
