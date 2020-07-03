@@ -10,11 +10,9 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install vehicledatadb --set fullnameOverride=vehicledatadb --set mongodbRootPassword=km2ZKCTDnFkegtkf bitnami/mongodb-sharded -n typhon
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install appdata --set fullnameOverride=appdata --set rootUser.password=P0Sx5M1p0yMPzDWW bitnami/mariadb-galera -n typhon
+
+
 
 
 echo "----------------------------------------------------------------------------"

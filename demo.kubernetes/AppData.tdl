@@ -1,11 +1,6 @@
-database AppData : mariadbgalera {
-	helm {
-		repoName = bitnami ;
-		repoAddress = https://charts.bitnami.com/bitnami ;
-		chartName = mariadb-galera ;
-	}
+database AppData : MariaDB {
 	credentials {
 		username = root ;
-		password = P0Sx5M1p0yMPzDWW ;
+		password = o7Hute5PTXBD8ohD ;
 	}
 }

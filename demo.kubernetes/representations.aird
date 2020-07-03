@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" uid="_alSWELC8Eeq0yP38W5fR2A" version="14.3.0.201909031200">
-  <semanticResources>dbTypes.tdl</semanticResources>
-  <semanticResources>VehicleDataDB.tdl</semanticResources>
-  <semanticResources>VehicleMetadataDB.tdl</semanticResources>
-  <semanticResources>AppData.tdl</semanticResources>
-  <semanticResources>TextWarningData.tdl</semanticResources>
   <semanticResources>deploymentModel.tdl</semanticResources>
   <semanticResources>deploymentModel/deploymentModel.xmi</semanticResources>
+  <semanticResources>dbTypes.tdl</semanticResources>
+  <semanticResources>AppData.tdl</semanticResources>
+  <semanticResources>VehicleDataDB.tdl</semanticResources>
+  <semanticResources>TextWarningData.tdl</semanticResources>
+  <semanticResources>VehicleMetadataDB.tdl</semanticResources>
+  <semanticResources>simpleExample.tdl</semanticResources>
+  <semanticResources>simpleExample/simpleExample.xmi</semanticResources>
 </viewpoint:DAnalysis>
