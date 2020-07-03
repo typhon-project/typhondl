@@ -347,6 +347,13 @@ something went wrong with a Property
 [/template]
 
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
+[if (arg.name = 'environment')]
+env:
+[for (aProp : Key_Values | arg.properties)]
+  - name: [aProp.name/]
+    value: [aProp.value/]
+[/for]
+[/if]
 [arg.name/]:
 [for (aProperty : Property | arg.properties)]
   [aProperty.printKubernetes()/]

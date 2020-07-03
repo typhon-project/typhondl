@@ -82,10 +82,10 @@
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_ui">
     <image value="clms/typhon-polystore-ui:latest"/>
-    <environment>
-      <parameters name="API_PORT" value="&quot;30061&quot;"/>
-      <parameters name="API_HOST" value="&quot;192.168.99.107&quot;"/>
-    </environment>
+    <parameters xsi:type="typhonDL:Key_KeyValueList" name="environment">
+      <properties xsi:type="typhonDL:Key_Values" name="API_PORT" value="&quot;30061&quot;"/>
+      <properties xsi:type="typhonDL:Key_Values" name="API_HOST" value="&quot;192.168.99.107&quot;"/>
+    </parameters>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_ql">
     <image value="swatengineering/typhonql-server"/>
