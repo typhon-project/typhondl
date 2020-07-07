@@ -30,6 +30,19 @@ services:
 [if (aContainer.networks <> null)]
     [aContainer.networks.print()/]
 [/if]
+[if (not aContainer.volumes -> isEmpty())]
+    volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
+    - type: [if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)][aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/][elseif (true)]volume[/if]
+      source: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+      target: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
+[if (aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties <> null)]
+[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties)]
+          [aProperty.print()/]
+[/for]
+[/if]
+[/for]
+[/if]
 [if (aContainer.ports <> null)]
     [aContainer.ports.print()/]
 [/if]
@@ -48,6 +61,13 @@ services:
 [aContainer.generateAnalyticsFiles()/]
 [/if]
 [/for]
+[if (aCluster.applications.volumes <> null)]
+
+volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aCluster.applications.volumes.decls.oclAsType(Volume_Name))]
+ [aVolumeDeclaration.oclAsType(Volume_Name).volumeName/]:
+[/for]
+[/if]
 [/file]
 [/for]
 [/template]

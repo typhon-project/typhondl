@@ -105,6 +105,7 @@ Application:
 	{Application}
 	'application' name=Name '{'
 	(containers+=Container)*
+	(volumes=Volumes)?
 	'}';
 
 Container:
@@ -117,6 +118,7 @@ Container:
 	(resources=Resources)?
 	(uri=URI)?
 	(replication=Replication)?
+    (volumes=Volumes)?
 	(properties+=Property)*
 	'}';
 
@@ -129,6 +131,30 @@ Replication:
 
 enum Modes:
     MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
+;
+
+Volumes:
+	{Volumes}
+	'volumes' 
+	(decls+=Volume_Declaration)+
+;
+
+Volume_Declaration:
+	Volume_Properties | Volume_Name
+;
+
+Volume_Properties:
+	('{'
+	('volumeName''=' volumeName= ID ';') 
+	'mountPath' '=' volumePath= Value';'
+	('volumeType' '=' volumeType= Value';')?
+	(specifics+=Property)?
+	'}'
+	)
+;
+
+Volume_Name:
+	( volumeName=ID )	
 ;
 
 Reference:
@@ -174,7 +200,7 @@ Key_ValueArray:
 	(']');
 		
 Value:
-	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
 
 Name:
 	(STRING | ID | INT | '-')+;

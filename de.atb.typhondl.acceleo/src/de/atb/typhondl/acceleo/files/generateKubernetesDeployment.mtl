@@ -225,12 +225,27 @@ spec:
       labels:
         app: [aContainer.name/]-pod
     spec:
+[if (aContainer.volumes <> null)]
+      volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
+      - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+[if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)]
+        [aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/]:
+[/if]
+[if (aVolumeDeclaration.oclAsType(Volume_Properties).specifics <> null)]
+[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+[/for]
+[/if]
       containers:
         - name: [aContainer.name/]-container
           [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
           [if (aContainer.deploys <> null)][aContainer.printDatabase()/][/if]
           [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
           [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+          [if (aContainer.volumes <> null)][aContainer.volumes.printVolumes()/][/if]
 [if (not aContainer.properties->isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
           [aProperty.printKubernetes()/]
@@ -336,6 +351,14 @@ published port
 [template public printPorts(aPorts : Ports)]
 ports:
   - containerPort: [aPorts.getTargetPort().value/] 
+[/template]
+
+[template public printVolumes(aVolumes : Volumes)]
+[for (aVolumeDeclaration : Volume_Declaration | aVolumes.decls.oclAsType(Volume_Properties))]
+volumeMounts:
+  - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+    mountPath: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
+[/for]
 [/template]
 
 [template public printKubernetes(arg : Property) post (trim())]
