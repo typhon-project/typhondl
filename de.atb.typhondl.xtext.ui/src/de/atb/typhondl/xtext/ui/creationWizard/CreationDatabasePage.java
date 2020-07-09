@@ -35,18 +35,18 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.AddressArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.Area;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.CredentialsArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.EnvironmentArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.HelmArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ImageArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PortArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PropertyArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ReplicaArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.CredentialsArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.EnvironmentArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ReplicaArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
 /**
  * Each Database has a page to define and/or change the image and other

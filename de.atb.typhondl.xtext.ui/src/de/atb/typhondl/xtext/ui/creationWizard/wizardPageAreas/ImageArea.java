@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.wizardPageAreas;
+package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 
 /*-
  * #%L

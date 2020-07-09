@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.wizardPageAreas;
+package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 
 /*-
  * #%L
@@ -27,19 +27,18 @@ import org.eclipse.swt.widgets.Composite;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
 
-public class EnvironmentArea extends Area {
+public class PropertyArea extends Area {
 
-    public EnvironmentArea(DB db, int chosenTechnology, Composite parent) {
-        super(db, null, chosenTechnology, parent, "Environment", null);
+    public PropertyArea(DB db, Composite parent) {
+        super(db, null, -1, parent, "Parameters", null);
     }
 
     @Override
     public void createArea() {
         HashMap<String, Property> properties = new HashMap<>();
-        for (Property property : db.getEnvironment().getParameters()) {
+        for (Property property : db.getParameters()) {
             addPropertyToList(property.getName(), property, properties);
         }
         addPropertyFieldsToGroup(group, properties);
     }
-
 }
