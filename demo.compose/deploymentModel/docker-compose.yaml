@@ -1,53 +1,25 @@
 version: '3.7'
 
 services:
-  vehicledatadb:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica1:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica2:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica3:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-rsinit:
-    build:
-      context: .
-      dockerfile: vehicledatadb/rsinit
-    entrypoint: [
-      'sh', 
-      '-c', 
-      'init_set.sh'
-      ]
-      
-  vehiclemetadatadb:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
-    ports:
-      - target: 3306
-        published: 3306
   textwarningdata:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: me
       MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+  vehicledatadb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
   appdata:
     image: mariadb:latest
     network_mode: bridge
     environment:
       MYSQL_ROOT_PASSWORD: crwxlFQZ6N0MXUzS
+  vehiclemetadatadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
   polystore-mongo:
     image: mongo:latest
     environment:
@@ -61,6 +33,8 @@ services:
     ports:
       - target: 8080
         published: 8080
+    deploy:
+      replicas: 2
     entrypoint:
       - wait-for-it
       - polystore-mongo:27017
@@ -84,6 +58,8 @@ services:
         published: 4200
   typhonql-server:
     image: swatengineering/typhonql-server
+    deploy:
+      replicas: 3
     restart: always
   zookeeper:
     image: wurstmeister/zookeeper
