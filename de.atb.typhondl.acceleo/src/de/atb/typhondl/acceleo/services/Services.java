@@ -103,7 +103,7 @@ public class Services {
      * @param provider The injected resourceSetProvider
      * @return A result String informing the user whether the generation succeeded
      */
-    public static String generateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
+    public static String oldGenerateDeployment(IFile file, XtextLiveScopeResourceSetProvider provider) {
         String result = "";
         try {
             String outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
@@ -119,6 +119,10 @@ public class Services {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static void generateDeployment(DeploymentModel model, File outputFolder) throws IOException {
+        new Generate(model, outputFolder, new ArrayList<String>()).doGenerate(new BasicMonitor());
     }
 
     /**

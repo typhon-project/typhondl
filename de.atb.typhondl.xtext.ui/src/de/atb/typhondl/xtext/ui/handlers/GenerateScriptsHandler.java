@@ -34,7 +34,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
@@ -42,6 +41,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import com.google.inject.Inject;
 
 import de.atb.typhondl.acceleo.services.Services;
+import de.atb.typhondl.xtext.ui.utilities.GenerationService;
 
 /**
  * This Handler is called when clicking "Generate Deployment Scripts" in the
@@ -89,7 +89,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 e.printStackTrace();
             }
 
-            result = Services.generateDeployment(file, provider);
+            GenerationService.generateDeployment(file, provider);
 
             for (IProject iproject : root.getProjects()) {
                 try {
@@ -100,8 +100,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
             }
         }
 
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        MessageDialog.openInformation(window.getShell(), "UI", result);
         return null;
     }
 
