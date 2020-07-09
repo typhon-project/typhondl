@@ -258,6 +258,11 @@ public class CreateModelWizard extends Wizard {
         }
         if (page instanceof CreationAnalyticsPage) {
             this.properties = ((CreationAnalyticsPage) page).getProperties();
+            if (SupportedTechnologies.values()[this.chosenTemplate].getClusterType().equalsIgnoreCase("DockerCompose")
+                    && Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
+                MessageDialog.openInformation(getShell(), "Wizard",
+                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
+            }
             return this.getPage(getDBMSPageName(this.chosenTemplate));
         }
         if (page instanceof CreationDBMSPage) {

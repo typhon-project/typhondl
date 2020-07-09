@@ -903,21 +903,16 @@ public class Services {
                 KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
                 kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
                 Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
-                kafka.setEnvironment(kafka_environment);
-                Key_Values kafka_version = TyphonDLFactory.eINSTANCE.createKey_Values();
-                kafka_version.setName("version");
-                kafka_version.setValue(properties.getProperty("analytics.kafka.version"));
-                kafka.getParameters().add(kafka_version);
+                IMAGE kafka_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                kafka_image.setValue("wurstmeister/kafka:" + properties.getProperty("analytics.kafka.scala.version")
+                        + "-" + properties.getProperty("analytics.kafka.version"));
+                kafka.setImage(kafka_image);
                 kafka_reference.setReference(kafka);
 
                 Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
                 kafka_container.setName(properties.getProperty("analytics.kafka.containername"));
                 kafka_container.setType(containerType);
                 kafka_container.setDeploys(kafka_reference);
-                Key_Values kafka_container_build = TyphonDLFactory.eINSTANCE.createKey_Values();
-                kafka_container_build.setName("build");
-                kafka_container_build.setValue(".");
-                kafka_container.getProperties().add(kafka_container_build);
                 kafka_container.getDepends_on().add(zookeeper_dependency);
                 Key_Values kafka_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
                 kafka_container_ports1.setName("published");
@@ -935,6 +930,20 @@ public class Services {
                 kafka_container.getProperties().add(kafka_container_volumes);
                 application.getContainers().add(kafka_container);
                 kafka_container.setUri(kafkaURIObject);
+                if (Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
+                    Replication kafka_replication = TyphonDLFactory.eINSTANCE.createReplication();
+                    kafka_replication.setMode(Modes.STATELESS);
+                    kafka_replication.setReplicas(Integer.parseInt(properties.getProperty("analytics.kafka.replicas")));
+                    kafka_container.setReplication(kafka_replication);
+                    Key_Values kafka_container_ports_protocol = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    kafka_container_ports_protocol.setName("protocol");
+                    kafka_container_ports_protocol.setValue("tcp");
+                    kafka_container_ports.getKey_values().add(kafka_container_ports_protocol);
+                    Key_Values kafka_container_ports_mode = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    kafka_container_ports_mode.setName("mode");
+                    kafka_container_ports_mode.setValue("host");
+                    kafka_container_ports.getKey_values().add(kafka_container_ports_mode);
+                }
 
                 Software flink_jobmanager = TyphonDLFactory.eINSTANCE.createSoftware();
                 flink_jobmanager.setName("FlinkJobmanager");

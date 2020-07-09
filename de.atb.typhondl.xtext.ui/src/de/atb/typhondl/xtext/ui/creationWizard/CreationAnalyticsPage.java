@@ -96,8 +96,9 @@ public class CreationAnalyticsPage extends MyWizardPage {
      *
      */
     public class KafkaConfigEditor {
-        public List<InputField> dockerComposeFields = Arrays
-                .asList(new InputField("Kafka version: ", "analytics.kafka.version"));
+        public List<InputField> dockerComposeFields = Arrays.asList(
+                new InputField("Kafka version: ", "analytics.kafka.version"),
+                new InputField("Replicas: ", "analytics.kafka.replicas"));
         public List<InputField> kubernetesFields = Arrays.asList(
                 new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
                 new InputField("Flink taskmanager memory process size: ",
