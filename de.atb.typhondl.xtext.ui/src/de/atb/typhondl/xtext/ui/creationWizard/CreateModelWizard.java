@@ -230,6 +230,12 @@ public class CreateModelWizard extends Wizard {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
+            if (SupportedTechnologies.values()[this.chosenTemplate].getClusterType().equalsIgnoreCase("DockerCompose")
+                    && (Integer.parseInt(properties.getProperty("api.replicas")) > 1
+                            || Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1)) {
+                MessageDialog.openInformation(getShell(), "Wizard",
+                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
+            }
             if (properties.get("polystore.useAnalytics").equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
