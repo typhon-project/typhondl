@@ -34,15 +34,19 @@ services:
     [aContainer.ports.print()/]
 [/if]
 [if (aContainer.resources <> null)]
-    [aContainer.resources.print()/]
+    [aContainer.printResourcesAndReplication()/]
+[elseif (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+    [aContainer.replication.printStateless()/]
+[/if]	
 [/if]    
 [if (not aContainer.properties -> isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.print()/]
 [/for]
 [/if]
-[if (aContainer.replication <> null)]
-[aContainer.printReplication()/]
+[if (aContainer.replication <> null and aContainer.containsDB())]
+[aContainer.printDBReplication()/]
 [/if]
 [if (aContainer.name.toLower() = 'kafka')]
 [aContainer.generateAnalyticsFiles()/]
@@ -52,7 +56,7 @@ services:
 [/for]
 [/template]
 
-[template public printReplication(aContainer : Container)]
+[template public printDBReplication(aContainer : Container)]
 [if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
     command: mongod --replSet [aContainer.name/]Replset
   [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
@@ -137,8 +141,16 @@ networks:
 [/for]
 [/template]
 
-[template public print(aResources : Resources) post (trim())]
+[template public printStateless(aReplication : Replication) post (trim())]
 deploy:
+  [aReplication.printStatelessInsideDeploy()/]
+[/template]
+
+[template public printStatelessInsideDeploy(aReplication : Replication)]
+replicas: [aReplication.replicas/]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
   resources:
     limits:
       cpus: '[aResources.limitCPU/]'
@@ -147,6 +159,14 @@ deploy:
     reservations:
       cpus: '[aResources.reservationCPU/]'
       memory: [aResources.reservationMemory/]
+[/if]
+[/template]
+
+[template public printResourcesAndReplication(aContainer : Container) post (trim())]
+deploy:
+[aContainer.resources.print()/]
+[if (aContainer.replication <> null)]
+[aContainer.replication.printStatelessInsideDeploy()/]
 [/if]
 [/template]
 
