@@ -1,21 +1,21 @@
 version: '3.7'
 
 services:
-  textwarningdata:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: me
-      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
-  vehicledatadb:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: chooseUsername
-      MONGO_INITDB_ROOT_PASSWORD: choosePassword
   appdata:
     image: mariadb:latest
     network_mode: bridge
     environment:
       MYSQL_ROOT_PASSWORD: crwxlFQZ6N0MXUzS
+  vehicledatadb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
   vehiclemetadatadb:
     image: mariadb:latest
     environment:
@@ -33,8 +33,6 @@ services:
     ports:
       - target: 8080
         published: 8080
-    deploy:
-      replicas: 2
     entrypoint:
       - wait-for-it
       - polystore-mongo:27017
@@ -58,8 +56,6 @@ services:
         published: 4200
   typhonql-server:
     image: swatengineering/typhonql-server
-    deploy:
-      replicas: 3
     restart: always
   zookeeper:
     image: wurstmeister/zookeeper
@@ -67,23 +63,19 @@ services:
       - target: 2181
         published: 2181
   kafka:
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    image: wurstmeister/kafka:2.12-2.4.0
     depends_on: 
       - zookeeper
     ports:
       - target: 29092
         published: 29092
+        protocol: tcp
+        mode: host
+    deploy:
+      replicas: 3
     build: .
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
   jobmanager:
     image: flink:latest
     environment:
