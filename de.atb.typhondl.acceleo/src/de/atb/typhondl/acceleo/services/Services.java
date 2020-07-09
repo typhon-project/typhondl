@@ -76,8 +76,10 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
+import de.atb.typhondl.xtext.typhonDL.Replication;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
@@ -704,6 +706,12 @@ public class Services {
         polystore_api_container_ports.getKey_values().add(polystore_api_container_port);
         polystore_api_container_ports.getKey_values().add(polystore_api_container_publishedPort);
         polystore_api_container.setPorts(polystore_api_container_ports);
+        if (Integer.parseInt(properties.getProperty("api.replicas")) > 1) {
+            Replication polystore_api_replicas = TyphonDLFactory.eINSTANCE.createReplication();
+            polystore_api_replicas.setMode(Modes.STATELESS);
+            polystore_api_replicas.setReplicas(Integer.parseInt(properties.getProperty("api.replicas")));
+            polystore_api_container.setReplication(polystore_api_replicas);
+        }
 
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             Key_ValueArray polystore_api_entrypoint = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
@@ -791,6 +799,12 @@ public class Services {
                 properties.getProperty("qlserver.containername") + ":" + properties.getProperty("qlserver.port"));
         qlserver_container.setUri(qlserver_container_uri);
         qlserver_container.setDeploys(qlserver_reference);
+        if (Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1) {
+            Replication qlserver_replicas = TyphonDLFactory.eINSTANCE.createReplication();
+            qlserver_replicas.setMode(Modes.STATELESS);
+            qlserver_replicas.setReplicas(Integer.parseInt(properties.getProperty("qlserver.replicas")));
+            qlserver_container.setReplication(qlserver_replicas);
+        }
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             Key_Values qlserver_container_restart = TyphonDLFactory.eINSTANCE.createKey_Values();
             qlserver_container_restart.setName("restart");
