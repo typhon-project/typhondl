@@ -1,53 +1,25 @@
 version: '3.7'
 
 services:
-  vehicledatadb:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica1:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica2:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-replica3:
-    image: mongo:latest
-    command: mongod --replSet vehicledatadbReplset
-  vehicledatadb-rsinit:
-    build:
-      context: .
-      dockerfile: vehicledatadb/rsinit
-    entrypoint: [
-      'sh', 
-      '-c', 
-      'init_set.sh'
-      ]
-      
-  vehiclemetadatadb:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
-    ports:
-      - target: 3306
-        published: 3306
-  textwarningdata:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: me
-      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
   appdata:
     image: mariadb:latest
     network_mode: bridge
     environment:
       MYSQL_ROOT_PASSWORD: crwxlFQZ6N0MXUzS
+  vehicledatadb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
+  vehiclemetadatadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
   polystore-mongo:
     image: mongo:latest
     environment:
@@ -91,23 +63,19 @@ services:
       - target: 2181
         published: 2181
   kafka:
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    image: wurstmeister/kafka:2.12-2.4.0
     depends_on: 
       - zookeeper
     ports:
       - target: 29092
         published: 29092
+        protocol: tcp
+        mode: host
+    deploy:
+      replicas: 3
     build: .
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
   jobmanager:
     image: flink:latest
     environment:

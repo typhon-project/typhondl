@@ -1,5 +1,0 @@
-FROM mongo
-
-ADD vehicledatadb/init_set.sh /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/init_set.sh

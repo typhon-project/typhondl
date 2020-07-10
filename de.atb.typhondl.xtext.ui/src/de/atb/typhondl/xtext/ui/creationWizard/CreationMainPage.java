@@ -146,7 +146,27 @@ public class CreationMainPage extends MyWizardPage {
         createMainGroup();
         createAnalyticsGroup();
         createConnectionGroup();
+        createScalingGroup();
+    }
 
+    private void createScalingGroup() {
+        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+
+        Group mainGroup = new Group(main, SWT.READ_ONLY);
+        mainGroup.setLayout(new GridLayout(2, false));
+        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        mainGroup.setText("Scaling");
+
+        new Label(mainGroup, SWT.NONE).setText("API replicas: ");
+        Text repAPI = new Text(mainGroup, SWT.BORDER);
+        repAPI.setText("1");
+        repAPI.setLayoutData(gridData);
+        repAPI.addModifyListener(e -> properties.setProperty("api.replicas", repAPI.getText()));
+        new Label(mainGroup, SWT.NONE).setText("QL server replicas: ");
+        Text repQL = new Text(mainGroup, SWT.BORDER);
+        repQL.setText("1");
+        repQL.setLayoutData(gridData);
+        repQL.addModifyListener(e -> properties.setProperty("qlserver.replicas", repQL.getText()));
     }
 
     private void createMainGroup() {
