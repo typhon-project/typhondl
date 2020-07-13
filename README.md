@@ -58,11 +58,23 @@ $ docker stack deploy --compose-file docker-compose.yaml typhon
 ```
 Show all running containers:
 ```bash
-docker stack services typhon
+$ docker stack services typhon
+```
+Stop and delete all Polystore containers:
+```bash
+$ docker stack rm typhon
 ```
 
 ### Kubernetes
 Start the polystore:
 ```bash
 $ sh deploy.sh
+```
+Stop and delete the Polystore deplyoment:
+```bash
+$ kubectl delete namespaces typhon
+```
+If the analytics component was started and also should be stopped and removed:
+```bash
+$ kubectl delete namespaces kafka
 ```
