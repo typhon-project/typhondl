@@ -10,11 +10,9 @@ echo "--------------------------------------------------------------------------
 echo "Create databases"
 kubectl apply -n typhon -f databases.yaml $kubeconfig
 sleep 1
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install vehicledatadb --set fullnameOverride=vehicledatadb --set mongodbRootPassword=km2ZKCTDnFkegtkf bitnami/mongodb-sharded -n typhon
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install appdata --set fullnameOverride=appdata --set rootUser.password=P0Sx5M1p0yMPzDWW bitnami/mariadb-galera -n typhon
+
+
 
 
 echo "----------------------------------------------------------------------------"
@@ -42,7 +40,7 @@ kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/clus
 sleep 1
 kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
 sleep 2
-kubectl create -n typhon -f analyticsKubernetes/kafka/typhon-cluster.yaml $kubeconfig
+kubectl create -n typhon -f analyticsKubernetes/kafka/typhon-cluster.yml $kubeconfig
 echo "Waiting for Typhon Kafka K8s deployment to complete ..."
 kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
 echo "Typhon Kafka K8s deployment completed."

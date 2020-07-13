@@ -52,9 +52,6 @@ spec:
               value: "30061"
             - name: API_HOST
               value: "192.168.99.107"
-          environment:
-            API_PORT: "30061"
-            API_HOST: "192.168.99.107"
           ports:
             - containerPort: 4200 
           
