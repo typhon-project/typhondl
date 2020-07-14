@@ -1,0 +1,8 @@
+[comment encoding = UTF-8 /]
+[module analyticsConfig('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
+[template public analyticsConfig(aCluster : Cluster) post (trim())]
+
+[/template]

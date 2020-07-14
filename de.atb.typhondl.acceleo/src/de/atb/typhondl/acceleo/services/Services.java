@@ -866,12 +866,12 @@ public class Services {
                 zookeeper_dependency.setReference(zookeeper_container);
 
                 application.getContainers().add(zookeeper_container);
-                de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
-                kafkaURIObject.setValue(kafkaURI);
-
                 Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
                 kafka.setName("Kafka");
                 model.getElements().add(kafka);
+                de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
+                kafkaURIObject.setValue(kafkaURI);
+                kafka.setUri(kafkaURIObject);
                 Environment kafka_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
                 Key_Values KAFKA_ZOOKEEPER_CONNECT = TyphonDLFactory.eINSTANCE.createKey_Values();
                 KAFKA_ZOOKEEPER_CONNECT.setName("KAFKA_ZOOKEEPER_CONNECT");
