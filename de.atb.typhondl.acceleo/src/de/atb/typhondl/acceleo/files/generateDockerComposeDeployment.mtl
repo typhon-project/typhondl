@@ -30,7 +30,7 @@ services:
 [if (aContainer.networks <> null)]
     [aContainer.networks.print()/]
 [/if]
-[if (not aContainer.volumes -> isEmpty())]
+[if (not aContainer.volumes <> null)]
     volumes:
 [for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
     - type: [if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)][aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/][elseif (true)]volume[/if]
