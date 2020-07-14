@@ -1,8 +1,8 @@
 import weatherModel.xmi
-import TextWarningData.tdl
-import VehicleDataDB.tdl
 import VehicleMetadataDB.tdl
+import VehicleDataDB.tdl
 import AppData.tdl
+import TextWarningData.tdl
 import dbTypes.tdl
 containertype Docker
 clustertype Kubernetes

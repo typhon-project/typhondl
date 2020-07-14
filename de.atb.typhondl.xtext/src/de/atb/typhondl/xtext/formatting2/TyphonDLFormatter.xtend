@@ -49,6 +49,7 @@ import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.Credentials
 import de.atb.typhondl.xtext.typhonDL.Environment
 import de.atb.typhondl.xtext.typhonDL.Replication
+import de.atb.typhondl.xtext.typhonDL.Volumes
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -260,7 +261,16 @@ class TyphonDLFormatter extends AbstractFormatter2 {
         resources.regionFor.keyword('reservationCPU').prepend[newLine]
         resources.regionFor.keyword('reservationMemory').prepend[newLine]
 	}
-
+	def dispatch void format(Volumes volumes, extension IFormattableDocument document) {
+	    interior(
+            volumes.regionFor.keyword('{').append[newLine],
+            volumes.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        volumes.regionFor.keyword('volumeName').prepend[newLine]
+        volumes.regionFor.keyword('mountPath').prepend[newLine]
+        volumes.regionFor.keyword('volumeType').prepend[newLine]
+	}
 	def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {
 		key_values.append[newLine]
 	}

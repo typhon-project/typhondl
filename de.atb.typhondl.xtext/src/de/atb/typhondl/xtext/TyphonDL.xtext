@@ -84,6 +84,7 @@ IMAGE:
 Platform:
 	{Platform}
 	'platform' name=Name ':' type=[PlatformType] '{'
+	(properties+=Property)*
 	(clusters+=Cluster)+
 	'}';
 
