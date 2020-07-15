@@ -11,4 +11,7 @@
   <semanticResources>VehicleMetadataDB.tdl</semanticResources>
   <semanticResources>analyticsNoDeployment.tdl</semanticResources>
   <semanticResources>analyticsNoDeployment/analyticsNoDeployment.xmi</semanticResources>
+  <semanticResources>analyticsOutside.xmi</semanticResources>
+  <semanticResources>analyticsInside.xmi</semanticResources>
+  <semanticResources>analyticsNoDeployment.xmi</semanticResources>
 </viewpoint:DAnalysis>

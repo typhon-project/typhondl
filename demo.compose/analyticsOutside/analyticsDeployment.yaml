@@ -3,6 +3,14 @@ version: '3.7'
 services:
   kafka:
     image: wurstmeister/kafka:2.12-2.4.0
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on: 
       - zookeeper
     ports:
@@ -10,7 +18,6 @@ services:
         published: 29092
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
   authAll:
     image: zolotas4/typhon-analytics-auth-all
   zookeeper:
