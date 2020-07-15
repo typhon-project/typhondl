@@ -28,6 +28,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
@@ -70,8 +71,12 @@ public class DeploymentModelService {
         URI modelURI = URI.createPlatformResourceURI(this.file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);
         this.model = (DeploymentModel) DLmodelResource.getContents().get(0);
-        this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
-        addDBsToModel();
+        if (!EcoreUtil2.getAllContentsOfType(model, Platform.class).isEmpty()) {
+            this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
+            addDBsToModel();
+        } else {
+            this.model = null;
+        }
     }
 
     /**

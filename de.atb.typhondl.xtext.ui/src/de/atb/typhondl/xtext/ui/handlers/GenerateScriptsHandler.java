@@ -92,17 +92,22 @@ public class GenerateScriptsHandler extends AbstractHandler {
             }
 
             GenerationService generationService = new GenerationService(file, provider);
-            generationService.deleteOldGeneratedFiles(
-                    new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
-            DeploymentModel model = generationService.buildModel();
-            generationService.saveModelAsXMI(model);
-            generationService.addToMetadata();
-            if (model == null) {
-//    TODO            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.";
+            if (generationService.getProperties() == null) {
+                MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                        "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
             } else {
-                generationService.generateDeployment(model);
+                generationService.deleteOldGeneratedFiles(
+                        new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
+                DeploymentModel model = generationService.buildModel();
+                if (model == null) {
+                    MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
+                } else {
+                    generationService.saveModelAsXMI(model);
+                    generationService.addToMetadata();
+                    generationService.generateDeployment(model);
+                }
             }
-
             // TODO check if generation worked
             /**
              * Checks if a yml file exists in projects subfolders TODO do better

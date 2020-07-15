@@ -52,6 +52,9 @@ public class GenerationService {
     public DeploymentModel buildModel() {
         this.deploymentModelService = new DeploymentModelService(file, provider, properties);
         deploymentModelService.readModel();
+        if (deploymentModelService.getModel() == null) {
+            return null;
+        }
         deploymentModelService.addPolystore();
         return deploymentModelService.getModel();
     }
@@ -128,6 +131,10 @@ public class GenerationService {
                 }
             }
         }
+    }
+
+    public Properties getProperties() {
+        return this.properties;
     }
 
 }
