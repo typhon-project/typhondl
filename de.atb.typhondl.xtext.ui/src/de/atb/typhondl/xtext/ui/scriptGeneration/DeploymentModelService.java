@@ -97,7 +97,6 @@ public class DeploymentModelService {
     }
 
     public void addPolystore() {
-
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);

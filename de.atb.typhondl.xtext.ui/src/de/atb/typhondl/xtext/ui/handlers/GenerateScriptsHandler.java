@@ -42,16 +42,13 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
-import de.atb.typhondl.acceleo.services.Services;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
  * This Handler is called when clicking "Generate Deployment Scripts" in the
- * TyphonDL context menu.
- * {@link Services#generateDeployment(IFile, XtextLiveScopeResourceSetProvider)}
- * is called. Adds Xtext nature if it's missing from the project in which the
- * selection (i.e. the Typhon DL model) is contained.
+ * TyphonDL context menu. Adds Xtext nature if it's missing from the project in
+ * which the selection (i.e. the Typhon DL model) is contained.
  * 
  * @author flug
  *
