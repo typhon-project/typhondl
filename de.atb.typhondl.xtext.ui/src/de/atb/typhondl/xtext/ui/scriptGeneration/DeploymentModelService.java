@@ -1,6 +1,14 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -19,6 +27,7 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
@@ -158,7 +167,112 @@ public class DeploymentModelService {
     }
 
     public void addToMetadata() {
-        // TODO Auto-generated method stub
+        Path DLPath = Paths.get(file.getLocation().toOSString());
+        Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
+        String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
+        switch (clusterTypeObject.getName()) {
+        case "Kubernetes":
+            // to be able to add the models to the kubernetes job, the
+            // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
+            // can access it. It's not nice, maybe we should think about a different plugin
+            // to generate our scripts
+            addInsertStatementToPolystoreMongoContainer(getPolystoreMongoContainer(model, properties),
+                    mongoInsertStatement, properties);
+            break;
+        case "DockerCompose":
+            writeInsertStatementToJavaScriptFile(DLPath, mongoInsertStatement, properties);
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
+     * Creates a "addModels.js" file inside the db.volume directory. This script is
+     * executed the first time the polystore-mongo container is started and adds
+     * both the ML and DL model to the database db.environment.MONGO_INITDB_DATABASE
+     * 
+     * @param DLPath
+     * @param mongoInsertStatement
+     * @param properties
+     */
+    private static void writeInsertStatementToJavaScriptFile(Path DLPath, String mongoInsertStatement,
+            Properties properties) {
+        String folder = DLPath.toString().replace(DLPath.getFileName().toString(), properties.getProperty("db.volume"));
+        String path = folder + File.separator + "addModels.js";
+        if (!Files.exists(Paths.get(folder))) {
+            try {
+                Files.createDirectory(Paths.get(folder));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Searches for the polystore-mongo container in the given model
+     * 
+     * @param model
+     * @param properties
+     * @return A container named "polystore-mongo"
+     */
+    private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
+        List<Container> mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
+                .filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
+                .collect(Collectors.toList());
+        return mongo.isEmpty() ? null : mongo.get(0);
+    }
+
+    /**
+     * Adds the mongo insert statement to the polystoreMongoContainer
+     * 
+     * @param polystoreMongoContainer The polystore-mongo container
+     * @param addToMongoContainer     The String containing the
+     *                                mongo.insert(DLmodel,MLmodel) statement
+     * @param properties              The polystore.properties saved in the project
+     *                                folder
+     */
+    private static void addInsertStatementToPolystoreMongoContainer(Container polystoreMongoContainer,
+            String addToMongoContainer, Properties properties) {
+        Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
+        print.setName("print");
+        print.setValue(addToMongoContainer);
+        polystoreMongoContainer.getProperties().add(print);
+    }
+
+    /**
+     * Creates a mongo insert statement containing the DL and ML model in a JSON
+     * field fitting the API
+     * 
+     * @param DLmodel The path to the newly created DLmodel.xmi
+     * @param MLmodel The path to the source MLmodel.xmi
+     * @return The mongo insert statement containing both models
+     */
+    private static String createMongoCommands(Path DLmodel, Path MLmodel) {
+        String DLmodelContent = "";
+        String MLmodelContent = "";
+        try {
+            DLmodelContent = String.join("", Files.readAllLines(DLmodel));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            MLmodelContent = String.join("", Files.readAllLines(MLmodel));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "db.models.insert([{\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+                + "false, \"initializedConnections\":true, \"contents\":\"" + DLmodelContent.replaceAll("\"", "\\\\\"")
+                + "\", \"type\":\"DL\", \"dateReceived\":ISODate(), "
+                + "\"_class\":\"com.clms.typhonapi.models.Model\" }, {\"_id\":UUID(), \"version\":1, \"initializedDatabases\":"
+                + "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
+                + "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
+                + "\"_class\":\"com.clms.typhonapi.models.Model\" }]);";
     }
 
     public DeploymentModel getModel() {
