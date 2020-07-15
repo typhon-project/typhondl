@@ -1,7 +1,6 @@
 database AppData : MariaDB {
 	credentials {
 		username = root ;
-		password = crwxlFQZ6N0MXUzS ;
+		password = choosePassword ;
 	}
-	network_mode = bridge ;
 }

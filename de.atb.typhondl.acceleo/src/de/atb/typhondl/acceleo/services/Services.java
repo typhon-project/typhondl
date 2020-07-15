@@ -33,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -77,6 +76,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Modes;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Replication;
@@ -209,13 +209,14 @@ public class Services {
         }
         model = addPolystoreToModel(path, model, properties);
         Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
-        String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer);
+        String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer).getName();
         URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
         String folder = file.getLocation().toOSString().replace(file.getName(),
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2));
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(),
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
-        if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
+        if (properties.get("analytics.deployment.create").equals("true")
+                && clusterType.equalsIgnoreCase("Kubernetes")) {
             try {
                 String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
                 InputStream input = downloadKafkaFiles(analyticsZipPath);
@@ -476,8 +477,8 @@ public class Services {
      * @param polystoreMongoContaier
      * @return The ClusterType of the containing Cluster
      */
-    private static String getClusterTypeOfPolystore(Container polystoreMongoContaier) {
-        return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType().getName();
+    private static ClusterType getClusterTypeOfPolystore(Container polystoreMongoContaier) {
+        return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType();
     }
 
     /**
@@ -640,7 +641,8 @@ public class Services {
         ContainerType containerType = application.getContainers().get(0).getType();
 
         // get clustertype
-        String clusterType = ((Cluster) application.eContainer()).getType().getName();
+        ClusterType clusterTypeObject = ((Cluster) application.eContainer()).getType();
+        String clusterType = clusterTypeObject.getName();
 
         // polystore_db
         DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
@@ -820,257 +822,290 @@ public class Services {
 
         // Analytics, see https://github.com/typhon-project/typhondl/issues/6
 
-        String kafkaURI = properties.getProperty("analytics.kafka.uri");
-        String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
-        String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
-        if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("DockerCompose")) {
-            String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
-            String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
-            String kafkaInsidePort = properties.getProperty("analytics.kafka.insidePort");
-            String kafkaAdvertisedHost = kafkaHost;
-            String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
-            String kafkaListenerNameIn = properties.getProperty("analytics.kafka.listenerName.in");
-            String kafkaListenerNameOut = properties.getProperty("analytics.kafka.listenerName.out");
-            String kafkaListenersString = "";
-            String kafkaAdvertisedListenerString = "";
-            for (int i = 0; i < kafkaListeners.length; i++) {
-                kafkaListenersString += kafkaListenerNameOut + "://:" + kafkaListeners[i] + ", ";
-                kafkaAdvertisedListenerString += kafkaListenerNameOut + "://" + kafkaAdvertisedHost + ":"
-                        + kafkaListeners[i] + ", ";
-            }
-            kafkaListenersString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
-            kafkaAdvertisedListenerString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
-
-            if (properties.get("analytics.deployment.create").equals("true")) {
-                Software zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
-                zookeeper.setName("zookeeper");
-                IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                zookeeper_image.setValue(properties.getProperty("analytics.zookeeper.image"));
-                zookeeper.setImage(zookeeper_image);
-                model.getElements().add(zookeeper);
-                Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
-                zookeeper_reference.setReference(zookeeper);
-
-                Container zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
-                zookeeper_container.setName(properties.getProperty("analytics.zookeeper.containername"));
-                zookeeper_container.setType(containerType);
-                zookeeper_container.setDeploys(zookeeper_reference);
-                Key_Values zookeeper_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-                zookeeper_container_ports1.setName("published");
-                zookeeper_container_ports1.setValue(zookeeperPort);
-                Key_Values zookeeper_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-                zookeeper_container_ports2.setName("target");
-                zookeeper_container_ports2.setValue(zookeeperTargetPort);
-                Ports zookeeper_container_port = TyphonDLFactory.eINSTANCE.createPorts();
-                zookeeper_container_port.getKey_values().add(zookeeper_container_ports1);
-                zookeeper_container_port.getKey_values().add(zookeeper_container_ports2);
-                zookeeper_container.setPorts(zookeeper_container_port);
-
-                Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
-                zookeeper_dependency.setReference(zookeeper_container);
-
-                application.getContainers().add(zookeeper_container);
-                de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
-                kafkaURIObject.setValue(kafkaURI);
-
-                Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
-                kafka.setName("Kafka");
-                model.getElements().add(kafka);
-                Environment kafka_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
-                Key_Values KAFKA_ZOOKEEPER_CONNECT = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_ZOOKEEPER_CONNECT.setName("KAFKA_ZOOKEEPER_CONNECT");
-                KAFKA_ZOOKEEPER_CONNECT.setValue("zookeeper:" + zookeeperTargetPort);
-                kafka_environment.getParameters().add(KAFKA_ZOOKEEPER_CONNECT);
-                Key_Values KAFKA_ADVERTISED_HOST_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_ADVERTISED_HOST_NAME.setName("KAFKA_ADVERTISED_HOST_NAME");
-                KAFKA_ADVERTISED_HOST_NAME.setValue(kafkaAdvertisedHost);
-                kafka_environment.getParameters().add(KAFKA_ADVERTISED_HOST_NAME);
-                Key_Values KAFKA_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_LISTENERS.setName("KAFKA_LISTENERS");
-                KAFKA_LISTENERS.setValue(kafkaListenersString);
-                kafka_environment.getParameters().add(KAFKA_LISTENERS);
-                Key_Values KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setName("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
-                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-                        .setValue(kafkaListenerNameIn + ":PLAINTEXT, " + kafkaListenerNameOut + ":PLAINTEXT");
-                kafka_environment.getParameters().add(KAFKA_LISTENER_SECURITY_PROTOCOL_MAP);
-                Key_Values KAFKA_INTER_BROKER_LISTENER_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_INTER_BROKER_LISTENER_NAME.setName("KAFKA_INTER_BROKER_LISTENER_NAME");
-                KAFKA_INTER_BROKER_LISTENER_NAME.setValue(kafkaListenerNameIn);
-                kafka_environment.getParameters().add(KAFKA_INTER_BROKER_LISTENER_NAME);
-                Key_Values KAFKA_ADVERTISED_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_ADVERTISED_LISTENERS.setName("KAFKA_ADVERTISED_LISTENERS");
-                KAFKA_ADVERTISED_LISTENERS.setValue(kafkaAdvertisedListenerString);
-                kafka_environment.getParameters().add(KAFKA_ADVERTISED_LISTENERS);
-                Key_Values KAFKA_AUTO_CREATE_TOPICS_ENABLE = TyphonDLFactory.eINSTANCE.createKey_Values();
-                KAFKA_AUTO_CREATE_TOPICS_ENABLE.setName("KAFKA_AUTO_CREATE_TOPICS_ENABLE");
-                KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
-                kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
-                Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
-                IMAGE kafka_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                kafka_image.setValue("wurstmeister/kafka:" + properties.getProperty("analytics.kafka.scala.version")
-                        + "-" + properties.getProperty("analytics.kafka.version"));
-                kafka.setImage(kafka_image);
-                kafka_reference.setReference(kafka);
-
-                Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
-                kafka_container.setName(properties.getProperty("analytics.kafka.containername"));
-                kafka_container.setType(containerType);
-                kafka_container.setDeploys(kafka_reference);
-                kafka_container.getDepends_on().add(zookeeper_dependency);
-                Key_Values kafka_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
-                kafka_container_ports1.setName("published");
-                kafka_container_ports1.setValue(kafkaPort);
-                Key_Values kafka_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
-                kafka_container_ports2.setName("target");
-                kafka_container_ports2.setValue(properties.getProperty("analytics.kafka.port"));
-                Ports kafka_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
-                kafka_container_ports.getKey_values().add(kafka_container_ports1);
-                kafka_container_ports.getKey_values().add(kafka_container_ports2);
-                kafka_container.setPorts(kafka_container_ports);
-                Key_ValueArray kafka_container_volumes = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-                kafka_container_volumes.setName("volumes");
-                kafka_container_volumes.getValues().add("/var/run/docker.sock:/var/run/docker.sock");
-                kafka_container.getProperties().add(kafka_container_volumes);
-                application.getContainers().add(kafka_container);
-                kafka_container.setUri(kafkaURIObject);
-                if (Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
-                    Replication kafka_replication = TyphonDLFactory.eINSTANCE.createReplication();
-                    kafka_replication.setMode(Modes.STATELESS);
-                    kafka_replication.setReplicas(Integer.parseInt(properties.getProperty("analytics.kafka.replicas")));
-                    kafka_container.setReplication(kafka_replication);
-                    Key_Values kafka_container_ports_protocol = TyphonDLFactory.eINSTANCE.createKey_Values();
-                    kafka_container_ports_protocol.setName("protocol");
-                    kafka_container_ports_protocol.setValue("tcp");
-                    kafka_container_ports.getKey_values().add(kafka_container_ports_protocol);
-                    Key_Values kafka_container_ports_mode = TyphonDLFactory.eINSTANCE.createKey_Values();
-                    kafka_container_ports_mode.setName("mode");
-                    kafka_container_ports_mode.setValue("host");
-                    kafka_container_ports.getKey_values().add(kafka_container_ports_mode);
-                }
-
-                Software flink_jobmanager = TyphonDLFactory.eINSTANCE.createSoftware();
-                flink_jobmanager.setName("FlinkJobmanager");
-                IMAGE flink_image = TyphonDLFactory.eINSTANCE.createIMAGE();
-                flink_image.setValue("flink:latest");
-                flink_jobmanager.setImage(flink_image);
-                Environment flink_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
-                Key_Values flink_rcp_address = TyphonDLFactory.eINSTANCE.createKey_Values();
-                flink_rcp_address.setName("JOB_MANAGER_RPC_ADDRESS");
-                flink_rcp_address.setValue("jobmanager");
-                flink_environment.getParameters().add(flink_rcp_address);
-                flink_jobmanager.setEnvironment(flink_environment);
-                model.getElements().add(flink_jobmanager);
-                Software flink_taskmanager = TyphonDLFactory.eINSTANCE.createSoftware();
-                flink_taskmanager.setName("FlinkTaskmanager");
-                flink_taskmanager.setImage(EcoreUtil.copy(flink_image));
-                flink_taskmanager.setEnvironment(EcoreUtil.copy(flink_environment));
-                model.getElements().add(flink_taskmanager);
-                Container flink_jobmanager_container = TyphonDLFactory.eINSTANCE.createContainer();
-                flink_jobmanager_container.setName("jobmanager");
-                Reference flink_jobmanger_reference = TyphonDLFactory.eINSTANCE.createReference();
-                flink_jobmanger_reference.setReference(flink_jobmanager);
-                flink_jobmanager_container.setDeploys(flink_jobmanger_reference);
-                Ports flink_jobmanager_ports = TyphonDLFactory.eINSTANCE.createPorts();
-                Key_Values flink_jobmanager_published = TyphonDLFactory.eINSTANCE.createKey_Values();
-                flink_jobmanager_published.setName("published");
-                flink_jobmanager_published.setValue("8081");
-                flink_jobmanager_ports.getKey_values().add(flink_jobmanager_published);
-                Key_Values flink_jobmanager_target = TyphonDLFactory.eINSTANCE.createKey_Values();
-                flink_jobmanager_target.setName("target");
-                flink_jobmanager_target.setValue("8081");
-                flink_jobmanager_ports.getKey_values().add(flink_jobmanager_target);
-                flink_jobmanager_container.setPorts(flink_jobmanager_ports);
-                Key_Values flink_jobmanager_command = TyphonDLFactory.eINSTANCE.createKey_Values();
-                flink_jobmanager_command.setName("command");
-                flink_jobmanager_command.setValue("jobmanager");
-                flink_jobmanager_container.getProperties().add(flink_jobmanager_command);
-                Key_ValueArray flink_jobmanager_expose = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-                flink_jobmanager_expose.setName("expose");
-                flink_jobmanager_expose.getValues().add("6123");
-                flink_jobmanager_container.getProperties().add(flink_jobmanager_expose);
-                Container flink_taskmanager_container = TyphonDLFactory.eINSTANCE.createContainer();
-                flink_taskmanager_container.setName("taskmanager");
-                Reference flink_taskmanger_reference = TyphonDLFactory.eINSTANCE.createReference();
-                flink_taskmanger_reference.setReference(flink_taskmanager);
-                flink_taskmanager_container.setDeploys(flink_taskmanger_reference);
-                Key_Values flink_taskmanager_command = TyphonDLFactory.eINSTANCE.createKey_Values();
-                flink_taskmanager_command.setName("command");
-                flink_taskmanager_command.setValue("taskmanager");
-                flink_taskmanager_container.getProperties().add(flink_taskmanager_command);
-                Key_ValueArray flink_taskmanager_expose = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-                flink_taskmanager_expose.setName("expose");
-                flink_taskmanager_expose.getValues().addAll(Arrays.asList("6121", "6122"));
-                flink_taskmanager_container.getProperties().add(flink_taskmanager_expose);
-                Dependency flink_jobmanager_dependency = TyphonDLFactory.eINSTANCE.createDependency();
-                flink_jobmanager_dependency.setReference(flink_jobmanager_container);
-                flink_taskmanager_container.getDepends_on().add(flink_jobmanager_dependency);
-                application.getContainers().add(flink_jobmanager_container);
-                application.getContainers().add(flink_taskmanager_container);
-
-                Container authAllContainer = TyphonDLFactory.eINSTANCE.createContainer();
-                authAllContainer.setName("authAll");
-                authAllContainer.setType(containerType);
-                Software authAll = TyphonDLFactory.eINSTANCE.createSoftware();
-                authAll.setName("authAll");
-                IMAGE authAllImage = TyphonDLFactory.eINSTANCE.createIMAGE();
-                authAllImage.setValue(properties.getProperty("analytics.authAll.image"));
-                authAll.setImage(authAllImage);
-                model.getElements().add(authAll);
-                Reference authAllRef = TyphonDLFactory.eINSTANCE.createReference();
-                authAllRef.setReference(authAll);
-                authAllContainer.setDeploys(authAllRef);
-
-                application.getContainers().add(authAllContainer);
-
-                if (properties.get("analytics.deployment.contained").equals("false")) {
-                    kafka.setExternal(true);
-                }
-            } else {
-                Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
-                kafka.setName("Kafka");
-                kafka.setExternal(true);
-                de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
-                kafkaURIObject.setValue(kafkaURI);
-                kafka.setUri(kafkaURIObject);
-                model.getElements().add(kafka);
-            }
-
-        } else if (properties.get("polystore.useAnalytics").equals("true")
-                && clusterType.equalsIgnoreCase("Kubernetes")) {
-            Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
-            kafka.setName("Kafka");
+        if (properties.get("polystore.useAnalytics").equals("true")) {
+            String kafkaURI = properties.getProperty("analytics.kafka.uri");
+            String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
+            String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
             de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
             kafkaURIObject.setValue(kafkaURI);
-            model.getElements().add(kafka);
-            if (properties.get("analytics.deployment.create").equals("true")) {
-                Container kafkaContainer = TyphonDLFactory.eINSTANCE.createContainer();
-                kafkaContainer.setName("kafka");
-                Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
-                kafka_reference.setReference(kafka);
-                kafkaContainer.setDeploys(kafka_reference);
-                kafkaContainer.setUri(kafkaURIObject);
-                if (properties.get("analytics.deployment.contained").equals("false")) {
+
+            if (clusterType.equalsIgnoreCase("DockerCompose")) {
+                String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
+                String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
+                String kafkaInsidePort = properties.getProperty("analytics.kafka.insidePort");
+                String kafkaAdvertisedHost = kafkaHost;
+                String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
+                String kafkaListenerNameIn = properties.getProperty("analytics.kafka.listenerName.in");
+                String kafkaListenerNameOut = properties.getProperty("analytics.kafka.listenerName.out");
+                String kafkaListenersString = "";
+                String kafkaAdvertisedListenerString = "";
+                for (int i = 0; i < kafkaListeners.length; i++) {
+                    kafkaListenersString += kafkaListenerNameOut + "://:" + kafkaListeners[i] + ", ";
+                    kafkaAdvertisedListenerString += kafkaListenerNameOut + "://" + kafkaAdvertisedHost + ":"
+                            + kafkaListeners[i] + ", ";
+                }
+                kafkaListenersString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
+                kafkaAdvertisedListenerString += kafkaListenerNameIn + "://:" + kafkaInsidePort;
+
+                de.atb.typhondl.xtext.typhonDL.URI zookeeper_uri = TyphonDLFactory.eINSTANCE.createURI();
+                zookeeper_uri.setValue(kafkaHost + ":" + zookeeperPort);
+
+                if (properties.get("analytics.deployment.create").equals("true")) {
+                    Software zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
+                    zookeeper.setName("zookeeper");
+                    IMAGE zookeeper_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    zookeeper_image.setValue(properties.getProperty("analytics.zookeeper.image"));
+                    zookeeper.setImage(zookeeper_image);
+                    model.getElements().add(zookeeper);
+                    Reference zookeeper_reference = TyphonDLFactory.eINSTANCE.createReference();
+                    zookeeper_reference.setReference(zookeeper);
+
+                    Container zookeeper_container = TyphonDLFactory.eINSTANCE.createContainer();
+                    zookeeper_container.setName(properties.getProperty("analytics.zookeeper.containername"));
+                    zookeeper_container.setType(containerType);
+                    zookeeper_container.setDeploys(zookeeper_reference);
+                    Key_Values zookeeper_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    zookeeper_container_ports1.setName("published");
+                    zookeeper_container_ports1.setValue(zookeeperPort);
+                    Key_Values zookeeper_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    zookeeper_container_ports2.setName("target");
+                    zookeeper_container_ports2.setValue(zookeeperTargetPort);
+                    Ports zookeeper_container_port = TyphonDLFactory.eINSTANCE.createPorts();
+                    zookeeper_container_port.getKey_values().add(zookeeper_container_ports1);
+                    zookeeper_container_port.getKey_values().add(zookeeper_container_ports2);
+                    zookeeper_container.setPorts(zookeeper_container_port);
+
+                    Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
+                    zookeeper_dependency.setReference(zookeeper_container);
+
+                    Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
+                    kafka.setName("Kafka");
+                    model.getElements().add(kafka);
+                    Environment kafka_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
+                    Key_Values KAFKA_ZOOKEEPER_CONNECT = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_ZOOKEEPER_CONNECT.setName("KAFKA_ZOOKEEPER_CONNECT");
+                    KAFKA_ZOOKEEPER_CONNECT.setValue("zookeeper:" + zookeeperTargetPort);
+                    kafka_environment.getParameters().add(KAFKA_ZOOKEEPER_CONNECT);
+                    Key_Values KAFKA_ADVERTISED_HOST_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_ADVERTISED_HOST_NAME.setName("KAFKA_ADVERTISED_HOST_NAME");
+                    KAFKA_ADVERTISED_HOST_NAME.setValue(kafkaAdvertisedHost);
+                    kafka_environment.getParameters().add(KAFKA_ADVERTISED_HOST_NAME);
+                    Key_Values KAFKA_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_LISTENERS.setName("KAFKA_LISTENERS");
+                    KAFKA_LISTENERS.setValue(kafkaListenersString);
+                    kafka_environment.getParameters().add(KAFKA_LISTENERS);
+                    Key_Values KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP.setName("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
+                    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+                            .setValue(kafkaListenerNameIn + ":PLAINTEXT, " + kafkaListenerNameOut + ":PLAINTEXT");
+                    kafka_environment.getParameters().add(KAFKA_LISTENER_SECURITY_PROTOCOL_MAP);
+                    Key_Values KAFKA_INTER_BROKER_LISTENER_NAME = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_INTER_BROKER_LISTENER_NAME.setName("KAFKA_INTER_BROKER_LISTENER_NAME");
+                    KAFKA_INTER_BROKER_LISTENER_NAME.setValue(kafkaListenerNameIn);
+                    kafka_environment.getParameters().add(KAFKA_INTER_BROKER_LISTENER_NAME);
+                    Key_Values KAFKA_ADVERTISED_LISTENERS = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_ADVERTISED_LISTENERS.setName("KAFKA_ADVERTISED_LISTENERS");
+                    KAFKA_ADVERTISED_LISTENERS.setValue(kafkaAdvertisedListenerString);
+                    kafka_environment.getParameters().add(KAFKA_ADVERTISED_LISTENERS);
+                    Key_Values KAFKA_AUTO_CREATE_TOPICS_ENABLE = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    KAFKA_AUTO_CREATE_TOPICS_ENABLE.setName("KAFKA_AUTO_CREATE_TOPICS_ENABLE");
+                    KAFKA_AUTO_CREATE_TOPICS_ENABLE.setValue("\"true\"");
+                    kafka_environment.getParameters().add(KAFKA_AUTO_CREATE_TOPICS_ENABLE);
+                    Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
+                    IMAGE kafka_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    kafka_image.setValue("wurstmeister/kafka:" + properties.getProperty("analytics.kafka.scala.version")
+                            + "-" + properties.getProperty("analytics.kafka.version"));
+                    kafka.setImage(kafka_image);
+                    kafka_reference.setReference(kafka);
+
+                    Container kafka_container = TyphonDLFactory.eINSTANCE.createContainer();
+                    kafka_container.setName(properties.getProperty("analytics.kafka.containername"));
+                    kafka_container.setType(containerType);
+                    kafka_container.setDeploys(kafka_reference);
+                    kafka_container.getDepends_on().add(zookeeper_dependency);
+                    Key_Values kafka_container_ports1 = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    kafka_container_ports1.setName("published");
+                    kafka_container_ports1.setValue(kafkaPort);
+                    Key_Values kafka_container_ports2 = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    kafka_container_ports2.setName("target");
+                    kafka_container_ports2.setValue(properties.getProperty("analytics.kafka.port"));
+                    Ports kafka_container_ports = TyphonDLFactory.eINSTANCE.createPorts();
+                    kafka_container_ports.getKey_values().add(kafka_container_ports1);
+                    kafka_container_ports.getKey_values().add(kafka_container_ports2);
+                    kafka_container.setPorts(kafka_container_ports);
+                    Key_ValueArray kafka_container_volumes = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+                    kafka_container_volumes.setName("volumes");
+                    kafka_container_volumes.getValues().add("/var/run/docker.sock:/var/run/docker.sock");
+                    kafka_container.getProperties().add(kafka_container_volumes);
+
+                    if (Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
+                        Replication kafka_replication = TyphonDLFactory.eINSTANCE.createReplication();
+                        kafka_replication.setMode(Modes.STATELESS);
+                        kafka_replication
+                                .setReplicas(Integer.parseInt(properties.getProperty("analytics.kafka.replicas")));
+                        kafka_container.setReplication(kafka_replication);
+                        Key_Values kafka_container_ports_protocol = TyphonDLFactory.eINSTANCE.createKey_Values();
+                        kafka_container_ports_protocol.setName("protocol");
+                        kafka_container_ports_protocol.setValue("tcp");
+                        kafka_container_ports.getKey_values().add(kafka_container_ports_protocol);
+                        Key_Values kafka_container_ports_mode = TyphonDLFactory.eINSTANCE.createKey_Values();
+                        kafka_container_ports_mode.setName("mode");
+                        kafka_container_ports_mode.setValue("host");
+                        kafka_container_ports.getKey_values().add(kafka_container_ports_mode);
+                    }
+
+                    Software flink_jobmanager = TyphonDLFactory.eINSTANCE.createSoftware();
+                    flink_jobmanager.setName("FlinkJobmanager");
+                    IMAGE flink_image = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    flink_image.setValue("flink:latest");
+                    flink_jobmanager.setImage(flink_image);
+                    Environment flink_environment = TyphonDLFactory.eINSTANCE.createEnvironment();
+                    Key_Values flink_rcp_address = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    flink_rcp_address.setName("JOB_MANAGER_RPC_ADDRESS");
+                    flink_rcp_address.setValue("jobmanager");
+                    flink_environment.getParameters().add(flink_rcp_address);
+                    flink_jobmanager.setEnvironment(flink_environment);
+                    model.getElements().add(flink_jobmanager);
+                    Software flink_taskmanager = TyphonDLFactory.eINSTANCE.createSoftware();
+                    flink_taskmanager.setName("FlinkTaskmanager");
+                    flink_taskmanager.setImage(EcoreUtil.copy(flink_image));
+                    flink_taskmanager.setEnvironment(EcoreUtil.copy(flink_environment));
+                    model.getElements().add(flink_taskmanager);
+                    Container flink_jobmanager_container = TyphonDLFactory.eINSTANCE.createContainer();
+                    flink_jobmanager_container.setName("jobmanager");
+                    Reference flink_jobmanger_reference = TyphonDLFactory.eINSTANCE.createReference();
+                    flink_jobmanger_reference.setReference(flink_jobmanager);
+                    flink_jobmanager_container.setDeploys(flink_jobmanger_reference);
+                    Ports flink_jobmanager_ports = TyphonDLFactory.eINSTANCE.createPorts();
+                    Key_Values flink_jobmanager_published = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    flink_jobmanager_published.setName("published");
+                    flink_jobmanager_published.setValue("8081");
+                    flink_jobmanager_ports.getKey_values().add(flink_jobmanager_published);
+                    Key_Values flink_jobmanager_target = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    flink_jobmanager_target.setName("target");
+                    flink_jobmanager_target.setValue("8081");
+                    flink_jobmanager_ports.getKey_values().add(flink_jobmanager_target);
+                    flink_jobmanager_container.setPorts(flink_jobmanager_ports);
+                    Key_Values flink_jobmanager_command = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    flink_jobmanager_command.setName("command");
+                    flink_jobmanager_command.setValue("jobmanager");
+                    flink_jobmanager_container.getProperties().add(flink_jobmanager_command);
+                    Key_ValueArray flink_jobmanager_expose = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+                    flink_jobmanager_expose.setName("expose");
+                    flink_jobmanager_expose.getValues().add("6123");
+                    flink_jobmanager_container.getProperties().add(flink_jobmanager_expose);
+                    Container flink_taskmanager_container = TyphonDLFactory.eINSTANCE.createContainer();
+                    flink_taskmanager_container.setName("taskmanager");
+                    Reference flink_taskmanger_reference = TyphonDLFactory.eINSTANCE.createReference();
+                    flink_taskmanger_reference.setReference(flink_taskmanager);
+                    flink_taskmanager_container.setDeploys(flink_taskmanger_reference);
+                    Key_Values flink_taskmanager_command = TyphonDLFactory.eINSTANCE.createKey_Values();
+                    flink_taskmanager_command.setName("command");
+                    flink_taskmanager_command.setValue("taskmanager");
+                    flink_taskmanager_container.getProperties().add(flink_taskmanager_command);
+                    Key_ValueArray flink_taskmanager_expose = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
+                    flink_taskmanager_expose.setName("expose");
+                    flink_taskmanager_expose.getValues().addAll(Arrays.asList("6121", "6122"));
+                    flink_taskmanager_container.getProperties().add(flink_taskmanager_expose);
+                    Dependency flink_jobmanager_dependency = TyphonDLFactory.eINSTANCE.createDependency();
+                    flink_jobmanager_dependency.setReference(flink_jobmanager_container);
+                    flink_taskmanager_container.getDepends_on().add(flink_jobmanager_dependency);
+
+                    Container authAllContainer = TyphonDLFactory.eINSTANCE.createContainer();
+                    authAllContainer.setName("authAll");
+                    authAllContainer.setType(containerType);
+                    Software authAll = TyphonDLFactory.eINSTANCE.createSoftware();
+                    authAll.setName("authAll");
+                    IMAGE authAllImage = TyphonDLFactory.eINSTANCE.createIMAGE();
+                    authAllImage.setValue(properties.getProperty("analytics.authAll.image"));
+                    authAll.setImage(authAllImage);
+                    model.getElements().add(authAll);
+                    Reference authAllRef = TyphonDLFactory.eINSTANCE.createReference();
+                    authAllRef.setReference(authAll);
+                    authAllContainer.setDeploys(authAllRef);
+
+                    kafka_container.setUri(kafkaURIObject);
+                    zookeeper_container.setUri(zookeeper_uri);
+
+                    if (properties.get("analytics.deployment.contained").equals("false")) {
+                        // separate deployment scripts for analytics get generated. the analytics
+                        // containers are in a different cluster
+                        kafka.setExternal(true);
+                        Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
+                        analyticsCluster.setType(clusterTypeObject);
+                        analyticsCluster.setName("analyticsCluster");
+                        getPlatform(model).getClusters().add(analyticsCluster);
+                        Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
+                        analyticsApplication.setName("analytics");
+                        analyticsCluster.getApplications().add(analyticsApplication);
+                        analyticsApplication.getContainers().add(kafka_container);
+                        analyticsApplication.getContainers().add(authAllContainer);
+                        analyticsApplication.getContainers().add(zookeeper_container);
+                        analyticsApplication.getContainers().add(flink_taskmanager_container);
+                        analyticsApplication.getContainers().add(flink_jobmanager_container);
+                    } else {
+                        // deployment scripts are included in polystore deployment scripts. the
+                        // analytics containers are in the same cluster
+                        application.getContainers().add(kafka_container);
+                        application.getContainers().add(authAllContainer);
+                        application.getContainers().add(zookeeper_container);
+                        application.getContainers().add(flink_taskmanager_container);
+                        application.getContainers().add(flink_jobmanager_container);
+                    }
+                } else {
+                    // no analytics deployment scripts get generated, the API still has to know
+                    // where to find the kafka containers. no analyticsConfig.properties file
+                    // is generated
+                    Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
+                    kafka.setName("Kafka");
                     kafka.setExternal(true);
                     kafka.setUri(kafkaURIObject);
+                    model.getElements().add(kafka);
+                    Software zookeeper = TyphonDLFactory.eINSTANCE.createSoftware();
+                    zookeeper.setName("Zookeeper");
+                    zookeeper.setExternal(true);
+                    zookeeper.setUri(zookeeper_uri);
+                    model.getElements().add(zookeeper);
                 }
-            } else {
-                kafka.setExternal(true);
-                kafka.setUri(kafkaURIObject);
+
+            } else if (clusterType.equalsIgnoreCase("Kubernetes")) {
+                Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
+                kafka.setName("Kafka");
+                model.getElements().add(kafka);
+                if (properties.get("analytics.deployment.create").equals("true")) {
+                    Container kafkaContainer = TyphonDLFactory.eINSTANCE.createContainer();
+                    kafkaContainer.setName("kafka");
+                    Reference kafka_reference = TyphonDLFactory.eINSTANCE.createReference();
+                    kafka_reference.setReference(kafka);
+                    kafkaContainer.setDeploys(kafka_reference);
+                    kafkaContainer.setUri(kafkaURIObject);
+                    if (properties.get("analytics.deployment.contained").equals("false")) {
+                        // separate deployment scripts for analytics get generated. the analytics
+                        // containers are in a different cluster
+                        kafka.setExternal(true);
+                        Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
+                        analyticsCluster.setType(clusterTypeObject);
+                        analyticsCluster.setName("analyticsCluster");
+                        getPlatform(model).getClusters().add(analyticsCluster);
+                        Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
+                        analyticsApplication.setName("analytics");
+                        analyticsCluster.getApplications().add(analyticsApplication);
+                        analyticsApplication.getContainers().add(kafkaContainer);
+                    } else {
+                        // deployment scripts are included in polystore deployment scripts. the
+                        // analytics containers are in the same cluster
+                        application.getContainers().add(kafkaContainer);
+                    }
+                } else {
+                    // no analytics deployment scripts get generated, the API still has to know
+                    // where to find the kafka containers. no analyticsConfig.properties file
+                    // is generated
+                    kafka.setUri(kafkaURIObject);
+                    kafka.setExternal(true);
+                }
             }
         }
         return model;
-    }
-
-    private static String createPassword(int length) {
-        String dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom random = new SecureRandom();
-        String result = "";
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(dic.length());
-            result += dic.charAt(index);
-        }
-        return result;
     }
 
     /**
@@ -1085,5 +1120,9 @@ public class Services {
         EcoreUtil2.getAllContentsOfType(model, Application.class).stream().filter(app -> app.getName().equals(appName))
                 .map(app -> list.add(app));
         return (list.size() == 1) ? list.get(0) : null;
+    }
+
+    private static Platform getPlatform(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
     }
 }
