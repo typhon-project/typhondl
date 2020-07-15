@@ -8,6 +8,4 @@
   <semanticResources>VehicleDataDB.tdl</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
   <semanticResources>analyticsNoDeployment.tdl</semanticResources>
-  <semanticResources>analyticsNoDeployment/analyticsNoDeployment.xmi</semanticResources>
-  <semanticResources>analyticsInside/analyticsInside.xmi</semanticResources>
 </viewpoint:DAnalysis>
