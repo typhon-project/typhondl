@@ -211,7 +211,8 @@ public class Services {
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2));
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(),
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2) + File.separator + DLmodelXMI.lastSegment()));
-        if (properties.get("polystore.useAnalytics").equals("true") && clusterType.equalsIgnoreCase("Kubernetes")) {
+        if (properties.get("analytics.deployment.create").equals("true")
+                && clusterType.equalsIgnoreCase("Kubernetes")) {
             try {
                 String analyticsZipPath = folder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
                 InputStream input = downloadKafkaFiles(analyticsZipPath);
