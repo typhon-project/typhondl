@@ -2,6 +2,7 @@
 [module generateDockerComposeDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
+[import de::atb::typhondl::acceleo::files::analyticsConfig/]
 
 [template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 
@@ -47,6 +48,9 @@ services:
 [/if]
 [if (aContainer.replication <> null and aContainer.containsDB())]
 [aContainer.printDBReplication()/]
+[/if]
+[if (aContainer.name.equalsIgnoreCase('kafka'))]
+[aDeploymentModel.analyticsConfig()/]
 [/if]
 [/for]
 [/file]

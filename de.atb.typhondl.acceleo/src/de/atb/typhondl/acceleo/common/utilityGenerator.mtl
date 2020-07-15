@@ -17,6 +17,14 @@
  aApplication.containers 
 /]
 
+[query public isDockerCompose(aCluster : Cluster) : Boolean = 
+aCluster.type.name->any(str | str='DockerCompose')<>null
+/]
+
+[query public isKubernetes(aCluster : Cluster) : Boolean = 
+aCluster.type.name->any(str | str='Kubernetes') <> null
+/]
+
 [query public isDockerCompose(aDeploymentModel : DeploymentModel) : Boolean = 
 aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='DockerCompose')<>null
 /]
@@ -59,7 +67,6 @@ aDeploymentModel.getKafkaSoftware()<>null
 [query public getKafkaVersion(aContainer : Container) : String =
 aContainer.deploys.reference.oclAsType(Software).parameters->any(key | key.name.equalsIgnoreCase('version')).oclAsType(Key_Values).value
 /]
-
 
 [query public useHelmChart(aContainer : Container) : Boolean =  
 not(aContainer.getHelmList().oclIsUndefined())
@@ -104,6 +111,26 @@ aURI.value.substring(aURI.value.indexOf(':')+1)
 
 [query public getKafkaSoftware(aDeploymentModel : DeploymentModel) : Software = 
 aDeploymentModel.elements->filter(typhonDL::Software)->any(software | software.name.equalsIgnoreCase('kafka'))
+/]
+
+[query public getZookeeperSoftware(aDeploymentModel : DeploymentModel) : Software = 
+aDeploymentModel.elements->filter(typhonDL::Software)->any(software | software.name.equalsIgnoreCase('zookeeper'))
+/]
+
+[query public getKafkaContainer(aCluster : Cluster) : Container = 
+aCluster.applications.containers->any(container | container.name.equalsIgnoreCase('kafka'))
+/]
+
+[query public getKafkaUri(aCluster : Cluster) : String =
+aCluster.getKafkaContainer().uri.value
+/]
+
+[query public getZookeeperContainer(aCluster : Cluster) : Container = 
+aCluster.applications.containers->any(container | container.name.equalsIgnoreCase('zookeeper'))
+/]
+
+[query public getZookeeperUri(aCluster : Cluster) : String =
+aCluster.getZookeeperContainer().uri.value
 /]
 
 [query public getKubeconfig(aKafka : Software) : Key_Values =
