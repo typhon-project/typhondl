@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: typhon-polystore-service-deployment
+spec:
+  selector:
+    matchLabels:
+      app: typhon-polystore-service-pod
+  template:
+    metadata:
+      labels:
+        app: typhon-polystore-service-pod
+    spec:
+      containers:
+        - name: typhon-polystore-service-container
+          image: clms/typhon-polystore-api:latest
+          ports:
+            - containerPort: 8080 
+          
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: typhon-polystore-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30061
+  selector:
+    app: typhon-polystore-service-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polystore-ui-deployment
+spec:
+  selector:
+    matchLabels:
+      app: polystore-ui-pod
+  template:
+    metadata:
+      labels:
+        app: polystore-ui-pod
+    spec:
+      containers:
+        - name: polystore-ui-container
+          image: clms/typhon-polystore-ui:latest
+          env:
+            - name: API_PORT
+              value: "30061"
+            - name: API_HOST
+              value: "192.168.99.101"
+          ports:
+            - containerPort: 4200 
+          
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: polystore-ui
+spec:
+  type: NodePort
+  ports:
+    - port: 4200
+      targetPort: 4200
+      nodePort: 30075
+  selector:
+    app: polystore-ui-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: typhonql-server-deployment
+spec:
+  selector:
+    matchLabels:
+      app: typhonql-server-pod
+  template:
+    metadata:
+      labels:
+        app: typhonql-server-pod
+    spec:
+      containers:
+        - name: typhonql-server-container
+          image: swatengineering/typhonql-server
+          
+          
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: typhonql-server
+spec:
+  ports:
+    - port: 7000
+      targetPort: 7000
+  selector:
+    app: typhonql-server-pod
+---

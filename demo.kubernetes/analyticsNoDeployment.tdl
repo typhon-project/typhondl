@@ -1,8 +1,8 @@
 import weatherModel.xmi
-import VehicleDataDB.tdl
 import VehicleMetadataDB.tdl
-import AppData.tdl
 import TextWarningData.tdl
+import VehicleDataDB.tdl
+import AppData.tdl
 import dbTypes.tdl
 containertype Docker
 clustertype Kubernetes
@@ -10,33 +10,21 @@ platformtype minikube
 platform platformName : minikube {
 	cluster clusterName : Kubernetes {
 		application Polystore {
+			container vehiclemetadatadb : Docker {
+				deploys VehicleMetadataDB
+				uri = vehiclemetadatadb:3306 ;
+			}
+			container textwarningdata : Docker {
+				deploys TextWarningData
+				uri = textwarningdata:27017 ;
+			}
 			container vehicledatadb : Docker {
 				deploys VehicleDataDB
 				uri = vehicledatadb:27017 ;
 			}
-			container vehiclemetadatadb : Docker {
-				deploys VehicleMetadataDB
-				resources {
-					limitCPU = 0.5 ;
-					limitMemory = 512M ;
-					reservationCPU = 0.25 ;
-					reservationMemory = 256M ;
-				}
-				uri = vehiclemetadatadb:3306 ;
-			}
 			container appdata : Docker {
 				deploys AppData
 				uri = appdata:3306 ;
-			}
-			container textwarningdata : Docker {
-				deploys TextWarningData
-				resources {
-					limitCPU = 0.5 ;
-					limitMemory = 512M ;
-					reservationCPU = 0.25 ;
-					reservationMemory = 256M ;
-				}
-				uri = textwarningdata:27017 ;
 			}
 		}
 	}

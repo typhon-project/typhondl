@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weatherModel.xmi"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleMetadataDB.tdl"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleDataDB.tdl"/>
-  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
-  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleMetadataDB.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
   <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
   <elements xsi:type="typhonDL:ClusterType" name="Kubernetes"/>
@@ -12,21 +12,21 @@
   <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.2">
     <clusters name="clusterName" type="//@elements.1">
       <applications name="Polystore">
-        <containers name="appdata" type="//@elements.0">
+        <containers name="vehiclemetadatadb" type="//@elements.0">
           <deploys reference="//@elements.4"/>
+          <uri value="vehiclemetadatadb:3306"/>
+        </containers>
+        <containers name="textwarningdata" type="//@elements.0">
+          <deploys reference="//@elements.5"/>
+          <uri value="textwarningdata:27017"/>
+        </containers>
+        <containers name="appdata" type="//@elements.0">
+          <deploys reference="//@elements.6"/>
           <uri value="appdata:3306"/>
         </containers>
         <containers name="vehicledatadb" type="//@elements.0">
-          <deploys reference="//@elements.5"/>
-          <uri value="vehicledatadb:27017"/>
-        </containers>
-        <containers name="textwarningdata" type="//@elements.0">
-          <deploys reference="//@elements.6"/>
-          <uri value="textwarningdata:27017"/>
-        </containers>
-        <containers name="vehiclemetadatadb" type="//@elements.0">
           <deploys reference="//@elements.7"/>
-          <uri value="vehiclemetadatadb:3306"/>
+          <uri value="vehicledatadb:27017"/>
         </containers>
         <containers name="polystore-mongo" type="//@elements.0">
           <deploys reference="//@elements.10"/>
@@ -55,18 +55,26 @@
         </containers>
       </applications>
     </clusters>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
-    <credentials username="root" password="o7Hute5PTXBD8ohD"/>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
-    <credentials username="me" password="0zYbwc664JZ5VSxm"/>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
-    <credentials username="me" password="UGgi6gTS5UotiH7s"/>
+    <clusters name="analyticsCluster" type="//@elements.1">
+      <applications name="analytics">
+        <containers name="kafka">
+          <deploys reference="//@elements.14"/>
+          <uri value="localhost:29092"/>
+        </containers>
+      </applications>
+    </clusters>
   </elements>
   <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.8">
-    <credentials username="root" password="6uFwuKmDu18w4jFz"/>
+    <credentials username="root" password="choosePassword"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
+    <credentials username="chooseUsername" password="choosePassword"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
+    <credentials username="root" password="choosePassword"/>
+  </elements>
+  <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
+    <credentials username="chooseUsername" password="choosePassword"/>
   </elements>
   <elements xsi:type="typhonDL:DBType" name="MariaDB">
     <image value="mariadb:latest"/>
@@ -84,11 +92,11 @@
     <image value="clms/typhon-polystore-ui:latest"/>
     <environment>
       <parameters name="API_PORT" value="&quot;30061&quot;"/>
-      <parameters name="API_HOST" value="&quot;192.168.99.107&quot;"/>
+      <parameters name="API_HOST" value="&quot;192.168.99.101&quot;"/>
     </environment>
   </elements>
   <elements xsi:type="typhonDL:Software" name="polystore_ql">
     <image value="swatengineering/typhonql-server"/>
   </elements>
-  <elements xsi:type="typhonDL:Software" name="Kafka"/>
+  <elements xsi:type="typhonDL:Software" name="Kafka" external="true"/>
 </typhonDL:DeploymentModel>
