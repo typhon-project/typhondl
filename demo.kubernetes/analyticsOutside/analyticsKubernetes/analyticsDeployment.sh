@@ -27,7 +27,7 @@ kubectl -n typhon apply -f flink/jobmanager-service.yaml $kubeconfig
 sleep 1
 kubectl -n typhon apply -f flink/jobmanager-deployment.yaml $kubeconfig
 sleep 1
-kubectl -n typhon apply -f link/taskmanager-deployment.yaml $kubeconfig
+kubectl -n typhon apply -f flink/taskmanager-deployment.yaml $kubeconfig
 sleep 1
 echo "Typhon Flink K8s installation completed."
 echo "It may take a few minutes for all services to be up and running."
