@@ -33,7 +33,7 @@ services:
 [if (not aContainer.volumes <> null)]
     volumes:
 [for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
-    - type: [if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)][aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/][elseif (true)]volume[/if]
+    - type: [if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)][aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/][else]volume[/if]
       source: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
       target: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
 [if (aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties <> null)]
