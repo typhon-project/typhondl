@@ -16,14 +16,14 @@ topic.event.pre.event.schema.class=ac.york.typhon.analytics.commons.datatypes.ev
 # post event topic
 topic.event.post.group.id=post_event_group
 topic.event.post.bootstrap.servers=[aCluster.getKafkaUri()/]
-topic.event.pre.zookeeper.connect=[if (aCluster.isDockerCompose())][aCluster.getZookeeperUri()/][else]localhost:2181[/if]
+topic.event.post.zookeeper.connect=[if (aCluster.isDockerCompose())][aCluster.getZookeeperUri()/][else]localhost:2181[/if]
 topic.event.post.auto.offset.reset=earliest
 topic.event.post.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PostEvent
 
 # authorization event topic
 topic.event.authorization.group.id=auth_event_group
 topic.event.authorization.bootstrap.servers=[aCluster.getKafkaUri()/]
-topic.event.pre.zookeeper.connect=[if (aCluster.isDockerCompose())][aCluster.getZookeeperUri()/][else]localhost:2181[/if]
+topic.event.authorization.zookeeper.connect=[if (aCluster.isDockerCompose())][aCluster.getZookeeperUri()/][else]localhost:2181[/if]
 topic.event.authorization.auto.offset.reset=earliest
 topic.event.authorization.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PreEvent
 
