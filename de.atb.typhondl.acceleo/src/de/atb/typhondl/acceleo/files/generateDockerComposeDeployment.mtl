@@ -7,8 +7,19 @@
 [template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
-	
+[if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
 [file ('docker-compose.yaml', false, 'UTF-8')]
+[aCluster.createYamlContent()/]
+[/file]
+[else]
+[file ('analyticsDeployment.yaml', false, 'UTF-8')]
+[aCluster.createYamlContent()/]
+[/file]
+[/if]
+[/for]
+[/template]
+
+[template public createYamlContent(aCluster : Cluster)]
 version: '3.7'
 
 [if (aCluster.networks <> null)]
@@ -52,8 +63,6 @@ services:
 [if (aContainer.name.equalsIgnoreCase('kafka'))]
 [aCluster.analyticsConfig()/]
 [/if]
-[/for]
-[/file]
 [/for]
 [/template]
 
