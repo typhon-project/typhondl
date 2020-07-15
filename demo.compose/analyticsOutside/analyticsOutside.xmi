@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <typhonDL:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:typhonDL="http://www.typhon.org/dsls/xtext/TyphonDL">
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="weatherModel.xmi"/>
+  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="TextWarningData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleMetadataDB.tdl"/>
-  <guiMetaInformation xsi:type="typhonDL:Import" relativePath="AppData.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="VehicleDataDB.tdl"/>
   <guiMetaInformation xsi:type="typhonDL:Import" relativePath="dbTypes.tdl"/>
   <elements xsi:type="typhonDL:ContainerType" name="Docker"/>
@@ -12,17 +12,17 @@
   <elements xsi:type="typhonDL:Platform" name="platformName" type="//@elements.2">
     <clusters name="clusterName" type="//@elements.1">
       <applications name="Polystore">
-        <containers name="textwarningdata" type="//@elements.0">
+        <containers name="appdata" type="//@elements.0">
           <deploys reference="//@elements.4"/>
+          <uri value="appdata:3306"/>
+        </containers>
+        <containers name="textwarningdata" type="//@elements.0">
+          <deploys reference="//@elements.5"/>
           <uri value="textwarningdata:27017"/>
         </containers>
         <containers name="vehiclemetadatadb" type="//@elements.0">
-          <deploys reference="//@elements.5"/>
-          <uri value="vehiclemetadatadb:3306"/>
-        </containers>
-        <containers name="appdata" type="//@elements.0">
           <deploys reference="//@elements.6"/>
-          <uri value="appdata:3306"/>
+          <uri value="vehiclemetadatadb:3306"/>
         </containers>
         <containers name="vehicledatadb" type="//@elements.0">
           <deploys reference="//@elements.7"/>
@@ -69,9 +69,13 @@
           <uri value="typhonql-server:7000"/>
           <properties xsi:type="typhonDL:Key_Values" name="restart" value="always"/>
         </containers>
+      </applications>
+    </clusters>
+    <clusters name="analyticsCluster" type="//@elements.1">
+      <applications name="analytics">
         <containers name="kafka" type="//@elements.0">
           <deploys reference="//@elements.15"/>
-          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.10"/>
+          <depends_on reference="//@elements.3/@clusters.1/@applications.0/@containers.2"/>
           <ports>
             <key_values name="published" value="29092"/>
             <key_values name="target" value="29092"/>
@@ -94,7 +98,7 @@
         </containers>
         <containers name="taskmanager">
           <deploys reference="//@elements.17"/>
-          <depends_on reference="//@elements.3/@clusters.0/@applications.0/@containers.12"/>
+          <depends_on reference="//@elements.3/@clusters.1/@applications.0/@containers.4"/>
           <properties xsi:type="typhonDL:Key_Values" name="command" value="taskmanager"/>
           <properties xsi:type="typhonDL:Key_ValueArray" name="expose">
             <values>6121</values>
@@ -115,13 +119,13 @@
       </applications>
     </clusters>
   </elements>
+  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
+    <credentials username="root" password="choosePassword"/>
+  </elements>
   <elements xsi:type="typhonDL:DB" name="TextWarningData" type="//@elements.9">
     <credentials username="chooseUsername" password="choosePassword"/>
   </elements>
   <elements xsi:type="typhonDL:DB" name="VehicleMetadataDB" type="//@elements.8">
-    <credentials username="root" password="choosePassword"/>
-  </elements>
-  <elements xsi:type="typhonDL:DB" name="AppData" type="//@elements.8">
     <credentials username="root" password="choosePassword"/>
   </elements>
   <elements xsi:type="typhonDL:DB" name="VehicleDataDB" type="//@elements.9">
@@ -155,7 +159,7 @@
   <elements xsi:type="typhonDL:Software" name="zookeeper">
     <image value="wurstmeister/zookeeper"/>
   </elements>
-  <elements xsi:type="typhonDL:Software" name="Kafka">
+  <elements xsi:type="typhonDL:Software" name="Kafka" external="true">
     <image value="wurstmeister/kafka:2.12-2.4.0"/>
   </elements>
   <elements xsi:type="typhonDL:Software" name="FlinkJobmanager">
