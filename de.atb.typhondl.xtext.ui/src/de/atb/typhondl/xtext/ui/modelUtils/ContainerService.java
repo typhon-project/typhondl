@@ -29,9 +29,11 @@ public class ContainerService {
             reference.setReference(deploys);
             container.setDeploys(reference);
         }
-        URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
-        uriObject.setValue(uri);
-        container.setUri(uriObject);
+        if (uri != null) {
+            URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
+            uriObject.setValue(uri);
+            container.setUri(uriObject);
+        }
         return container;
     }
 

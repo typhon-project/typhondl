@@ -31,14 +31,14 @@ public class DeploymentModelService {
     private IFile file;
     private XtextLiveScopeResourceSetProvider provider;
     private Properties properties;
-    private String clusterType;
+    private ClusterType clusterTypeObject;
 
     public DeploymentModelService(IFile file, XtextLiveScopeResourceSetProvider provider, Properties properties) {
         this.file = file;
         this.provider = provider;
         this.properties = properties;
         this.model = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-        this.clusterType = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0).getName();
+        this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
     }
 
     public void readModel() {
@@ -87,11 +87,11 @@ public class DeploymentModelService {
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
+        String clusterType = clusterTypeObject.getName();
 
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
-        DB polystoreDB = DBService.createPolystoreDB(this.properties, this.clusterType,
-                DBService.getMongoDBType(model));
+        DB polystoreDB = DBService.createPolystoreDB(this.properties, clusterType, DBService.getMongoDBType(model));
         model.getElements().add(polystoreDB);
         Container polystoreDBContainer = ContainerService.create(properties.getProperty("db.containername"),
                 containerType, polystoreDB,
@@ -124,9 +124,9 @@ public class DeploymentModelService {
         // Polystore UI
         Software polystoreUI = SoftwareService.create(properties.getProperty("ui.name"),
                 properties.getProperty("ui.image"));
-        polystoreUI = SoftwareService.addEnvironment(polystoreUI,
-                new String[] { "API_PORT", properties.getProperty("ui.environment.API_PORT"), "API_HOST",
-                        properties.getProperty("ui.environment.API_HOST") });
+        polystoreUI.setEnvironment(SoftwareService
+                .createEnvironment(new String[] { "API_PORT", properties.getProperty("ui.environment.API_PORT"),
+                        "API_HOST", properties.getProperty("ui.environment.API_HOST") }));
         model.getElements().add(polystoreUI);
         Container polystoreUIContainer = ContainerService.create(properties.getProperty("ui.containername"),
                 containerType, polystoreUI,
@@ -153,7 +153,7 @@ public class DeploymentModelService {
 
         // Analytics
         if (properties.get("polystore.useAnalytics").equals("true")) {
-            this.model = AnalyticsService.addAnalytics(model, properties);
+            this.model = AnalyticsService.addAnalytics(model, properties, clusterTypeObject, containerType);
         }
     }
 

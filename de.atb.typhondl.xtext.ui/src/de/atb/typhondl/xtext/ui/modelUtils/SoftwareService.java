@@ -17,7 +17,7 @@ public class SoftwareService {
         return software;
     }
 
-    public static Software addEnvironment(Software software, String[] strings) {
+    public static Environment createEnvironment(String[] strings) {
         Environment environment = TyphonDLFactory.eINSTANCE.createEnvironment();
         for (int i = 0; i < strings.length; i = i + 2) {
             Key_Values keyValues = TyphonDLFactory.eINSTANCE.createKey_Values();
@@ -25,8 +25,7 @@ public class SoftwareService {
             keyValues.setValue(strings[i + 1]);
             environment.getParameters().add(keyValues);
         }
-        software.setEnvironment(environment);
-        return software;
+        return environment;
     }
 
 }
