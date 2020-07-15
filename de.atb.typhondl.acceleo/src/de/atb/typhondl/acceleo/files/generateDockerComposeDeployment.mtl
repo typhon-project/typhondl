@@ -37,7 +37,7 @@ services:
       source: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
       target: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
 [if (aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties <> null)]
-[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties)]
+[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics)]
           [aProperty.print()/]
 [/for]
 [/if]
