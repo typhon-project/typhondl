@@ -41,7 +41,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import com.google.inject.Inject;
 
 import de.atb.typhondl.acceleo.services.Services;
-import de.atb.typhondl.xtext.ui.utilities.GenerationService;
+import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
  * This Handler is called when clicking "Generate Deployment Scripts" in the
@@ -89,7 +89,8 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 e.printStackTrace();
             }
 
-            GenerationService.generateDeployment(file, provider);
+            GenerationService generationService = new GenerationService(file, provider);
+            generationService.generateDeployment();
 
             for (IProject iproject : root.getProjects()) {
                 try {
