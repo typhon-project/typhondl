@@ -33,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -77,6 +76,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Modes;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Replication;
@@ -205,7 +205,7 @@ public class Services {
         }
         model = addPolystoreToModel(path, model, properties);
         Container polystoreMongoContainer = getPolystoreMongoContainer(model, properties);
-        String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer);
+        String clusterType = getClusterTypeOfPolystore(polystoreMongoContainer).getName();
         URI DLmodelXMI = saveModelAsXMI(DLmodelResource);
         String folder = file.getLocation().toOSString().replace(file.getName(),
                 DLmodelXMI.segment(DLmodelXMI.segmentCount() - 2));
@@ -472,8 +472,8 @@ public class Services {
      * @param polystoreMongoContaier
      * @return The ClusterType of the containing Cluster
      */
-    private static String getClusterTypeOfPolystore(Container polystoreMongoContaier) {
-        return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType().getName();
+    private static ClusterType getClusterTypeOfPolystore(Container polystoreMongoContaier) {
+        return ((Cluster) ((Application) polystoreMongoContaier.eContainer()).eContainer()).getType();
     }
 
     /**
@@ -636,7 +636,8 @@ public class Services {
         ContainerType containerType = application.getContainers().get(0).getType();
 
         // get clustertype
-        String clusterType = ((Cluster) application.eContainer()).getType().getName();
+        ClusterType clusterTypeObject = ((Cluster) application.eContainer()).getType();
+        String clusterType = clusterTypeObject.getName();
 
         // polystore_db
         DB polystoredb = TyphonDLFactory.eINSTANCE.createDB();
@@ -872,7 +873,6 @@ public class Services {
                     Dependency zookeeper_dependency = TyphonDLFactory.eINSTANCE.createDependency();
                     zookeeper_dependency.setReference(zookeeper_container);
 
-                    application.getContainers().add(zookeeper_container);
                     Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
                     kafka.setName("Kafka");
                     model.getElements().add(kafka);
@@ -932,7 +932,6 @@ public class Services {
                     kafka_container_volumes.setName("volumes");
                     kafka_container_volumes.getValues().add("/var/run/docker.sock:/var/run/docker.sock");
                     kafka_container.getProperties().add(kafka_container_volumes);
-                    application.getContainers().add(kafka_container);
 
                     if (Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
                         Replication kafka_replication = TyphonDLFactory.eINSTANCE.createReplication();
@@ -1006,8 +1005,6 @@ public class Services {
                     Dependency flink_jobmanager_dependency = TyphonDLFactory.eINSTANCE.createDependency();
                     flink_jobmanager_dependency.setReference(flink_jobmanager_container);
                     flink_taskmanager_container.getDepends_on().add(flink_jobmanager_dependency);
-                    application.getContainers().add(flink_jobmanager_container);
-                    application.getContainers().add(flink_taskmanager_container);
 
                     Container authAllContainer = TyphonDLFactory.eINSTANCE.createContainer();
                     authAllContainer.setName("authAll");
@@ -1022,17 +1019,38 @@ public class Services {
                     authAllRef.setReference(authAll);
                     authAllContainer.setDeploys(authAllRef);
 
-                    application.getContainers().add(authAllContainer);
+                    kafka_container.setUri(kafkaURIObject);
+                    zookeeper_container.setUri(zookeeper_uri);
 
                     if (properties.get("analytics.deployment.contained").equals("false")) {
+                        // separate deployment scripts for analytics get generated. the analytics
+                        // containers are in a different cluster
                         kafka.setExternal(true);
-                        kafka.setUri(kafkaURIObject);
-                        zookeeper.setUri(zookeeper_uri);
+                        Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
+                        analyticsCluster.setType(clusterTypeObject);
+                        analyticsCluster.setName("analyticsCluster");
+                        getPlatform(model).getClusters().add(analyticsCluster);
+                        Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
+                        analyticsApplication.setName("analytics");
+                        analyticsCluster.getApplications().add(analyticsApplication);
+                        analyticsApplication.getContainers().add(kafka_container);
+                        analyticsApplication.getContainers().add(authAllContainer);
+                        analyticsApplication.getContainers().add(zookeeper_container);
+                        analyticsApplication.getContainers().add(flink_taskmanager_container);
+                        analyticsApplication.getContainers().add(flink_jobmanager_container);
                     } else {
-                        kafka_container.setUri(kafkaURIObject);
-                        zookeeper_container.setUri(zookeeper_uri);
+                        // deployment scripts are included in polystore deployment scripts. the
+                        // analytics containers are in the same cluster
+                        application.getContainers().add(kafka_container);
+                        application.getContainers().add(authAllContainer);
+                        application.getContainers().add(zookeeper_container);
+                        application.getContainers().add(flink_taskmanager_container);
+                        application.getContainers().add(flink_jobmanager_container);
                     }
                 } else {
+                    // no analytics deployment scripts get generated, the API still has to know
+                    // where to find the kafka containers. and the analyticsConfig.properties file
+                    // still is generated
                     Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
                     kafka.setName("Kafka");
                     kafka.setExternal(true);
@@ -1057,27 +1075,32 @@ public class Services {
                     kafkaContainer.setDeploys(kafka_reference);
                     kafkaContainer.setUri(kafkaURIObject);
                     if (properties.get("analytics.deployment.contained").equals("false")) {
+                        // separate deployment scripts for analytics get generated. the analytics
+                        // containers are in a different cluster
                         kafka.setExternal(true);
-                        kafka.setUri(kafkaURIObject);
+                        Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
+                        analyticsCluster.setType(clusterTypeObject);
+                        analyticsCluster.setName("analyticsCluster");
+                        getPlatform(model).getClusters().add(analyticsCluster);
+                        Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
+                        analyticsApplication.setName("analytics");
+                        analyticsCluster.getApplications().add(analyticsApplication);
+                        analyticsApplication.getContainers().add(kafkaContainer);
+                    } else {
+                        // deployment scripts are included in polystore deployment scripts. the
+                        // analytics containers are in the same cluster
+                        application.getContainers().add(kafkaContainer);
                     }
                 } else {
-                    kafka.setExternal(true);
+                    // no analytics deployment scripts get generated, the API still has to know
+                    // where to find the kafka containers. and the analyticsConfig.properties file
+                    // still is generated
                     kafka.setUri(kafkaURIObject);
+                    kafka.setExternal(true);
                 }
             }
         }
         return model;
-    }
-
-    private static String createPassword(int length) {
-        String dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom random = new SecureRandom();
-        String result = "";
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(dic.length());
-            result += dic.charAt(index);
-        }
-        return result;
     }
 
     /**
@@ -1092,5 +1115,9 @@ public class Services {
         EcoreUtil2.getAllContentsOfType(model, Application.class).stream().filter(app -> app.getName().equals(appName))
                 .map(app -> list.add(app));
         return (list.size() == 1) ? list.get(0) : null;
+    }
+
+    private static Platform getPlatform(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
     }
 }
