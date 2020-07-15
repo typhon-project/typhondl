@@ -4,7 +4,6 @@
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
 [template public analyticsConfig(aCluster : Cluster) post (trim())]
-[file ('typhonAnalyticsConfig.properties', false, 'UTF-8')]
 # configuration for topics url and ports
 
 # pre event topic
@@ -28,5 +27,4 @@ topic.event.authorization.bootstrap.servers=[aCluster.getKafkaUri()/]
 topic.event.authorization.auto.offset.reset=earliest
 topic.event.authorization.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PreEvent
 
-[/file]
 [/template]

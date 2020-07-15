@@ -2,10 +2,14 @@
 [module generateKubernetesDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
+[import de::atb::typhondl::acceleo::files::analyticsConfig/]
 
 [template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
+[file ('analyticsKubernetes/typhonAnalyticsConfig.properties', false, 'UTF-8')]
+[aCluster.analyticsConfig()/]
+[/file]
 [file ('analyticsKubernetes/analyticsDeployment.sh', false, 'UTF-8')]
 #!/bin/bash
 kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]"
@@ -78,6 +82,9 @@ kubectl wait --for=condition=available --timeout=300s --all -n typhon deployment
 echo "----------------------------------------------------------------------------"
 [if (aDeploymentModel.createAnalytics())]
 [if (not aDeploymentModel.getKafkaSoftware().external)]
+[file ('analyticsKubernetes/typhonAnalyticsConfig.properties', false, 'UTF-8')]
+[aCluster.analyticsConfig()/]
+[/file]
 echo "Running Typhon Kafka K8s installation ..."
 kubectl create namespace kafka $kubeconfig
 sleep 1
