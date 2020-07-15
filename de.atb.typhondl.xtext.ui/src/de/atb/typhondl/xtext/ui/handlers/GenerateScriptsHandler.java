@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
+import java.io.File;
+
 /*-
  * #%L
  * de.atb.typhondl.xtext.ui
@@ -41,6 +43,7 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import com.google.inject.Inject;
 
 import de.atb.typhondl.acceleo.services.Services;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
@@ -61,7 +64,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        String result = "";
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
         Object object = selection.getFirstElement();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -90,7 +92,11 @@ public class GenerateScriptsHandler extends AbstractHandler {
             }
 
             GenerationService generationService = new GenerationService(file, provider);
-            generationService.generateDeployment();
+            generationService.deleteOldGeneratedFiles(
+                    new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
+            DeploymentModel model = generationService.buildModel();
+            generationService.saveModelAsXMI(model);
+            generationService.generateDeployment(model);
 
             for (IProject iproject : root.getProjects()) {
                 try {
