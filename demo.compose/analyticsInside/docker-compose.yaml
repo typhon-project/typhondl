@@ -1,25 +1,24 @@
 version: '3.7'
 
 services:
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
+  vehiclemetadatadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: choosePassword
   appdata:
     image: mariadb:latest
-    network_mode: bridge
     environment:
-      MYSQL_ROOT_PASSWORD: crwxlFQZ6N0MXUzS
+      MYSQL_ROOT_PASSWORD: choosePassword
   vehicledatadb:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: chooseUsername
       MONGO_INITDB_ROOT_PASSWORD: choosePassword
-  textwarningdata:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: me
-      MONGO_INITDB_ROOT_PASSWORD: QR5IgggCPsAJaDo6
-  vehiclemetadatadb:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: hq50TzBAbJLK3mfR
   polystore-mongo:
     image: mongo:latest
     environment:
@@ -69,13 +68,9 @@ services:
     ports:
       - target: 29092
         published: 29092
-        protocol: tcp
-        mode: host
-    deploy:
-      replicas: 3
-    build: .
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
   jobmanager:
     image: flink:latest
     environment:

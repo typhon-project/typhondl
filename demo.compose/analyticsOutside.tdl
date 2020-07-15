@@ -1,8 +1,8 @@
 import weatherModel.xmi
 import AppData.tdl
-import VehicleDataDB.tdl
 import TextWarningData.tdl
 import VehicleMetadataDB.tdl
+import VehicleDataDB.tdl
 import dbTypes.tdl
 containertype Docker
 clustertype DockerCompose
@@ -14,10 +14,6 @@ platform platformName : localhost {
 				deploys AppData
 				uri = appdata:3306 ;
 			}
-			container vehicledatadb : Docker {
-				deploys VehicleDataDB
-				uri = vehicledatadb:27017 ;
-			}
 			container textwarningdata : Docker {
 				deploys TextWarningData
 				uri = textwarningdata:27017 ;
@@ -25,6 +21,10 @@ platform platformName : localhost {
 			container vehiclemetadatadb : Docker {
 				deploys VehicleMetadataDB
 				uri = vehiclemetadatadb:3306 ;
+			}
+			container vehicledatadb : Docker {
+				deploys VehicleDataDB
+				uri = vehicledatadb:27017 ;
 			}
 		}
 	}
