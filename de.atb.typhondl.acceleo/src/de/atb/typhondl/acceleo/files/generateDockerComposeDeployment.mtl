@@ -8,11 +8,11 @@
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
-[file ('docker-compose.yaml', false, 'UTF-8')]
+[file ('analyticsDeployment.yaml', false, 'UTF-8')]
 [aCluster.createYamlContent()/]
 [/file]
 [else]
-[file ('analyticsDeployment.yaml', false, 'UTF-8')]
+[file ('docker-compose.yaml', false, 'UTF-8')]
 [aCluster.createYamlContent()/]
 [/file]
 [/if]
