@@ -21,7 +21,7 @@ public class DBService {
                     properties.getProperty("db.environment.MONGO_INITDB_DATABASE") }));
         }
         polystoredb.setCredentials(createCredentials("admin", "admin"));
-        return null;
+        return polystoredb;
     }
 
     public static Credentials createCredentials(String username, String password) {

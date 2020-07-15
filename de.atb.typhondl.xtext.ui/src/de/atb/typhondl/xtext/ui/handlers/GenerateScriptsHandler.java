@@ -96,6 +96,7 @@ public class GenerateScriptsHandler extends AbstractHandler {
                     new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
             DeploymentModel model = generationService.buildModel();
             generationService.saveModelAsXMI(model);
+            generationService.addToMetadata();
             if (model == null) {
 //    TODO            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.";
             } else {

@@ -2,7 +2,6 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
@@ -56,8 +55,9 @@ public class ContainerService {
     }
 
     public static Property addAPIEntrypoint(String clusterType, String entrypoint) {
-        List<String> list = Arrays.asList(new String[] { "wait-for-it", "polystore-mongo:27017", "-t", "'60'", "--" });
-        list.addAll(Arrays.asList(entrypoint.split(",")));
+        ArrayList<String> list = new ArrayList<>(
+                Arrays.asList(new String[] { "wait-for-it", "polystore-mongo:27017", "-t", "'60'", "--" }));
+        list.addAll(new ArrayList<>(Arrays.asList(entrypoint.split(","))));
         return createKeyValuesArray("entrypoint", list.toArray(new String[0]));
     }
 

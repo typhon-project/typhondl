@@ -27,6 +27,7 @@ public class GenerationService {
     private XtextLiveScopeResourceSetProvider provider;
     private String outputFolder;
     private Properties properties;
+    private DeploymentModelService deploymentModelService;
 
     public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) {
         this.file = file;
@@ -49,10 +50,19 @@ public class GenerationService {
     }
 
     public DeploymentModel buildModel() {
-        DeploymentModelService deploymentModelService = new DeploymentModelService(file, provider, properties);
+        this.deploymentModelService = new DeploymentModelService(file, provider, properties);
         deploymentModelService.readModel();
         deploymentModelService.addPolystore();
-        deploymentModelService.addToMetadata();
+        return deploymentModelService.getModel();
+    }
+
+    /**
+     * can only be done when the model is saved as XMI
+     * 
+     * @return
+     */
+    public DeploymentModel addToMetadata() {
+        deploymentModelService.addToMetadata(outputFolder);
         return deploymentModelService.getModel();
     }
 
@@ -66,7 +76,7 @@ public class GenerationService {
         Resource DLmodelResource = model.eResource();
         XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
         URI fileName = DLmodelResource.getURI().trimFileExtension();
-        Resource xmiResource = resourceSet.createResource(fileName.appendSegment(".xmi"));
+        Resource xmiResource = resourceSet.createResource(fileName.appendFileExtension("xmi"));
 
         // delete resource in case it already exists
         if (resourceSet.getResource(fileName, false) != null) {

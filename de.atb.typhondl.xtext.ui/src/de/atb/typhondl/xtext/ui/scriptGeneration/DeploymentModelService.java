@@ -47,7 +47,6 @@ public class DeploymentModelService {
         this.provider = provider;
         this.properties = properties;
         this.model = TyphonDLFactory.eINSTANCE.createDeploymentModel();
-        this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
     }
 
     public void readModel() {
@@ -71,6 +70,7 @@ public class DeploymentModelService {
         URI modelURI = URI.createPlatformResourceURI(this.file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);
         this.model = (DeploymentModel) DLmodelResource.getContents().get(0);
+        this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
         addDBsToModel();
     }
 
@@ -120,8 +120,10 @@ public class DeploymentModelService {
                 properties.getProperty("api.containername") + ":" + properties.getProperty("api.port"));
         polystoreAPIContainer.setPorts(ContainerService.createPorts(new String[] { "published",
                 properties.getProperty("api.publishedPort"), "target", properties.getProperty("api.port") }));
-        polystoreAPIContainer.setReplication(
-                ContainerService.createStatelessReplication(Integer.parseInt(properties.getProperty("api.replicas"))));
+        if (Integer.parseInt(properties.getProperty("api.replicas")) > 1) {
+            polystoreAPIContainer.setReplication(ContainerService
+                    .createStatelessReplication(Integer.parseInt(properties.getProperty("api.replicas"))));
+        }
         polystoreAPIContainer.getProperties()
                 .add(ContainerService.addAPIEntrypoint(clusterType, properties.getProperty("api.entrypoint")));
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
@@ -152,8 +154,10 @@ public class DeploymentModelService {
         Container qlServerContainer = ContainerService.create(properties.getProperty("qlserver.containername"),
                 containerType, qlServer,
                 properties.getProperty("qlserver.containername") + ":" + properties.getProperty("qlserver.port"));
-        qlServerContainer.setReplication(ContainerService
-                .createStatelessReplication(Integer.parseInt(properties.getProperty("qlserver.replicas"))));
+        if (Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1) {
+            qlServerContainer.setReplication(ContainerService
+                    .createStatelessReplication(Integer.parseInt(properties.getProperty("qlserver.replicas"))));
+        }
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             qlServerContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
@@ -166,7 +170,7 @@ public class DeploymentModelService {
         }
     }
 
-    public void addToMetadata() {
+    public void addToMetadata(String outputFolder) {
         Path DLPath = Paths.get(file.getLocation().toOSString());
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
@@ -180,7 +184,7 @@ public class DeploymentModelService {
                     mongoInsertStatement, properties);
             break;
         case "DockerCompose":
-            writeInsertStatementToJavaScriptFile(DLPath, mongoInsertStatement, properties);
+            writeInsertStatementToJavaScriptFile(outputFolder, mongoInsertStatement, properties);
             break;
         default:
             break;
@@ -196,13 +200,20 @@ public class DeploymentModelService {
      * @param mongoInsertStatement
      * @param properties
      */
-    private static void writeInsertStatementToJavaScriptFile(Path DLPath, String mongoInsertStatement,
+    private static void writeInsertStatementToJavaScriptFile(String outputFolder, String mongoInsertStatement,
             Properties properties) {
-        String folder = DLPath.toString().replace(DLPath.getFileName().toString(), properties.getProperty("db.volume"));
-        String path = folder + File.separator + "addModels.js";
-        if (!Files.exists(Paths.get(folder))) {
+        String modelsFolder = outputFolder + File.separator + properties.getProperty("db.volume");
+        String path = modelsFolder + File.separator + "addModels.js";
+        if (!Files.exists(Paths.get(outputFolder))) {
             try {
-                Files.createDirectory(Paths.get(folder));
+                Files.createDirectory(Paths.get(outputFolder));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!Files.exists(Paths.get(modelsFolder))) {
+            try {
+                Files.createDirectory(Paths.get(modelsFolder));
             } catch (IOException e) {
                 e.printStackTrace();
             }
