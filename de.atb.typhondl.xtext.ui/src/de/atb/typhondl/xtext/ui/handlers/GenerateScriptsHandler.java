@@ -106,30 +106,9 @@ public class GenerateScriptsHandler extends AbstractHandler {
                     generationService.saveModelAsXMI(model);
                     generationService.addToMetadata();
                     generationService.generateDeployment(model);
+                    // TODO check if all files were generated?
                 }
             }
-            // TODO check if generation worked
-            /**
-             * Checks if a yml file exists in projects subfolders TODO do better
-             * 
-             * @param folder the folder to check for yml files
-             * @return Informative String for the user.
-             */
-//            private static String getResult(File folder) {
-//                if (!folder.exists()) {
-//                    return "Something went wrong";
-//                } else {
-//                    for (File subFile : folder.listFiles()) {
-//                        if (subFile.getName().contains("yml") || subFile.getName().contains("yaml")) {
-//                            return "Deployment script generated";
-//                        }
-//                        if (subFile.getName().endsWith("xmi")) {
-//                            return "Only the model to export was generated";
-//                        }
-//                    }
-//                }
-//                return "";
-//            }
 
             for (IProject iproject : root.getProjects()) {
                 try {
