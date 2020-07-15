@@ -1049,8 +1049,8 @@ public class Services {
                     }
                 } else {
                     // no analytics deployment scripts get generated, the API still has to know
-                    // where to find the kafka containers. and the analyticsConfig.properties file
-                    // still is generated
+                    // where to find the kafka containers. no analyticsConfig.properties file
+                    // is generated
                     Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
                     kafka.setName("Kafka");
                     kafka.setExternal(true);
@@ -1093,8 +1093,8 @@ public class Services {
                     }
                 } else {
                     // no analytics deployment scripts get generated, the API still has to know
-                    // where to find the kafka containers. and the analyticsConfig.properties file
-                    // still is generated
+                    // where to find the kafka containers. no analyticsConfig.properties file
+                    // is generated
                     kafka.setUri(kafkaURIObject);
                     kafka.setExternal(true);
                 }

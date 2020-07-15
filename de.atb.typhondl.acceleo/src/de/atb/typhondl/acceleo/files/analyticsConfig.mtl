@@ -3,32 +3,30 @@
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 
-[template public analyticsConfig(aDeploymentModel : DeploymentModel) post (trim())]
-[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[template public analyticsConfig(aCluster : Cluster) post (trim())]
 [file ('typhonAnalyticsConfig.properties', false, 'UTF-8')]
 # configuration for topics url and ports
 
 # pre event topic
 topic.event.pre.group.id=pre_event_group
-topic.event.pre.bootstrap.servers=[if (aCluster.getKafkaContainer() <> null)][aCluster.getKafkaUri()/][else][aDeploymentModel.getKafkaSoftware().uri.value/][/if]
-[if (aCluster.isDockerCompose())]topic.event.pre.zookeeper.connect=[if (aCluster.getZookeeperContainer() <> null)][aCluster.getZookeeperUri()/][else][aDeploymentModel.getZookeeperSoftware().uri.value/][/if][/if]
+topic.event.pre.bootstrap.servers=[aCluster.getKafkaUri()/]
+[if (aCluster.isDockerCompose())]topic.event.pre.zookeeper.connect=[aCluster.getZookeeperUri()/][/if]
 topic.event.pre.auto.offset.reset=earliest
 topic.event.pre.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PreEvent
 
 # post event topic
 topic.event.post.group.id=post_event_group
-topic.event.post.bootstrap.servers=[if (aCluster.getKafkaContainer() <> null)][aCluster.getKafkaUri()/][else][aDeploymentModel.getKafkaSoftware().uri.value/][/if]
-[if (aCluster.isDockerCompose())]topic.event.post.zookeeper.connect=[if (aCluster.getZookeeperContainer() <> null)][aCluster.getZookeeperUri()/][else][aDeploymentModel.getZookeeperSoftware().uri.value/][/if][/if]
+topic.event.post.bootstrap.servers=[aCluster.getKafkaUri()/]
+[if (aCluster.isDockerCompose())]topic.event.post.zookeeper.connect=[aCluster.getZookeeperUri()/][/if]
 topic.event.post.auto.offset.reset=earliest
 topic.event.post.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PostEvent
 
 # authorization event topic
 topic.event.authorization.group.id=auth_event_group
-topic.event.authorization.bootstrap.servers=[if (aCluster.getKafkaContainer() <> null)][aCluster.getKafkaUri()/][else][aDeploymentModel.getKafkaSoftware().uri.value/][/if]
-[if (aCluster.isDockerCompose())]topic.event.authorization.zookeeper.connect=[if (aCluster.getZookeeperContainer() <> null)][aCluster.getZookeeperUri()/][else][aDeploymentModel.getZookeeperSoftware().uri.value/][/if][/if]
+topic.event.authorization.bootstrap.servers=[aCluster.getKafkaUri()/]
+[if (aCluster.isDockerCompose())]topic.event.authorization.zookeeper.connect=[aCluster.getZookeeperUri()/][/if]
 topic.event.authorization.auto.offset.reset=earliest
 topic.event.authorization.event.schema.class=ac.york.typhon.analytics.commons.datatypes.events.PreEvent
 
 [/file]
-[/for]
 [/template]

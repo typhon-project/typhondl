@@ -50,7 +50,7 @@ services:
 [aContainer.printDBReplication()/]
 [/if]
 [if (aContainer.name.equalsIgnoreCase('kafka'))]
-[aDeploymentModel.analyticsConfig()/]
+[aCluster.analyticsConfig()/]
 [/if]
 [/for]
 [/file]
