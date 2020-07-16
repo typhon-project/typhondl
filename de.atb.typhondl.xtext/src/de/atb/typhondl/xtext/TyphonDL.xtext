@@ -174,7 +174,7 @@ Key_ValueArray:
 	(']');
 		
 Value:
-	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '*')+;
 
 Name:
 	(STRING | ID | INT | '-')+;
