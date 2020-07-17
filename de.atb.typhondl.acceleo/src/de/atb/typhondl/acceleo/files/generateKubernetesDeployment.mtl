@@ -353,7 +353,7 @@ ports:
   - containerPort: [aPorts.getTargetPort().value/] 
 [/template]
 
-[template public printVolumes(aVolumes : Volumes)]
+[template public printVolumes(aVolumes : Volumes) post (trim())]
 [for (aVolumeDeclaration : Volume_Declaration | aVolumes.decls.oclAsType(Volume_Properties))]
 volumeMounts:
   - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
