@@ -372,7 +372,12 @@ something went wrong with a Property
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
 [arg.name/]:
 [for (aProperty : Property | arg.properties)]
+[if (not arg.properties.oclAsType(Key_KeyValueList).properties -> isEmpty())]
+  -[aProperty.printKubernetes()/]
+[/if]
+[if (arg.properties.oclAsType(Key_Values).name <> null)]
   [aProperty.printKubernetes()/]
+[/if]
 [/for]
 [/template]
 
