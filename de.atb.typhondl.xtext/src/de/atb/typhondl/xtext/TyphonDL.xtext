@@ -141,12 +141,12 @@ Volumes:
 ;
 
 Volume_Declaration:
-	Volume_Properties | Volume_Name
+	Volume_Properties | Volume_Name 
 ;
 
 Volume_Properties:
 	('{'
-	('volumeName''=' volumeName= ID ';') 
+	('volumeName''=' volumeName= ID ';')? 
 	'mountPath' '=' volumePath= Value';'
 	('volumeType' '=' volumeType= Value';')?
 	(specifics+=Property)?
@@ -155,8 +155,9 @@ Volume_Properties:
 ;
 
 Volume_Name:
-	( volumeName=ID )	
-;
+	(volumeName=ID)
+;   
+
 
 Reference:
 	'deploys' reference=[Services];
