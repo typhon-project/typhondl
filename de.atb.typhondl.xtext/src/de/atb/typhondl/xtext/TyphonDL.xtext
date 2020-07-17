@@ -147,7 +147,7 @@ Volume_Declaration:
 Volume_Properties:
 	('{'
 	('volumeName''=' volumeName= ID ';')? 
-	'mountPath' '=' volumePath= Value';'
+	 'mountPath' '=' volumePath= ValueArray
 	('volumeType' '=' volumeType= Value';')?
 	(specifics+=Property)?
 	'}'
@@ -200,7 +200,11 @@ Key_ValueArray:
 	name=ID ('[')
 	(values+=Value) (',' values+=Value)*
 	(']');
-		
+	
+ValueArray: 
+	value=Value (',' values+=Value)* ';'	
+;	
+
 Value:
 	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
 
