@@ -61,13 +61,15 @@ services:
 [aContainer.generateAnalyticsFiles()/]
 [/if]
 [/for]
-[if (aCluster.applications.volumes <> null)]
+[for (aApp : Application | aCluster.applications)]
+[if (aApp.volumes <> null)]
 
 volumes:
-[for (aVolumeDeclaration : Volume_Declaration | aCluster.applications.volumes.decls.oclAsType(Volume_Name))]
- [aVolumeDeclaration.oclAsType(Volume_Name).volumeName/]:
+[for (aVolumeDeclaration : Volume_Declaration | aCluster.applications.volumes.decls)]
+ [if (aVolumeDeclaration.oclIsTypeOf(Volume_Name))][aVolumeDeclaration.oclAsType(Volume_Name).volumeName/]:[/if]
 [/for]
 [/if]
+[/for]
 [/file]
 [/for]
 [/template]
