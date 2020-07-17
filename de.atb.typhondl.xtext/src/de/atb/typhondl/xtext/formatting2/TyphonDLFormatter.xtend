@@ -74,6 +74,8 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			[indent]
 		)
 		software.image.format
+		software.environment.format
+		software.uri.append[newLine]
 		for (property : software.parameters) {
 			property.format
 			property.append[newLine]
