@@ -146,10 +146,10 @@ Volume_Declaration:
 
 Volume_Properties:
 	('{'
-	('volumeName''=' volumeName= ID ';')? 
-	 'mountPath' '=' volumePath= ValueArray
+	('volumeName''=' volumeName= ID';')? 
+	 'mountPath' '=' volumePath= ValueArray';'
 	('volumeType' '=' volumeType= Value';')?
-	(specifics+=Property)?
+	(specifics+=Property)*
 	'}'
 	)
 ;
@@ -157,7 +157,6 @@ Volume_Properties:
 Volume_Name:
 	(volumeName=ID)
 ;   
-
 
 Reference:
 	'deploys' reference=[Services];
@@ -202,8 +201,9 @@ Key_ValueArray:
 	(']');
 	
 ValueArray: 
-	value=Value (',' values+=Value)* ';'	
-;	
+	value=Value (',' values+=Value)* 
+;
+	
 
 Value:
 	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
