@@ -35,13 +35,12 @@ platform platformName : minikube {
 				volumes {
 					volumeName = vehicledataVol;
 					mountPath = /vehicledata;
-					configMap {
+					volumeType = configMap; 
 					 name = logconfig;
 					 items {
 					 	key = loglevel;
 					 	path = loglevel;
 					 }
-					}
 				}
 			}
 			container appdata : Docker {
