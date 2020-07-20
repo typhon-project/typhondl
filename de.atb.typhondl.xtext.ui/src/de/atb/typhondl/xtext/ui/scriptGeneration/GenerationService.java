@@ -29,34 +29,34 @@ public class GenerationService {
     private Properties properties;
     private DeploymentModelService deploymentModelService;
 
-    public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) {
+    public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) throws IOException {
         this.file = file;
         this.provider = provider;
-        this.properties = loadProperties();
-        this.outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
+        this.properties = loadProperties(file);
+        String fileLocation = file.getLocation().toOSString();
+        this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()) - 1);
     }
 
-    private Properties loadProperties() {
+    private static Properties loadProperties(IFile file) throws IOException {
         String path = Paths.get(file.getLocationURI()).getParent().resolve(file.getName() + ".properties").toString();
         Properties properties = new Properties();
-        try {
-            InputStream input = new FileInputStream(path);
+        try (InputStream input = new FileInputStream(path)) {
             properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
         return properties;
     }
 
-    public DeploymentModel buildModel() {
+    public boolean startGeneration() {
         this.deploymentModelService = new DeploymentModelService(file, provider, properties);
         deploymentModelService.readModel();
         if (deploymentModelService.getModel() == null) {
-            return null;
+            return false;
         }
         deploymentModelService.addPolystore();
-        return deploymentModelService.getModel();
+        saveModelAsXMI(deploymentModelService.getModel());
+        addToMetadata();
+        generateDeployment(deploymentModelService.getModel());
+        return true;
     }
 
     /**

@@ -2,13 +2,12 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -223,7 +222,8 @@ public class DeploymentModelService {
             }
         }
         try {
-            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+            Files.write(Paths.get(path), mongoInsertStatement.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -237,10 +237,10 @@ public class DeploymentModelService {
      * @return A container named "polystore-mongo"
      */
     private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
-        List<Container> mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
+        Container mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
                 .filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
-                .collect(Collectors.toList());
-        return mongo.isEmpty() ? null : mongo.get(0);
+                .findFirst().orElse(null);
+        return mongo == null ? null : mongo;
     }
 
     /**
