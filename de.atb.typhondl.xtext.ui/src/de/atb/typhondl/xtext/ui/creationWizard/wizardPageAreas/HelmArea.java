@@ -37,14 +37,13 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class HelmArea extends Area {
 
-    public HelmArea(DB db, int chosenTechnology, Composite parent) {
+    public HelmArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, null, chosenTechnology, parent, "Helm Charts", null);
     }
 
     @Override
     public void createArea() {
-        if (SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null) {
+        if (chosenTechnology.equals(SupportedTechnologies.Kubernetes) && db.getHelm() != null) {
             if (group == null) {
                 createGroup("Helm Charts");
             }

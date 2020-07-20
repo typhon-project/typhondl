@@ -80,10 +80,9 @@ public class CreationMainPage extends MyWizardPage {
     private Combo templateCombo;
 
     /**
-     * int representation of the chosen technology template from enum
-     * {@link SupportedTechnologies}
+     * The chosen technology template from enum {@link SupportedTechnologies}
      */
-    private int chosenTemplate;
+    private SupportedTechnologies chosenTemplate;
 
     /**
      * The entered name for the DL model to be created
@@ -203,20 +202,19 @@ public class CreationMainPage extends MyWizardPage {
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));
-        chosenTemplate = templateCombo.getSelectionIndex();
+        chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                chosenTemplate = templateCombo.getSelectionIndex();
-                String templateName = SupportedTechnologies.values()[chosenTemplate].getClusterType();
-                if (templateName.equals("Kubernetes")) {
+                chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+                if (chosenTemplate.equals(SupportedTechnologies.Kubernetes)) {
                     properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
                     properties.setProperty("ui.environment.API_PORT", "\"30061\"");
                     properties.setProperty("api.publishedPort", "30061");
                     properties.setProperty("ui.publishedPort", "30075");
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
-                } else {
+                } else if (chosenTemplate.equals(SupportedTechnologies.DockerCompose)) {
                     properties.setProperty("ui.environment.API_HOST", "localhost");
                     properties.setProperty("ui.environment.API_PORT", "8080");
                     properties.setProperty("api.publishedPort", "8080");
@@ -374,10 +372,10 @@ public class CreationMainPage extends MyWizardPage {
     }
 
     private String getKafkaURI() {
-        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
-        case "DockerCompose":
+        switch (chosenTemplate) {
+        case DockerCompose:
             return "localhost:29092";
-        case "Kubernetes":
+        case Kubernetes:
             return "typhon-cluster-kafka-bootstrap:9092";
         default:
             return "";
@@ -434,7 +432,7 @@ public class CreationMainPage extends MyWizardPage {
      * @return int representation of the chosen technology from
      *         {@link SupportedTechnologies}
      */
-    public int getChosenTemplate() {
+    public SupportedTechnologies getChosenTemplate() {
         return this.chosenTemplate;
     }
 

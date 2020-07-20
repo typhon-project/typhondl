@@ -132,7 +132,8 @@ public class ModelCreator {
      * @param properties     The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
-    public IFile createDLmodel(HashMap<DB, Container> result, int chosenTemplate, Properties properties) {
+    public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTemplate,
+            Properties properties) {
 
         // create main model
         DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -143,21 +144,21 @@ public class ModelCreator {
 
         // Add selected container type (chosen template in wizard)
         ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
-        containerType.setName(SupportedTechnologies.values()[chosenTemplate].getContainerType());
+        containerType.setName(chosenTemplate.getContainerType());
         DLmodel.getElements().add(containerType);
 
         // Add selected cluster type (chosen template in wizard)
         ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
-        clusterType.setName(SupportedTechnologies.values()[chosenTemplate].getClusterType());
+        clusterType.setName(chosenTemplate.name());
         DLmodel.getElements().add(clusterType);
 
         // create platform type from API HOST
         PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
-        case "DockerCompose":
+        switch (chosenTemplate) {
+        case DockerCompose:
             platformType.setName("localhost");
             break;
-        case "Kubernetes":
+        case Kubernetes:
             platformType.setName("minikube");
             break;
         default:

@@ -26,10 +26,11 @@ import org.eclipse.swt.widgets.Composite;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class EnvironmentArea extends Area {
 
-    public EnvironmentArea(DB db, int chosenTechnology, Composite parent) {
+    public EnvironmentArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, null, chosenTechnology, parent, "Environment", null);
     }
 

@@ -44,19 +44,20 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public abstract class Area {
 
     protected DB db;
     protected Container container;
-    protected int chosenTechnology;
+    protected SupportedTechnologies chosenTechnology;
     protected Composite parent;
     protected Group group;
     protected Properties properties;
     protected static final int pageWidth = 607;
 
-    protected Area(DB db, Container container, int chosenTechnology, Composite parent, String groupName,
-            Properties properties) {
+    protected Area(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
+            String groupName, Properties properties) {
         this.db = db;
         this.container = container;
         this.chosenTechnology = chosenTechnology;
@@ -73,7 +74,7 @@ public abstract class Area {
         group.setText(text);
     }
 
-    public void updateData(DB db, Container container, int chosenTechnology) {
+    public void updateData(DB db, Container container, SupportedTechnologies chosenTechnology) {
         this.db = db;
         this.container = container;
         this.chosenTechnology = chosenTechnology;
