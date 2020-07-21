@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
+import java.io.File;
+
 /*-
  * #%L
  * de.atb.typhondl.xtext.ui
@@ -34,21 +36,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
-import de.atb.typhondl.acceleo.services.Services;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
  * This Handler is called when clicking "Generate Deployment Scripts" in the
- * TyphonDL context menu.
- * {@link Services#generateDeployment(IFile, XtextLiveScopeResourceSetProvider)}
- * is called. Adds Xtext nature if it's missing from the project in which the
- * selection (i.e. the Typhon DL model) is contained.
+ * TyphonDL context menu. Adds Xtext nature if it's missing from the project in
+ * which the selection (i.e. the Typhon DL model) is contained.
  * 
  * @author flug
  *
@@ -61,7 +61,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        String result = "";
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
         Object object = selection.getFirstElement();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -89,7 +88,24 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 e.printStackTrace();
             }
 
-            result = Services.generateDeployment(file, provider);
+            GenerationService generationService = new GenerationService(file, provider);
+            if (generationService.getProperties() == null) {
+                MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                        "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
+            } else {
+                generationService.deleteOldGeneratedFiles(
+                        new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
+                DeploymentModel model = generationService.buildModel();
+                if (model == null) {
+                    MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
+                } else {
+                    generationService.saveModelAsXMI(model);
+                    generationService.addToMetadata();
+                    generationService.generateDeployment(model);
+                    // TODO check if all files were generated?
+                }
+            }
 
             for (IProject iproject : root.getProjects()) {
                 try {
@@ -100,8 +116,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
             }
         }
 
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        MessageDialog.openInformation(window.getShell(), "UI", result);
         return null;
     }
 

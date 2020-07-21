@@ -4,11 +4,12 @@
   <semanticResources>VehicleDataDB.tdl</semanticResources>
   <semanticResources>analyticsOutside.tdl</semanticResources>
   <semanticResources>analyticsOutside/analyticsOutside.xmi</semanticResources>
-  <semanticResources>analyticsInside/analyticsInside.xmi</semanticResources>
   <semanticResources>dbTypes.tdl</semanticResources>
   <semanticResources>AppData.tdl</semanticResources>
   <semanticResources>TextWarningData.tdl</semanticResources>
   <semanticResources>VehicleMetadataDB.tdl</semanticResources>
   <semanticResources>analyticsNoDeployment.tdl</semanticResources>
-  <semanticResources>analyticsNoDeployment/analyticsNoDeployment.xmi</semanticResources>
+  <semanticResources>analyticsOutside.xmi</semanticResources>
+  <semanticResources>analyticsInside.xmi</semanticResources>
+  <semanticResources>analyticsNoDeployment.xmi</semanticResources>
 </viewpoint:DAnalysis>
