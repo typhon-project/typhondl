@@ -1,0 +1,31 @@
+import weatherModel.xmi
+import TextWarningData.tdl
+import VehicleDataDB.tdl
+import AppData.tdl
+import VehicleMetadataDB.tdl
+import dbTypes.tdl
+containertype Docker
+clustertype Kubernetes
+platformtype minikube
+platform platformName : minikube {
+	cluster clusterName : Kubernetes {
+		application Polystore {
+			container textwarningdata : Docker {
+				deploys TextWarningData
+				uri = textwarningdata:27017 ;
+			}
+			container vehicledatadb : Docker {
+				deploys VehicleDataDB
+				uri = vehicledatadb:27017 ;
+			}
+			container appdata : Docker {
+				deploys AppData
+				uri = appdata:3306 ;
+			}
+			container vehiclemetadatadb : Docker {
+				deploys VehicleMetadataDB
+				uri = vehiclemetadatadb:3306 ;
+			}
+		}
+	}
+}
