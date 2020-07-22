@@ -229,12 +229,13 @@ public class CreateModelWizard extends Wizard {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
-            if (this.chosenTemplate.equals(SupportedTechnologies.DockerCompose)
+            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
                     && (Integer.parseInt(properties.getProperty("api.replicas")) > 1
                             || Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1)) {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
+            System.out.println(SupportedTechnologies.DockerCompose.name());
             if (properties.get("polystore.useAnalytics").equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
@@ -257,7 +258,7 @@ public class CreateModelWizard extends Wizard {
         }
         if (page instanceof CreationAnalyticsPage) {
             this.properties = ((CreationAnalyticsPage) page).getProperties();
-            if (this.chosenTemplate.equals(SupportedTechnologies.DockerCompose)
+            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
                     && Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");

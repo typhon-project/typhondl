@@ -196,7 +196,7 @@ public class CreationDBMSPage extends MyWizardPage {
         scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(1, false));
-        if (chosenTemplate.equals(SupportedTechnologies.Kubernetes)) {
+        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
             helmValidationList = new HashMap<>();
         }
         for (Pair<String, String> dbFromML : MLmodel) {
@@ -219,7 +219,7 @@ public class CreationDBMSPage extends MyWizardPage {
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             group.setText(db.getName());
 
-            if (chosenTemplate.equals(SupportedTechnologies.Kubernetes)) {
+            if (chosenTemplate == SupportedTechnologies.Kubernetes) {
                 kubernetesComposeControls(group, templates, db);
             } else {
                 dockerComposeControls(group, templates, db);

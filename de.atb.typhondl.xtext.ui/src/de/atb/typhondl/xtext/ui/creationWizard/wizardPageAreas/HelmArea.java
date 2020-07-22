@@ -43,7 +43,7 @@ public class HelmArea extends Area {
 
     @Override
     public void createArea() {
-        if (chosenTechnology.equals(SupportedTechnologies.Kubernetes) && db.getHelm() != null) {
+        if (chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null) {
             if (group == null) {
                 createGroup("Helm Charts");
             }

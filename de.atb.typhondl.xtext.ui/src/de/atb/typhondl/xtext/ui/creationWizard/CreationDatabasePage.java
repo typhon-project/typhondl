@@ -141,8 +141,8 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
-        if (!isInList(HelmArea.class) && chosenTechnology.equals(SupportedTechnologies.Kubernetes)
-                && db.getHelm() != null && !db.isExternal()) {
+        if (!isInList(HelmArea.class) && chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null
+                && !db.isExternal()) {
             areas.add(new HelmArea(db, chosenTechnology, main));
         }
 

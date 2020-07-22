@@ -207,14 +207,14 @@ public class CreationMainPage extends MyWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
-                if (chosenTemplate.equals(SupportedTechnologies.Kubernetes)) {
+                if (chosenTemplate == SupportedTechnologies.Kubernetes) {
                     properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
                     properties.setProperty("ui.environment.API_PORT", "\"30061\"");
                     properties.setProperty("api.publishedPort", "30061");
                     properties.setProperty("ui.publishedPort", "30075");
                     hostText.setText(properties.getProperty("ui.environment.API_HOST"));
                     portText.setText(properties.getProperty("ui.environment.API_PORT"));
-                } else if (chosenTemplate.equals(SupportedTechnologies.DockerCompose)) {
+                } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
                     properties.setProperty("ui.environment.API_HOST", "localhost");
                     properties.setProperty("ui.environment.API_PORT", "8080");
                     properties.setProperty("api.publishedPort", "8080");
