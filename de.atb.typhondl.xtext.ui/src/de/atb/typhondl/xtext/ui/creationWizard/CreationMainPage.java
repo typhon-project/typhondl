@@ -268,6 +268,12 @@ public class CreationMainPage extends MyWizardPage {
         useExistingCheck.setLayoutData(gridData);
         useExistingCheck.setToolTipText("Check if you already have the Analytics component running somewhere");
 
+        Button useEvolutionCheck = new Button(hidden, SWT.CHECK);
+        useEvolutionCheck.setText("Use Typhon Continuous Evolution");
+        useEvolutionCheck.setSelection(false);
+        useEvolutionCheck.setLayoutData(gridData);
+        useEvolutionCheck.setToolTipText("Only possible with contained Analytics component in this version");
+
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
@@ -276,7 +282,8 @@ public class CreationMainPage extends MyWizardPage {
             properties.setProperty(ANALYTICS_KAFKA_URI, analyticsURIText.getText());
         });
 
-        // TODO necessary for displaying the useExisting checkbox. Only remove if fixed:
+        // TODO necessary for displaying the useEvolutionCheck checkbox. Only remove if
+        // fixed:
         new Label(hidden, SWT.NONE).setText("test");
 
         createScriptsCheck.addSelectionListener(new SelectionAdapter() {
@@ -290,6 +297,7 @@ public class CreationMainPage extends MyWizardPage {
                 } else {
                     useExistingCheck.setSelection(false);
                     createScriptsCheckExternal.setSelection(true);
+                    useEvolutionCheck.setSelection(false);
                     createScripts = true;
                     analyticsContained = false;
                 }
@@ -302,6 +310,7 @@ public class CreationMainPage extends MyWizardPage {
                 if (createScriptsCheckExternal.getSelection()) {
                     useExistingCheck.setSelection(false);
                     createScriptsCheck.setSelection(false);
+                    useEvolutionCheck.setSelection(false);
                     createScripts = true;
                     analyticsContained = false;
                 } else {
@@ -319,6 +328,7 @@ public class CreationMainPage extends MyWizardPage {
                 if (useExistingCheck.getSelection()) {
                     createScriptsCheckExternal.setSelection(false);
                     createScriptsCheck.setSelection(false);
+                    useEvolutionCheck.setSelection(false);
                     createScripts = false;
                     analyticsContained = false;
                 } else {
@@ -328,6 +338,20 @@ public class CreationMainPage extends MyWizardPage {
                     analyticsContained = true;
                 }
                 setKafkaProperties();
+            }
+        });
+        useEvolutionCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (useEvolutionCheck.getSelection()) {
+                    if (!analyticsContained) {
+                        useEvolutionCheck.setSelection(false);
+                    } else {
+                        properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "true");
+                    }
+                } else {
+                    properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
+                }
             }
         });
 

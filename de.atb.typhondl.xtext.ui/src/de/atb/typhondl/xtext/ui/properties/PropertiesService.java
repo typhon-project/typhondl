@@ -4,6 +4,7 @@ public class PropertiesService {
 
     public static final String POLYSTORE_USEANALYTICS = "polystore.useAnalytics";
     public static final String POLYSTORE_INAPPLICATION = "polystore.inApplication";
+    public static final String POLYSTORE_USEEVOLUTION = "polystore.useEvolution";
     public static final String API_NAME = "api.name";
     public static final String API_CONTAINERNAME = "api.containername";
     public static final String API_PORT = "api.port";
