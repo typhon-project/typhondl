@@ -14,7 +14,7 @@ platform platformName : localhost {
 				deploys AppData
 				uri = appdata:3306 ;
 				volumes {
-					mountPath = .:/usr/app/ , /usr/app/node_modules ;
+					mountPath = appdata:/usr/app/ ;
 				}
 				}
 			container textwarningdata : Docker {
@@ -32,7 +32,14 @@ platform platformName : localhost {
 			container vehicledatadb : Docker {
 				deploys VehicleDataDB
 				uri = vehicledatadb:27017 ;
+			
+			}
+			volumes {
+			  appdata 
+			  externall = true;
+			  name = my-app-data;
 			}
 		}
 	}
 }
+

@@ -1,0 +1,68 @@
+version: '3.7'
+
+services:
+  appdata:
+    image: mariadb:latest
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: M3XW1DnE8KUhzslv
+    volumes:
+      - appdata:/usr/app/
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: 3RqVuEj5jLjl5wB7
+    volumes:
+      - type: volume
+        source: textdata
+        target: /textdata
+        volume:
+          nocopy: true
+  vehicledatadb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: me
+      MONGO_INITDB_ROOT_PASSWORD: h0tcJ86u13c5LSrs
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: admin
+    volumes:
+      - ./models/:/docker-entrypoint-initdb.d
+  typhon-polystore-service:
+    image: clms/typhon-polystore-api:latest
+    ports:
+      - target: 8080
+        published: 8080
+    entrypoint:
+      - wait-for-it
+      - polystore-mongo:27017
+      - -t
+      - '60'
+      - --
+      - java
+      - -cp
+      - /app/resources:/app/classes:/app/libs/*
+      - com.clms.typhonapi.Application
+    restart: always
+  polystore-ui:
+    image: clms/typhon-polystore-ui:latest
+    environment:
+      API_PORT: 8080
+      API_HOST: localhost
+    depends_on: 
+      - typhon-polystore-service
+    ports:
+      - target: 4200
+        published: 4200
+  typhonql-server:
+    image: swatengineering/typhonql-server
+    restart: always
+
+volumes:
+  appdata:
+    externall: true
+    name: my-app-data

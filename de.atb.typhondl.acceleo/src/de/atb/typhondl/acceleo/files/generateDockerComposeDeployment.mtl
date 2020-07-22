@@ -76,13 +76,14 @@ services:
 [if (aApp.volumes <> null)]
 
 volumes:
-[for (aVolumeName : EString | aCluster.applications.volumes.names)]
+[if (not aApp.volumes.names -> isEmpty())]
+[for (aVolumeName : EString | aApp.volumes.names)]
   [aVolumeName/]:
 [/for]
 [/if]
-[if (not aCluster.applications.volumes.specifics -> isEmpty())]
-[for (aProperty : Property | aCluster.applications.volumes.oclAsType(Volume_Toplevel).specifics)]
-  [aProperty.print()/]
+[if (not aApp.volumes.specifics -> isEmpty())]
+[for (aProperty : Property | aApp.volumes.specifics)]
+    [aProperty.print()/]
 [/for]  
 [/if]
 [/if]

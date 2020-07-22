@@ -152,8 +152,9 @@ Volume_Properties:
 ;
 
 Volume_Toplevel:
+	{Volume_Toplevel}
 	'volumes' '{'
-	(names+=ID)+
+	(names+=ID)*
 	(specifics+=Property)*
 	'}'
 ;
