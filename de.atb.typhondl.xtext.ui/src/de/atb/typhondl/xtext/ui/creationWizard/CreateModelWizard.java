@@ -38,6 +38,7 @@ import org.eclipse.xtext.ui.util.FileOpener;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -230,13 +231,13 @@ public class CreateModelWizard extends Wizard {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
             if (this.chosenTemplate == SupportedTechnologies.DockerCompose
-                    && (Integer.parseInt(properties.getProperty("api.replicas")) > 1
-                            || Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1)) {
+                    && (Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS)) > 1
+                            || Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS)) > 1)) {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
             System.out.println(SupportedTechnologies.DockerCompose.name());
-            if (properties.get("polystore.useAnalytics").equals("true")) {
+            if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
                         CreationAnalyticsPage newPage = new CreationAnalyticsPage(PAGENAME_ANALYTICS + value.name(),
@@ -259,7 +260,7 @@ public class CreateModelWizard extends Wizard {
         if (page instanceof CreationAnalyticsPage) {
             this.properties = ((CreationAnalyticsPage) page).getProperties();
             if (this.chosenTemplate == SupportedTechnologies.DockerCompose
-                    && Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
+                    && Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }

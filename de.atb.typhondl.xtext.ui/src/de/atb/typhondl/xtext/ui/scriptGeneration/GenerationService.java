@@ -20,9 +20,11 @@ import de.atb.typhondl.acceleo.services.Options;
 import de.atb.typhondl.acceleo.services.Services;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Import;
 
 public class GenerationService {
 
+    private static final String KUBERNETES = "Kubernetes";
     private IFile file;
     private XtextLiveScopeResourceSetProvider provider;
     private String outputFolder;
@@ -34,7 +36,7 @@ public class GenerationService {
         this.provider = provider;
         this.properties = loadProperties(file);
         String fileLocation = file.getLocation().toOSString();
-        this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()) - 1);
+        this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()));
     }
 
     private static Properties loadProperties(IFile file) throws IOException {
@@ -54,7 +56,7 @@ public class GenerationService {
         }
         deploymentModelService.addPolystore();
         saveModelAsXMI(deploymentModelService.getModel());
-        addToMetadata();
+        addToMetadata(deploymentModelService.getModel());
         generateDeployment(deploymentModelService.getModel());
         return true;
     }
@@ -62,11 +64,25 @@ public class GenerationService {
     /**
      * can only be done when the model is saved as XMI
      * 
+     * @param model
+     * 
      * @return
      */
-    public DeploymentModel addToMetadata() {
-        deploymentModelService.addToMetadata(outputFolder);
+    public DeploymentModel addToMetadata(DeploymentModel model) {
+        deploymentModelService.addToMetadata(outputFolder, getMLmodelPath(model));
         return deploymentModelService.getModel();
+    }
+
+    /**
+     * Reads the relative MLmodel path from the Import section of the DL model
+     * 
+     * @param model the DL model
+     * @return The relative MLmodel path as a String
+     */
+    private static String getMLmodelPath(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, Import.class).stream()
+                .filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
+                .map(info -> info.getRelativePath()).findFirst().orElse("");
     }
 
     /**
@@ -102,7 +118,7 @@ public class GenerationService {
 
     public void generateDeployment(DeploymentModel model) {
         if (properties.get("analytics.deployment.create").equals("true")
-                && getClusterType(model).equalsIgnoreCase("Kubernetes")) {
+                && getClusterType(model).equalsIgnoreCase(KUBERNETES)) {
             AnalyticsKubernetesService.addAnalyticsFiles(model, outputFolder, properties);
         }
         try {

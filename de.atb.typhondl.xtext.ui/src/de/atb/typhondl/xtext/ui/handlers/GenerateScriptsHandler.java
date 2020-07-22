@@ -90,8 +90,8 @@ public class GenerateScriptsHandler extends AbstractHandler {
             try {
                 generationService = new GenerationService(file, provider);
                 String fileLocation = file.getLocation().toOSString();
-                generationService.deleteOldGeneratedFiles(new File(
-                        fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()) - 1)));
+                generationService.deleteOldGeneratedFiles(
+                        new File(fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()))));
                 boolean success = generationService.startGeneration();
                 if (!success) {
                     MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",

@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -160,12 +161,12 @@ public class CreationMainPage extends MyWizardPage {
         Text repAPI = new Text(mainGroup, SWT.BORDER);
         repAPI.setText("1");
         repAPI.setLayoutData(gridData);
-        repAPI.addModifyListener(e -> properties.setProperty("api.replicas", repAPI.getText()));
+        repAPI.addModifyListener(e -> properties.setProperty(PropertiesService.API_REPLICAS, repAPI.getText()));
         new Label(mainGroup, SWT.NONE).setText("QL server replicas: ");
         Text repQL = new Text(mainGroup, SWT.BORDER);
         repQL.setText("1");
         repQL.setLayoutData(gridData);
-        repQL.addModifyListener(e -> properties.setProperty("qlserver.replicas", repQL.getText()));
+        repQL.addModifyListener(e -> properties.setProperty(PropertiesService.QLSERVER_REPLICAS, repQL.getText()));
     }
 
     private void createMainGroup() {
@@ -208,19 +209,19 @@ public class CreationMainPage extends MyWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
                 if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-                    properties.setProperty("ui.environment.API_HOST", "\"192.168.99.101\"");
-                    properties.setProperty("ui.environment.API_PORT", "\"30061\"");
-                    properties.setProperty("api.publishedPort", "30061");
-                    properties.setProperty("ui.publishedPort", "30075");
-                    hostText.setText(properties.getProperty("ui.environment.API_HOST"));
-                    portText.setText(properties.getProperty("ui.environment.API_PORT"));
+                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "\"192.168.99.101\"");
+                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "\"30061\"");
+                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
+                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
+                    hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
+                    portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
                 } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
-                    properties.setProperty("ui.environment.API_HOST", "localhost");
-                    properties.setProperty("ui.environment.API_PORT", "8080");
-                    properties.setProperty("api.publishedPort", "8080");
-                    properties.setProperty("ui.publishedPort", "4200");
-                    hostText.setText(properties.getProperty("ui.environment.API_HOST"));
-                    portText.setText(properties.getProperty("ui.environment.API_PORT"));
+                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "localhost");
+                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "8080");
+                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
+                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
+                    hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
+                    portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
                 }
                 setKafkaProperties();
             }
@@ -395,16 +396,17 @@ public class CreationMainPage extends MyWizardPage {
         new Label(connectionGroup, SWT.NONE).setText("Api Host: ");
         hostText = new Text(connectionGroup, SWT.BORDER);
         hostText.setLayoutData(gridData);
-        hostText.setText(properties.getProperty("ui.environment.API_HOST"));
-        hostText.addModifyListener(e -> properties.setProperty("ui.environment.API_HOST", hostText.getText()));
+        hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
+        hostText.addModifyListener(
+                e -> properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, hostText.getText()));
 
         new Label(connectionGroup, SWT.NONE).setText("Api Port: ");
         portText = new Text(connectionGroup, SWT.BORDER);
         portText.setLayoutData(gridData);
-        portText.setText(properties.getProperty("ui.environment.API_PORT"));
+        portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
         portText.addModifyListener(e -> {
-            properties.setProperty("ui.environment.API_PORT", portText.getText());
-            properties.setProperty("api.publishedPort", portText.getText().replaceAll("\"", ""));
+            properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, portText.getText());
+            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, portText.getText().replaceAll("\"", ""));
         });
     }
 
