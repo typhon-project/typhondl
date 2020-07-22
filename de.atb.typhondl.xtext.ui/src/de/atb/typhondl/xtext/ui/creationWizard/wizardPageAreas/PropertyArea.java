@@ -30,7 +30,7 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 public class PropertyArea extends Area {
 
     public PropertyArea(DB db, Composite parent) {
-        super(db, null, -1, parent, "Parameters", null);
+        super(db, null, null, parent, "Parameters", null);
     }
 
     @Override

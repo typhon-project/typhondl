@@ -20,53 +20,52 @@ import de.atb.typhondl.acceleo.services.Options;
 import de.atb.typhondl.acceleo.services.Services;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class GenerationService {
 
+    private static final String KUBERNETES = "Kubernetes";
     private IFile file;
     private XtextLiveScopeResourceSetProvider provider;
     private String outputFolder;
     private Properties properties;
-    private DeploymentModelService deploymentModelService;
+    private DeploymentModel model;
 
-    public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) {
+    public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) throws IOException {
         this.file = file;
         this.provider = provider;
-        this.properties = loadProperties();
-        this.outputFolder = file.getLocation().toOSString().replace("." + file.getFileExtension(), "");
+        this.properties = loadProperties(file);
+        String fileLocation = file.getLocation().toOSString();
+        this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()));
     }
 
-    private Properties loadProperties() {
+    private static Properties loadProperties(IFile file) throws IOException {
         String path = Paths.get(file.getLocationURI()).getParent().resolve(file.getName() + ".properties").toString();
         Properties properties = new Properties();
-        try {
-            InputStream input = new FileInputStream(path);
+        try (InputStream input = new FileInputStream(path)) {
             properties.load(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
         return properties;
     }
 
-    public DeploymentModel buildModel() {
-        this.deploymentModelService = new DeploymentModelService(file, provider, properties);
-        deploymentModelService.readModel();
-        if (deploymentModelService.getModel() == null) {
-            return null;
-        }
-        deploymentModelService.addPolystore();
-        return deploymentModelService.getModel();
+    public void startGeneration() {
+        this.model = DeploymentModelService.createModel(file, provider, properties);
+        saveModelAsXMI();
+        this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), file, properties, model);
+        generateDeployment();
     }
 
     /**
-     * can only be done when the model is saved as XMI
+     * Reads the relative MLmodel path from the Import section of the DL model
      * 
-     * @return
+     * @param model the DL model
+     * @return The relative MLmodel path as a String
      */
-    public DeploymentModel addToMetadata() {
-        deploymentModelService.addToMetadata(outputFolder);
-        return deploymentModelService.getModel();
+    private String getMLmodelPath() {
+        return EcoreUtil2.getAllContentsOfType(this.model, Import.class).stream()
+                .filter(info -> (info.getRelativePath().endsWith("xmi") || info.getRelativePath().endsWith("tmlx")))
+                .map(info -> info.getRelativePath()).findFirst().orElse("");
     }
 
     /**
@@ -75,7 +74,7 @@ public class GenerationService {
      * @param DLmodelResource The given DL model
      * @return URI to the saved DL model
      */
-    public void saveModelAsXMI(DeploymentModel model) {
+    public void saveModelAsXMI() {
         Resource DLmodelResource = model.eResource();
         XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
         URI fileName = DLmodelResource.getURI().trimFileExtension();
@@ -90,7 +89,7 @@ public class GenerationService {
             }
         }
         // add model
-        xmiResource.getContents().add(model);
+        xmiResource.getContents().add(this.model);
 
         EcoreUtil.resolveAll(resourceSet);
         try {
@@ -100,20 +99,20 @@ public class GenerationService {
         }
     }
 
-    public void generateDeployment(DeploymentModel model) {
-        if (properties.get("analytics.deployment.create").equals("true")
-                && getClusterType(model).equalsIgnoreCase("Kubernetes")) {
-            AnalyticsKubernetesService.addAnalyticsFiles(model, outputFolder, properties);
+    public void generateDeployment() {
+        if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")
+                && getClusterType().equalsIgnoreCase(KUBERNETES)) {
+            AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
         }
         try {
-            Services.generateDeployment(model, new File(outputFolder));
+            Services.generateDeployment(this.model, new File(outputFolder));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String getClusterType(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0).getName();
+    private String getClusterType() {
+        return EcoreUtil2.getAllContentsOfType(this.model, ClusterType.class).get(0).getName();
     }
 
     /**

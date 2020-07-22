@@ -39,10 +39,12 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class PortArea extends Area {
 
-    public PortArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
+    public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
+            Properties properties) {
         super(db, container, chosenTechnology, parent, "Ports", properties);
     }
 

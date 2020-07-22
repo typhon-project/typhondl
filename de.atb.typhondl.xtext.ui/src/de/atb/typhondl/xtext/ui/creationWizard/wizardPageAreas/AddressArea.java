@@ -33,7 +33,7 @@ import de.atb.typhondl.xtext.typhonDL.URI;
 public class AddressArea extends Area {
 
     public AddressArea(DB db, Composite parent) {
-        super(db, null, -1, parent, "Database Address", null);
+        super(db, null, null, parent, "Database Address", null);
     }
 
     @Override

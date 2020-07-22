@@ -33,7 +33,7 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 public class ImageArea extends Area {
 
     public ImageArea(DB db, Composite parent) {
-        super(db, null, -1, parent, "Image used", null);
+        super(db, null, null, parent, "Image used", null);
     }
 
     @Override

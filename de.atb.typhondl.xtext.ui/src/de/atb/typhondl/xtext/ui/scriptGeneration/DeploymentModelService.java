@@ -2,13 +2,12 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -28,35 +27,33 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class DeploymentModelService {
 
-    private DeploymentModel model;
-    private IFile file;
-    private XtextLiveScopeResourceSetProvider provider;
-    private Properties properties;
-    private ClusterType clusterTypeObject;
+    private static final String DOCKER_COMPOSE = "DockerCompose";
 
-    public DeploymentModelService(IFile file, XtextLiveScopeResourceSetProvider provider, Properties properties) {
-        this.file = file;
-        this.provider = provider;
-        this.properties = properties;
-        this.model = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+    public static DeploymentModel createModel(IFile file, XtextLiveScopeResourceSetProvider provider,
+            Properties properties) {
+        DeploymentModel model = readModel(file, provider, properties);
+        model = addDBsToModel(model);
+        model = addPolystore(properties, model);
+        return model;
     }
 
-    public void readModel() {
-        XtextResourceSet resourceSet = (XtextResourceSet) this.provider.get(this.file.getProject());
+    public static DeploymentModel readModel(IFile file, XtextLiveScopeResourceSetProvider provider,
+            Properties properties) {
+        XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
         resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
         // adds all .tdl files in project folder to resourceSet
         IResource members[] = null;
         try {
-            members = this.file.getProject().members();
+            members = file.getProject().members();
         } catch (CoreException e) {
             e.printStackTrace();
         }
@@ -68,117 +65,131 @@ public class DeploymentModelService {
             }
         }
         // read DL model and properties
-        URI modelURI = URI.createPlatformResourceURI(this.file.getFullPath().toString(), true);
+        URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);
-        this.model = (DeploymentModel) DLmodelResource.getContents().get(0);
-        if (!EcoreUtil2.getAllContentsOfType(model, Platform.class).isEmpty()) {
-            this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
-            addDBsToModel();
-        } else {
-            this.model = null;
-        }
+        return (DeploymentModel) DLmodelResource.getContents().get(0);
     }
 
     /**
      * Finds and adds the DB models from additional files if given as {@link Import}
      * in the main model file
+     * 
+     * @param model
+     * @return
      */
-    private void addDBsToModel() {
-        Resource resource = this.model.eResource();
+    private static DeploymentModel addDBsToModel(DeploymentModel model) {
+        Resource resource = model.eResource();
         URI uri = resource.getURI().trimSegments(1);
 
-        EcoreUtil2.getAllContentsOfType(this.model, Import.class).stream()
+        EcoreUtil2.getAllContentsOfType(model, Import.class).stream()
                 .filter(info -> info.getRelativePath().endsWith("tdl")).forEach(info -> {
                     model.getElements()
                             .addAll(((DeploymentModel) resource.getResourceSet()
                                     .getResource(uri.appendSegment(info.getRelativePath()), true).getContents().get(0))
                                             .getElements());
                 });
+        return model;
     }
 
-    public void addPolystore() {
+    public static DeploymentModel addPolystore(Properties properties, DeploymentModel model) {
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-        String clusterType = clusterTypeObject.getName();
+        String clusterType = getClusterTypeName(model);
 
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
-        DB polystoreDB = DBService.createPolystoreDB(this.properties, clusterType, DBService.getMongoDBType(model));
+        DB polystoreDB = DBService.createPolystoreDB(properties, clusterType, DBService.getMongoDBType(model));
         model.getElements().add(polystoreDB);
-        Container polystoreDBContainer = ContainerService.create(properties.getProperty("db.containername"),
-                containerType, polystoreDB,
-                properties.getProperty("db.containername") + ":" + properties.getProperty("db.port"));
-        if (clusterType.equalsIgnoreCase("DockerCompose")) {
-            polystoreDBContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes",
-                    new String[] { "./" + properties.getProperty("db.volume") + "/:/docker-entrypoint-initdb.d" }));
+        Container polystoreDBContainer = ContainerService.create(
+                properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
+                properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
+                        + properties.getProperty(PropertiesService.DB_PORT));
+        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+            polystoreDBContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes", new String[] {
+                    "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
         application.getContainers().add(polystoreDBContainer);
 
         // Polystore API
-        Software polystoreAPI = SoftwareService.create(properties.getProperty("api.name"),
-                properties.getProperty("api.image"));
+        Software polystoreAPI = SoftwareService.create(properties.getProperty(PropertiesService.API_NAME),
+                properties.getProperty(PropertiesService.API_IMAGE));
         model.getElements().add(polystoreAPI);
-        Container polystoreAPIContainer = ContainerService.create(properties.getProperty("api.containername"),
-                containerType, polystoreAPI,
-                properties.getProperty("api.containername") + ":" + properties.getProperty("api.port"));
-        polystoreAPIContainer.setPorts(ContainerService.createPorts(new String[] { "published",
-                properties.getProperty("api.publishedPort"), "target", properties.getProperty("api.port") }));
-        if (Integer.parseInt(properties.getProperty("api.replicas")) > 1) {
-            polystoreAPIContainer.setReplication(ContainerService
-                    .createStatelessReplication(Integer.parseInt(properties.getProperty("api.replicas"))));
+        Container polystoreAPIContainer = ContainerService.create(
+                properties.getProperty(PropertiesService.API_CONTAINERNAME), containerType, polystoreAPI,
+                properties.getProperty(PropertiesService.API_CONTAINERNAME) + ":"
+                        + properties.getProperty(PropertiesService.API_PORT));
+        polystoreAPIContainer.setPorts(ContainerService
+                .createPorts(new String[] { "published", properties.getProperty(PropertiesService.API_PUBLISHEDPORT),
+                        "target", properties.getProperty(PropertiesService.API_PORT) }));
+        if (Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS)) > 1) {
+            polystoreAPIContainer.setReplication(ContainerService.createStatelessReplication(
+                    Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS))));
         }
-        polystoreAPIContainer.getProperties()
-                .add(ContainerService.addAPIEntrypoint(clusterType, properties.getProperty("api.entrypoint")));
-        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+        polystoreAPIContainer.getProperties().add(ContainerService.addAPIEntrypoint(clusterType,
+                properties.getProperty(PropertiesService.API_ENTRYPOINT)));
+        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
             polystoreAPIContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
         }
         application.getContainers().add(polystoreAPIContainer);
 
         // Polystore UI
-        Software polystoreUI = SoftwareService.create(properties.getProperty("ui.name"),
-                properties.getProperty("ui.image"));
-        polystoreUI.setEnvironment(SoftwareService
-                .createEnvironment(new String[] { "API_PORT", properties.getProperty("ui.environment.API_PORT"),
-                        "API_HOST", properties.getProperty("ui.environment.API_HOST") }));
+        Software polystoreUI = SoftwareService.create(properties.getProperty(PropertiesService.UI_NAME),
+                properties.getProperty(PropertiesService.UI_IMAGE));
+        polystoreUI.setEnvironment(SoftwareService.createEnvironment(
+                new String[] { "API_PORT", properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT),
+                        "API_HOST", properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST) }));
         model.getElements().add(polystoreUI);
-        Container polystoreUIContainer = ContainerService.create(properties.getProperty("ui.containername"),
-                containerType, polystoreUI,
-                properties.getProperty("ui.containername") + ":" + properties.getProperty("ui.port"));
-        polystoreUIContainer.setPorts(ContainerService.createPorts(new String[] { "published",
-                properties.getProperty("ui.publishedPort"), "target", properties.getProperty("ui.port") }));
+        Container polystoreUIContainer = ContainerService.create(
+                properties.getProperty(PropertiesService.UI_CONTAINERNAME), containerType, polystoreUI,
+                properties.getProperty(PropertiesService.UI_CONTAINERNAME) + ":"
+                        + properties.getProperty(PropertiesService.UI_PORT));
+        polystoreUIContainer.setPorts(ContainerService
+                .createPorts(new String[] { "published", properties.getProperty(PropertiesService.UI_PUBLISHEDPORT),
+                        "target", properties.getProperty(PropertiesService.UI_PORT) }));
         polystoreUIContainer.getDepends_on().add(ContainerService.createDependsOn(polystoreAPIContainer));
         application.getContainers().add(polystoreUIContainer);
 
         // QL Server
-        Software qlServer = SoftwareService.create(properties.getProperty("qlserver.name"),
-                properties.getProperty("qlserver.image"));
+        Software qlServer = SoftwareService.create(properties.getProperty(PropertiesService.QLSERVER_NAME),
+                properties.getProperty(PropertiesService.QLSERVER_IMAGE));
         model.getElements().add(qlServer);
-        Container qlServerContainer = ContainerService.create(properties.getProperty("qlserver.containername"),
-                containerType, qlServer,
-                properties.getProperty("qlserver.containername") + ":" + properties.getProperty("qlserver.port"));
-        if (Integer.parseInt(properties.getProperty("qlserver.replicas")) > 1) {
-            qlServerContainer.setReplication(ContainerService
-                    .createStatelessReplication(Integer.parseInt(properties.getProperty("qlserver.replicas"))));
+        Container qlServerContainer = ContainerService.create(
+                properties.getProperty(PropertiesService.QLSERVER_CONTAINERNAME), containerType, qlServer,
+                properties.getProperty(PropertiesService.QLSERVER_CONTAINERNAME) + ":"
+                        + properties.getProperty(PropertiesService.QLSERVER_PORT));
+        if (Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS)) > 1) {
+            qlServerContainer.setReplication(ContainerService.createStatelessReplication(
+                    Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS))));
         }
-        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
             qlServerContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
         }
         application.getContainers().add(qlServerContainer);
 
         // Analytics
-        if (properties.get("polystore.useAnalytics").equals("true")) {
-            this.model = AnalyticsService.addAnalytics(model, properties, clusterTypeObject, containerType);
+        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
+            model = AnalyticsService.addAnalytics(model, properties, getClusterType(model), containerType);
         }
+        return model;
     }
 
-    public void addToMetadata(String outputFolder) {
-        Path DLPath = Paths.get(file.getLocation().toOSString());
-        Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
+    private static String getClusterTypeName(DeploymentModel model) {
+        return getClusterType(model).getName();
+    }
+
+    private static ClusterType getClusterType(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
+    }
+
+    public static DeploymentModel addToMetadata(String outputFolder, String MLName, IFile file, Properties properties,
+            DeploymentModel model) {
+        Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
+        Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
-        switch (clusterTypeObject.getName()) {
+        switch (getClusterTypeName(model)) {
         case "Kubernetes":
             // to be able to add the models to the kubernetes job, the
             // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
@@ -187,12 +198,13 @@ public class DeploymentModelService {
             addInsertStatementToPolystoreMongoContainer(getPolystoreMongoContainer(model, properties),
                     mongoInsertStatement, properties);
             break;
-        case "DockerCompose":
+        case DOCKER_COMPOSE:
             writeInsertStatementToJavaScriptFile(outputFolder, mongoInsertStatement, properties);
             break;
         default:
             break;
         }
+        return model;
     }
 
     /**
@@ -206,7 +218,7 @@ public class DeploymentModelService {
      */
     private static void writeInsertStatementToJavaScriptFile(String outputFolder, String mongoInsertStatement,
             Properties properties) {
-        String modelsFolder = outputFolder + File.separator + properties.getProperty("db.volume");
+        String modelsFolder = outputFolder + File.separator + properties.getProperty(PropertiesService.DB_VOLUME);
         String path = modelsFolder + File.separator + "addModels.js";
         if (!Files.exists(Paths.get(outputFolder))) {
             try {
@@ -223,7 +235,8 @@ public class DeploymentModelService {
             }
         }
         try {
-            Files.write(Paths.get(path), mongoInsertStatement.getBytes(), StandardOpenOption.CREATE);
+            Files.write(Paths.get(path), mongoInsertStatement.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -237,10 +250,11 @@ public class DeploymentModelService {
      * @return A container named "polystore-mongo"
      */
     private static Container getPolystoreMongoContainer(DeploymentModel model, Properties properties) {
-        List<Container> mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
-                .filter(container -> container.getName().equalsIgnoreCase(properties.getProperty("db.containername")))
-                .collect(Collectors.toList());
-        return mongo.isEmpty() ? null : mongo.get(0);
+        Container mongo = EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
+                .filter(container -> container.getName()
+                        .equalsIgnoreCase(properties.getProperty(PropertiesService.DB_CONTAINERNAME)))
+                .findFirst().orElse(null);
+        return mongo == null ? null : mongo;
     }
 
     /**
@@ -288,10 +302,6 @@ public class DeploymentModelService {
                 + "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
                 + "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
                 + "\"_class\":\"com.clms.typhonapi.models.Model\" }]);";
-    }
-
-    public DeploymentModel getModel() {
-        return this.model;
     }
 
 }

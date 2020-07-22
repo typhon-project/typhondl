@@ -59,13 +59,14 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private Container container;
-    private int chosenTechnology;
+    private SupportedTechnologies chosenTechnology;
     private int pageWidth;
     private Properties properties;
     private ArrayList<Area> areas;
     private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, Properties properties, int pageWidth) {
+    public CreationDatabasePage(String pageName, DB db, SupportedTechnologies chosenTechnology, Properties properties,
+            int pageWidth) {
         super(pageName);
         this.db = db;
         this.chosenTechnology = chosenTechnology;
@@ -140,9 +141,8 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
-        if (!isInList(HelmArea.class)
-                && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null && !db.isExternal()) {
+        if (!isInList(HelmArea.class) && chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null
+                && !db.isExternal()) {
             areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
@@ -183,7 +183,7 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private String getReplicationProperty() {
         String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
-                + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
+                + chosenTechnology.name().toLowerCase();
         return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 
@@ -207,11 +207,11 @@ public class CreationDatabasePage extends MyWizardPage {
         ((Composite) this.getControl()).layout();
     }
 
-    public int getChosenTechnology() {
+    public SupportedTechnologies getChosenTechnology() {
         return this.chosenTechnology;
     }
 
-    public void setChosenTechnology(int chosenTechnology) {
+    public void setChosenTechnology(SupportedTechnologies chosenTechnology) {
         this.chosenTechnology = chosenTechnology;
     }
 

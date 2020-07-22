@@ -16,12 +16,15 @@ import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class AnalyticsService {
 
+    private static final String KUBERNETES = "Kubernetes";
+
     public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties,
             ClusterType clusterTypeObject, ContainerType containerType) {
-        String kafkaURI = properties.getProperty("analytics.kafka.uri");
+        String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
@@ -30,41 +33,42 @@ public class AnalyticsService {
         String clusterType = clusterTypeObject.getName();
 
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
-            String zookeeperPort = properties.getProperty("analytics.zookeeper.publishedPort");
-            String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
+            String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
+            String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();
             zookeeperURI.setValue(kafkaHost + ":" + zookeeperPort);
 
-            if (properties.get("analytics.deployment.create").equals("true")) {
+            if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                 // zookeeper
                 Software zookeeper = SoftwareService.create("zookeeper",
-                        properties.getProperty("analytics.zookeeper.image"));
+                        properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_IMAGE));
                 model.getElements().add(zookeeper);
                 Container zookeeperContainer = ContainerService.create(
-                        properties.getProperty("analytics.zookeeper.containername"), containerType, zookeeper,
-                        zookeeperURI.getValue());
+                        properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_CONTAINERNAME), containerType,
+                        zookeeper, zookeeperURI.getValue());
                 zookeeperContainer.setPorts(ContainerService
                         .createPorts(new String[] { "published", zookeeperPort, "target", zookeeperTargetPort }));
                 // kafka
                 Software kafka = SoftwareService.create("Kafka",
-                        "wurstmeister/kafka:" + properties.getProperty("analytics.kafka.scala.version") + "-"
-                                + properties.getProperty("analytics.kafka.version"));
+                        "wurstmeister/kafka:" + properties.getProperty(PropertiesService.ANALYTICS_KAFKA_SCALA_VERSION)
+                                + "-" + properties.getProperty(PropertiesService.ANALYTICS_KAFKA_VERSION));
                 kafka.setEnvironment(SoftwareService.createEnvironment(getKafkaComposeSettings(properties)));
                 model.getElements().add(kafka);
                 Container kafkaContainer = ContainerService.create(
-                        properties.getProperty("analytics.kafka.containername"), containerType, kafka, kafkaURI);
+                        properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME), containerType, kafka,
+                        kafkaURI);
                 kafkaContainer.getDepends_on().add(ContainerService.createDependsOn(zookeeperContainer));
                 kafkaContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes",
                         new String[] { "/var/run/docker.sock:/var/run/docker.sock" }));
-                if (Integer.parseInt(properties.getProperty("analytics.kafka.replicas")) > 1) {
+                if (Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
                     kafkaContainer.setReplication(ContainerService.createStatelessReplication(
-                            Integer.parseInt(properties.getProperty("analytics.kafka.replicas"))));
+                            Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS))));
                     kafkaContainer.setPorts(ContainerService.createPorts(new String[] { "published", kafkaPort,
-                            "target", properties.getProperty("analytics.kafka.port"), "protocol", "tcp", "mode",
-                            "host" }));
+                            "target", properties.getProperty(PropertiesService.ANALYTICS_KAFKA_PORT), "protocol", "tcp",
+                            "mode", "host" }));
                 } else {
                     kafkaContainer.setPorts(ContainerService.createPorts(new String[] { "published", kafkaPort,
-                            "target", properties.getProperty("analytics.kafka.port") }));
+                            "target", properties.getProperty(PropertiesService.ANALYTICS_KAFKA_PORT) }));
                 }
                 // flink
                 Software flinkJobmanager = SoftwareService.create("FlinkJobmanager", "flink:latest");
@@ -92,11 +96,12 @@ public class AnalyticsService {
                 flinkTaskmanagerContainer.getProperties()
                         .add(ContainerService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
                 // authAll
-                Software authAll = SoftwareService.create("authAll", properties.getProperty("analytics.authAll.image"));
+                Software authAll = SoftwareService.create("authAll",
+                        properties.getProperty(PropertiesService.ANALYTICS_AUTHALL_IMAGE));
                 model.getElements().add(authAll);
                 Container authAllContainer = ContainerService.create("authAll", containerType, authAll, null);
 
-                if (properties.get("analytics.deployment.contained").equals("false")) {
+                if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("false")) {
                     // separate deployment scripts for analytics get generated. the analytics
                     // containers are in a different cluster
                     kafka.setExternal(true);
@@ -137,14 +142,14 @@ public class AnalyticsService {
                 zookeeper.setUri(zookeeperURI);
                 model.getElements().add(zookeeper);
             }
-        } else if (clusterType.equalsIgnoreCase("Kubernetes")) {
+        } else if (clusterType.equalsIgnoreCase(KUBERNETES)) {
             Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
             kafka.setName("Kafka");
             model.getElements().add(kafka);
-            if (properties.get("analytics.deployment.create").equals("true")) {
+            if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                 Container kafkaContainer = ContainerService.create("kafka", containerType, kafka,
                         kafkaURIObject.getValue());
-                if (properties.get("analytics.deployment.contained").equals("false")) {
+                if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("false")) {
                     kafka.setExternal(true);
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
                     analyticsCluster.setType(clusterTypeObject);
@@ -171,14 +176,15 @@ public class AnalyticsService {
     }
 
     private static String[] getKafkaComposeSettings(Properties properties) {
-        String zookeeperTargetPort = properties.getProperty("analytics.zookeeper.port");
-        String kafkaInsidePort = properties.getProperty("analytics.kafka.insidePort");
-        String kafkaURI = properties.getProperty("analytics.kafka.uri");
+        String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
+        String kafkaInsidePort = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_INSIDEPORT);
+        String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         String kafkaAdvertisedHost = kafkaHost;
-        String[] kafkaListeners = properties.getProperty("analytics.kafka.listeners").split("\\s*,\\s*");
-        String kafkaListenerNameIn = properties.getProperty("analytics.kafka.listenerName.in");
-        String kafkaListenerNameOut = properties.getProperty("analytics.kafka.listenerName.out");
+        String[] kafkaListeners = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_LISTENERS)
+                .split("\\s*,\\s*");
+        String kafkaListenerNameIn = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_LISTENERNAME_IN);
+        String kafkaListenerNameOut = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_LISTENERNAME_OUT);
         String kafkaListenersString = "";
         String kafkaAdvertisedListenerString = "";
         for (int i = 0; i < kafkaListeners.length; i++) {

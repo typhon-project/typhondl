@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class AnalyticsKubernetesService {
 
@@ -53,16 +54,17 @@ public class AnalyticsKubernetesService {
         Path flinkConfigMapPath = Paths.get(
                 analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
         HashMap<String, String> flinkPropertyMap = new HashMap<>();
-        flinkPropertyMap.put("jobmanager.heap.size:", "analytics.flink.jobmanager.heap.size");
-        flinkPropertyMap.put("taskmanager.memory.process.size:", "analytics.flink.taskmanager.memory.process.size");
-        flinkPropertyMap.put("log4j.rootLogger=", "analytics.logging.rootlogger");
-        flinkPropertyMap.put("log4j.logger.akka=", "analytics.logging.akka");
-        flinkPropertyMap.put("log4j.logger.org.apache.kafka=", "analytics.logging.kafka");
-        flinkPropertyMap.put("log4j.logger.org.apache.hadoop=", "analytics.logging.hadoop");
-        flinkPropertyMap.put("log4j.logger.org.apache.zookeeper=", "analytics.logging.zookeeper");
+        flinkPropertyMap.put("jobmanager.heap.size:", PropertiesService.ANALYTICS_FLINK_JOBMANAGER_HEAP_SIZE);
+        flinkPropertyMap.put("taskmanager.memory.process.size:",
+                PropertiesService.ANALYTICS_FLINK_TASKMANAGER_MEMORY_PROCESS_SIZE);
+        flinkPropertyMap.put("log4j.rootLogger=", PropertiesService.ANALYTICS_LOGGING_ROOTLOGGER);
+        flinkPropertyMap.put("log4j.logger.akka=", PropertiesService.ANALYTICS_LOGGING_AKKA);
+        flinkPropertyMap.put("log4j.logger.org.apache.kafka=", PropertiesService.ANALYTICS_LOGGING_KAFKA);
+        flinkPropertyMap.put("log4j.logger.org.apache.hadoop=", PropertiesService.ANALYTICS_LOGGING_HADOOP);
+        flinkPropertyMap.put("log4j.logger.org.apache.zookeeper=", PropertiesService.ANALYTICS_LOGGING_ZOOKEEPER);
         flinkPropertyMap.put(
                 "log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
-                "analytics.logging.flink");
+                PropertiesService.ANALYTICS_LOGGING_FLINK);
         List<String> flinkConfigmap = Files.readAllLines(flinkConfigMapPath);
         for (int i = 0; i < flinkConfigmap.size(); i++) {
             for (String propertyNameInFile : flinkPropertyMap.keySet()) {
@@ -75,7 +77,7 @@ public class AnalyticsKubernetesService {
         }
         Files.write(flinkConfigMapPath, flinkConfigmap, StandardOpenOption.TRUNCATE_EXISTING);
 
-        if (!properties.get("analytics.flink.rest.port").equals("automatic")) {
+        if (!properties.get(PropertiesService.ANALYTICS_FLINK_REST_PORT).equals("automatic")) {
             Path flinkRestServicePath = Paths
                     .get(analyticsZipPath + File.separator + "flink" + File.separator + "jobmanager-rest-service.yaml");
             List<String> flinkRestService = Files.readAllLines(flinkRestServicePath);
@@ -83,29 +85,30 @@ public class AnalyticsKubernetesService {
             for (int i = 0; i < flinkRestService.size(); i++) {
                 newListWithAddedNodePort.add(flinkRestService.get(i));
                 if (flinkRestService.get(i).contains("targetPort")) {
-                    newListWithAddedNodePort.add("    nodePort: " + properties.get("analytics.flink.rest.port"));
+                    newListWithAddedNodePort
+                            .add("    nodePort: " + properties.get(PropertiesService.ANALYTICS_FLINK_REST_PORT));
                 }
             }
             Files.write(flinkRestServicePath, newListWithAddedNodePort, StandardOpenOption.TRUNCATE_EXISTING);
         }
 
-        if (!properties.get("analytics.flink.taskmanager.replicas").equals("2")) {
+        if (!properties.get(PropertiesService.ANALYTICS_FLINK_TASKMANAGER_REPLICAS).equals("2")) {
             Path flinkTaskmanagerPath = Paths
                     .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
             List<String> flinkTaskmanager = Files.readAllLines(flinkTaskmanagerPath);
             for (int i = 0; i < flinkTaskmanager.size(); i++) {
                 if (flinkTaskmanager.get(i).contains("replicas")) {
                     flinkTaskmanager.set(i, replaceOldValueWithNewValue(flinkTaskmanager.get(i), "replicas:",
-                            properties.getProperty("analytics.flink.taskmanager.replicas")));
+                            properties.getProperty(PropertiesService.ANALYTICS_FLINK_TASKMANAGER_REPLICAS)));
                 }
             }
             Files.write(flinkTaskmanagerPath, flinkTaskmanager, StandardOpenOption.TRUNCATE_EXISTING);
         }
 
         HashMap<String, String> kafkaClusterPropertyMap = new HashMap<>();
-        kafkaClusterPropertyMap.put("replicas:", "analytics.kafka.cluster.replicas");
-        kafkaClusterPropertyMap.put("version:", "analytics.kafka.version");
-        kafkaClusterPropertyMap.put("size:", "analytics.kafka.storageclaim");
+        kafkaClusterPropertyMap.put("replicas:", PropertiesService.ANALYTICS_KAFKA_CLUSTER_REPLICAS);
+        kafkaClusterPropertyMap.put("version:", PropertiesService.ANALYTICS_KAFKA_VERSION);
+        kafkaClusterPropertyMap.put("size:", PropertiesService.ANALYTICS_KAFKA_STORAGECLAIM);
         Path kafkaClusterPath = Paths
                 .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
         List<String> kafkaCluster = Files.readAllLines(kafkaClusterPath);
@@ -122,7 +125,7 @@ public class AnalyticsKubernetesService {
         for (int i = zookeeperIndex; i < kafkaCluster.size(); i++) {
             if (kafkaCluster.get(i).contains("size")) {
                 kafkaCluster.set(i, replaceOldValueWithNewValue(kafkaCluster.get(i), "size:",
-                        properties.getProperty("analytics.zookeeper.storageclaim")));
+                        properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_STORAGECLAIM)));
             }
         }
         Files.write(kafkaClusterPath, kafkaCluster, StandardOpenOption.TRUNCATE_EXISTING);

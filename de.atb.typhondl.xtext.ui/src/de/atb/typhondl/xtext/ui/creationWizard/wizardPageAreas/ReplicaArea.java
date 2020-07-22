@@ -42,7 +42,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ReplicaArea extends Area {
 
-    public ReplicaArea(DB db, Container container, int chosenTechnology, Composite parent, Properties properties) {
+    public ReplicaArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
+            Properties properties) {
         super(db, container, chosenTechnology, parent, "Replication", properties);
     }
 
@@ -139,7 +140,7 @@ public class ReplicaArea extends Area {
 
     private String getReplicationProperty() {
         String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
-                + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
+                + chosenTechnology.name().toLowerCase();
         return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 

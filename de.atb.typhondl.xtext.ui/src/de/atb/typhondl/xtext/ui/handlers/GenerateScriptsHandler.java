@@ -1,6 +1,8 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /*-
  * #%L
@@ -42,7 +44,6 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
-import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
@@ -70,16 +71,12 @@ public class GenerateScriptsHandler extends AbstractHandler {
 
             // add Xtext Nature
             IProject project = file.getProject();
-            boolean hasXtextNature;
             try {
-                hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
-                if (!hasXtextNature) {
+                if (!project.hasNature(XtextProjectHelper.NATURE_ID)) {
                     IProjectDescription projectDescription = project.getDescription();
-                    String[] oldNatures = projectDescription.getNatureIds();
-                    String[] newNatures = new String[oldNatures.length + 1];
-                    System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
-                    newNatures[0] = XtextProjectHelper.NATURE_ID;
-                    projectDescription.setNatureIds(newNatures);
+                    ArrayList<String> natureIds = new ArrayList<>(Arrays.asList(projectDescription.getNatureIds()));
+                    natureIds.add(0, XtextProjectHelper.NATURE_ID);
+                    projectDescription.setNatureIds(natureIds.toArray(new String[0]));
                     project.setDescription(projectDescription, null);
                 }
             } catch (CoreException e) {
@@ -88,25 +85,17 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 e.printStackTrace();
             }
 
-            GenerationService generationService = new GenerationService(file, provider);
-            if (generationService.getProperties() == null) {
+            GenerationService generationService;
+            try {
+                generationService = new GenerationService(file, provider);
+                String fileLocation = file.getLocation().toOSString();
+                generationService.deleteOldGeneratedFiles(
+                        new File(fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()))));
+                generationService.startGeneration();
+            } catch (Exception e2) {
                 MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
                         "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
-            } else {
-                generationService.deleteOldGeneratedFiles(
-                        new File(file.getLocation().toOSString().replace("." + file.getFileExtension(), "")));
-                DeploymentModel model = generationService.buildModel();
-                if (model == null) {
-                    MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
-                            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
-                } else {
-                    generationService.saveModelAsXMI(model);
-                    generationService.addToMetadata();
-                    generationService.generateDeployment(model);
-                    // TODO check if all files were generated?
-                }
             }
-
             for (IProject iproject : root.getProjects()) {
                 try {
                     iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
