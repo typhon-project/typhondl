@@ -49,12 +49,11 @@ public class GenerationService {
         return properties;
     }
 
-    public boolean startGeneration() {
+    public void startGeneration() {
         this.model = DeploymentModelService.createModel(file, provider, properties);
         saveModelAsXMI();
         this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), file, properties, model);
         generateDeployment();
-        return true;
     }
 
     /**

@@ -67,14 +67,7 @@ public class DeploymentModelService {
         // read DL model and properties
         URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);
-        DeploymentModel model = null;
-        try {
-            model = (DeploymentModel) DLmodelResource.getContents().get(0);
-        } catch (Exception e) {
-            // TODO: handle exception
-
-        }
-        return model;
+        return (DeploymentModel) DLmodelResource.getContents().get(0);
     }
 
     /**

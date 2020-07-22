@@ -1,7 +1,6 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -92,12 +91,8 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 String fileLocation = file.getLocation().toOSString();
                 generationService.deleteOldGeneratedFiles(
                         new File(fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()))));
-                boolean success = generationService.startGeneration();
-                if (!success) {
-                    MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
-                            "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
-                }
-            } catch (IOException e1) {
+                generationService.startGeneration();
+            } catch (Exception e2) {
                 MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
                         "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
             }
