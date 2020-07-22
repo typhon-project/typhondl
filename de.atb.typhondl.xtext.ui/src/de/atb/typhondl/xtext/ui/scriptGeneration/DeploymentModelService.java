@@ -27,7 +27,6 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
@@ -38,26 +37,23 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 public class DeploymentModelService {
 
     private static final String DOCKER_COMPOSE = "DockerCompose";
-    private DeploymentModel model;
-    private IFile file;
-    private XtextLiveScopeResourceSetProvider provider;
-    private Properties properties;
-    private ClusterType clusterTypeObject;
 
-    public DeploymentModelService(IFile file, XtextLiveScopeResourceSetProvider provider, Properties properties) {
-        this.file = file;
-        this.provider = provider;
-        this.properties = properties;
-        this.model = TyphonDLFactory.eINSTANCE.createDeploymentModel();
+    public static DeploymentModel createModel(IFile file, XtextLiveScopeResourceSetProvider provider,
+            Properties properties) {
+        DeploymentModel model = readModel(file, provider, properties);
+        model = addDBsToModel(model);
+        model = addPolystore(properties, model);
+        return model;
     }
 
-    public void readModel() {
-        XtextResourceSet resourceSet = (XtextResourceSet) this.provider.get(this.file.getProject());
+    public static DeploymentModel readModel(IFile file, XtextLiveScopeResourceSetProvider provider,
+            Properties properties) {
+        XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
         resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
         // adds all .tdl files in project folder to resourceSet
         IResource members[] = null;
         try {
-            members = this.file.getProject().members();
+            members = file.getProject().members();
         } catch (CoreException e) {
             e.printStackTrace();
         }
@@ -69,43 +65,48 @@ public class DeploymentModelService {
             }
         }
         // read DL model and properties
-        URI modelURI = URI.createPlatformResourceURI(this.file.getFullPath().toString(), true);
+        URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);
-        this.model = (DeploymentModel) DLmodelResource.getContents().get(0);
-        if (!EcoreUtil2.getAllContentsOfType(model, Platform.class).isEmpty()) {
-            this.clusterTypeObject = EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
-            addDBsToModel();
-        } else {
-            this.model = null;
+        DeploymentModel model = null;
+        try {
+            model = (DeploymentModel) DLmodelResource.getContents().get(0);
+        } catch (Exception e) {
+            // TODO: handle exception
+
         }
+        return model;
     }
 
     /**
      * Finds and adds the DB models from additional files if given as {@link Import}
      * in the main model file
+     * 
+     * @param model
+     * @return
      */
-    private void addDBsToModel() {
-        Resource resource = this.model.eResource();
+    private static DeploymentModel addDBsToModel(DeploymentModel model) {
+        Resource resource = model.eResource();
         URI uri = resource.getURI().trimSegments(1);
 
-        EcoreUtil2.getAllContentsOfType(this.model, Import.class).stream()
+        EcoreUtil2.getAllContentsOfType(model, Import.class).stream()
                 .filter(info -> info.getRelativePath().endsWith("tdl")).forEach(info -> {
                     model.getElements()
                             .addAll(((DeploymentModel) resource.getResourceSet()
                                     .getResource(uri.appendSegment(info.getRelativePath()), true).getContents().get(0))
                                             .getElements());
                 });
+        return model;
     }
 
-    public void addPolystore() {
+    public static DeploymentModel addPolystore(Properties properties, DeploymentModel model) {
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-        String clusterType = clusterTypeObject.getName();
+        String clusterType = getClusterTypeName(model);
 
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
-        DB polystoreDB = DBService.createPolystoreDB(this.properties, clusterType, DBService.getMongoDBType(model));
+        DB polystoreDB = DBService.createPolystoreDB(properties, clusterType, DBService.getMongoDBType(model));
         model.getElements().add(polystoreDB);
         Container polystoreDBContainer = ContainerService.create(
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
@@ -177,15 +178,25 @@ public class DeploymentModelService {
 
         // Analytics
         if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
-            this.model = AnalyticsService.addAnalytics(model, properties, clusterTypeObject, containerType);
+            model = AnalyticsService.addAnalytics(model, properties, getClusterType(model), containerType);
         }
+        return model;
     }
 
-    public void addToMetadata(String outputFolder, String MLName) {
+    private static String getClusterTypeName(DeploymentModel model) {
+        return getClusterType(model).getName();
+    }
+
+    private static ClusterType getClusterType(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
+    }
+
+    public static DeploymentModel addToMetadata(String outputFolder, String MLName, IFile file, Properties properties,
+            DeploymentModel model) {
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
-        switch (clusterTypeObject.getName()) {
+        switch (getClusterTypeName(model)) {
         case "Kubernetes":
             // to be able to add the models to the kubernetes job, the
             // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
@@ -200,6 +211,7 @@ public class DeploymentModelService {
         default:
             break;
         }
+        return model;
     }
 
     /**
@@ -297,10 +309,6 @@ public class DeploymentModelService {
                 + "false, \"initializedConnections\":false, \"contents\":\"" + MLmodelContent.replaceAll("\"", "\\\\\"")
                 + "\", \"type\":\"ML\", \"dateReceived\":ISODate(), "
                 + "\"_class\":\"com.clms.typhonapi.models.Model\" }]);";
-    }
-
-    public DeploymentModel getModel() {
-        return this.model;
     }
 
 }
