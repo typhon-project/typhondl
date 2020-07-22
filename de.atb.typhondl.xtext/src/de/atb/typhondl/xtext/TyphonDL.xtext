@@ -106,7 +106,7 @@ Application:
 	{Application}
 	'application' name=Name '{'
 	(containers+=Container)*
-	(volumes=Volumes)?
+	(volumes=Volume_Toplevel)?
 	'}';
 
 Container:
@@ -137,26 +137,26 @@ enum Modes:
 Volumes:
 	{Volumes}
 	'volumes' 
-	(decls+=Volume_Declaration)+
-;
-
-Volume_Declaration:
-	Volume_Properties | Volume_Name 
+	(decls+=Volume_Properties)+ 
 ;
 
 Volume_Properties:
+	{Volume_Properties}
 	('{'
-	('volumeName''=' volumeName= ID';')? 
-	 'mountPath' '=' volumePath= ValueArray';'
-	('volumeType' '=' volumeType= Value';')?
+	('volumeName''=' volumeName=ID';')? 
+	 'mountPath' '=' volumePath=ValueArray';'
+	('volumeType' '=' volumeType=Value';')?
 	(specifics+=Property)*
 	'}'
 	)
 ;
 
-Volume_Name:
-	(volumeName=ID)
-;   
+Volume_Toplevel:
+	'volumes' '{'
+	(names+=ID)+
+	(specifics+=Property)*
+	'}'
+;
 
 Reference:
 	'deploys' reference=[Services];
@@ -199,11 +199,10 @@ Key_ValueArray:
 	name=ID ('[')
 	(values+=Value) (',' values+=Value)*
 	(']');
-	
+
 ValueArray: 
 	value=Value (',' values+=Value)* 
 ;
-	
 
 Value:
 	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
