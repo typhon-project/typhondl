@@ -20,6 +20,7 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class AnalyticsService {
 
+    private static final String DOCKER_COMPOSE = "DockerCompose";
     private static final String KUBERNETES = "Kubernetes";
 
     public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties,
@@ -32,7 +33,7 @@ public class AnalyticsService {
 
         String clusterType = clusterTypeObject.getName();
 
-        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();

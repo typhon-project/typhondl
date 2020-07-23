@@ -236,7 +236,6 @@ public class CreateModelWizard extends Wizard {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
-            System.out.println(SupportedTechnologies.DockerCompose.name());
             if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
