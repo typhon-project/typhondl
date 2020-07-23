@@ -9,6 +9,7 @@ clustertype DockerCompose
 platformtype localhost
 platform platformName : localhost {
 	cluster clusterName : DockerCompose {
+		networks weatherwarningapp
 		application Polystore {
 			container appdata : Docker {
 				deploys AppData
@@ -16,13 +17,13 @@ platform platformName : localhost {
 				volumes {
 					mountPath = appdata:/usr/app/ ;
 				}
-				}
+			}
 			container textwarningdata : Docker {
 				deploys TextWarningData
 				uri = textwarningdata:27017 ;
 				volumes {
 					volumeName = textdata;
-					mountPath = /textdata , /usr/textapp;
+					mountPath = /textdata;
 					volumeType = volume ;
 					volume {
 						nocopy = true;
@@ -31,13 +32,20 @@ platform platformName : localhost {
 			}
 			container vehicledatadb : Docker {
 				deploys VehicleDataDB
-				uri = vehicledatadb:27017 ;
+				networks weatherwarningapp
+				uri = vehicledatadb:27017;
+				volumes {
+					volumeName = vehicledata;
+					mountPath = /vehicledata;
+					volumeType = volume ;
+					volume {
+						nocopy = true;
+					}
+			    }  
 			
 			}
 			volumes {
-			  appdata 
-			  externall = true;
-			  name = my-app-data;
+			  vehicledata
 			}
 		}
 	}

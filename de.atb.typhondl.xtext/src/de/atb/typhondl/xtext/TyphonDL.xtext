@@ -97,7 +97,7 @@ Cluster:
 	'}';
 
 Cluster_Network:
-	'network' name=ID
+	'networks' name=ID
 	('{'
 	(key_values+=Key_Values)*
 	'}')?;

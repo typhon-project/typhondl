@@ -1,5 +1,7 @@
 version: '3.7'
 
+networks:
+  weatherwarningapp:
 services:
   appdata:
     image: mariadb:latest
@@ -24,6 +26,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: me
       MONGO_INITDB_ROOT_PASSWORD: h0tcJ86u13c5LSrs
+    networks:
+      - weatherwarningapp
+    volumes:
+      - type: volume
+        source: vehicledata
+        target: /vehicledata
+        volume:
+          nocopy: true
   polystore-mongo:
     image: mongo:latest
     environment:
@@ -63,6 +73,4 @@ services:
     restart: always
 
 volumes:
-  appdata:
-    externall: true
-    name: my-app-data
+  vehicledata:
