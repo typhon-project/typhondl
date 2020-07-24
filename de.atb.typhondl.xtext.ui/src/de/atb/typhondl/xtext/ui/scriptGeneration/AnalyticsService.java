@@ -10,11 +10,13 @@ import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
+import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
+import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
@@ -169,6 +171,25 @@ public class AnalyticsService {
                 kafka.setUri(kafkaURIObject);
             }
         }
+        if (properties.getProperty(PropertiesService.POLYSTORE_USEEVOLUTION).equals("true")) {
+            model = addEvolutionAnalytics(model, properties);
+        }
+        return model;
+    }
+
+    private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties) {
+        // evolution-mongo
+        DB evolutionMongo = DBService.create(PropertiesService.EVOLUTION_DB_CONTAINERNAME,
+                DBService.getMongoDBType(model));
+        evolutionMongo.setCredentials(DBService.createCredentials(PropertiesService.EVOLUTION_DB_USERNAME,
+                PropertiesService.EVOLUTION_DB_PASSWORD));
+//        evolutionMongo.setEnvironment(SoftwareService
+//                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.db")));
+        Software evolutionJava = SoftwareService.create(
+                properties.getProperty(PropertiesService.EVOLUTION_JAVA_CONTAINERNAME),
+                properties.getProperty(PropertiesService.EVOLUTION_JAVA_IMAGE));
+        evolutionJava.setEnvironment(SoftwareService
+                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
         return model;
     }
 

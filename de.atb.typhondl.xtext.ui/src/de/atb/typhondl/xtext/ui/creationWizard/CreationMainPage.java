@@ -298,6 +298,7 @@ public class CreationMainPage extends MyWizardPage {
                     useExistingCheck.setSelection(false);
                     createScriptsCheckExternal.setSelection(true);
                     useEvolutionCheck.setSelection(false);
+                    properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
                     createScripts = true;
                     analyticsContained = false;
                 }
@@ -311,6 +312,7 @@ public class CreationMainPage extends MyWizardPage {
                     useExistingCheck.setSelection(false);
                     createScriptsCheck.setSelection(false);
                     useEvolutionCheck.setSelection(false);
+                    properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
                     createScripts = true;
                     analyticsContained = false;
                 } else {
@@ -329,6 +331,7 @@ public class CreationMainPage extends MyWizardPage {
                     createScriptsCheckExternal.setSelection(false);
                     createScriptsCheck.setSelection(false);
                     useEvolutionCheck.setSelection(false);
+                    properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
                     createScripts = false;
                     analyticsContained = false;
                 } else {
