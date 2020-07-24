@@ -63,10 +63,11 @@ public class PropertiesService {
     public static final String ANALYTICS_FLINK_REST_PORT = "analytics.flink.rest.port";
     public static final String ANALYTICS_FLINK_TASKMANAGER_REPLICAS = "analytics.flink.taskmanager.replicas";
     public static final String EVOLUTION_DB_CONTAINERNAME = "evolution.db.containername";
-    public static final String EVOLUTION_DB_DATABASE = "evolution.db.database";
+    public static final String EVOLUTION_DB_ENVIRONMENT_MONGO_INITDB_DATABASE = "evolution.db.environment.MONGO_INITDB_DATABASE";
     public static final String EVOLUTION_DB_USERNAME = "evolution.db.username";
     public static final String EVOLUTION_DB_PASSWORD = "evolution.db.password";
     public static final String EVOLUTION_DB_IMAGE = "evolution.db.image";
+    public static final String EVOLUTION_DB_PORT = "evolution.db.port";
     public static final String EVOLUTION_JAVA_CONTAINERNAME = "evolution.java.containername";
     public static final String EVOLUTION_JAVA_IMAGE = "evolution.java.image";
     public static final String EVOLUTION_JAVA_ENVIRONMENT_WAKEUP_TIME_MS_FREQUENCY = "evolution.java.environment.WAKEUP_TIME_MS_FREQUENCY";
@@ -82,6 +83,7 @@ public class PropertiesService {
     public static final String EVOLUTION_JAVA_ENVIRONMENT_ANALYTICS_DB_NAME = "evolution.java.environment.ANALYTICS_DB_NAME";
     public static final String EVOLUTION_BACKEND_CONTAINERNAME = "evolution.backend.containername";
     public static final String EVOLUTION_BACKEND_IMAGE = "evolution.backend.image";
+    public static final String EVOLUTION_BACKEND_PORT = "evolution.backend.port";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_BACKEND_DEPLOYMENT_PORT = "evolution.backend.environment.BACKEND_DEPLOYMENT_PORT";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_ANALYTICS_DB_URL = "evolution.backend.environment.ANALYTICS_DB_URL";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_ANALYTICS_DB_NAME = "evolution.backend.environment.ANALYTICS_DB_NAME";
@@ -94,6 +96,7 @@ public class PropertiesService {
     public static final String EVOLUTION_FRONTEND_IMAGE = "evolution.frontend.image";
     public static final String EVOLUTION_FRONTEND_ENVIRONMENT_BACKEND_ENDPOINT = "evolution.frontend.environment.BACKEND_ENDPOINT";
     public static final String EVOLUTION_FRONTEND_PORT = "evolution.frontend.port";
+    public static final String EVOLUTION_FRONTEND_PUBLISHEDPORT = "evolution.frontend.publishedPort";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
     public static final String MONGO_PORT = "mongo.port";

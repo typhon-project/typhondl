@@ -123,7 +123,7 @@ public class AnalyticsService {
                 } else {
                     // deployment scripts are included in polystore deployment scripts. the
                     // analytics containers are in the same cluster
-                    Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
+                    Application application = getFirstApplication(model);
                     application.getContainers().add(kafkaContainer);
                     application.getContainers().add(authAllContainer);
                     application.getContainers().add(zookeeperContainer);
@@ -163,8 +163,7 @@ public class AnalyticsService {
                     analyticsCluster.getApplications().add(analyticsApplication);
                     analyticsApplication.getContainers().add(kafkaContainer);
                 } else {
-                    EcoreUtil2.getAllContentsOfType(model, Application.class).get(0).getContainers()
-                            .add(kafkaContainer);
+                    getFirstApplication(model).getContainers().add(kafkaContainer);
                 }
             } else {
                 kafka.setExternal(true);
@@ -172,25 +171,84 @@ public class AnalyticsService {
             }
         }
         if (properties.getProperty(PropertiesService.POLYSTORE_USEEVOLUTION).equals("true")) {
-            model = addEvolutionAnalytics(model, properties);
+            model = addEvolutionAnalytics(model, properties, containerType);
         }
         return model;
     }
 
-    private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties) {
+    private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,
+            ContainerType containerType) {
         // evolution-mongo
         DB evolutionMongo = DBService.create(PropertiesService.EVOLUTION_DB_CONTAINERNAME,
                 DBService.getMongoDBType(model));
-        evolutionMongo.setCredentials(DBService.createCredentials(PropertiesService.EVOLUTION_DB_USERNAME,
-                PropertiesService.EVOLUTION_DB_PASSWORD));
-//        evolutionMongo.setEnvironment(SoftwareService
-//                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.db")));
-        Software evolutionJava = SoftwareService.create(
-                properties.getProperty(PropertiesService.EVOLUTION_JAVA_CONTAINERNAME),
+        evolutionMongo.setCredentials(
+                DBService.createCredentials(properties.getProperty(PropertiesService.EVOLUTION_DB_USERNAME),
+                        properties.getProperty(PropertiesService.EVOLUTION_DB_PASSWORD)));
+        evolutionMongo.setEnvironment(SoftwareService
+                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.db")));
+        final String evolutionMongoContainerName = properties.getProperty(PropertiesService.EVOLUTION_DB_CONTAINERNAME);
+        Container evolutionMongoContainer = ContainerService.create(evolutionMongoContainerName, containerType,
+                evolutionMongo, evolutionMongoContainerName + ":"
+                        + properties.getProperty(PropertiesService.EVOLUTION_BACKEND_CONTAINERNAME));
+
+        // evolution-java
+        final String evolutionJavaContainerName = properties
+                .getProperty(PropertiesService.EVOLUTION_JAVA_CONTAINERNAME);
+        Software evolutionJava = SoftwareService.create(evolutionJavaContainerName,
                 properties.getProperty(PropertiesService.EVOLUTION_JAVA_IMAGE));
         evolutionJava.setEnvironment(SoftwareService
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
+        Container evolutionJavaContainer = ContainerService.create(evolutionJavaContainerName, containerType,
+                evolutionJava, null);
+        evolutionJavaContainer.getDepends_on().addAll(ContainerService.createDependencies(new Container[] {
+                evolutionMongoContainer,
+                getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
+                getContainer(model, properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
+
+        // evolution-backend
+        final String evolutionBackendContainerName = properties
+                .getProperty(PropertiesService.EVOLUTION_BACKEND_CONTAINERNAME);
+        Software evolutionBackend = SoftwareService.create(evolutionBackendContainerName,
+                properties.getProperty(PropertiesService.EVOLUTION_BACKEND_IMAGE));
+        evolutionBackend.setEnvironment(SoftwareService
+                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.backend")));
+        Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
+                evolutionBackend,
+                evolutionBackendContainerName + ":" + properties.getProperty(PropertiesService.EVOLUTION_BACKEND_PORT));
+        evolutionBackendContainer.getDepends_on()
+                .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer }));
+
+        // evolution-frontend
+        final String evolutionFrontendContainerName = properties
+                .getProperty(PropertiesService.EVOLUTION_FRONTEND_CONTAINERNAME);
+        Software evolutionFrontend = SoftwareService.create(evolutionFrontendContainerName,
+                properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_IMAGE));
+        evolutionFrontend.setEnvironment(SoftwareService
+                .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.frontend")));
+        Container evolutionFrontendContainer = ContainerService.create(evolutionFrontendContainerName, containerType,
+                evolutionFrontend, evolutionFrontendContainerName + ":"
+                        + properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_PORT));
+        evolutionFrontendContainer.setPorts(ContainerService
+                .createPorts(new String[] { "target", properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_PORT),
+                        "published", properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_PUBLISHEDPORT) }));
+        evolutionFrontendContainer.getDepends_on()
+                .addAll(ContainerService.createDependencies(new Container[] { evolutionBackendContainer }));
+
+        Application application = getFirstApplication(model);
+        application.getContainers().add(evolutionMongoContainer);
+        application.getContainers().add(evolutionJavaContainer);
+        application.getContainers().add(evolutionBackendContainer);
+        application.getContainers().add(evolutionFrontendContainer);
         return model;
+    }
+
+    private static Application getFirstApplication(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
+    }
+
+    private static Container getContainer(DeploymentModel model, String containerName) {
+        return EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
+                .filter(container -> container.getName().equalsIgnoreCase(containerName)).findFirst().orElse(null);
     }
 
     private static Platform getPlatform(DeploymentModel model) {

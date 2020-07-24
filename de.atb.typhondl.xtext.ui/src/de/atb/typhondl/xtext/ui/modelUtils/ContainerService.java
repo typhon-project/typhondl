@@ -87,4 +87,16 @@ public class ContainerService {
         return array;
     }
 
+    public static ArrayList<Dependency> createDependencies(Container[] containers) {
+        ArrayList<Dependency> dependencyList = new ArrayList<>();
+        for (Container container : containers) {
+            if (container != null) {
+                Dependency dependency = TyphonDLFactory.eINSTANCE.createDependency();
+                dependency.setReference(container);
+                dependencyList.add(dependency);
+            }
+        }
+        return dependencyList;
+    }
+
 }
