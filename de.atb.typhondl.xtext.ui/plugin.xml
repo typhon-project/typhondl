@@ -440,7 +440,7 @@
                 commandId="de.atb.typhondl.xtext.ui.creationWizard.CreateModel"
                 label="Create TyphonDL model"
                 style="push"
-                tooltip="Opens a Wizard to create a TyphonDL Files">
+                tooltip="Opens a Wizard to create TyphonDL Files">
            <visibleWhen
                  checkEnabled="false">
               <with
