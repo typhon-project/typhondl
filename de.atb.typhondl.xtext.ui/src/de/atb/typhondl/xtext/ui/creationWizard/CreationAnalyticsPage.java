@@ -49,7 +49,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * The polystore.properties
      */
     private Properties properties;
-    private int chosenTemplate;
+    private SupportedTechnologies chosenTemplate;
     private Composite main;
     private Text kafkaURIText;
 
@@ -59,7 +59,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * @param pageName   the name of the page
      * @param properties
      */
-    protected CreationAnalyticsPage(String pageName, Properties properties, int chosenTemplate) {
+    protected CreationAnalyticsPage(String pageName, Properties properties, SupportedTechnologies chosenTemplate) {
         super(pageName);
         this.properties = properties;
         this.chosenTemplate = chosenTemplate;
@@ -96,8 +96,9 @@ public class CreationAnalyticsPage extends MyWizardPage {
      *
      */
     public class KafkaConfigEditor {
-        public List<InputField> dockerComposeFields = Arrays
-                .asList(new InputField("Kafka version: ", "analytics.kafka.version"));
+        public List<InputField> dockerComposeFields = Arrays.asList(
+                new InputField("Kafka version: ", "analytics.kafka.version"),
+                new InputField("Replicas: ", "analytics.kafka.replicas"));
         public List<InputField> kubernetesFields = Arrays.asList(
                 new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
                 new InputField("Flink taskmanager memory process size: ",
@@ -150,11 +151,11 @@ public class CreationAnalyticsPage extends MyWizardPage {
 
     private List<InputField> getInputFields() {
         List<InputField> fields;
-        switch (SupportedTechnologies.values()[chosenTemplate].getClusterType()) {
-        case "DockerCompose":
+        switch (chosenTemplate) {
+        case DockerCompose:
             fields = new KafkaConfigEditor().dockerComposeFields;
             break;
-        case "Kubernetes":
+        case Kubernetes:
             fields = new KafkaConfigEditor().kubernetesFields;
             break;
         default:

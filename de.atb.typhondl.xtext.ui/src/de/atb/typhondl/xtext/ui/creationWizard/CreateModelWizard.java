@@ -38,6 +38,7 @@ import org.eclipse.xtext.ui.util.FileOpener;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -83,7 +84,7 @@ public class CreateModelWizard extends Wizard {
     /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
-    private int chosenTemplate;
+    private SupportedTechnologies chosenTemplate;
 
     private Properties properties;
 
@@ -117,8 +118,7 @@ public class CreateModelWizard extends Wizard {
         addPage(mainPage);
 
         for (SupportedTechnologies value : SupportedTechnologies.values()) {
-            CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.getClusterType(), MLmodel,
-                    value.ordinal());
+            CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.name(), MLmodel, value);
             newPage.setWizard(this);
             addPage(newPage);
         }
@@ -133,7 +133,7 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public boolean performFinish() {
-        String message = this.getPage(getDBMSPageName(chosenTemplate)).getMessage();
+        String message = this.getPage(getDBMSPageName()).getMessage();
         if (message != null) {
             if (!MessageDialog.openConfirm(this.getShell(), "Wizard", message)) {
                 return false;
@@ -230,29 +230,40 @@ public class CreateModelWizard extends Wizard {
         if (page instanceof CreationMainPage) {
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
-            if (properties.get("polystore.useAnalytics").equals("true")) {
+            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
+                    && (Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS)) > 1
+                            || Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS)) > 1)) {
+                MessageDialog.openInformation(getShell(), "Wizard",
+                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
+            }
+            if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
-                        CreationAnalyticsPage newPage = new CreationAnalyticsPage(
-                                PAGENAME_ANALYTICS + value.getClusterType(), properties, value.ordinal());
+                        CreationAnalyticsPage newPage = new CreationAnalyticsPage(PAGENAME_ANALYTICS + value.name(),
+                                properties, value);
                         newPage.setWizard(this);
                         addPage(newPage);
                     }
                 } else {
                     CreationAnalyticsPage creationAnalyticsPage = (CreationAnalyticsPage) this
-                            .getPage(getAnalyticsPageName(this.chosenTemplate));
+                            .getPage(getAnalyticsPageName());
                     if (creationAnalyticsPage.getControl() != null) {
                         creationAnalyticsPage.updateData(properties);
                     }
                 }
-                return this.getPage(getAnalyticsPageName(this.chosenTemplate));
+                return this.getPage(getAnalyticsPageName());
             } else {
-                return this.getPage(getDBMSPageName(this.chosenTemplate));
+                return this.getPage(getDBMSPageName());
             }
         }
         if (page instanceof CreationAnalyticsPage) {
             this.properties = ((CreationAnalyticsPage) page).getProperties();
-            return this.getPage(getDBMSPageName(this.chosenTemplate));
+            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
+                    && Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
+                MessageDialog.openInformation(getShell(), "Wizard",
+                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
+            }
+            return this.getPage(getDBMSPageName());
         }
         if (page instanceof CreationDBMSPage) {
             ArrayList<DB> result = ((CreationDBMSPage) page).getResult();
@@ -298,15 +309,15 @@ public class CreateModelWizard extends Wizard {
     }
 
     private boolean analyticsPagesExist() {
-        return pageExists(getAnalyticsPageName(0));
+        return pageExists(getAnalyticsPageName());
     }
 
-    private String getAnalyticsPageName(int templateOrdinal) {
-        return PAGENAME_ANALYTICS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
+    private String getAnalyticsPageName() {
+        return PAGENAME_ANALYTICS + chosenTemplate.name();
     }
 
-    private String getDBMSPageName(int templateOrdinal) {
-        return PAGENAME_DBMS + SupportedTechnologies.values()[templateOrdinal].getClusterType();
+    private String getDBMSPageName() {
+        return PAGENAME_DBMS + chosenTemplate.name();
     }
 
     public int getPageWidth() {

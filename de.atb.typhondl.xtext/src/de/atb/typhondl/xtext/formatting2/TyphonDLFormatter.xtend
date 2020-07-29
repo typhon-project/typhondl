@@ -49,57 +49,56 @@ import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.Credentials
 import de.atb.typhondl.xtext.typhonDL.Environment
 import de.atb.typhondl.xtext.typhonDL.Replication
-import de.atb.typhondl.xtext.typhonDL.Volumes
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
-    @Inject extension TyphonDLGrammarAccess
+	@Inject extension TyphonDLGrammarAccess
 
-    def dispatch void format(DeploymentModel deploymentModel, extension IFormattableDocument document) {
-        for (metaModel : deploymentModel.guiMetaInformation) {
-            metaModel.format
-        }
-        for (model : deploymentModel.elements) {
-            model.format
-        }
-    }
+	def dispatch void format(DeploymentModel deploymentModel, extension IFormattableDocument document) {
+		for (metaModel : deploymentModel.guiMetaInformation) {
+			metaModel.format
+		}
+		for (model : deploymentModel.elements) {
+			model.format
+		}
+	}
 
-    def dispatch void format(Import imported, extension IFormattableDocument document) {
-        imported.append[newLine]
-    }
+	def dispatch void format(Import imported, extension IFormattableDocument document) {
+		imported.append[newLine]
+	}
 
-    def dispatch void format(Software software, extension IFormattableDocument document) {
-        interior(
-            software.regionFor.keyword('{').append[newLine],
-            software.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        software.image.format
-        software.environment.format
-        software.uri.append[newLine]
-        for (property : software.parameters) {
-            property.format
-            property.append[newLine]
-        }
-    }
+	def dispatch void format(Software software, extension IFormattableDocument document) {
+		interior(
+			software.regionFor.keyword('{').append[newLine],
+			software.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		software.image.format
+		software.environment.format
+		software.uri.append[newLine]
+		for (property : software.parameters) {
+			property.format
+			property.append[newLine]
+		}
+	}
 
-    def dispatch void format(DB db, extension IFormattableDocument document) {
-        interior(
-            db.regionFor.keyword('{').append[newLine],
-            db.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        db.image.format
-        db.helm.format
-        db.credentials.format
-        db.environment.format
-        db.uri.append[newLine]
-        for (property : db.parameters) {
-            property.format
-            property.append[newLine]
-        }
-    }
-
+	def dispatch void format(DB db, extension IFormattableDocument document) {
+		interior(
+			db.regionFor.keyword('{').append[newLine],
+			db.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		db.image.format
+		db.helm.format
+		db.credentials.format
+		db.environment.format
+		db.uri.append[newLine]
+		for (property : db.parameters) {
+			property.format
+			property.append[newLine]
+		}
+	}
+	
     def dispatch void format(Environment environment, extension IFormattableDocument document) {
         interior(
             environment.regionFor.keyword('{').append[newLine],
@@ -107,155 +106,153 @@ class TyphonDLFormatter extends AbstractFormatter2 {
             [indent]
         )
         environment.parameters.format
-    }
-
-    def dispatch void format(Credentials credentials, extension IFormattableDocument document) {
-        interior(
+    }	
+	
+	def dispatch void format(Credentials credentials, extension IFormattableDocument document) {
+	    interior(
             credentials.regionFor.keyword('{').append[newLine],
             credentials.regionFor.keyword('}').prepend[newLine].append[newLine],
             [indent]
         )
         credentials.regionFor.keyword('username').prepend[newLine]
         credentials.regionFor.keyword('password').prepend[newLine]
-    }
-
-    def dispatch void format(HelmList helmList, extension IFormattableDocument document) {
-        interior(
-            helmList.regionFor.keyword('{').append[newLine],
+	}
+	
+	def dispatch void format(HelmList helmList, extension IFormattableDocument document) {
+	    interior(
+	        helmList.regionFor.keyword('{').append[newLine],
             helmList.regionFor.keyword('}').prepend[newLine].append[newLine],
             [indent]
-        )
-        helmList.regionFor.keyword('repoName').prepend[newLine]
+	    )
+	    helmList.regionFor.keyword('repoName').prepend[newLine]
         helmList.regionFor.keyword('repoAddress').prepend[newLine]
         helmList.regionFor.keyword('chartName').prepend[newLine]
-        for (property : helmList.parameters) {
-            property.format
-            property.prepend[newLine]
-        }
-    }
+	    for (property : helmList.parameters) {
+	        property.format
+	        property.prepend[newLine]
+	    }    
+	}
+	
+	def dispatch void format(Ports ports, extension IFormattableDocument document) {
+		interior(
+			ports.regionFor.keyword('{').append[newLine],
+			ports.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (port : ports.key_values) {
+			port.format
+		}
+	}
 
-    def dispatch void format(Ports ports, extension IFormattableDocument document) {
-        interior(
-            ports.regionFor.keyword('{').append[newLine],
-            ports.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (port : ports.key_values) {
-            port.format
-        }
-    }
+	def dispatch void format(IMAGE image, extension IFormattableDocument document) {
+		image.append[newLine]
+	}
 
-    def dispatch void format(IMAGE image, extension IFormattableDocument document) {
-        image.append[newLine]
-    }
+	def dispatch void format(PlatformType platformType, extension IFormattableDocument document) {
+		platformType.append[newLine]
+	}
 
-    def dispatch void format(PlatformType platformType, extension IFormattableDocument document) {
-        platformType.append[newLine]
-    }
+	def dispatch void format(ContainerType containerType, extension IFormattableDocument document) {
+		containerType.append[newLine]
+	}
+	
+	def dispatch void format(ClusterType clusterType, extension IFormattableDocument document) {
+		clusterType.append[newLine]
+	}
 
-    def dispatch void format(ContainerType containerType, extension IFormattableDocument document) {
-        containerType.append[newLine]
-    }
+	def dispatch void format(DBType dbType, extension IFormattableDocument document) {
+		interior(
+			dbType.regionFor.keyword('{').append[newLine],
+			dbType.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		dbType.image.format
+		for (image : dbType.images) {
+			image.format
+		}
+	}
 
-    def dispatch void format(ClusterType clusterType, extension IFormattableDocument document) {
-        clusterType.append[newLine]
-    }
+	def dispatch void format(Platform platform, extension IFormattableDocument document) {
+		interior(
+			platform.regionFor.keyword('{').append[newLine],
+			platform.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (cluster : platform.clusters) {
+			cluster.format
+		}
+	}
 
-    def dispatch void format(DBType dbType, extension IFormattableDocument document) {
-        interior(
-            dbType.regionFor.keyword('{').append[newLine],
-            dbType.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        dbType.image.format
-        for (image : dbType.images) {
-            image.format
-        }
-    }
+	def dispatch void format(Cluster cluster, extension IFormattableDocument document) {
+		interior(
+			cluster.regionFor.keyword('{').append[newLine],
+			cluster.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (network : cluster.networks) {
+			network.append[newLine]
+			network.format
+		}
+		for (app : cluster.applications) {
+			app.format
+		}
+	}
 
-    def dispatch void format(Platform platform, extension IFormattableDocument document) {
-        interior(
-            platform.regionFor.keyword('{').append[newLine],
-            platform.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (cluster : platform.clusters) {
-            cluster.format
-        }
-    }
+	def dispatch void format(Cluster_Network network, extension IFormattableDocument document) {
+		interior(
+			network.regionFor.keyword('{').append[newLine],
+			network.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		network.append[newLine]
+		for (key_value : network.key_values) {
+			key_value.format
+		}
+	}
 
-    def dispatch void format(Cluster cluster, extension IFormattableDocument document) {
-        interior(
-            cluster.regionFor.keyword('{').append[newLine],
-            cluster.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (network : cluster.networks) {
-            network.append[newLine]
-            network.format
-        }
-        for (app : cluster.applications) {
-            app.format
-        }
-    }
+	def dispatch void format(Application app, extension IFormattableDocument document) {
+		interior(
+			app.regionFor.keyword('{').append[newLine],
+			app.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (container : app.containers) {
+			container.format
+		}
+	}
 
-    def dispatch void format(Cluster_Network network, extension IFormattableDocument document) {
-        interior(
-            network.regionFor.keyword('{').append[newLine],
-            network.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        network.append[newLine]
-        for (key_value : network.key_values) {
-            key_value.format
-        }
-    }
-
-    def dispatch void format(Application app, extension IFormattableDocument document) {
-        interior(
-            app.regionFor.keyword('{').append[newLine],
-            app.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (container : app.containers) {
-            container.format
-        }
-        app.volumes.format
-    }
-
-    def dispatch void format(Container container, extension IFormattableDocument document) {
-        interior(
-            container.regionFor.keyword('{').append[newLine],
-            container.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (depends_on : container.depends_on) {
-            depends_on.append[newLine]
-        }
-        container.deploys.append[newLine]
-        container.networks.append[newLine]
-        container.ports.format
-        container.resources.format
-        container.replication.format
-        container.volumes.format
-        container.uri.append[newLine]
-        for (property : container.properties) {
-            property.format
-        }
-    }
-
-    def dispatch void format(Replication replication, extension IFormattableDocument document) {
-        interior(
+	def dispatch void format(Container container, extension IFormattableDocument document) {
+		interior(
+			container.regionFor.keyword('{').append[newLine],
+			container.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (depends_on : container.depends_on) {
+			depends_on.append[newLine]
+		}
+		container.deploys.append[newLine]
+		container.networks.append[newLine]
+		container.ports.format
+		container.resources.format
+		container.replication.format
+		container.uri.append[newLine]
+		for (property : container.properties) {
+			property.format
+		}
+	}
+	
+	def dispatch void format(Replication replication, extension IFormattableDocument document) {
+	    interior(
             replication.regionFor.keyword('{').append[newLine],
             replication.regionFor.keyword('}').prepend[newLine].append[newLine],
             [indent]
         )
         replication.regionFor.keyword('replicas').prepend[newLine]
         replication.regionFor.keyword('mode').prepend[newLine]
-    }
-
-    def dispatch void format(Resources resources, extension IFormattableDocument document) {
-        interior(
+	}
+	
+	def dispatch void format(Resources resources, extension IFormattableDocument document) {
+	    interior(
             resources.regionFor.keyword('{').append[newLine],
             resources.regionFor.keyword('}').prepend[newLine].append[newLine],
             [indent]
@@ -264,25 +261,25 @@ class TyphonDLFormatter extends AbstractFormatter2 {
         resources.regionFor.keyword('limitMemory').prepend[newLine]
         resources.regionFor.keyword('reservationCPU').prepend[newLine]
         resources.regionFor.keyword('reservationMemory').prepend[newLine]
-    }
+	}
 
-    def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {
-        key_values.append[newLine]
-    }
+	def dispatch void format(Key_Values key_values, extension IFormattableDocument document) {
+		key_values.append[newLine]
+	}
 
-    def dispatch void format(Key_ValueArray key_valueArray, extension IFormattableDocument document) {
-        key_valueArray.append[newLine]
-    }
+	def dispatch void format(Key_ValueArray key_valueArray, extension IFormattableDocument document) {
+		key_valueArray.append[newLine]
+	}
 
-    def dispatch void format(Key_KeyValueList key_keyValueList, extension IFormattableDocument document) {
-        interior(
-            key_keyValueList.regionFor.keyword('{').append[newLine],
-            key_keyValueList.regionFor.keyword('}').prepend[newLine].append[newLine],
-            [indent]
-        )
-        for (propertiy : key_keyValueList.properties) {
-            propertiy.format
-        }
-    }
+	def dispatch void format(Key_KeyValueList key_keyValueList, extension IFormattableDocument document) {
+		interior(
+			key_keyValueList.regionFor.keyword('{').append[newLine],
+			key_keyValueList.regionFor.keyword('}').prepend[newLine].append[newLine],
+			[indent]
+		)
+		for (propertiy : key_keyValueList.properties) {
+			propertiy.format
+		}
+	}
 
 }

@@ -108,7 +108,7 @@ public class CreationDBMSPage extends MyWizardPage {
     /**
      * The chosen technology from {@link SupportedTechnologies}
      */
-    private int chosenTemplate;
+    private SupportedTechnologies chosenTemplate;
 
     private XtextResourceSet resourceSet;
 
@@ -125,7 +125,7 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param pageName
      * @param file     ML model file
      */
-    public CreationDBMSPage(String pageName, IFile file, int chosenTemplate) {
+    public CreationDBMSPage(String pageName, IFile file, SupportedTechnologies chosenTemplate) {
         this(pageName, file, readModel(file), chosenTemplate);
     }
 
@@ -136,7 +136,8 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param file     ML model file
      * @param MLmodel  List of Pair(name, abstractType) taken from the ML model file
      */
-    public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel, int chosenTemplate) {
+    public CreationDBMSPage(String pageName, IFile file, ArrayList<Pair<String, String>> MLmodel,
+            SupportedTechnologies chosenTemplate) {
         super(pageName);
         this.MLmodel = MLmodel;
         this.file = file;
@@ -195,7 +196,7 @@ public class CreationDBMSPage extends MyWizardPage {
         scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(1, false));
-        if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")) {
+        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
             helmValidationList = new HashMap<>();
         }
         for (Pair<String, String> dbFromML : MLmodel) {
@@ -218,7 +219,7 @@ public class CreationDBMSPage extends MyWizardPage {
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
             group.setText(db.getName());
 
-            if (SupportedTechnologies.values()[chosenTemplate].getClusterType().equalsIgnoreCase("Kubernetes")) {
+            if (chosenTemplate == SupportedTechnologies.Kubernetes) {
                 kubernetesComposeControls(group, templates, db);
             } else {
                 dockerComposeControls(group, templates, db);

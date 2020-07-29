@@ -1,5 +1,9 @@
 package de.atb.typhondl.xtext.ui.handlers;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /*-
  * #%L
  * de.atb.typhondl.xtext.ui
@@ -34,21 +38,18 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import com.google.inject.Inject;
 
-import de.atb.typhondl.acceleo.services.Services;
+import de.atb.typhondl.xtext.ui.scriptGeneration.GenerationService;
 
 /**
  * This Handler is called when clicking "Generate Deployment Scripts" in the
- * TyphonDL context menu.
- * {@link Services#generateDeployment(IFile, XtextLiveScopeResourceSetProvider)}
- * is called. Adds Xtext nature if it's missing from the project in which the
- * selection (i.e. the Typhon DL model) is contained.
+ * TyphonDL context menu. Adds Xtext nature if it's missing from the project in
+ * which the selection (i.e. the Typhon DL model) is contained.
  * 
  * @author flug
  *
@@ -61,7 +62,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        String result = "";
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
         Object object = selection.getFirstElement();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -71,16 +71,12 @@ public class GenerateScriptsHandler extends AbstractHandler {
 
             // add Xtext Nature
             IProject project = file.getProject();
-            boolean hasXtextNature;
             try {
-                hasXtextNature = project.hasNature(XtextProjectHelper.NATURE_ID);
-                if (!hasXtextNature) {
+                if (!project.hasNature(XtextProjectHelper.NATURE_ID)) {
                     IProjectDescription projectDescription = project.getDescription();
-                    String[] oldNatures = projectDescription.getNatureIds();
-                    String[] newNatures = new String[oldNatures.length + 1];
-                    System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
-                    newNatures[0] = XtextProjectHelper.NATURE_ID;
-                    projectDescription.setNatureIds(newNatures);
+                    ArrayList<String> natureIds = new ArrayList<>(Arrays.asList(projectDescription.getNatureIds()));
+                    natureIds.add(0, XtextProjectHelper.NATURE_ID);
+                    projectDescription.setNatureIds(natureIds.toArray(new String[0]));
                     project.setDescription(projectDescription, null);
                 }
             } catch (CoreException e) {
@@ -89,8 +85,17 @@ public class GenerateScriptsHandler extends AbstractHandler {
                 e.printStackTrace();
             }
 
-            result = Services.generateDeployment(file, provider);
-
+            GenerationService generationService;
+            try {
+                generationService = new GenerationService(file, provider);
+                String fileLocation = file.getLocation().toOSString();
+                generationService.deleteOldGeneratedFiles(
+                        new File(fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()))));
+                generationService.startGeneration();
+            } catch (Exception e2) {
+                MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                        "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
+            }
             for (IProject iproject : root.getProjects()) {
                 try {
                     iproject.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
@@ -100,8 +105,6 @@ public class GenerateScriptsHandler extends AbstractHandler {
             }
         }
 
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        MessageDialog.openInformation(window.getShell(), "UI", result);
         return null;
     }
 
