@@ -204,7 +204,6 @@ Key_ValueArray:
 ValueArray: 
 	value=Value (',' values+=Value)* 
 ;
-
 Value:
 	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
 

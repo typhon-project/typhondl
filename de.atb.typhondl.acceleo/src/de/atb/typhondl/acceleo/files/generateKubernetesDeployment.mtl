@@ -227,13 +227,13 @@ spec:
     spec:
 [if (aContainer.volumes <> null)]
       volumes:
-[for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
-      - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
-[if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)]
-        [aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/]:
+[for (aVolumeDeclaration : Volume_Properties | aContainer.volumes.decls)]
+      - name: [aVolumeDeclaration.volumeName/]
+[if (aVolumeDeclaration.volumeType <> null)]
+        [aVolumeDeclaration.volumeType/]:
 [/if]
-[if (aVolumeDeclaration.oclAsType(Volume_Properties).specifics <> null)]
-[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics)]
+[if (aVolumeDeclaration.specifics <> null)]
+[for (aProperty : Property | aVolumeDeclaration.specifics)]
           [aProperty.printKubernetes()/]
 [/for]
 [/if]
@@ -354,10 +354,10 @@ ports:
 [/template]
 
 [template public printVolumes(aVolumes : Volumes) post (trim())]
-[for (aVolumeDeclaration : Volume_Declaration | aVolumes.decls.oclAsType(Volume_Properties))]
+[for (aVolumeDeclaration : Volume_Properties | aVolumes.decls)]
 volumeMounts:
-  - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
-    mountPath: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
+  - name: [aVolumeDeclaration.volumeName/]
+    mountPath: [aVolumeDeclaration.volumePath/]
 [/for]
 [/template]
 
@@ -372,12 +372,7 @@ something went wrong with a Property
 [template public printKubernetes(arg : Key_KeyValueList) post (trim())]
 [arg.name/]:
 [for (aProperty : Property | arg.properties)]
-[if (not arg.properties.oclAsType(Key_KeyValueList).properties -> isEmpty())]
-  -[aProperty.printKubernetes()/]
-[/if]
-[if (arg.properties.oclAsType(Key_Values).name <> null)]
   [aProperty.printKubernetes()/]
-[/if]
 [/for]
 [/template]
 
