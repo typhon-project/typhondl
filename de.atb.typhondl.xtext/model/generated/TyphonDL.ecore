@@ -63,6 +63,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Platform" eSuperTypes="#//Model">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//PlatformType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
+        eType="#//Property" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clusters" upperBound="-1"
         eType="#//Cluster" containment="true"/>
   </eClassifiers>
@@ -85,6 +87,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="containers" upperBound="-1"
         eType="#//Container" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="volumes" eType="#//Volume_Toplevel"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Container">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -102,6 +106,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="uri" eType="#//URI" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="replication" eType="#//Replication"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="volumes" eType="#//Volumes"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
         eType="#//Property" containment="true"/>
   </eClassifiers>
@@ -113,6 +119,24 @@
     <eLiterals name="MULTIPRIMARY" literal="multiPrimary"/>
     <eLiterals name="REPLICASET" value="1" literal="replicaSet"/>
     <eLiterals name="STATELESS" value="2" literal="stateless"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Volumes">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="decls" upperBound="-1"
+        eType="#//Volume_Properties" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Volume_Properties">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="volumeName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="volumePath" eType="#//ValueArray"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="volumeType" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="specifics" upperBound="-1"
+        eType="#//Property" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Volume_Toplevel">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="names" unique="false" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="specifics" upperBound="-1"
+        eType="#//Property" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//Services"/>
@@ -150,6 +174,11 @@
         eType="#//Property" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Key_ValueArray" eSuperTypes="#//Property">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="values" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ValueArray">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="values" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
