@@ -41,6 +41,7 @@ import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PortArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PropertyArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ReplicaArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesArea;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -148,6 +149,9 @@ public class CreationDatabasePage extends MyWizardPage {
         if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()
                 && db.getHelm() == null) {
             areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
+        }
+        if (!isInList(VolumesArea.class) && !db.isExternal() && db.getHelm() == null) {
+            areas.add(new VolumesArea(container, chosenTechnology, main));
         }
     }
 
