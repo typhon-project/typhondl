@@ -22,7 +22,6 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -32,9 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.Reference;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.AddressArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.Area;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.CredentialsArea;
@@ -45,6 +41,7 @@ import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PortArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PropertyArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ReplicaArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -80,33 +77,15 @@ public class CreationDatabasePage extends MyWizardPage {
         if (db.isExternal()) {
             return null;
         }
-        Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
-        String containerName = createContainerName(db.getName());
-        newContainer.setName(containerName);
-        Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-        reference.setReference(db);
-        newContainer.setDeploys(reference);
-        URI uri = TyphonDLFactory.eINSTANCE.createURI();
-        uri.setValue(containerName + ":" + getPort());
-        newContainer.setUri(uri);
+        String containerName = ContainerService.createContainerName(db.getName());
+        // the containerType get's created and added to the container in ModelCreator,
+        // so that all containers have the same containerType instance
+        Container newContainer = ContainerService.create(containerName, null, db, containerName + ":" + getPort());
         return newContainer;
     }
 
     private String getPort() {
         return properties.getProperty(db.getType().getName().toLowerCase() + ".port");
-    }
-
-    /**
-     * Names of container have to be DNS subdomain names (see DL #31)
-     * 
-     * @param name
-     * @return
-     */
-    private String createContainerName(String name) {
-        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
-        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
-        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
-        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     @Override

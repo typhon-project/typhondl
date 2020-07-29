@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
@@ -34,6 +35,19 @@ public class ContainerService {
             container.setUri(uriObject);
         }
         return container;
+    }
+
+    /**
+     * Names of container have to be DNS subdomain names (see DL #31)
+     * 
+     * @param name
+     * @return
+     */
+    public static String createContainerName(String name) {
+        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
+        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
+        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
+        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     public static Ports createPorts(String[] strings) {
