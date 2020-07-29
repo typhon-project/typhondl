@@ -357,7 +357,7 @@ ports:
 [for (aVolumeDeclaration : Volume_Properties | aVolumes.decls)]
 volumeMounts:
   - name: [aVolumeDeclaration.volumeName/]
-    mountPath: [aVolumeDeclaration.volumePath/]
+    mountPath: [aVolumeDeclaration.volumePath.value/]
 [/for]
 [/template]
 
