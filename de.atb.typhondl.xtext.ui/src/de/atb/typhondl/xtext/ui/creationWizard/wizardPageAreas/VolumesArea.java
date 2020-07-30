@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -23,7 +24,6 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
-import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class VolumesArea extends Area {
@@ -40,9 +40,9 @@ public class VolumesArea extends Area {
 
             this.volumesStore = new VolumeStore();
             Volumes testVolume = TyphonDLFactory.eINSTANCE.createVolumes();
-            final Volume_Properties testProps = VolumesService.createTestVolumeProperties();
-            testVolume.getDecls().add(testProps);
-            this.volumesStore.addVolume(testProps);
+//            final Volume_Properties testProps = VolumesService.createTestVolumeProperties();
+//            testVolume.getDecls().add(testProps);
+//            this.volumesStore.addVolume(testProps);
 
             Composite tableComposite = new Composite(group, SWT.NONE);
             GridData data = new GridData(GridData.FILL_BOTH);
@@ -77,8 +77,33 @@ public class VolumesArea extends Area {
 
             Button addButton = new Button(group, SWT.PUSH);
             addButton.setText("Add...");
-            addButton.addListener(SWT.Selection,
-                    e -> editVolumes(TyphonDLFactory.eINSTANCE.createVolume_Properties(), false));
+            addButton.addListener(SWT.Selection, e -> {
+                final Volume_Properties decls = editVolumes(TyphonDLFactory.eINSTANCE.createVolume_Properties(), false);
+                this.volumesStore.addVolume(decls);
+                testVolume.getDecls().add(decls);
+                addOrRemoveVolumesFromContainer(testVolume, container);
+                tableViewer.refresh();
+            });
+            Button removeButton = new Button(group, SWT.PUSH);
+
+            tableViewer.addDoubleClickListener(e -> {
+                IStructuredSelection selection = tableViewer.getStructuredSelection();
+                Object[] objects = selection.toArray();
+                if ((objects == null) || (objects.length != 1))
+                    return;
+                final Volume_Properties decls = editVolumes((Volume_Properties) selection.getFirstElement(), true);
+                testVolume.getDecls().add(decls);
+                addOrRemoveVolumesFromContainer(testVolume, container);
+                tableViewer.refresh();
+            });
+        }
+    }
+
+    private void addOrRemoveVolumesFromContainer(Volumes volume, Container container) {
+        if (!volume.getDecls().isEmpty()) {
+            container.setVolumes(volume);
+        } else {
+            container.setVolumes(null);
         }
     }
 

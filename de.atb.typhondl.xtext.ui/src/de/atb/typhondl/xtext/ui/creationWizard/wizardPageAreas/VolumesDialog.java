@@ -4,6 +4,7 @@ import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 
 public class VolumesDialog extends StatusDialog {
 
@@ -19,7 +20,9 @@ public class VolumesDialog extends StatusDialog {
     }
 
     public Volume_Properties getVolumeDefinition() {
-        return this.volumeDefinition;
+        return VolumesService.createTestVolumeProperties();
+
+//        return this.volumeDefinition;
     }
 
 }
