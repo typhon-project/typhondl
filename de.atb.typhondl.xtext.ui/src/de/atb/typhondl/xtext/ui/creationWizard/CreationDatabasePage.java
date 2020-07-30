@@ -151,7 +151,7 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
         }
         if (!isInList(VolumesArea.class) && !db.isExternal() && db.getHelm() == null) {
-            areas.add(new VolumesArea(container, chosenTechnology, main));
+            areas.add(new VolumesArea(db, container, chosenTechnology, main));
         }
     }
 
