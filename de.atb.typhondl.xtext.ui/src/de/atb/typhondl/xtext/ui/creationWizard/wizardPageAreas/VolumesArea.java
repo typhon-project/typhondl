@@ -85,6 +85,18 @@ public class VolumesArea extends Area {
                 tableViewer.refresh();
             });
             Button removeButton = new Button(group, SWT.PUSH);
+            removeButton.setText("Remove");
+            removeButton.addListener(SWT.Selection, e -> {
+                IStructuredSelection selection = tableViewer.getStructuredSelection();
+                Object[] objects = selection.toArray();
+                if ((objects == null) || (objects.length != 1))
+                    return;
+                final Volume_Properties declsToRemove = (Volume_Properties) selection.getFirstElement();
+                testVolume.getDecls().remove(declsToRemove);
+                this.volumesStore.remove(declsToRemove);
+                addOrRemoveVolumesFromContainer(testVolume, container);
+                tableViewer.refresh();
+            });
 
             tableViewer.addDoubleClickListener(e -> {
                 IStructuredSelection selection = tableViewer.getStructuredSelection();
@@ -173,6 +185,10 @@ public class VolumesArea extends Area {
 
         private VolumeStore() {
             this.volumes = new ArrayList<>();
+        }
+
+        public void remove(Volume_Properties declsToRemove) {
+            this.volumes.remove(declsToRemove);
         }
 
         public void addVolume(Volume_Properties volume) {
