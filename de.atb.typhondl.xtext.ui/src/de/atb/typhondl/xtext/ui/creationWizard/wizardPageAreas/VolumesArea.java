@@ -1,7 +1,5 @@
 package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -28,7 +26,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class VolumesArea extends Area {
 
-    private VolumeStore volumesStore;
+    private Volumes volumes;
+    private TableViewer tableViewer;
 
     public VolumesArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, container, chosenTechnology, parent, "Volumes", null);
@@ -38,8 +37,6 @@ public class VolumesArea extends Area {
     public void createArea() {
         if (!db.isExternal() && db.getHelm() == null) {
 
-            this.volumesStore = new VolumeStore();
-            Volumes testVolume = TyphonDLFactory.eINSTANCE.createVolumes();
 //            final Volume_Properties testProps = VolumesService.createTestVolumeProperties();
 //            testVolume.getDecls().add(testProps);
 //            this.volumesStore.addVolume(testProps);
@@ -70,19 +67,15 @@ public class VolumesArea extends Area {
             column3.setText("Volume type");
             columnLayout.setColumnData(column3, new ColumnWeightData(3, 100));
 
-            TableViewer tableViewer = new TableViewer(table);
+            this.tableViewer = new TableViewer(table);
             tableViewer.setLabelProvider(new VolumesLabelProvider());
-            tableViewer.setContentProvider(new VolumesContentProvider(volumesStore));
-            tableViewer.setInput(volumesStore);
+            tableViewer.setContentProvider(new VolumesContentProvider(volumes));
+            tableViewer.setInput(volumes);
 
             Button addButton = new Button(group, SWT.PUSH);
             addButton.setText("Add...");
             addButton.addListener(SWT.Selection, e -> {
-                final Volume_Properties decls = editVolumes(TyphonDLFactory.eINSTANCE.createVolume_Properties(), false);
-                this.volumesStore.addVolume(decls);
-                testVolume.getDecls().add(decls);
-                addOrRemoveVolumesFromContainer(testVolume, container);
-                tableViewer.refresh();
+                addPropertiesToVolumes(editVolumes(TyphonDLFactory.eINSTANCE.createVolume_Properties(), false));
             });
             Button removeButton = new Button(group, SWT.PUSH);
             removeButton.setText("Remove");
@@ -91,10 +84,9 @@ public class VolumesArea extends Area {
                 Object[] objects = selection.toArray();
                 if ((objects == null) || (objects.length != 1))
                     return;
-                final Volume_Properties declsToRemove = (Volume_Properties) selection.getFirstElement();
-                testVolume.getDecls().remove(declsToRemove);
-                this.volumesStore.remove(declsToRemove);
-                addOrRemoveVolumesFromContainer(testVolume, container);
+                Volume_Properties declsToRemove = (Volume_Properties) selection.getFirstElement();
+                this.volumes.getDecls().remove(declsToRemove);
+                addOrRemoveVolumesFromContainer();
                 tableViewer.refresh();
             });
 
@@ -103,17 +95,20 @@ public class VolumesArea extends Area {
                 Object[] objects = selection.toArray();
                 if ((objects == null) || (objects.length != 1))
                     return;
-                final Volume_Properties decls = editVolumes((Volume_Properties) selection.getFirstElement(), true);
-                testVolume.getDecls().add(decls);
-                addOrRemoveVolumesFromContainer(testVolume, container);
-                tableViewer.refresh();
+                addPropertiesToVolumes(editVolumes((Volume_Properties) selection.getFirstElement(), true));
             });
         }
     }
 
-    private void addOrRemoveVolumesFromContainer(Volumes volume, Container container) {
-        if (!volume.getDecls().isEmpty()) {
-            container.setVolumes(volume);
+    private void addPropertiesToVolumes(Volume_Properties decls) {
+        this.volumes.getDecls().add(decls);
+        addOrRemoveVolumesFromContainer();
+        tableViewer.refresh();
+    }
+
+    private void addOrRemoveVolumesFromContainer() {
+        if (!this.volumes.getDecls().isEmpty()) {
+            container.setVolumes(this.volumes);
         } else {
             container.setVolumes(null);
         }
@@ -156,47 +151,25 @@ public class VolumesArea extends Area {
 
     private class VolumesContentProvider implements IStructuredContentProvider {
 
-        private VolumeStore fStore;
+        private Volumes volumes;
 
-        public VolumesContentProvider(VolumeStore volumesStore) {
-            this.fStore = volumesStore;
+        public VolumesContentProvider(Volumes volumes) {
+            this.volumes = volumes;
         }
 
         @Override
         public Object[] getElements(Object input) {
-            return fStore.getVolumes(false);
+            return volumes.getDecls().toArray(new Volumes[0]);
         }
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            fStore = (VolumeStore) newInput;
+            volumes = (Volumes) newInput;
         }
 
         @Override
         public void dispose() {
-            fStore = null;
-        }
-
-    }
-
-    private class VolumeStore {
-
-        ArrayList<Volume_Properties> volumes;
-
-        private VolumeStore() {
-            this.volumes = new ArrayList<>();
-        }
-
-        public void remove(Volume_Properties declsToRemove) {
-            this.volumes.remove(declsToRemove);
-        }
-
-        public void addVolume(Volume_Properties volume) {
-            this.volumes.add(volume);
-        }
-
-        public Volume_Properties[] getVolumes(boolean b) {
-            return volumes.toArray(new Volume_Properties[0]);
+            volumes = null;
         }
 
     }
