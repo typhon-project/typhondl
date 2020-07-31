@@ -37,4 +37,10 @@ public class VolumesService {
     public static String getVolumesType(Volume_Properties property) {
         return property.getVolumeType();
     }
+
+    public static ValueArray createPath(String string) {
+        ValueArray array = TyphonDLFactory.eINSTANCE.createValueArray();
+        array.setValue(string);
+        return array;
+    }
 }

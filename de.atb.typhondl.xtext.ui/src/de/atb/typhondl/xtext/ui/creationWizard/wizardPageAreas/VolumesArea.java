@@ -39,10 +39,6 @@ public class VolumesArea extends Area {
     public void createArea() {
         if (!db.isExternal() && db.getHelm() == null) {
 
-//            final Volume_Properties testProps = VolumesService.createTestVolumeProperties();
-//            testVolume.getDecls().add(testProps);
-//            this.volumesStore.addVolume(testProps);
-
             this.volumes = this.container.getVolumes() != null ? container.getVolumes()
                     : TyphonDLFactory.eINSTANCE.createVolumes();
             Composite tableComposite = new Composite(group, SWT.NONE);
@@ -104,8 +100,10 @@ public class VolumesArea extends Area {
         }
     }
 
-    private void addOrRemoveProperties(Volume_Properties declsToRemove, Predicate<Volume_Properties> method) {
-        method.test(declsToRemove);
+    private void addOrRemoveProperties(Volume_Properties properties, Predicate<Volume_Properties> method) {
+        if (properties != null) {
+            method.test(properties);
+        }
         addOrRemoveVolumesFromContainer();
         tableViewer.refresh();
     }
@@ -126,9 +124,6 @@ public class VolumesArea extends Area {
         return null;
     }
 
-    /**
-     * Label provider for templates.
-     */
     private class VolumesLabelProvider extends LabelProvider implements ITableLabelProvider {
 
         @Override
@@ -157,7 +152,6 @@ public class VolumesArea extends Area {
 
         @Override
         public Object[] getElements(Object input) {
-            System.out.println(volumes.toString());
             return volumes.getDecls().toArray(new Volume_Properties[0]);
         }
 
