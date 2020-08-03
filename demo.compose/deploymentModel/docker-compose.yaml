@@ -1,0 +1,149 @@
+version: '3.7'
+
+services:
+  textwarningdata:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
+  appdata:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: choosePassword
+  vehiclemetadatadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: choosePassword
+  vehicledatadb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chooseUsername
+      MONGO_INITDB_ROOT_PASSWORD: choosePassword
+  polystore-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: admin
+    volumes:
+      - ./models/:/docker-entrypoint-initdb.d
+  typhon-polystore-service:
+    image: clms/typhon-polystore-api:latest
+    ports:
+      - target: 8080
+        published: 8080
+    entrypoint:
+      - wait-for-it
+      - polystore-mongo:27017
+      - -t
+      - '60'
+      - --
+      - java
+      - -cp
+      - /app/resources:/app/classes:/app/libs/*
+      - com.clms.typhonapi.Application
+    restart: always
+  polystore-ui:
+    image: clms/typhon-polystore-ui:latest
+    environment:
+      API_PORT: 8080
+      API_HOST: localhost
+    depends_on:
+      - typhon-polystore-service
+    ports:
+      - target: 4200
+        published: 4200
+  typhonql-server:
+    image: swatengineering/typhonql-server
+    restart: always
+  kafka:
+    image: wurstmeister/kafka:2.12-2.4.0
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_LISTENERS: OUTSIDE://:29092, INSIDE://:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092, INSIDE://:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on:
+      - zookeeper
+    ports:
+      - target: 29092
+        published: 29092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  authAll:
+    image: zolotas4/typhon-analytics-auth-all
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - target: 2181
+        published: 2181
+  taskmanager:
+    image: flink:latest
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    expose:
+      - 6121
+      - 6122
+  jobmanager:
+    image: flink:latest
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    ports:
+      - target: 8081
+        published: 8081
+    command: jobmanager
+    expose:
+      - 6123
+  evolution-mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: Analytics
+  evolution-java:
+    image: meuriceloup/typhon-evolution-analytics-java:latest
+    environment:
+      ANALYTICS_DB_USER: admin
+      ANALYTICS_DB_NAME: Analytics
+      KAFKA_CHANNEL_PORT: 9092
+      WEBSERVICE_PASSWORD: admin1@
+      ANALYTICS_DB_IP: evolution-mongo
+      WAKEUP_TIME_MS_FREQUENCY: 10000
+      WEBSERVICE_USERNAME: admin
+      KAFKA_CHANNEL_IP: kafka
+      ANALYTICS_DB_PWD: admin
+      ANALYTICS_DB_PORT: 27017
+      WEBSERVICE_URL: http://typhon-polystore-service:8080/
+    depends_on:
+      - evolution-mongo
+      - typhon-polystore-service
+      - kafka
+  evolution-backend:
+    image: meuriceloup/typhon-evolution-analytics-backend:latest
+    environment:
+      ANALYTICS_DB_URL: mongodb://evolution-mongo:27017/
+      BACKEND_DEPLOYMENT_PORT: 3000
+      ANALYTICS_DB_USER: admin
+      ANALYTICS_DB_NAME: Analytics
+      ANALYTICS_DB_PWD: admin
+      WEBSERVICE_PASSWORD: admin1@
+      WEBSERVICE_USERNAME: admin
+      WEBSERVICE_URL: http://typhon-polystore-service:8080/
+    depends_on:
+      - evolution-mongo
+  evolution-frontend:
+    image: meuriceloup/typhon-evolution-analytics-client:latest
+    environment:
+      BACKEND_ENDPOINT: http://evolution-backend:3000
+    depends_on:
+      - evolution-backend
+    ports:
+      - target: 5000
+        published: 5000
+

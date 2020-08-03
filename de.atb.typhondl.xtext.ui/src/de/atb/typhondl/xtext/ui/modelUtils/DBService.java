@@ -11,6 +11,7 @@ import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class DBService {
 
@@ -18,7 +19,7 @@ public class DBService {
         DB polystoredb = create(properties.getProperty("db.name"), mongo);
         if (clusterType.equalsIgnoreCase("DockerCompose")) {
             polystoredb.setEnvironment(SoftwareService.createEnvironment(new String[] { "MONGO_INITDB_DATABASE",
-                    properties.getProperty("db.environment.MONGO_INITDB_DATABASE") }));
+                    properties.getProperty(PropertiesService.DB_ENVIRONMENT_MONGO_INITDB_DATABASE) }));
         }
         polystoredb.setCredentials(createCredentials("admin", "admin"));
         return polystoredb;
