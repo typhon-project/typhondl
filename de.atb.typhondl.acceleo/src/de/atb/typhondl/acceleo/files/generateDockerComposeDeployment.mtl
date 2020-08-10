@@ -34,8 +34,8 @@ services:
     [aContainer.deploys.reference.print()/]
 [/if]
 [if (not aContainer.depends_on -> isEmpty())]
+    depends_on:
 [for (aDependency : Dependency | aContainer.depends_on)]
-    depends_on: 
       - [aDependency.reference.name/]
 [/for]
 [/if]
