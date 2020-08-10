@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.jface.widgets.WidgetFactory;
@@ -47,6 +49,9 @@ public class VolumesDialog extends StatusDialog {
         new Label(main, SWT.NONE).setText("Type:");
         this.typeText = textFactory.create(main);
         typeText.setData("type", "type");
+        if (this.volumeDefinition.getVolumeType() == null) {
+            this.volumeDefinition.setVolumeType("volume");
+        }
         typeText.setText(VolumesService.getVolumesType(this.volumeDefinition));
         new Label(main, SWT.NONE).setText("Path:");
         this.mountPathText = textFactory.create(main);
@@ -66,7 +71,32 @@ public class VolumesDialog extends StatusDialog {
 
     private void textModified(ModifyEvent event) {
         Text now = ((Text) event.widget);
-        VolumesService.setProperty(now, this.volumeDefinition);
+        this.volumeDefinition = VolumesService.setProperty(now, this.volumeDefinition);
+        validate();
+    }
+
+    private void validate() {
+        this.updateStatus(new Status(IStatus.OK, "VolumesDialog", ""));
+        if (this.volumeDefinition.getVolumePath() == null) {
+            this.updateStatus(new Status(IStatus.ERROR, "VolumesDialog", "Path has to be given"));
+            return;
+        }
+        if (this.volumeDefinition.getVolumeType() == null) {
+            this.updateStatus(new Status(IStatus.ERROR, "VolumesDialog",
+                    "If no special volumes type should be given, enter \"volume\" for default volume definition"));
+            return;
+        }
+//        if (this.volumeDefinition.getVolumeName() != null) {
+//        IConcreteSyntaxValidator syntaxValidator = Activator.getInstance().getInjector("de.atb.typhondl.xtext.TyphonDL")
+//                .getInstance(IConcreteSyntaxValidator.class);
+//        ArrayList<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
+//        boolean good = syntaxValidator.validateObject(volumeDefinition,
+//                new IConcreteSyntaxValidator.DiagnosticListAcceptor(diagnostics), new HashMap<Object, Object>());
+//        System.out.println("good=" + good);
+//        for (Diagnostic diagnostic : diagnostics) {
+//            System.out.println("message = " + diagnostic.getMessage());
+//        }
+//        }
     }
 
     public Volume_Properties getVolumeDefinition() {
