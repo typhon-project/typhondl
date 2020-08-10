@@ -19,16 +19,14 @@ import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 public class VolumesDialog extends StatusDialog {
 
     private Volume_Properties volumeDefinition;
-    private boolean edit;
     private Text nameText;
     private Text typeText;
     private Text mountPathText;
-    private Text hostPathText;
+//    private Text hostPathText;
 
     public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit) {
         super(parent);
         this.volumeDefinition = volumeDefinition;
-        this.edit = edit;
         String title = edit ? "Edit Volume" : "New Volume";
         setTitle(title);
     }
@@ -44,34 +42,34 @@ public class VolumesDialog extends StatusDialog {
 
         new Label(main, SWT.NONE).setText("Name:");
         this.nameText = textFactory.create(main);
-        nameText.setData(this.volumeDefinition.getVolumeName());
+        nameText.setData("type", "name");
+        nameText.setText(VolumesService.getVolumesName(this.volumeDefinition));
         new Label(main, SWT.NONE).setText("Type:");
         this.typeText = textFactory.create(main);
-        typeText.setData(this.volumeDefinition.getVolumeType());
+        typeText.setData("type", "type");
+        typeText.setText(VolumesService.getVolumesType(this.volumeDefinition));
         new Label(main, SWT.NONE).setText("Path:");
         this.mountPathText = textFactory.create(main);
         if (this.volumeDefinition.getVolumePath() == null) {
-            this.volumeDefinition.setVolumePath(VolumesService.createPath("fill"));
+            this.volumeDefinition.setVolumePath(VolumesService.createPath("./example/"));
         }
-        this.mountPathText.setData(this.volumeDefinition.getVolumePath().getValue());
+        mountPathText.setData("type", "mountPath");
+        this.mountPathText.setText(VolumesService.getVolumesPath(this.volumeDefinition));
+
 //        new Label(main, SWT.NONE).setText("HostPath:");
 //        this.hostPathText = textFactory.create(main);
+//        hostPathText.setData("type", "hostPath");
+//        hostPathText.setText(VolumesService.getHostPath(this.volumeDefinition));
+
         return main;
     }
 
     private void textModified(ModifyEvent event) {
         Text now = ((Text) event.widget);
-        now.setData(now.getText());
+        VolumesService.setProperty(now, this.volumeDefinition);
     }
 
-//    private void createControl(Shell parent) {
-//        Composite main = new Composite(parent, SWT.NONE);
-//        
-//    }
-
     public Volume_Properties getVolumeDefinition() {
-//        return VolumesService.createTestVolumeProperties();
-
         return this.volumeDefinition;
     }
 }
