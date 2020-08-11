@@ -14,8 +14,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.xtext.common.services.DefaultTerminalConverters;
+import org.eclipse.xtext.conversion.ValueConverterException;
 
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 
 public class VolumesDialog extends StatusDialog {
@@ -86,17 +89,16 @@ public class VolumesDialog extends StatusDialog {
                     "If no special volumes type should be given, enter \"volume\" for default volume definition"));
             return;
         }
-//        if (this.volumeDefinition.getVolumeName() != null) {
-//        IConcreteSyntaxValidator syntaxValidator = Activator.getInstance().getInjector("de.atb.typhondl.xtext.TyphonDL")
-//                .getInstance(IConcreteSyntaxValidator.class);
-//        ArrayList<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
-//        boolean good = syntaxValidator.validateObject(volumeDefinition,
-//                new IConcreteSyntaxValidator.DiagnosticListAcceptor(diagnostics), new HashMap<Object, Object>());
-//        System.out.println("good=" + good);
-//        for (Diagnostic diagnostic : diagnostics) {
-//            System.out.println("message = " + diagnostic.getMessage());
-//        }
-//        }
+        if (this.volumeDefinition.getVolumeName() != null) {
+            String text = this.volumeDefinition.getVolumeName();
+            DefaultTerminalConverters valueConverter = Activator.getInstance()
+                    .getInjector("de.atb.typhondl.xtext.TyphonDL").getInstance(DefaultTerminalConverters.class);
+            try {
+                valueConverter.ID().toString(text);
+            } catch (ValueConverterException e) {
+                this.updateStatus(new Status(IStatus.ERROR, "VolumesDialog", "Invalid Name"));
+            }
+        }
     }
 
     public Volume_Properties getVolumeDefinition() {
