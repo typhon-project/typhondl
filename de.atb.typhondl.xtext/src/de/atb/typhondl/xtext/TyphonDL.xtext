@@ -84,6 +84,7 @@ IMAGE:
 Platform:
 	{Platform}
 	'platform' name=Name ':' type=[PlatformType] '{'
+	(properties+=Property)*
 	(clusters+=Cluster)+
 	'}';
 
@@ -96,7 +97,7 @@ Cluster:
 	'}';
 
 Cluster_Network:
-	'network' name=ID
+	'networks' name=ID
 	('{'
 	(key_values+=Key_Values)*
 	'}')?;
@@ -105,6 +106,7 @@ Application:
 	{Application}
 	'application' name=Name '{'
 	(containers+=Container)*
+	(volumes=Volume_Toplevel)?
 	'}';
 
 Container:
@@ -117,6 +119,7 @@ Container:
 	(resources=Resources)?
 	(uri=URI)?
 	(replication=Replication)?
+    (volumes=Volumes)?
 	(properties+=Property)*
 	'}';
 
@@ -129,6 +132,31 @@ Replication:
 
 enum Modes:
     MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
+;
+
+Volumes:
+	{Volumes}
+	'volumes' 
+	(decls+=Volume_Properties)+ 
+;
+
+Volume_Properties:
+	{Volume_Properties}
+	('{'
+	('volumeName''=' volumeName=ID';')? 
+	 'mountPath' '=' volumePath=ValueArray';'
+	('volumeType' '=' volumeType=Value';')?
+	(specifics+=Property)*
+	'}'
+	)
+;
+
+Volume_Toplevel:
+	{Volume_Toplevel}
+	'volumes' '{'
+	(names+=ID)*
+	(specifics+=Property)*
+	'}'
 ;
 
 Reference:
@@ -172,9 +200,12 @@ Key_ValueArray:
 	name=ID ('[')
 	(values+=Value) (',' values+=Value)*
 	(']');
-		
+
+ValueArray: 
+	value=Value (',' values+=Value)* 
+;
 Value:
-	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
 
 Name:
 	(STRING | ID | INT | '-')+;

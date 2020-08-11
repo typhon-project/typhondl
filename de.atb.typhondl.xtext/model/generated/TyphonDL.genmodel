@@ -61,6 +61,7 @@
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Platform">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Platform/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Platform/properties"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Platform/clusters"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Cluster">
@@ -77,6 +78,7 @@
     <genClasses ecoreClass="TyphonDL.ecore#//Application">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Application/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Application/containers"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Application/volumes"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Container">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Container/name"/>
@@ -88,11 +90,25 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/resources"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/uri"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/replication"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/volumes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Container/properties"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Replication">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Replication/replicas"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Replication/mode"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Volumes">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Volumes/decls"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Volume_Properties">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Volume_Properties/volumeName"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Volume_Properties/volumePath"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Volume_Properties/volumeType"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Volume_Properties/specifics"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//Volume_Toplevel">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Volume_Toplevel/names"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Volume_Toplevel/specifics"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Reference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Reference/reference"/>
@@ -127,6 +143,10 @@
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Key_ValueArray">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Key_ValueArray/values"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//ValueArray">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//ValueArray/value"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//ValueArray/values"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

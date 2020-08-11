@@ -70,3 +70,4 @@ selector
 sessionAffinity
 sessionAffinityConfig
 type
+items
