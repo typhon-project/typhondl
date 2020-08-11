@@ -30,9 +30,10 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class AnalyticsKubernetesService {
 
-    private static String ANALYTICS_KUBERNETES_ZIP_FILENAME;
-    private static String ANALYTICS_ZIP_ADDRESS;
-    private static int BUFFER_SIZE;
+    private static final String ANALYTICS_KUBERNETES_ZIP_FILENAME = "analyticsKubernetes.zip";
+    private static final String ANALYTICS_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/"
+            + ANALYTICS_KUBERNETES_ZIP_FILENAME;
+    private static final int BUFFER_SIZE = 4096;
 
     public static void addAnalyticsFiles(DeploymentModel model, String outputFolder, Properties properties) {
         try {
