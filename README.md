@@ -25,7 +25,7 @@ There are two possible ways to add the TyphonDL plugin to Eclipse:
 
 ## Usage
 
-Please consult the [wiki](https://github.com/typhon-project/typhondl/wiki/Guide).
+Please consult the [wiki](https://github.com/typhon-project/typhondl/wiki/User-Guide).
 
 ## Polystore Deployment
 
