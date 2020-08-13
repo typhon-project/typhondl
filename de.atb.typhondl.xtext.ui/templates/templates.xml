@@ -49,7 +49,14 @@
     }
 }</template>
 <template id="db_neo4j" autoinsert="true" context="de.atb.typhondl.xtext.TyphonDL.DB" deleted="false" description="default minimal template for Neo4j" enabled="true" name="Neo4j">database ${name} : Neo4j {
-    credentials {
+	environment {
+		NEO4J_dbms_security_procedures_unrestricted = apoc.*;
+		NEO4J_apoc_import_file_enabled = 'true';
+      	NEO4J_apoc_export_file_enabled = 'true';
+      	NEO4J_apoc_import_file_use__neo4j__config = 'true';
+      	NEO4JLABS_PLUGINS = '["apoc"]';
+    }
+	credentials {
         username = neo4j;
         password = choosePassword;
     }
