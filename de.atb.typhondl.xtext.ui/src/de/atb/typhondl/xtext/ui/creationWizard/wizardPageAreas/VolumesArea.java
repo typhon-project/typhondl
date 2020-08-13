@@ -117,7 +117,7 @@ public class VolumesArea extends Area {
     }
 
     private Volume_Properties editVolumes(Volume_Properties volumeDefinition, boolean edit) {
-        VolumesDialog dialog = new VolumesDialog(volumeDefinition, this.parent.getShell(), edit);
+        VolumesDialog dialog = new VolumesDialog(volumeDefinition, this.parent.getShell(), edit, this.chosenTechnology);
         if (dialog.open() == Window.OK) {
             return dialog.getVolumeDefinition();
         }

@@ -20,6 +20,7 @@ import org.eclipse.xtext.conversion.ValueConverterException;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class VolumesDialog extends StatusDialog {
 
@@ -27,11 +28,14 @@ public class VolumesDialog extends StatusDialog {
     private Text nameText;
     private Text typeText;
     private Text mountPathText;
+    private SupportedTechnologies chosenTechnology;
 //    private Text hostPathText;
 
-    public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit) {
+    public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit,
+            SupportedTechnologies chosenTechnology) {
         super(parent);
         this.volumeDefinition = volumeDefinition;
+        this.chosenTechnology = chosenTechnology;
         String title = edit ? "Edit Volume" : "New Volume";
         setTitle(title);
     }
@@ -53,7 +57,7 @@ public class VolumesDialog extends StatusDialog {
         this.typeText = textFactory.create(main);
         typeText.setData("type", "type");
         if (this.volumeDefinition.getVolumeType() == null) {
-            this.volumeDefinition.setVolumeType("volume");
+            this.volumeDefinition.setVolumeType(VolumesService.getDefaultVolumesType(chosenTechnology));
         }
         typeText.setText(VolumesService.getVolumesType(this.volumeDefinition));
         new Label(main, SWT.NONE).setText("Path:");
@@ -86,10 +90,14 @@ public class VolumesDialog extends StatusDialog {
         }
         if (this.volumeDefinition.getVolumeType() == null) {
             this.updateStatus(new Status(IStatus.ERROR, "VolumesDialog",
-                    "If no special volumes type should be given, enter \"volume\" for default volume definition"));
+                    "If no special volumes type should be given, enter \""
+                            + VolumesService.getDefaultVolumesType(chosenTechnology)
+                            + "\" for default volume definition"));
             return;
         }
         if (this.volumeDefinition.getVolumeName() != null) {
+            // TODO improve with:
+            // https://stackoverflow.com/questions/63341736/how-to-validate-terminal-rule-id-wtih-xtext-iconcretesyntaxvalidator
             String text = this.volumeDefinition.getVolumeName();
             DefaultTerminalConverters valueConverter = Activator.getInstance()
                     .getInjector("de.atb.typhondl.xtext.TyphonDL").getInstance(DefaultTerminalConverters.class);

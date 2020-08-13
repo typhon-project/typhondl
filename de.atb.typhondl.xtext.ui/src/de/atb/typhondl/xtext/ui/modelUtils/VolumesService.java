@@ -5,6 +5,7 @@ import org.eclipse.swt.widgets.Text;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class VolumesService {
 
@@ -67,5 +68,16 @@ public class VolumesService {
             break;
         }
         return properties;
+    }
+
+    public static String getDefaultVolumesType(SupportedTechnologies chosenTechnology) {
+        if (chosenTechnology.equals(SupportedTechnologies.Kubernetes)) {
+            return "persistentVolumeClaim";
+        }
+        if (chosenTechnology.equals(SupportedTechnologies.DockerCompose)) {
+            return "volume";
+        }
+
+        return "";
     }
 }
