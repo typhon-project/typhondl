@@ -126,9 +126,9 @@ public class DeploymentModelService {
             polystoreAPIContainer.setReplication(ContainerService.createStatelessReplication(
                     Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS))));
         }
-        polystoreAPIContainer.getProperties().add(ContainerService.addAPIEntrypoint(clusterType,
-                properties.getProperty(PropertiesService.API_ENTRYPOINT)));
         if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+            polystoreAPIContainer.getProperties().add(ContainerService.addAPIEntrypoint(clusterType,
+                    properties.getProperty(PropertiesService.API_ENTRYPOINT)));
             polystoreAPIContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
         }
