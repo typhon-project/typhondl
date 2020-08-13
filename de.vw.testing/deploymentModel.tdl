@@ -1,8 +1,8 @@
 import weatherModel.xmi
-import VehicleDataDB.tdl
 import AppData.tdl
-import VehicleMetadataDB.tdl
 import TextWarningData.tdl
+import VehicleMetadataDB.tdl
+import VehicleDataDB.tdl
 import dbTypes.tdl
 containertype Docker
 clustertype DockerCompose
@@ -10,10 +10,6 @@ platformtype localhost
 platform platformName : localhost {
 	cluster clusterName : DockerCompose {
 		application Polystore {
-			container vehicledatadb : Docker {
-				deploys VehicleDataDB
-				uri = vehicledatadb:27017 ;
-			}
 			container appdata : Docker {
 				deploys AppData
 				uri = appdata:3306 ;
@@ -21,6 +17,18 @@ platform platformName : localhost {
 			container textwarningdata : Docker {
 				deploys TextWarningData
 				uri = textwarningdata:27017 ;
+			}
+			container vehiclemetadatadb : Docker {
+				deploys VehicleMetadataDB
+				uri = vehiclemetadatadb:3306 ;
+				volumes {
+					mountPath = ./example/:target/data ;
+					volumeType = volume ;
+				}
+			}
+			container vehicledatadb : Docker {
+				deploys VehicleDataDB
+				uri = vehicledatadb:27017 ;
 			}
 		}
 	}
