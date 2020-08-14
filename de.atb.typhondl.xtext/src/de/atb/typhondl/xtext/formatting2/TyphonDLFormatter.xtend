@@ -49,6 +49,8 @@ import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.Credentials
 import de.atb.typhondl.xtext.typhonDL.Environment
 import de.atb.typhondl.xtext.typhonDL.Replication
+import de.atb.typhondl.xtext.typhonDL.Volumes
+import de.atb.typhondl.xtext.typhonDL.Volume_Properties
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -74,6 +76,8 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 			[indent]
 		)
 		software.image.format
+		software.environment.format
+		software.uri.append[newLine]
 		for (property : software.parameters) {
 			property.format
 			property.append[newLine]
@@ -234,9 +238,33 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		container.resources.format
 		container.replication.format
 		container.uri.append[newLine]
+		container.volumes.format
 		for (property : container.properties) {
 			property.format
+			property.append[newLine]
 		}
+	}
+	
+	def dispatch void format(Volumes volumes, extension IFormattableDocument document) {
+	    for (decls : volumes.decls) {
+	        decls.format
+	    }
+	}
+	
+	def dispatch void format(Volume_Properties decls, extension IFormattableDocument document) {
+	    interior(
+            decls.regionFor.keyword('{').append[newLine],
+            decls.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+        decls.regionFor.keyword('volumeName').prepend[newLine]
+        decls.regionFor.keyword('volumeType').prepend[newLine]
+        decls.regionFor.keyword('mountPath').prepend[newLine]
+        for (property : decls.specifics) {
+            property.prepend[newLine]
+            property.format
+            property.append[newLine]
+        }
 	}
 	
 	def dispatch void format(Replication replication, extension IFormattableDocument document) {

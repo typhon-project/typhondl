@@ -22,7 +22,6 @@ package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -32,21 +31,20 @@ import org.eclipse.swt.widgets.Composite;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.Reference;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.typhonDL.URI;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.AddressArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.Area;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.CredentialsArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.EnvironmentArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.HelmArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ImageArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PortArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.PropertyArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ReplicaArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesArea;
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.AddressArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.Area;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.CredentialsArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.EnvironmentArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.HelmArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ImageArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.PortArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.PropertyArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ReplicaArea;
-import de.atb.typhondl.xtext.ui.wizardPageAreas.ResourceArea;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -59,13 +57,14 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private DB db;
     private Container container;
-    private int chosenTechnology;
+    private SupportedTechnologies chosenTechnology;
     private int pageWidth;
     private Properties properties;
     private ArrayList<Area> areas;
     private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, int chosenTechnology, Properties properties, int pageWidth) {
+    public CreationDatabasePage(String pageName, DB db, SupportedTechnologies chosenTechnology, Properties properties,
+            int pageWidth) {
         super(pageName);
         this.db = db;
         this.chosenTechnology = chosenTechnology;
@@ -79,33 +78,15 @@ public class CreationDatabasePage extends MyWizardPage {
         if (db.isExternal()) {
             return null;
         }
-        Container newContainer = TyphonDLFactory.eINSTANCE.createContainer();
-        String containerName = createContainerName(db.getName());
-        newContainer.setName(containerName);
-        Reference reference = TyphonDLFactory.eINSTANCE.createReference();
-        reference.setReference(db);
-        newContainer.setDeploys(reference);
-        URI uri = TyphonDLFactory.eINSTANCE.createURI();
-        uri.setValue(containerName + ":" + getPort());
-        newContainer.setUri(uri);
+        String containerName = ContainerService.createContainerName(db.getName());
+        // the containerType get's created and added to the container in ModelCreator,
+        // so that all containers have the same containerType instance
+        Container newContainer = ContainerService.create(containerName, null, db, containerName + ":" + getPort());
         return newContainer;
     }
 
     private String getPort() {
         return properties.getProperty(db.getType().getName().toLowerCase() + ".port");
-    }
-
-    /**
-     * Names of container have to be DNS subdomain names (see DL #31)
-     * 
-     * @param name
-     * @return
-     */
-    private String createContainerName(String name) {
-        name = Pattern.compile("^[^a-zA-Z]*").matcher(name).replaceFirst("");
-        name = Pattern.compile("[^a-zA-Z]*$").matcher(name).replaceFirst("");
-        name = name.toLowerCase().replaceAll("[^a-z0-9.]", "-");
-        return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
     @Override
@@ -140,9 +121,8 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
-        if (!isInList(HelmArea.class)
-                && SupportedTechnologies.values()[chosenTechnology].getClusterType().equalsIgnoreCase("Kubernetes")
-                && db.getHelm() != null && !db.isExternal()) {
+        if (!isInList(HelmArea.class) && chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null
+                && !db.isExternal()) {
             areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
@@ -170,6 +150,9 @@ public class CreationDatabasePage extends MyWizardPage {
                 && db.getHelm() == null) {
             areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
         }
+        if (!isInList(VolumesArea.class) && !db.isExternal() && db.getHelm() == null) {
+            areas.add(new VolumesArea(db, container, chosenTechnology, main));
+        }
     }
 
     private <T> boolean isInList(Class<T> areaClass) {
@@ -183,7 +166,7 @@ public class CreationDatabasePage extends MyWizardPage {
 
     private String getReplicationProperty() {
         String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
-                + SupportedTechnologies.values()[chosenTechnology].getClusterType().toLowerCase();
+                + chosenTechnology.name().toLowerCase();
         return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 
@@ -207,11 +190,11 @@ public class CreationDatabasePage extends MyWizardPage {
         ((Composite) this.getControl()).layout();
     }
 
-    public int getChosenTechnology() {
+    public SupportedTechnologies getChosenTechnology() {
         return this.chosenTechnology;
     }
 
-    public void setChosenTechnology(int chosenTechnology) {
+    public void setChosenTechnology(SupportedTechnologies chosenTechnology) {
         this.chosenTechnology = chosenTechnology;
     }
 

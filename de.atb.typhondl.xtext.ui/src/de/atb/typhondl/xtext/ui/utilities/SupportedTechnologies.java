@@ -33,8 +33,7 @@ import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
  *
  */
 public enum SupportedTechnologies {
-    DockerCompose("Docker Compose", "Docker", "DockerCompose"),
-    Kubernetes("Kubernetes with Docker", "Docker", "Kubernetes");
+    DockerCompose("Docker Compose", "Docker"), Kubernetes("Kubernetes with Docker", "Docker");
 
     /**
      * The name that gets displayed in the {@link CreateModelWizard}
@@ -45,11 +44,6 @@ public enum SupportedTechnologies {
      * Name of the Container Type for {@link ContainerType}
      */
     private final String containerType;
-
-    /**
-     * Name of the Cluster Type for {@link ClusterType}
-     */
-    private final String clusterType;
 
     /**
      * 
@@ -67,10 +61,9 @@ public enum SupportedTechnologies {
      * @param containerType Name of the Container Type for {@link ContainerType}
      * @param clusterType   Name of the Cluster Type for {@link ClusterType}
      */
-    private SupportedTechnologies(String displayedName, String containerType, String clusterType) {
+    private SupportedTechnologies(String displayedName, String containerType) {
         this.displayedName = displayedName;
         this.containerType = containerType;
-        this.clusterType = clusterType;
     }
 
     /**
@@ -79,14 +72,6 @@ public enum SupportedTechnologies {
      */
     public String getContainerType() {
         return containerType;
-    }
-
-    /**
-     * 
-     * @return Name of the Cluster Type for {@link ClusterType}
-     */
-    public String getClusterType() {
-        return clusterType;
     }
 
 }
