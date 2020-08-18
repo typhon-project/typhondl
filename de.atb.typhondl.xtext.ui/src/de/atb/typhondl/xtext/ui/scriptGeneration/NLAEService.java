@@ -65,9 +65,9 @@ public class NLAEService {
             if (line.contains("8080")) {
                 deploymentYAML.set(i, line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT)));
             }
-            if (line.contains("/path/to/models/")) {
+            if (line.contains("/path/to/models")) {
                 deploymentYAML.set(i,
-                        line.replace("/path/to/models/", properties.getProperty(PropertiesService.NLAE_SHAREDVOLUME)));
+                        line.replace("/path/to/models", properties.getProperty(PropertiesService.NLAE_SHAREDVOLUME)));
             }
         }
         int taskmanagerIndex = getTaskmanagerIndex(deploymentYAML);
