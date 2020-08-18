@@ -25,7 +25,7 @@ public class NLAEService {
     private static final String NLAE_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/" + NLAE_ZIP_FILENAME;
 
     public static DeploymentModel addNLAE(DeploymentModel model, Properties properties) {
-        Software nlae = SoftwareService.create(PropertiesService.NLAE_NAME, null);
+        Software nlae = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME), null);
         nlae.setExternal(true);
         URI uri = TyphonDLFactory.eINSTANCE.createURI();
         uri.setValue(properties.getProperty(PropertiesService.NLAE_API_HOST) + ":"
