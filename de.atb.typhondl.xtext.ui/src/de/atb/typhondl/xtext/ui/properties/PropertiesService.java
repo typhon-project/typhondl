@@ -98,6 +98,7 @@ public class PropertiesService {
     public static final String EVOLUTION_FRONTEND_ENVIRONMENT_BACKEND_ENDPOINT = "evolution.frontend.environment.BACKEND_ENDPOINT";
     public static final String EVOLUTION_FRONTEND_PORT = "evolution.frontend.port";
     public static final String EVOLUTION_FRONTEND_PUBLISHEDPORT = "evolution.frontend.publishedPort";
+    public static final String NLAE_API_HOST = "nlae.api.host";
     public static final String NLAE_API_PORT = "nlae.api.port";
     public static final String NLAE_TASKMANAGER_REPLICAS = "nlae.taskmanager.replicas";
     public static final String NLAE_JOBMANAGER_HEAPSIZE = "nlae.jobmanager.heapsize";
