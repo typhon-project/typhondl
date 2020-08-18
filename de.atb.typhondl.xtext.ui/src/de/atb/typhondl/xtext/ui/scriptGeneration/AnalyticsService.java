@@ -3,8 +3,6 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.eclipse.xtext.EcoreUtil2;
-
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
@@ -12,11 +10,11 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
@@ -111,7 +109,7 @@ public class AnalyticsService {
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
                     analyticsCluster.setType(clusterTypeObject);
                     analyticsCluster.setName("analyticsCluster");
-                    getPlatform(model).getClusters().add(analyticsCluster);
+                    ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");
                     analyticsCluster.getApplications().add(analyticsApplication);
@@ -123,7 +121,7 @@ public class AnalyticsService {
                 } else {
                     // deployment scripts are included in polystore deployment scripts. the
                     // analytics containers are in the same cluster
-                    Application application = getFirstApplication(model);
+                    Application application = ModelService.getFirstApplication(model);
                     application.getContainers().add(kafkaContainer);
                     application.getContainers().add(authAllContainer);
                     application.getContainers().add(zookeeperContainer);
@@ -157,13 +155,13 @@ public class AnalyticsService {
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
                     analyticsCluster.setType(clusterTypeObject);
                     analyticsCluster.setName("analyticsCluster");
-                    getPlatform(model).getClusters().add(analyticsCluster);
+                    ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");
                     analyticsCluster.getApplications().add(analyticsApplication);
                     analyticsApplication.getContainers().add(kafkaContainer);
                 } else {
-                    getFirstApplication(model).getContainers().add(kafkaContainer);
+                    ModelService.getFirstApplication(model).getContainers().add(kafkaContainer);
                 }
             } else {
                 kafka.setExternal(true);
@@ -200,10 +198,11 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
         Container evolutionJavaContainer = ContainerService.create(evolutionJavaContainerName, containerType,
                 evolutionJava, null);
-        evolutionJavaContainer.getDepends_on().addAll(ContainerService.createDependencies(new Container[] {
-                evolutionMongoContainer,
-                getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
-                getContainer(model, properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
+        evolutionJavaContainer.getDepends_on()
+                .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer,
+                        ModelService.getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
+                        ModelService.getContainer(model,
+                                properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
 
         // evolution-backend
         final String evolutionBackendContainerName = properties
@@ -234,25 +233,12 @@ public class AnalyticsService {
         evolutionFrontendContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionBackendContainer }));
 
-        Application application = getFirstApplication(model);
+        Application application = ModelService.getFirstApplication(model);
         application.getContainers().add(evolutionMongoContainer);
         application.getContainers().add(evolutionJavaContainer);
         application.getContainers().add(evolutionBackendContainer);
         application.getContainers().add(evolutionFrontendContainer);
         return model;
-    }
-
-    private static Application getFirstApplication(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-    }
-
-    private static Container getContainer(DeploymentModel model, String containerName) {
-        return EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
-                .filter(container -> container.getName().equalsIgnoreCase(containerName)).findFirst().orElse(null);
-    }
-
-    private static Platform getPlatform(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
     }
 
     private static String[] getKafkaComposeSettings(Properties properties) {
