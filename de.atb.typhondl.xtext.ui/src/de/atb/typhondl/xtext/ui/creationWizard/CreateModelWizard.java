@@ -74,6 +74,7 @@ public class CreateModelWizard extends Wizard {
     private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
     private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
     private final String PAGENAME_ANALYTICS = "Analytics";
+    private final String PAGENAME_NLAE = "NLAE";
 
     /**
      * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
@@ -207,7 +208,7 @@ public class CreateModelWizard extends Wizard {
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
         if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationAnalyticsPage) {
+                || currentPage instanceof CreationAnalyticsPage || currentPage instanceof CreationNLAEPage) {
             return false;
         }
         if (currentPage instanceof CreationDatabasePage && currentPage.getNextPage() instanceof CreationDatabasePage) {
@@ -252,10 +253,12 @@ public class CreateModelWizard extends Wizard {
                     }
                 }
                 return this.getPage(getAnalyticsPageName());
-            } else {
-                return this.getPage(getDBMSPageName());
+            } else if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
+                return getNLAEPage();
             }
+            return this.getPage(getDBMSPageName());
         }
+
         if (page instanceof CreationAnalyticsPage) {
             this.properties = ((CreationAnalyticsPage) page).getProperties();
             if (this.chosenTemplate == SupportedTechnologies.DockerCompose
@@ -263,6 +266,13 @@ public class CreateModelWizard extends Wizard {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
+            if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
+                return getNLAEPage();
+            }
+            return this.getPage(getDBMSPageName());
+        }
+        if (page instanceof CreationNLAEPage) {
+            this.properties = ((CreationNLAEPage) page).getProperties();
             return this.getPage(getDBMSPageName());
         }
         if (page instanceof CreationDBMSPage) {
@@ -296,6 +306,24 @@ public class CreateModelWizard extends Wizard {
         }
         return super.getNextPage(page);
 
+    }
+
+    private CreationNLAEPage getNLAEPage() {
+        if (!nlaePageExists()) {
+            CreationNLAEPage newPage = new CreationNLAEPage(PAGENAME_NLAE, properties);
+            newPage.setWizard(this);
+            addPage(newPage);
+        } else {
+            CreationNLAEPage nlaePage = (CreationNLAEPage) this.getPage(PAGENAME_NLAE);
+            if (nlaePage.getControl() != null) {
+                nlaePage.updateData(properties);
+            }
+        }
+        return (CreationNLAEPage) this.getPage(PAGENAME_NLAE);
+    }
+
+    private boolean nlaePageExists() {
+        return pageExists(PAGENAME_NLAE);
     }
 
     /**
