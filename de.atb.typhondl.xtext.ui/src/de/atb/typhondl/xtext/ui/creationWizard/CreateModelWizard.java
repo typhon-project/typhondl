@@ -299,7 +299,8 @@ public class CreateModelWizard extends Wizard {
             }
             // skip other DBMS pages
             IWizardPage nextPage = super.getNextPage(page);
-            while (nextPage instanceof CreationDBMSPage || nextPage instanceof CreationAnalyticsPage) {
+            while (nextPage instanceof CreationDBMSPage || nextPage instanceof CreationAnalyticsPage
+                    || nextPage instanceof CreationNLAEPage) {
                 nextPage = super.getNextPage(nextPage);
             }
             return nextPage;

@@ -3,9 +3,12 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
@@ -55,9 +58,32 @@ public class NLAEService {
         flinkPropertyMap.put("parallelism.default:", PropertiesService.NLAE_PARALLELISM);
         FileService.applyMapToFile(properties, flinkConfigPath, flinkPropertyMap);
 
-        Path nlaeDeploymentPath = Paths.get(nlaePath + File.separator + "nlae-compose.yaml");
-        // TODO use JSON parser!
+        Path nlaeDeploymentPath = Paths.get(nlaePath + File.separator + "nlae-compose.yml");
+        List<String> deploymentYAML = Files.readAllLines(nlaeDeploymentPath);
+        for (int i = 0; i < deploymentYAML.size(); i++) {
+            String line = deploymentYAML.get(i);
+            if (line.contains("- \"8080\"")) {
+                deploymentYAML.set(i, line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT)));
+            }
+        }
+        int taskmanagerIndex = getTaskmanagerIndex(deploymentYAML);
+        for (int i = taskmanagerIndex; i < deploymentYAML.size(); i++) {
+            String line = deploymentYAML.get(i);
+            if (line.contains("replicas:")) {
+                deploymentYAML.set(i,
+                        line.replace("2", properties.getProperty(PropertiesService.NLAE_TASKMANAGER_REPLICAS)));
+            }
+        }
+        Files.write(nlaeDeploymentPath, deploymentYAML, StandardOpenOption.TRUNCATE_EXISTING);
+    }
 
+    private static int getTaskmanagerIndex(List<String> kafkaCluster) {
+        for (int i = 0; i < kafkaCluster.size(); i++) {
+            if (kafkaCluster.get(i).contains("taskmanager")) {
+                return i;
+            }
+        }
+        return 1;
     }
 
 }
