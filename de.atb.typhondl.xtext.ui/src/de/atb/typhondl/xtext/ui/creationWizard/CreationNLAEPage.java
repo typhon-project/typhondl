@@ -33,7 +33,8 @@ public class CreationNLAEPage extends WizardPage {
                 new InputField("Flink taskmanager heapsize: ", PropertiesService.NLAE_TASKMANAGER_HEAPSIZE),
                 new InputField("Flink taskmanager replicas: ", PropertiesService.NLAE_TASKMANAGER_REPLICAS),
                 new InputField("Flink taskmanager number of task slots: ", PropertiesService.NLAE_TASKMANAGER_SLOTS),
-                new InputField("Flink parallelism default: ", PropertiesService.NLAE_PARALLELISM));
+                new InputField("Flink parallelism default: ", PropertiesService.NLAE_PARALLELISM),
+                new InputField("Shared volume for models: ", PropertiesService.NLAE_SHAREDVOLUME));
     }
 
     @Override

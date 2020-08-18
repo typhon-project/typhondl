@@ -106,6 +106,7 @@ public class PropertiesService {
     public static final String NLAE_TASKMANAGER_HEAPSIZE = "nlae.taskmanager.heapsize";
     public static final String NLAE_TASKMANAGER_SLOTS = "nlae.taskmanager.numberOfTaskSlots";
     public static final String NLAE_PARALLELISM = "nlae.flink.parallelism.default";
+    public static final String NLAE_SHAREDVOLUME = "nlae.sharedvolume";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
     public static final String MONGO_PORT = "mongo.port";

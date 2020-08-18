@@ -62,8 +62,12 @@ public class NLAEService {
         List<String> deploymentYAML = Files.readAllLines(nlaeDeploymentPath);
         for (int i = 0; i < deploymentYAML.size(); i++) {
             String line = deploymentYAML.get(i);
-            if (line.contains("- \"8080\"")) {
+            if (line.contains("8080")) {
                 deploymentYAML.set(i, line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT)));
+            }
+            if (line.contains("/path/to/models/")) {
+                deploymentYAML.set(i,
+                        line.replace("/path/to/models/", properties.getProperty(PropertiesService.NLAE_SHAREDVOLUME)));
             }
         }
         int taskmanagerIndex = getTaskmanagerIndex(deploymentYAML);
