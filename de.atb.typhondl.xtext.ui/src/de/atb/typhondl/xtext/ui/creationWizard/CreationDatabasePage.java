@@ -143,7 +143,7 @@ public class CreationDatabasePage extends MyWizardPage {
         }
 
         if (!isInList(PortArea.class) && !db.isExternal() && db.getHelm() == null) {
-            areas.add(new PortArea(db, container, chosenTechnology, main, properties));
+            areas.add(new PortArea(db, container, chosenTechnology, main, properties, this));
         }
 
         if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()
