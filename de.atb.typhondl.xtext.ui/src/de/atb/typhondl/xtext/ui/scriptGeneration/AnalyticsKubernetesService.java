@@ -24,6 +24,10 @@ public class AnalyticsKubernetesService {
 
     public static void addAnalyticsFiles(DeploymentModel model, String outputFolder, Properties properties) {
         try {
+            File dir = new File(outputFolder);
+            if (!Files.exists(Paths.get(outputFolder))) {
+                dir.mkdir();
+            }
             String analyticsZipPath = outputFolder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
             InputStream input = FileService.downloadFiles(analyticsZipPath, ANALYTICS_ZIP_ADDRESS, "Analytics");
             if (input != null) {
