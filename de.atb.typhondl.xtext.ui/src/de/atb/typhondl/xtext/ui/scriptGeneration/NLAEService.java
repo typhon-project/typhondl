@@ -39,10 +39,11 @@ public class NLAEService {
         try {
             String nlaeZipPath = outputFolder + File.separator + NLAE_ZIP_FILENAME;
             InputStream input = FileService.downloadFiles(nlaeZipPath, NLAE_ZIP_ADDRESS, "NLAE");
+            final String nlaeFolder = nlaeZipPath.substring(0, nlaeZipPath.lastIndexOf('.'));
             if (input != null) {
-                FileService.unzip(nlaeZipPath, outputFolder);
+                FileService.unzip(nlaeZipPath, nlaeFolder);
             }
-            applyPropertiesToNLAEFiles(nlaeZipPath.substring(0, nlaeZipPath.lastIndexOf('.')), properties);
+            applyPropertiesToNLAEFiles(nlaeFolder, properties);
         } catch (IOException e) {
             e.printStackTrace();
         }
