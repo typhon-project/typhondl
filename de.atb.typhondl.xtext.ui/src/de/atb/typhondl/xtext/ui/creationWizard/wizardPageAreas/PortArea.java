@@ -23,6 +23,8 @@ package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,13 +41,19 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class PortArea extends Area {
 
+    private MyWizardPage page;
+    private Text targetPortText;
+    private Text publishedPortText;
+
     public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
-            Properties properties) {
+            Properties properties, MyWizardPage page) {
         super(db, container, chosenTechnology, parent, "Ports", properties);
+        this.page = page;
     }
 
     @Override
@@ -76,20 +84,22 @@ public class PortArea extends Area {
             hiddenComposite.setLayoutData(hiddenData);
 
             new Label(hiddenComposite, SWT.NONE).setText("Container port: ");
-            Text targetPortText = new Text(hiddenComposite, SWT.BORDER);
+            targetPortText = new Text(hiddenComposite, SWT.BORDER);
             targetPortText.setText(targetPort.getValue());
             targetPortText.setToolTipText("This is the port that will be exposed inside the network/cluster");
             targetPortText.setLayoutData(gridDataFields);
             targetPortText.addModifyListener(e -> {
                 targetPort.setValue(targetPortText.getText());
+                validate();
             });
             new Label(hiddenComposite, SWT.NONE).setText("Published port: ");
-            Text publishedPortText = new Text(hiddenComposite, SWT.BORDER);
+            publishedPortText = new Text(hiddenComposite, SWT.BORDER);
             publishedPortText.setText(publishedPort.getValue());
             publishedPortText.setToolTipText("This is the port that will be exposed to the outside");
             publishedPortText.setLayoutData(gridDataFields);
             publishedPortText.addModifyListener(e -> {
                 publishedPort.setValue(publishedPortText.getText());
+                validate();
             });
 
             checkbox.addSelectionListener(new SelectionAdapter() {
@@ -117,6 +127,19 @@ public class PortArea extends Area {
         }
     }
 
+    private void validate() {
+        page.setStatus(null);
+        if (chosenTechnology == SupportedTechnologies.Kubernetes) {
+            if (!isInRange(this.publishedPortText.getText())) {
+                page.setStatus(new Status(IStatus.ERROR, "Wizard", "Chose a port between 30000 and 32767"));
+            }
+        }
+    }
+
+    private boolean isInRange(String port) {
+        return Integer.parseInt(port) <= 32767 && Integer.parseInt(port) >= 30000;
+    }
+
     protected void setPort(String nameOfPort, Ports newPorts, String valueToSet) {
         Key_Values portToSet = newPorts.getKey_values().stream()
                 .filter(key -> key.getName().equalsIgnoreCase(nameOfPort)).findFirst().orElse(null);
@@ -127,7 +150,7 @@ public class PortArea extends Area {
     }
 
     private String createRandomPort() {
-        return Integer.toString(ThreadLocalRandom.current().nextInt(32000, 36000));
+        return Integer.toString(ThreadLocalRandom.current().nextInt(30000, 32767));
     }
 
 }
