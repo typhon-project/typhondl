@@ -131,7 +131,7 @@ public class PortArea extends Area {
         page.setStatus(null);
         if (chosenTechnology == SupportedTechnologies.Kubernetes) {
             if (!isInRange(this.publishedPortText.getText())) {
-                page.setStatus(new Status(IStatus.ERROR, "Wizard", "Chose a port between 30000 and 32767"));
+                page.setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
             }
         }
     }
