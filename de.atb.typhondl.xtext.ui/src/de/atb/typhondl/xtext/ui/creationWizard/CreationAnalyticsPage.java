@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.utilities.InputField;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -63,30 +64,6 @@ public class CreationAnalyticsPage extends MyWizardPage {
         super(pageName);
         this.properties = properties;
         this.chosenTemplate = chosenTemplate;
-    }
-
-    /**
-     * Helper class for the {@link KafkaConfigEditor}
-     * 
-     * @author flug
-     *
-     */
-    public class InputField {
-
-        public final String label;
-        public final String propertyName;
-
-        /**
-         * Creates an InputField.
-         * 
-         * @param label        The displayed label
-         * @param propertyName The name of the property for saving the input as
-         *                     {@link Properties}
-         */
-        public InputField(String label, String propertyName) {
-            this.label = label;
-            this.propertyName = propertyName;
-        }
     }
 
     /**

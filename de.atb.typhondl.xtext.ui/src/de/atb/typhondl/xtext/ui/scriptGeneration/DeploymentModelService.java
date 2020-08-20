@@ -173,6 +173,11 @@ public class DeploymentModelService {
         if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
             model = AnalyticsService.addAnalytics(model, properties, getClusterType(model), containerType);
         }
+
+        // NLAE
+        if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
+            model = NLAEService.addNLAE(model, properties);
+        }
         return model;
     }
 

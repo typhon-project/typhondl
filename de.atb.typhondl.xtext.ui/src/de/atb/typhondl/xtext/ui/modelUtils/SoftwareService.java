@@ -14,9 +14,11 @@ public class SoftwareService {
     public static Software create(String name, String imageValue) {
         Software software = TyphonDLFactory.eINSTANCE.createSoftware();
         software.setName(name);
-        IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
-        image.setValue(imageValue);
-        software.setImage(image);
+        if (imageValue != null) {
+            IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();
+            image.setValue(imageValue);
+            software.setImage(image);
+        }
         return software;
     }
 
