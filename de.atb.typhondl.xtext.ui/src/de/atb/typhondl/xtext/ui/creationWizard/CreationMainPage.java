@@ -243,10 +243,6 @@ public class CreationMainPage extends MyWizardPage {
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
 
-        // TODO necessary for fully displaying the kubeconfig textfield. Only remove if
-        // fixed:
-        new Label(hidden, SWT.NONE).setText("test");
-
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
