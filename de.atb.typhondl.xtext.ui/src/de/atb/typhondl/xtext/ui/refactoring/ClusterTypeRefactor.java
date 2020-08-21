@@ -10,6 +10,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
+import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 public class ClusterTypeRefactor {
 
@@ -17,13 +18,22 @@ public class ClusterTypeRefactor {
         if (ClusterType.class.isInstance(selectedElement)) {
             DeploymentModel model = (DeploymentModel) resource.getContents().get(0);
             Properties properties = null;
+            final String pathToProperties = fileEditorInput.getFile().getLocationURI().toString().replace("file:", "")
+                    .concat(".properties");
             try {
-                properties = PropertiesLoader.loadPropertiesFromModelFile(fileEditorInput.getFile().getLocationURI()
-                        .toString().replace("file:", "").concat(".properties"));
+                properties = PropertiesLoader.loadPropertiesFromModelFile(pathToProperties);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
+            ((ClusterType) selectedElement).setName("Kubernetes");
+            try {
+                resource.save(SavingOptions.getTDLoptions());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
 
     }

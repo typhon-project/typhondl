@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -19,6 +18,8 @@ import org.eclipse.xtext.ui.refactoring.ui.IRenameElementContext;
 import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import com.google.inject.Inject;
+
+import de.atb.typhondl.xtext.typhonDL.ClusterType;
 
 /*******************************************************************************
  * Copyright (c) 2010, 2017 itemis AG (http://www.itemis.eu) and others.
@@ -55,14 +56,16 @@ public class TyphonDLRenameHandler extends DefaultRenameElementHandler {
                                 EObject selectedElement = eObjectAtOffsetHelper.resolveElementAt(resource,
                                         selection.getOffset());
                                 if (selectedElement != null) {
-                                    final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
-                                    if (!MessageDialog.openConfirm(editor.getShell(), "Refactor clustertype",
-                                            "Refacoring the clustertype will change hosts and published ports.")) {
+                                    if (ClusterType.class.isInstance(selectedElement)) {
+                                        if (!MessageDialog.openConfirm(editor.getShell(), "Refactor clustertype",
+                                                "Refacoring the clustertype will change hosts and published ports.")) {
+                                            return null;
+                                        }
+                                        ClusterTypeRefactor.refactor(selectedElement,
+                                                (FileEditorInput) HandlerUtil.getActiveEditor(event).getEditorInput(),
+                                                resource);
                                         return null;
                                     }
-                                    ClusterTypeRefactor.refactor(selectedElement,
-                                            (FileEditorInput) HandlerUtil.getActiveEditor(event).getEditorInput(),
-                                            resource);
                                     IRenameElementContext renameElementContext = renameContextFactory
                                             .createRenameElementContext(selectedElement, editor, selection, resource);
                                     if (isRefactoringEnabled(renameElementContext, resource))
