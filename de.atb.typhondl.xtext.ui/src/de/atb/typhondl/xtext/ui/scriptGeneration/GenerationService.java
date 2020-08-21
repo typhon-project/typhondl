@@ -100,7 +100,7 @@ public class GenerationService {
     }
 
     public void generateDeployment() {
-        if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")
+        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
                 && getClusterType().equalsIgnoreCase(KUBERNETES)) {
             AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
         }
