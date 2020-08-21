@@ -100,7 +100,7 @@ public class CreateModelWizard extends Wizard {
         setWindowTitle("TyphonDL Creation Wizard");
         this.MLmodel = MLmodel;
         try {
-            this.properties = PropertiesLoader.loadProperties();
+            this.properties = PropertiesLoader.loadPropertiesFromClasspath();
         } catch (IOException e) {
             e.printStackTrace();
         }
