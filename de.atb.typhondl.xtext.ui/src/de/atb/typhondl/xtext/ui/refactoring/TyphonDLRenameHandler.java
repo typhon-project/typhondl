@@ -7,8 +7,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.XtextEditor;
@@ -61,9 +59,7 @@ public class TyphonDLRenameHandler extends DefaultRenameElementHandler {
                                                 "Refacoring the clustertype will change hosts and published ports.")) {
                                             return null;
                                         }
-                                        ClusterTypeRefactor.refactor(selectedElement,
-                                                (FileEditorInput) HandlerUtil.getActiveEditor(event).getEditorInput(),
-                                                resource);
+                                        ClusterTypeRefactor.refactor(selectedElement, editor, resource);
                                         return null;
                                     }
                                     IRenameElementContext renameElementContext = renameContextFactory
