@@ -27,7 +27,6 @@ public class ClusterTypeRefactor {
             try {
                 properties = PropertiesLoader.loadPropertiesFromModelFile(pathToProperties);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             ClusterTypeDialog dialog = new ClusterTypeDialog(editor.getShell(), properties, model,

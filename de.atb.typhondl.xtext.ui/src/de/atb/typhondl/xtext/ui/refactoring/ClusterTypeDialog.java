@@ -36,8 +36,7 @@ public class ClusterTypeDialog extends StatusDialog {
     }
 
     public class ClusterTypeConfigEditor {
-        public List<InputField> fields = Arrays.asList(
-                new InputField("API host: ", PropertiesService.UI_ENVIRONMENT_API_HOST),
+        public List<InputField> fields = Arrays.asList(new InputField("API host: ", PropertiesService.API_HOST),
                 new InputField("API port: ", PropertiesService.API_PUBLISHEDPORT));
     }
 

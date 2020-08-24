@@ -57,14 +57,6 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class CreationMainPage extends MyWizardPage {
 
-    private static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
-
-    private static final String ANALYTICS_KAFKA_URI = "analytics.kafka.uri";
-
-    private static final String POLYSTORE_USE_ANALYTICS = "polystore.useAnalytics";
-
-    private static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
-
     /**
      * URI to the selected ML model
      */
@@ -153,8 +145,6 @@ public class CreationMainPage extends MyWizardPage {
     }
 
     private void createNLAEGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
         Group mainGroup = new Group(main, SWT.READ_ONLY);
         mainGroup.setLayout(new GridLayout(1, false));
         mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -233,19 +223,18 @@ public class CreationMainPage extends MyWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
                 if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "\"192.168.99.101\"");
-                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "\"30061\"");
+                    properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-                    hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
+                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
+                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                 } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
-                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "localhost");
-                    properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "8080");
+                    properties.setProperty(PropertiesService.API_HOST, "localhost");
+                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-                    hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
+                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
+                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                 }
                 setKafkaProperties();
             }
@@ -303,7 +292,7 @@ public class CreationMainPage extends MyWizardPage {
         analyticsURIText.setLayoutData(gridData);
         analyticsURIText.setText(getKafkaURI());
         analyticsURIText.addModifyListener(e -> {
-            properties.setProperty(ANALYTICS_KAFKA_URI, analyticsURIText.getText());
+            properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText());
         });
 
         // TODO necessary for displaying the useEvolutionCheck checkbox. Only remove if
@@ -386,9 +375,9 @@ public class CreationMainPage extends MyWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 useAnalytics = checkbox.getSelection();
-                properties.setProperty(POLYSTORE_USE_ANALYTICS, String.valueOf(useAnalytics));
+                properties.setProperty(PropertiesService.POLYSTORE_USEANALYTICS, String.valueOf(useAnalytics));
                 createScripts = createScriptsCheck.getSelection();
-                properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
+                properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
                 if (useAnalytics) {
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
@@ -404,21 +393,21 @@ public class CreationMainPage extends MyWizardPage {
     }
 
     private void setKafkaProperties() {
-        properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
-        properties.setProperty(ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
+        properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
+        properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(ANALYTICS_KAFKA_URI, getKafkaURI());
-                analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, getKafkaURI());
+                analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
                 analyticsURIText.setEditable(false);
             } else {
-                properties.setProperty(ANALYTICS_KAFKA_URI, "localhost:29092");
-                analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
+                analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
                 analyticsURIText.setEditable(true);
             }
         } else {
-            properties.setProperty(ANALYTICS_KAFKA_URI, "localhost:29092");
-            analyticsURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+            properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
+            analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
             analyticsURIText.setEditable(true);
         }
     }
@@ -447,17 +436,15 @@ public class CreationMainPage extends MyWizardPage {
         new Label(connectionGroup, SWT.NONE).setText("Api Host: ");
         hostText = new Text(connectionGroup, SWT.BORDER);
         hostText.setLayoutData(gridData);
-        hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
-        hostText.addModifyListener(
-                e -> properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, hostText.getText()));
+        hostText.setText(properties.getProperty(PropertiesService.API_HOST));
+        hostText.addModifyListener(e -> properties.setProperty(PropertiesService.API_HOST, hostText.getText()));
 
         new Label(connectionGroup, SWT.NONE).setText("Api Port: ");
         portText = new Text(connectionGroup, SWT.BORDER);
         portText.setLayoutData(gridData);
-        portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
+        portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
         portText.addModifyListener(e -> {
-            properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, portText.getText());
-            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, portText.getText().replaceAll("\"", ""));
+            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, portText.getText());
         });
     }
 

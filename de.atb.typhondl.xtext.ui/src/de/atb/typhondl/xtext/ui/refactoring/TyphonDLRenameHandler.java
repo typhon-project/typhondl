@@ -56,7 +56,7 @@ public class TyphonDLRenameHandler extends DefaultRenameElementHandler {
                                 if (selectedElement != null) {
                                     if (ClusterType.class.isInstance(selectedElement)) {
                                         if (!MessageDialog.openConfirm(editor.getShell(), "Refactor clustertype",
-                                                "Refacoring the clustertype will change hosts and published ports.")) {
+                                                "Refactoring the clustertype will change hosts and published ports.")) {
                                             return null;
                                         }
                                         ClusterTypeRefactor.refactor(selectedElement, editor, resource);
