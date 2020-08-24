@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 import de.atb.typhondl.xtext.ui.utilities.KafkaConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -23,7 +24,6 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class CreationAnalyticsPage extends MyWizardPage {
 
-    private static final String ANALYTICS_KAFKA_URI = "analytics.kafka.uri";
     /**
      * The polystore.properties
      */
@@ -61,7 +61,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         new Label(main, NONE).setText("Kafka URI: ");
         kafkaURIText = new Text(main, SWT.BORDER);
-        kafkaURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+        kafkaURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
         kafkaURIText.setLayoutData(gridData);
         kafkaURIText.setEditable(false);
 
@@ -91,7 +91,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
     }
 
     private void updateKafkaURI() {
-        kafkaURIText.setText(properties.getProperty(ANALYTICS_KAFKA_URI));
+        kafkaURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
     }
 
 }

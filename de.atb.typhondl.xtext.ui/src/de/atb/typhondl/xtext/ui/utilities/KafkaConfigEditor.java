@@ -16,8 +16,7 @@ public class KafkaConfigEditor {
             new InputField("Replicas: ", "analytics.kafka.replicas"));
     public List<InputField> kubernetesFields = Arrays.asList(
             new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
-            new InputField("Flink taskmanager memory process size: ",
-                    "analytics.flink.taskmanager.memory.process.size"),
+            new InputField("Flink taskmanager memory: ", "analytics.flink.taskmanager.memory.process.size"),
             new InputField("Logglevel rootlogger: ", "analytics.logging.rootlogger"),
             new InputField("Logglevel akka: ", "analytics.logging.akka"),
             new InputField("Logglevel kafka: ", "analytics.logging.kafka"),

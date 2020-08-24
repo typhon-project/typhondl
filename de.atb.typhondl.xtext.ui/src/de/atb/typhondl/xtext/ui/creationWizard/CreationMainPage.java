@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -290,7 +291,7 @@ public class CreationMainPage extends MyWizardPage {
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
-        analyticsURIText.setText(getKafkaURI());
+        analyticsURIText.setText(ModelService.getKafkaInternalURI(chosenTemplate));
         analyticsURIText.addModifyListener(e -> {
             properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText());
         });
@@ -397,7 +398,8 @@ public class CreationMainPage extends MyWizardPage {
         properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, getKafkaURI());
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI,
+                        ModelService.getKafkaInternalURI(chosenTemplate));
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
                 analyticsURIText.setEditable(false);
             } else {
@@ -409,17 +411,6 @@ public class CreationMainPage extends MyWizardPage {
             properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
             analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
             analyticsURIText.setEditable(true);
-        }
-    }
-
-    private String getKafkaURI() {
-        switch (chosenTemplate) {
-        case DockerCompose:
-            return "localhost:29092";
-        case Kubernetes:
-            return "typhon-cluster-kafka-bootstrap:9092";
-        default:
-            return "";
         }
     }
 

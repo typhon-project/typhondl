@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,14 +34,16 @@ public class ClusterTypeDialog extends StatusDialog {
 
     private Properties properties;
     private DeploymentModel model;
-    private ClusterType clusterType;
+    private ClusterType oldClusterType;
+    private ClusterType newClusterType;
     private ArrayList<Key_Values> portList;
 
     public ClusterTypeDialog(Shell parent, Properties properties, DeploymentModel model, ClusterType clusterType) {
         super(parent);
         this.properties = properties;
         this.model = model;
-        this.clusterType = clusterType;
+        this.oldClusterType = clusterType;
+        this.newClusterType = EcoreUtil.copy(oldClusterType);
         this.portList = new ArrayList<>();
     }
 
@@ -60,9 +63,9 @@ public class ClusterTypeDialog extends StatusDialog {
             // doesn't work
         }
         typeCombo.setItems(itemList.toArray(new String[0]));
-        typeCombo.setText(typeCombo.getItem(ModelService.getSupportedTechnology(clusterType).ordinal()));
+        typeCombo.setText(typeCombo.getItem(ModelService.getSupportedTechnology(oldClusterType).ordinal()));
         typeCombo.addModifyListener(e -> {
-            clusterType.setName(SupportedTechnologies.values()[typeCombo.getSelectionIndex()].name());
+            newClusterType.setName(SupportedTechnologies.values()[typeCombo.getSelectionIndex()].name());
             validatePorts();
         });
 
@@ -99,15 +102,15 @@ public class ClusterTypeDialog extends StatusDialog {
                         validatePorts();
                     });
                 });
-
+        validatePorts();
         return main;
     }
 
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
         for (Key_Values port : portList) {
-            if (ModelService.getSupportedTechnology(clusterType) == SupportedTechnologies.Kubernetes
-                    && ContainerService.isPortInKubernetesRange(port.getValue())) {
+            if (ModelService.getSupportedTechnology(newClusterType) == SupportedTechnologies.Kubernetes
+                    && !ContainerService.isPortInKubernetesRange(port.getValue())) {
                 this.updateStatus(
                         new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
             }
@@ -116,6 +119,10 @@ public class ClusterTypeDialog extends StatusDialog {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public ClusterType getClusterType() {
+        return newClusterType;
     }
 
 }

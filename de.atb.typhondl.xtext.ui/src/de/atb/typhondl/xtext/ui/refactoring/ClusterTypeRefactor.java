@@ -15,6 +15,7 @@ import org.eclipse.xtext.ui.editor.XtextEditor;
 
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
@@ -41,13 +42,19 @@ public class ClusterTypeRefactor {
                 if (properties.getProperty(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
                         && properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                     ChangeAnalyticsDialog analyticsDialog = new ChangeAnalyticsDialog(editor.getShell(), properties,
-                            clusterType);
-                    if (extracted(editor.getShell(), properties)) {
+                            ModelService.getSupportedTechnology(clusterTypeDialog.getClusterType()),
+                            Boolean.parseBoolean(
+                                    properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED)));
+                    if (shouldChangeAnalytics(editor.getShell(), properties)) {
                         if (analyticsDialog.open() == Window.OK) {
                             newProperties = analyticsDialog.getProperties();
+                        } else {
+                            MessageDialog.openError(editor.getShell(), "Refactor clustertype", "Refactoring failed");
+                            return;
                         }
                     }
                 }
+                clusterType.setName(clusterTypeDialog.getClusterType().getName());
                 try {
                     resource.save(SavingOptions.getTDLoptions());
                 } catch (IOException e) {
@@ -65,7 +72,7 @@ public class ClusterTypeRefactor {
 
     }
 
-    private static boolean extracted(Shell shell, Properties properties) {
+    private static boolean shouldChangeAnalytics(Shell shell, Properties properties) {
         if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("true")) {
             return true;
         } else {

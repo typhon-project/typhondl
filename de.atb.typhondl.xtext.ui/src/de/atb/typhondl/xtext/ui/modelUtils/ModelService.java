@@ -32,4 +32,15 @@ public class ModelService {
         return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
     }
 
+    public static String getKafkaInternalURI(SupportedTechnologies tech) {
+        switch (tech) {
+        case DockerCompose:
+            return "kafka:29092";
+        case Kubernetes:
+            return "typhon-cluster-kafka-bootstrap:9092";
+        default:
+            return "";
+        }
+    }
+
 }
