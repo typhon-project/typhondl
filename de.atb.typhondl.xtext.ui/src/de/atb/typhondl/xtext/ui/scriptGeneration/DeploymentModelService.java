@@ -36,6 +36,7 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 
 public class DeploymentModelService {
 
+    private static final String KUBERNETES = "Kubernetes";
     private static final String DOCKER_COMPOSE = "DockerCompose";
 
     public static DeploymentModel createModel(IFile file, XtextLiveScopeResourceSetProvider provider,
@@ -195,7 +196,7 @@ public class DeploymentModelService {
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
         switch (getClusterTypeName(model)) {
-        case "Kubernetes":
+        case KUBERNETES:
             // to be able to add the models to the kubernetes job, the
             // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
             // can access it. It's not nice, maybe we should think about a different plugin

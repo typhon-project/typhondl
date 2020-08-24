@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -59,6 +60,14 @@ public class ContainerService {
             ports.getKey_values().add(keyValues);
         }
         return ports;
+    }
+
+    public static boolean isPortInKubernetesRange(String port) {
+        return Integer.parseInt(port) <= 32767 && Integer.parseInt(port) >= 30000;
+    }
+
+    public static String createRandomPort() {
+        return Integer.toString(ThreadLocalRandom.current().nextInt(30000, 32767));
     }
 
     public static Replication createStatelessReplication(int replicas) {
