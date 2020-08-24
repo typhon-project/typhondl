@@ -39,11 +39,12 @@ public class ClusterTypeRefactor {
                     clusterType);
             if (clusterTypeDialog.open() == Window.OK) {
                 Properties newProperties = clusterTypeDialog.getProperties();
+                ClusterType newClusterType = clusterTypeDialog.getClusterType();
                 if (properties.getProperty(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
-                        && properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
+                        && properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")
+                        && !clusterType.getName().equals(newClusterType.getName())) {
                     ChangeAnalyticsDialog analyticsDialog = new ChangeAnalyticsDialog(editor.getShell(), properties,
-                            ModelService.getSupportedTechnology(clusterTypeDialog.getClusterType()),
-                            Boolean.parseBoolean(
+                            ModelService.getSupportedTechnology(newClusterType), Boolean.parseBoolean(
                                     properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED)));
                     if (shouldChangeAnalytics(editor.getShell(), properties)) {
                         if (analyticsDialog.open() == Window.OK) {
@@ -54,7 +55,7 @@ public class ClusterTypeRefactor {
                         }
                     }
                 }
-                clusterType.setName(clusterTypeDialog.getClusterType().getName());
+                clusterType.setName(newClusterType.getName());
                 try {
                     resource.save(SavingOptions.getTDLoptions());
                 } catch (IOException e) {

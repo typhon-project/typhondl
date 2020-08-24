@@ -40,6 +40,7 @@ public class ClusterTypeDialog extends StatusDialog {
 
     public ClusterTypeDialog(Shell parent, Properties properties, DeploymentModel model, ClusterType clusterType) {
         super(parent);
+        this.setTitle("Change clustertype");
         this.properties = properties;
         this.model = model;
         this.oldClusterType = clusterType;

@@ -28,6 +28,7 @@ public class ChangeAnalyticsDialog extends StatusDialog {
     public ChangeAnalyticsDialog(Shell parent, Properties properties, SupportedTechnologies clusterType,
             boolean analyticsContained) {
         super(parent);
+        this.setTitle("Change Analytics Component");
         this.properties = properties;
         this.parent = parent;
         this.clusterType = clusterType;
@@ -37,15 +38,16 @@ public class ChangeAnalyticsDialog extends StatusDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite main = new Composite(parent, parent.getStyle());
-        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(2, false));
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
 
+//        GridData gridData = new GridData();
+//        gridData.grabExcessHorizontalSpace = true;
         new Label(main, SWT.NONE).setText("Kafka URI: ");
         Text kafkaURIText = new Text(main, SWT.BORDER);
         kafkaURIText.setText(getKafkaUri());
+//        kafkaURIText.setLayoutData(gridData);
         properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText());
-        kafkaURIText.setLayoutData(gridDataFields);
         kafkaURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText()));
         KafkaConfigEditor editor = new KafkaConfigEditor();
@@ -53,7 +55,7 @@ public class ChangeAnalyticsDialog extends StatusDialog {
             new Label(main, SWT.NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
             text.setText(properties.getProperty(inputField.propertyName));
-            text.setLayoutData(gridDataFields);
+//            text.setLayoutData(gridData);
             text.addModifyListener(e -> properties.setProperty(inputField.propertyName, text.getText()));
         }
         return main;
