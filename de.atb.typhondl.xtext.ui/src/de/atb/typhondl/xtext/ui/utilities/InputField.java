@@ -2,8 +2,6 @@ package de.atb.typhondl.xtext.ui.utilities;
 
 import java.util.Properties;
 
-import de.atb.typhondl.xtext.ui.creationWizard.CreationAnalyticsPage.KafkaConfigEditor;
-
 /**
  * Helper class for the {@link KafkaConfigEditor}
  * 

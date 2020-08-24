@@ -77,7 +77,7 @@ public class ContainerService {
         return replication;
     }
 
-    public static Property addAPIEntrypoint(String clusterType, String entrypoint) {
+    public static Property addAPIEntrypoint(String entrypoint) {
         ArrayList<String> list = new ArrayList<>(
                 Arrays.asList(new String[] { "wait-for-it", "polystore-mongo:27017", "-t", "'60'", "--" }));
         list.addAll(new ArrayList<>(Arrays.asList(entrypoint.split(","))));

@@ -17,23 +17,20 @@ import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class AnalyticsService {
 
-    private static final String DOCKER_COMPOSE = "DockerCompose";
-    private static final String KUBERNETES = "Kubernetes";
-
-    public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties,
-            ClusterType clusterTypeObject, ContainerType containerType) {
+    public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties, ClusterType clusterType,
+            ContainerType containerType) {
         String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
         kafkaURIObject.setValue(kafkaURI);
 
-        String clusterType = clusterTypeObject.getName();
-
-        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+        SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
+        if (clusterTypeTech == SupportedTechnologies.DockerCompose) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();
@@ -107,7 +104,7 @@ public class AnalyticsService {
                     // containers are in a different cluster
                     kafka.setExternal(true);
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
-                    analyticsCluster.setType(clusterTypeObject);
+                    analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
                     ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
@@ -143,7 +140,7 @@ public class AnalyticsService {
                 zookeeper.setUri(zookeeperURI);
                 model.getElements().add(zookeeper);
             }
-        } else if (clusterType.equalsIgnoreCase(KUBERNETES)) {
+        } else if (clusterTypeTech == SupportedTechnologies.Kubernetes) {
             Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
             kafka.setName("Kafka");
             model.getElements().add(kafka);
@@ -153,7 +150,7 @@ public class AnalyticsService {
                 if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("false")) {
                     kafka.setExternal(true);
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
-                    analyticsCluster.setType(clusterTypeObject);
+                    analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
                     ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();

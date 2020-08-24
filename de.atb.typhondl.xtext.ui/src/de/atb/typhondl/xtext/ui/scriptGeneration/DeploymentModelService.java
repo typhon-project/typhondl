@@ -20,7 +20,6 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
-import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
@@ -31,13 +30,12 @@ import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class DeploymentModelService {
-
-    private static final String KUBERNETES = "Kubernetes";
-    private static final String DOCKER_COMPOSE = "DockerCompose";
 
     public static DeploymentModel createModel(IFile file, XtextLiveScopeResourceSetProvider provider,
             Properties properties) {
@@ -93,11 +91,11 @@ public class DeploymentModelService {
     }
 
     public static DeploymentModel addPolystore(Properties properties, DeploymentModel model) {
+
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-        String clusterType = getClusterTypeName(model);
-
+        SupportedTechnologies clusterType = ModelService.getSupportedTechnology(ModelService.getClusterType(model));
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
         DB polystoreDB = DBService.createPolystoreDB(properties, clusterType, DBService.getMongoDBType(model));
@@ -106,7 +104,7 @@ public class DeploymentModelService {
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
                         + properties.getProperty(PropertiesService.DB_PORT));
-        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+        if (clusterType == SupportedTechnologies.DockerCompose) {
             polystoreDBContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes", new String[] {
                     "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
@@ -127,9 +125,9 @@ public class DeploymentModelService {
             polystoreAPIContainer.setReplication(ContainerService.createStatelessReplication(
                     Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS))));
         }
-        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
-            polystoreAPIContainer.getProperties().add(ContainerService.addAPIEntrypoint(clusterType,
-                    properties.getProperty(PropertiesService.API_ENTRYPOINT)));
+        if (clusterType == SupportedTechnologies.DockerCompose) {
+            polystoreAPIContainer.getProperties()
+                    .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
             polystoreAPIContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
         }
@@ -164,7 +162,7 @@ public class DeploymentModelService {
             qlServerContainer.setReplication(ContainerService.createStatelessReplication(
                     Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS))));
         }
-        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+        if (clusterType == SupportedTechnologies.DockerCompose) {
             qlServerContainer.getProperties()
                     .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
         }
@@ -172,7 +170,7 @@ public class DeploymentModelService {
 
         // Analytics
         if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
-            model = AnalyticsService.addAnalytics(model, properties, getClusterType(model), containerType);
+            model = AnalyticsService.addAnalytics(model, properties, ModelService.getClusterType(model), containerType);
         }
 
         // NLAE
@@ -182,21 +180,13 @@ public class DeploymentModelService {
         return model;
     }
 
-    private static String getClusterTypeName(DeploymentModel model) {
-        return getClusterType(model).getName();
-    }
-
-    private static ClusterType getClusterType(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
-    }
-
     public static DeploymentModel addToMetadata(String outputFolder, String MLName, IFile file, Properties properties,
             DeploymentModel model) {
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getFileExtension(), "xmi"));
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
-        switch (getClusterTypeName(model)) {
-        case KUBERNETES:
+        switch (ModelService.getSupportedTechnology(ModelService.getClusterType(model))) {
+        case Kubernetes:
             // to be able to add the models to the kubernetes job, the
             // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
             // can access it. It's not nice, maybe we should think about a different plugin
@@ -204,7 +194,7 @@ public class DeploymentModelService {
             addInsertStatementToPolystoreMongoContainer(getPolystoreMongoContainer(model, properties),
                     mongoInsertStatement, properties);
             break;
-        case DOCKER_COMPOSE:
+        case DockerCompose:
             writeInsertStatementToJavaScriptFile(outputFolder, mongoInsertStatement, properties);
             break;
         default:

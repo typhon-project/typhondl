@@ -25,12 +25,12 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ClusterTypeDialog extends StatusDialog {
 
-    private static final String KUBERNETES = "Kubernetes";
     private Properties properties;
     private DeploymentModel model;
     private ClusterType clusterType;
@@ -60,7 +60,7 @@ public class ClusterTypeDialog extends StatusDialog {
             // doesn't work
         }
         typeCombo.setItems(itemList.toArray(new String[0]));
-        typeCombo.setText(typeCombo.getItem(SupportedTechnologies.valueOf(clusterType.getName()).ordinal()));
+        typeCombo.setText(typeCombo.getItem(ModelService.getSupportedTechnology(clusterType).ordinal()));
         typeCombo.addModifyListener(e -> {
             clusterType.setName(SupportedTechnologies.values()[typeCombo.getSelectionIndex()].name());
             validatePorts();
@@ -106,7 +106,7 @@ public class ClusterTypeDialog extends StatusDialog {
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
         for (Key_Values port : portList) {
-            if (clusterType.getName().equalsIgnoreCase(KUBERNETES)
+            if (ModelService.getSupportedTechnology(clusterType) == SupportedTechnologies.Kubernetes
                     && ContainerService.isPortInKubernetesRange(port.getValue())) {
                 this.updateStatus(
                         new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
