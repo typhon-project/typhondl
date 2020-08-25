@@ -200,6 +200,7 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		}
 		for (property : cluster.properties) {
 		    property.format
+		    property.append[newLine]
 		}
 	}
 
