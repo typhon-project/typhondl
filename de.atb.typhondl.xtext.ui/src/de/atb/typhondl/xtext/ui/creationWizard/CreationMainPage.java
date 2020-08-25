@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -114,6 +115,8 @@ public class CreationMainPage extends MyWizardPage {
 
     private Text analyticsURIText;
 
+    private static final int pageWidth = 607;
+
     /**
      * Creates an instance of the {@link CreationMainPage}
      * 
@@ -135,13 +138,20 @@ public class CreationMainPage extends MyWizardPage {
     public void createControl(Composite parent) {
         setTitle("Create a TyphonDL model");
         setDescription("From ML model " + MLmodelPath.getPath());
-        main = new Composite(parent, SWT.NONE);
+        ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
+        main = new Composite(scrolling, SWT.NONE);
+        scrolling.setContent(main);
+        scrolling.setExpandVertical(true);
+        scrolling.setExpandHorizontal(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
         addGroups();
 
-        setControl(main);
+        main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+        scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+
+        setControl(scrolling);
     }
 
     private void addGroups() {
@@ -153,8 +163,6 @@ public class CreationMainPage extends MyWizardPage {
     }
 
     private void createNLAEGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
         Group mainGroup = new Group(main, SWT.READ_ONLY);
         mainGroup.setLayout(new GridLayout(1, false));
         mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -247,6 +255,7 @@ public class CreationMainPage extends MyWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+                final Composite parent = mainGroup.getParent();
                 if (chosenTemplate == SupportedTechnologies.Kubernetes) {
                     properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "\"192.168.99.101\"");
                     properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "\"30061\"");
@@ -256,7 +265,7 @@ public class CreationMainPage extends MyWizardPage {
                     portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
-                    mainGroup.getParent().layout(true);
+                    parent.layout(true);
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
                 } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
                     properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "localhost");
@@ -267,9 +276,12 @@ public class CreationMainPage extends MyWizardPage {
                     portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
-                    mainGroup.getParent().layout(true);
+                    parent.layout(true);
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
+                parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+
                 setKafkaProperties();
             }
         });
@@ -412,16 +424,19 @@ public class CreationMainPage extends MyWizardPage {
                 properties.setProperty(POLYSTORE_USE_ANALYTICS, String.valueOf(useAnalytics));
                 createScripts = createScriptsCheck.getSelection();
                 properties.setProperty(ANALYTICS_DEPLOYMENT_CREATE, String.valueOf(createScripts));
+                final Composite parent = analyticsGroup.getParent();
                 if (useAnalytics) {
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
-                    analyticsGroup.getParent().layout(true);
+                    parent.layout(true);
                     setKafkaProperties();
                 } else {
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
-                    analyticsGroup.getParent().layout(true);
+                    parent.layout(true);
                 }
+                parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
             }
         });
     }
