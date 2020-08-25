@@ -8,6 +8,7 @@ public class PropertiesService {
     public static final String POLYSTORE_USENLAE = "polystore.useNLAE";
     public static final String POLYSTORE_KUBECONFIG = "polystore.kubeconfig";
     public static final String API_NAME = "api.name";
+    public static final String API_HOST = "api.host";
     public static final String API_CONTAINERNAME = "api.containername";
     public static final String API_PORT = "api.port";
     public static final String API_PUBLISHEDPORT = "api.publishedPort";
@@ -16,8 +17,6 @@ public class PropertiesService {
     public static final String API_REPLICAS = "api.replicas";
     public static final String UI_NAME = "ui.name";
     public static final String UI_CONTAINERNAME = "ui.containername";
-    public static final String UI_ENVIRONMENT_API_PORT = "ui.environment.API_PORT";
-    public static final String UI_ENVIRONMENT_API_HOST = "ui.environment.API_HOST";
     public static final String UI_IMAGE = "ui.image";
     public static final String UI_PUBLISHEDPORT = "ui.publishedPort";
     public static final String UI_PORT = "ui.port";

@@ -21,7 +21,6 @@ package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
  */
 
 import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -42,6 +41,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class PortArea extends Area {
@@ -70,7 +70,7 @@ public class PortArea extends Area {
             Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
             Key_Values publishedPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             publishedPort.setName("published");
-            publishedPort.setValue(createRandomPort());
+            publishedPort.setValue(ContainerService.createRandomPort());
             Key_Values targetPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             targetPort.setName("target");
             targetPort.setValue(properties.getProperty(db.getType().getName().toLowerCase() + ".port"));
@@ -132,18 +132,14 @@ public class PortArea extends Area {
         page.setStatus(null);
         if (container.getPorts() != null) {
             if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-                if (!isInRange(this.publishedPortText.getText())) {
+                if (!ContainerService.isPortInKubernetesRange(this.publishedPortText.getText())) {
                     page.setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
                 }
             }
         }
     }
 
-    private boolean isInRange(String port) {
-        return Integer.parseInt(port) <= 32767 && Integer.parseInt(port) >= 30000;
-    }
-
-    protected void setPort(String nameOfPort, Ports newPorts, String valueToSet) {
+    private void setPort(String nameOfPort, Ports newPorts, String valueToSet) {
         Key_Values portToSet = newPorts.getKey_values().stream()
                 .filter(key -> key.getName().equalsIgnoreCase(nameOfPort)).findFirst().orElse(null);
         if (portToSet != null) {
@@ -151,9 +147,4 @@ public class PortArea extends Area {
         }
 
     }
-
-    private String createRandomPort() {
-        return Integer.toString(ThreadLocalRandom.current().nextInt(30000, 32767));
-    }
-
 }

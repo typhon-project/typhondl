@@ -3,9 +3,11 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 import org.eclipse.xtext.EcoreUtil2;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Platform;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ModelService {
 
@@ -20,6 +22,25 @@ public class ModelService {
 
     public static Platform getPlatform(DeploymentModel model) {
         return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
+    }
+
+    public static SupportedTechnologies getSupportedTechnology(ClusterType clusterType) {
+        return SupportedTechnologies.valueOf(clusterType.getName());
+    }
+
+    public static ClusterType getClusterType(DeploymentModel model) {
+        return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
+    }
+
+    public static String getKafkaInternalURI(SupportedTechnologies tech) {
+        switch (tech) {
+        case DockerCompose:
+            return "kafka:29092";
+        case Kubernetes:
+            return "typhon-cluster-kafka-bootstrap:9092";
+        default:
+            return "";
+        }
     }
 
 }

@@ -12,12 +12,13 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class DBService {
 
-    public static DB createPolystoreDB(Properties properties, String clusterType, DBType mongo) {
+    public static DB createPolystoreDB(Properties properties, SupportedTechnologies clusterType, DBType mongo) {
         DB polystoredb = create(properties.getProperty("db.name"), mongo);
-        if (clusterType.equalsIgnoreCase("DockerCompose")) {
+        if (clusterType == SupportedTechnologies.DockerCompose) {
             polystoredb.setEnvironment(SoftwareService.createEnvironment(new String[] { "MONGO_INITDB_DATABASE",
                     properties.getProperty(PropertiesService.DB_ENVIRONMENT_MONGO_INITDB_DATABASE) }));
         }
