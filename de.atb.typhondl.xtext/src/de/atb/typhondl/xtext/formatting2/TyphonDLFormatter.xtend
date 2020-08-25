@@ -198,6 +198,9 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		for (app : cluster.applications) {
 			app.format
 		}
+		for (property : cluster.properties) {
+		    property.format
+		}
 	}
 
 	def dispatch void format(Cluster_Network network, extension IFormattableDocument document) {

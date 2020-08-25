@@ -228,6 +228,21 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));
         chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+
+        Composite hidden = new Composite(mainGroup, SWT.NONE);
+        hidden.setLayout(new GridLayout(2, false));
+        GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenData.exclude = true;
+        hiddenData.horizontalSpan = 2;
+        hidden.setLayoutData(hiddenData);
+
+        new Label(hidden, SWT.NONE).setText("kubeconfig: ");
+        Text kubeconfig = new Text(hidden, SWT.BORDER);
+        kubeconfig.setLayoutData(gridData);
+        kubeconfig.setText(properties.getProperty(PropertiesService.POLYSTORE_KUBECONFIG));
+        kubeconfig.addModifyListener(
+                e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
+
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -239,6 +254,10 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
                     hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
                     portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
+                    hiddenData.exclude = false;
+                    hidden.setVisible(true);
+                    mainGroup.getParent().layout(true);
+                    properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
                 } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
                     properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_HOST, "localhost");
                     properties.setProperty(PropertiesService.UI_ENVIRONMENT_API_PORT, "8080");
@@ -246,6 +265,10 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
                     hostText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_HOST));
                     portText.setText(properties.getProperty(PropertiesService.UI_ENVIRONMENT_API_PORT));
+                    hiddenData.exclude = true;
+                    hidden.setVisible(false);
+                    mainGroup.getParent().layout(true);
+                    properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
                 setKafkaProperties();
             }
