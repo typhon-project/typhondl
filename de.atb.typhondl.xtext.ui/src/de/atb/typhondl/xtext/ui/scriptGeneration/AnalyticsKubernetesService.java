@@ -16,6 +16,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -41,6 +45,9 @@ public class AnalyticsKubernetesService {
                 dir.mkdir();
             }
             String analyticsZipPath = outputFolder + File.separator + ANALYTICS_KUBERNETES_ZIP_FILENAME;
+            IWorkbench wb = PlatformUI.getWorkbench();
+            IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+            MessageDialog.openInformation(win.getShell(), "Scripts", "Analytics files are now getting downloaded");
             InputStream input = FileService.downloadFiles(analyticsZipPath, ANALYTICS_ZIP_ADDRESS, "Analytics");
             if (input != null) {
                 FileService.unzip(analyticsZipPath, outputFolder);
@@ -83,12 +90,38 @@ public class AnalyticsKubernetesService {
 
     private static List<String> jobmanager(Path flinkJobmanagerPath, File outputFolder)
             throws IOException, ParserConfigurationException, SAXException {
+        List<String> jobmanagerLines = Files.readAllLines(flinkJobmanagerPath);
         final String path = outputFolder.getAbsolutePath() + File.separator + "temp.xml";
         InputStream input = FileService.downloadFiles(path, DEPENDENCY_JAR_ADDRESS + DEPENDENCY_JAR_INFO, "Analytics");
         if (input != null) {
-            String fileName = getLatestJarName(path);
+            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:"), initContainer(getLatestJarName(path)));
+            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:") + 1, initVolume());
         }
-        return null;
+        return jobmanagerLines;
+    }
+
+    private static ArrayList<String> initVolume() {
+        ArrayList<String> initVolume = new ArrayList<>();
+        initVolume.add("      - name: workdir");
+        initVolume.add("        emptyDir: {}");
+        return initVolume;
+    }
+
+    private static ArrayList<String> initContainer(String fileName) {
+        ArrayList<String> initContainer = new ArrayList<>();
+        initContainer.add("      initContainers:");
+        initContainer.add("      - name: load-jar");
+        initContainer.add("        image: busybox");
+        initContainer.add("        command:");
+        initContainer.add("        - wget");
+        initContainer.add("        - \"-O\"");
+        initContainer.add("        - \"/opt/flink/lib/ac.york.typhon.analytics-jar-with-dependencies.jar\"");
+        initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + "ac.york.typhon.analytics-" + fileName
+                + "-jar-with-dependencies.jar");
+        initContainer.add("        volumeMounts:");
+        initContainer.add("        - name: workdir");
+        initContainer.add("          mountPath: \"/work-dir\"");
+        return initContainer;
     }
 
     private static String getLatestJarName(String path) throws ParserConfigurationException, IOException, SAXException {
@@ -122,6 +155,7 @@ public class AnalyticsKubernetesService {
         DocumentBuilder builder = factory.newDocumentBuilder();
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         ByteArrayInputStream input = new ByteArrayInputStream(encoded);
+        new File(path).delete();
         Document doc = builder.parse(input);
         return doc.getElementsByTagName("snapshotVersion");
     }
@@ -133,7 +167,7 @@ public class AnalyticsKubernetesService {
         kafkaClusterPropertyMap.put("size:", PropertiesService.ANALYTICS_KAFKA_STORAGECLAIM);
 
         List<String> kafkaCluster = Files.readAllLines(kafkaClusterPath);
-        int zookeeperIndex = getZookeeperIndex(kafkaCluster);
+        int zookeeperIndex = getIndex(kafkaCluster, "zookeeper");
         for (int i = 0; i < zookeeperIndex; i++) {
             for (String propertyNameInFile : kafkaClusterPropertyMap.keySet()) {
                 String string = kafkaCluster.get(i);
@@ -192,9 +226,9 @@ public class AnalyticsKubernetesService {
         return flinkPropertyMap;
     }
 
-    private static int getZookeeperIndex(List<String> kafkaCluster) {
-        for (int i = 0; i < kafkaCluster.size(); i++) {
-            if (kafkaCluster.get(i).contains("zookeeper")) {
+    private static int getIndex(List<String> list, String search) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).contains(search)) {
                 return i;
             }
         }

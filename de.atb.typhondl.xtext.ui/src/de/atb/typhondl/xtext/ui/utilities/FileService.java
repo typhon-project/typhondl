@@ -59,7 +59,6 @@ public class FileService {
         HttpURLConnection connection = null;
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
-        MessageDialog.openInformation(win.getShell(), "Scripts", component + " files are now getting downloaded");
         try {
             URL url = new URL(address);
             connection = (HttpURLConnection) url.openConnection();
