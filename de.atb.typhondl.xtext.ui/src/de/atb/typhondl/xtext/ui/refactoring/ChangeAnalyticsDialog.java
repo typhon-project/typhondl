@@ -21,16 +21,16 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 public class ChangeAnalyticsDialog extends StatusDialog {
 
     private Properties properties;
-    private Shell parent;
+    private Shell shell;
     private SupportedTechnologies clusterType;
     private boolean analyticsContained;
 
-    public ChangeAnalyticsDialog(Shell parent, Properties properties, SupportedTechnologies clusterType,
+    public ChangeAnalyticsDialog(Shell shell, Properties properties, SupportedTechnologies clusterType,
             boolean analyticsContained) {
-        super(parent);
+        super(shell);
         this.setTitle("Change Analytics Component");
         this.properties = properties;
-        this.parent = parent;
+        this.shell = shell;
         this.clusterType = clusterType;
         this.analyticsContained = analyticsContained;
     }
@@ -38,15 +38,14 @@ public class ChangeAnalyticsDialog extends StatusDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite main = new Composite(parent, parent.getStyle());
-        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(2, false));
+        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
 
-//        GridData gridData = new GridData();
-//        gridData.grabExcessHorizontalSpace = true;
         new Label(main, SWT.NONE).setText("Kafka URI: ");
         Text kafkaURIText = new Text(main, SWT.BORDER);
         kafkaURIText.setText(getKafkaUri());
-//        kafkaURIText.setLayoutData(gridData);
+//        kafkaURIText.setLayoutData(gridDataFields);
         properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText());
         kafkaURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText()));
@@ -55,7 +54,7 @@ public class ChangeAnalyticsDialog extends StatusDialog {
             new Label(main, SWT.NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
             text.setText(properties.getProperty(inputField.propertyName));
-//            text.setLayoutData(gridData);
+            text.setLayoutData(gridDataFields);
             text.addModifyListener(e -> properties.setProperty(inputField.propertyName, text.getText()));
         }
         return main;
