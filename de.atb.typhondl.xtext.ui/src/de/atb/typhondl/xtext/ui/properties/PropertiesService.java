@@ -100,12 +100,6 @@ public class PropertiesService {
     public static final String EVOLUTION_FRONTEND_PUBLISHEDPORT = "evolution.frontend.publishedPort";
     public static final String NLAE_NAME = "nlae.name";
     public static final String NLAE_API_HOST = "nlae.api.host";
-    public static final String NLAE_API_PORT = "nlae.api.port";
-    public static final String NLAE_TASKMANAGER_REPLICAS = "nlae.taskmanager.replicas";
-    public static final String NLAE_JOBMANAGER_HEAPSIZE = "nlae.jobmanager.heapsize";
-    public static final String NLAE_TASKMANAGER_HEAPSIZE = "nlae.taskmanager.heapsize";
-    public static final String NLAE_TASKMANAGER_SLOTS = "nlae.taskmanager.numberOfTaskSlots";
-    public static final String NLAE_PARALLELISM = "nlae.flink.parallelism.default";
     public static final String NLAE_SHAREDVOLUME = "nlae.sharedvolume";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
