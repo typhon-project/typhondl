@@ -1,10 +1,7 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -22,6 +19,7 @@ import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 
 public class GenerationService {
 
@@ -35,18 +33,9 @@ public class GenerationService {
     public GenerationService(IFile file, XtextLiveScopeResourceSetProvider provider) throws IOException {
         this.file = file;
         this.provider = provider;
-        this.properties = loadProperties(file);
+        this.properties = PropertiesLoader.loadPropertiesFromModelFile(file);
         String fileLocation = file.getLocation().toOSString();
         this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()));
-    }
-
-    private static Properties loadProperties(IFile file) throws IOException {
-        String path = Paths.get(file.getLocationURI()).getParent().resolve(file.getName() + ".properties").toString();
-        Properties properties = new Properties();
-        try (InputStream input = new FileInputStream(path)) {
-            properties.load(input);
-        }
-        return properties;
     }
 
     public void startGeneration() {

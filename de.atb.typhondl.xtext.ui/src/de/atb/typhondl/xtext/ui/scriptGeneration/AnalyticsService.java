@@ -3,8 +3,6 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.eclipse.xtext.EcoreUtil2;
-
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
@@ -12,30 +10,27 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class AnalyticsService {
 
-    private static final String DOCKER_COMPOSE = "DockerCompose";
-    private static final String KUBERNETES = "Kubernetes";
-
-    public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties,
-            ClusterType clusterTypeObject, ContainerType containerType) {
+    public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties, ClusterType clusterType,
+            ContainerType containerType) {
         String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
         kafkaURIObject.setValue(kafkaURI);
 
-        String clusterType = clusterTypeObject.getName();
-
-        if (clusterType.equalsIgnoreCase(DOCKER_COMPOSE)) {
+        SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
+        if (clusterTypeTech == SupportedTechnologies.DockerCompose) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();
@@ -109,9 +104,9 @@ public class AnalyticsService {
                     // containers are in a different cluster
                     kafka.setExternal(true);
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
-                    analyticsCluster.setType(clusterTypeObject);
+                    analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
-                    getPlatform(model).getClusters().add(analyticsCluster);
+                    ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");
                     analyticsCluster.getApplications().add(analyticsApplication);
@@ -123,7 +118,7 @@ public class AnalyticsService {
                 } else {
                     // deployment scripts are included in polystore deployment scripts. the
                     // analytics containers are in the same cluster
-                    Application application = getFirstApplication(model);
+                    Application application = ModelService.getFirstApplication(model);
                     application.getContainers().add(kafkaContainer);
                     application.getContainers().add(authAllContainer);
                     application.getContainers().add(zookeeperContainer);
@@ -145,7 +140,7 @@ public class AnalyticsService {
                 zookeeper.setUri(zookeeperURI);
                 model.getElements().add(zookeeper);
             }
-        } else if (clusterType.equalsIgnoreCase(KUBERNETES)) {
+        } else if (clusterTypeTech == SupportedTechnologies.Kubernetes) {
             Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
             kafka.setName("Kafka");
             model.getElements().add(kafka);
@@ -155,15 +150,15 @@ public class AnalyticsService {
                 if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("false")) {
                     kafka.setExternal(true);
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
-                    analyticsCluster.setType(clusterTypeObject);
+                    analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
-                    getPlatform(model).getClusters().add(analyticsCluster);
+                    ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");
                     analyticsCluster.getApplications().add(analyticsApplication);
                     analyticsApplication.getContainers().add(kafkaContainer);
                 } else {
-                    getFirstApplication(model).getContainers().add(kafkaContainer);
+                    ModelService.getFirstApplication(model).getContainers().add(kafkaContainer);
                 }
             } else {
                 kafka.setExternal(true);
@@ -200,10 +195,11 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
         Container evolutionJavaContainer = ContainerService.create(evolutionJavaContainerName, containerType,
                 evolutionJava, null);
-        evolutionJavaContainer.getDepends_on().addAll(ContainerService.createDependencies(new Container[] {
-                evolutionMongoContainer,
-                getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
-                getContainer(model, properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
+        evolutionJavaContainer.getDepends_on()
+                .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer,
+                        ModelService.getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
+                        ModelService.getContainer(model,
+                                properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
 
         // evolution-backend
         final String evolutionBackendContainerName = properties
@@ -234,25 +230,12 @@ public class AnalyticsService {
         evolutionFrontendContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionBackendContainer }));
 
-        Application application = getFirstApplication(model);
+        Application application = ModelService.getFirstApplication(model);
         application.getContainers().add(evolutionMongoContainer);
         application.getContainers().add(evolutionJavaContainer);
         application.getContainers().add(evolutionBackendContainer);
         application.getContainers().add(evolutionFrontendContainer);
         return model;
-    }
-
-    private static Application getFirstApplication(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-    }
-
-    private static Container getContainer(DeploymentModel model, String containerName) {
-        return EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
-                .filter(container -> container.getName().equalsIgnoreCase(containerName)).findFirst().orElse(null);
-    }
-
-    private static Platform getPlatform(DeploymentModel model) {
-        return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
     }
 
     private static String[] getKafkaComposeSettings(Properties properties) {
