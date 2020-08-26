@@ -93,9 +93,6 @@ public class GenerationService {
                 && getClusterType().equalsIgnoreCase(KUBERNETES)) {
             AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
         }
-        if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
-            NLAEService.addNLAEFiles(this.model, outputFolder, properties);
-        }
         try {
             Services.generateDeployment(this.model, new File(outputFolder));
         } catch (IOException e) {

@@ -104,7 +104,6 @@ public class CreationMainPage extends MyWizardPage {
     private boolean useAnalytics;
     private boolean createScripts;
     private boolean analyticsContained;
-    private boolean useNLAE;
 
     private Text analyticsURIText;
 
@@ -124,7 +123,6 @@ public class CreationMainPage extends MyWizardPage {
         this.useAnalytics = false;
         this.createScripts = false;
         this.analyticsContained = true;
-        this.useNLAE = false;
     }
 
     @Override
@@ -150,28 +148,8 @@ public class CreationMainPage extends MyWizardPage {
     private void addGroups() {
         createMainGroup();
         createAnalyticsGroup();
-        createNLAEGroup();
         createConnectionGroup();
         createScalingGroup();
-    }
-
-    private void createNLAEGroup() {
-        Group mainGroup = new Group(main, SWT.READ_ONLY);
-        mainGroup.setLayout(new GridLayout(1, false));
-        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        mainGroup.setText("Typhon Natural Language Analysis Engine (NLAE)");
-
-        Button nlae = new Button(mainGroup, SWT.CHECK);
-        nlae.setText("Use Typhon NLAE (needs Docker Swarm)");
-        nlae.setSelection(useNLAE);
-        nlae.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                useNLAE = nlae.getSelection();
-                properties.setProperty(PropertiesService.POLYSTORE_USENLAE, Boolean.toString(useNLAE));
-            }
-        });
-
     }
 
     private void createScalingGroup() {
@@ -518,10 +496,6 @@ public class CreationMainPage extends MyWizardPage {
 
     public boolean getCreateScripts() {
         return createScripts;
-    }
-
-    public boolean getUseNLAE() {
-        return useNLAE;
     }
 
     /**
