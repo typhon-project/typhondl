@@ -124,7 +124,8 @@ public class AnalyticsKubernetesService {
         return initContainer;
     }
 
-    private static String getLatestJarName(String path) throws ParserConfigurationException, IOException, SAXException {
+    protected static String getLatestJarName(String path)
+            throws ParserConfigurationException, IOException, SAXException {
         NodeList nList = getVersionNodes(path);
         Node toSearch = null;
         for (int i = 0; i < nList.getLength(); i++) {
