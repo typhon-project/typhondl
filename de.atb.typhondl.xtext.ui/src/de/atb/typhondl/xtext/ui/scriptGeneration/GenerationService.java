@@ -15,15 +15,15 @@ import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.acceleo.services.Options;
 import de.atb.typhondl.acceleo.services.Services;
-import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class GenerationService {
 
-    private static final String KUBERNETES = "Kubernetes";
     private IFile file;
     private XtextLiveScopeResourceSetProvider provider;
     private String outputFolder;
@@ -89,19 +89,18 @@ public class GenerationService {
     }
 
     public void generateDeployment() {
-        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
-                && getClusterType().equalsIgnoreCase(KUBERNETES)) {
+        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true") && ModelService
+                .getSupportedTechnology(ModelService.getClusterType(this.model)) == SupportedTechnologies.Kubernetes) {
             AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
+        }
+        if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
+            NLAEService.addNLAEFiles(this.model, outputFolder, properties);
         }
         try {
             Services.generateDeployment(this.model, new File(outputFolder));
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private String getClusterType() {
-        return EcoreUtil2.getAllContentsOfType(this.model, ClusterType.class).get(0).getName();
     }
 
     /**
