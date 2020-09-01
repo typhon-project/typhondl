@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -18,6 +20,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -38,10 +41,10 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 public class DeploymentModelService {
 
     public static DeploymentModel createModel(IFile file, XtextLiveScopeResourceSetProvider provider,
-            Properties properties) {
+            Properties properties, String outputFolder) throws ParserConfigurationException, IOException, SAXException {
         DeploymentModel model = readModel(file, provider, properties);
         model = addDBsToModel(model);
-        model = addPolystore(properties, model);
+        model = addPolystore(properties, model, outputFolder);
         return model;
     }
 
@@ -90,7 +93,8 @@ public class DeploymentModelService {
         return model;
     }
 
-    public static DeploymentModel addPolystore(Properties properties, DeploymentModel model) {
+    public static DeploymentModel addPolystore(Properties properties, DeploymentModel model, String outputFolder)
+            throws ParserConfigurationException, IOException, SAXException {
 
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
@@ -170,7 +174,8 @@ public class DeploymentModelService {
 
         // Analytics
         if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
-            model = AnalyticsService.addAnalytics(model, properties, ModelService.getClusterType(model), containerType);
+            model = AnalyticsService.addAnalytics(model, properties, ModelService.getClusterType(model), containerType,
+                    outputFolder);
         }
 
         // NLAE

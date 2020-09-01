@@ -1,7 +1,16 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
@@ -16,13 +25,16 @@ import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.FileService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class AnalyticsService {
 
     public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties, ClusterType clusterType,
-            ContainerType containerType) {
+            ContainerType containerType, String outputFolder)
+            throws ParserConfigurationException, IOException, SAXException {
         String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
@@ -85,6 +97,9 @@ public class AnalyticsService {
                         .addAll(ContainerService.createKeyValues(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
                         .add(ContainerService.createKeyValuesArray("expose", new String[] { "6123" }));
+                String analyticsVolume = downloadFlinkFatJar(outputFolder);
+                flinkJobmanagerContainer.setVolumes(
+                        VolumesService.create(new String[] { analyticsVolume }, null, null, clusterTypeTech));
                 Container flinkTaskmanagerContainer = ContainerService.create("taskmanager", containerType,
                         flinkTaskmanager, null);
                 flinkTaskmanagerContainer.getDepends_on()
@@ -169,6 +184,31 @@ public class AnalyticsService {
             model = addEvolutionAnalytics(model, properties, containerType);
         }
         return model;
+    }
+
+    private static String downloadFlinkFatJar(String outputFolder)
+            throws ParserConfigurationException, IOException, SAXException {
+        final String flinkFolder = "flinkJar" + File.separator;
+        final String dir = outputFolder + File.separator + flinkFolder;
+        final String tempPath = dir + "temp.xml";
+        if (!Files.exists(Paths.get(outputFolder))) {
+            new File(outputFolder).mkdir();
+        }
+        if (!Files.exists(Paths.get(dir))) {
+            new File(dir).mkdir();
+        }
+        InputStream pomXML = AnalyticsKubernetesService.getAnalyticsPom(tempPath);
+        String jarName = "";
+        if (pomXML != null) {
+            jarName = AnalyticsKubernetesService.getLatestJarName(tempPath);
+        } else {
+            return "error";
+        }
+        if (!Files.exists(Paths.get(dir + jarName))) {
+            FileService.downloadFiles(dir + jarName, AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName,
+                    "JobmanagerJar");
+        }
+        return flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER;
     }
 
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,

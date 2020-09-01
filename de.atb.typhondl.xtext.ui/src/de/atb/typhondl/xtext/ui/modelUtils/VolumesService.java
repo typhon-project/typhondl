@@ -5,6 +5,7 @@ import org.eclipse.swt.widgets.Text;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
+import de.atb.typhondl.xtext.typhonDL.Volumes;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class VolumesService {
@@ -79,5 +80,14 @@ public class VolumesService {
         }
 
         return "";
+    }
+
+    public static Volumes create(String[] path, String type, String name, SupportedTechnologies chosenTechnology) {
+        Volumes volumes = TyphonDLFactory.eINSTANCE.createVolumes();
+        if (type == null) {
+            type = getDefaultVolumesType(chosenTechnology);
+        }
+        volumes.getDecls().add(createVolume_Properties(path, type, name));
+        return volumes;
     }
 }

@@ -31,10 +31,15 @@ import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsKubernetesService {
 
+    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/lib/";
+    private static final String FLINKJAR_POSTNAME = "-jar-with-dependencies.jar";
+    private static final String FLINKJAR_PRENAME = "ac.york.typhon.analytics-";
+    private static final String FLINKJAR_INTERNAL_NAME = FLINK_INTERNAL_FOLDER + FLINKJAR_PRENAME
+            + FLINKJAR_POSTNAME.substring(1);
     private static final String ANALYTICS_KUBERNETES_ZIP_FILENAME = "analyticsKubernetes.zip";
     private static final String ANALYTICS_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/"
             + ANALYTICS_KUBERNETES_ZIP_FILENAME;
-    private static final String DEPENDENCY_JAR_ADDRESS = "http://archiva.clmsuk.com:8090/repository/internal/typhon/ac.york.typhon.analytics/0.0.1-SNAPSHOT/";
+    protected static final String DEPENDENCY_JAR_ADDRESS = "http://archiva.clmsuk.com:8090/repository/internal/typhon/ac.york.typhon.analytics/0.0.1-SNAPSHOT/";
     private static final String DEPENDENCY_JAR_INFO = "maven-metadata.xml";
     private static final String DEPENDENCY_JAR_NAME = "jar-with-dependencies";
 
@@ -92,12 +97,16 @@ public class AnalyticsKubernetesService {
             throws IOException, ParserConfigurationException, SAXException {
         List<String> jobmanagerLines = Files.readAllLines(flinkJobmanagerPath);
         final String path = outputFolder.getAbsolutePath() + File.separator + "temp.xml";
-        InputStream input = FileService.downloadFiles(path, DEPENDENCY_JAR_ADDRESS + DEPENDENCY_JAR_INFO, "Analytics");
+        InputStream input = getAnalyticsPom(path);
         if (input != null) {
             jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:"), initContainer(getLatestJarName(path)));
             jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:") + 1, initVolume());
         }
         return jobmanagerLines;
+    }
+
+    protected static InputStream getAnalyticsPom(String saveLocation) throws IOException {
+        return FileService.downloadFiles(saveLocation, DEPENDENCY_JAR_ADDRESS + DEPENDENCY_JAR_INFO, "Analytics");
     }
 
     private static ArrayList<String> initVolume() {
@@ -115,9 +124,8 @@ public class AnalyticsKubernetesService {
         initContainer.add("        command:");
         initContainer.add("        - wget");
         initContainer.add("        - \"-O\"");
-        initContainer.add("        - \"/opt/flink/lib/ac.york.typhon.analytics-jar-with-dependencies.jar\"");
-        initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + "ac.york.typhon.analytics-" + fileName
-                + "-jar-with-dependencies.jar");
+        initContainer.add("        - \"" + FLINKJAR_INTERNAL_NAME + "\"");
+        initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + fileName);
         initContainer.add("        volumeMounts:");
         initContainer.add("        - name: workdir");
         initContainer.add("          mountPath: \"/work-dir\"");
@@ -143,7 +151,7 @@ public class AnalyticsKubernetesService {
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node item = childNodes.item(i);
                 if (item.getNodeName().equalsIgnoreCase("value")) {
-                    return item.getTextContent();
+                    return FLINKJAR_PRENAME + item.getTextContent() + FLINKJAR_POSTNAME;
                 }
             }
         }
