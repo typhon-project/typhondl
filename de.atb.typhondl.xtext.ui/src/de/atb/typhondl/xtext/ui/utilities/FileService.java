@@ -77,7 +77,7 @@ public class FileService {
             input = connection.getInputStream();
             output = new FileOutputStream(path);
 
-            byte data[] = new byte[4096];
+            byte data[] = new byte[BUFFER_SIZE];
             int count;
             while ((count = input.read(data)) != -1) {
                 output.write(data, 0, count);

@@ -10,6 +10,9 @@ import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
@@ -204,7 +207,9 @@ public class AnalyticsService {
         } else {
             return "error";
         }
-        if (!Files.exists(Paths.get(dir + jarName))) {
+        IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (MessageDialog.openConfirm(win.getShell(), "Scripts",
+                "Analytics.jar including dependencies (~165MB) is getting downloaded. Press cancel if you want to provide it yourself.")) {
             FileService.downloadFiles(dir + jarName, AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName,
                     "JobmanagerJar");
         }
