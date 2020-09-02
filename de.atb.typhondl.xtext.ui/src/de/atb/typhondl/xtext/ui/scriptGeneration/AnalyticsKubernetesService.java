@@ -34,8 +34,7 @@ public class AnalyticsKubernetesService {
     protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/lib/";
     private static final String FLINKJAR_POSTNAME = "-jar-with-dependencies.jar";
     private static final String FLINKJAR_PRENAME = "ac.york.typhon.analytics-";
-    private static final String FLINKJAR_INTERNAL_NAME = FLINK_INTERNAL_FOLDER + FLINKJAR_PRENAME
-            + FLINKJAR_POSTNAME.substring(1);
+    protected static final String FLINKJAR_INTERNAL_NAME = FLINKJAR_PRENAME + FLINKJAR_POSTNAME.substring(1);
     private static final String ANALYTICS_KUBERNETES_ZIP_FILENAME = "analyticsKubernetes.zip";
     private static final String ANALYTICS_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/"
             + ANALYTICS_KUBERNETES_ZIP_FILENAME;
@@ -124,7 +123,7 @@ public class AnalyticsKubernetesService {
         initContainer.add("        command:");
         initContainer.add("        - wget");
         initContainer.add("        - \"-O\"");
-        initContainer.add("        - \"" + FLINKJAR_INTERNAL_NAME + "\"");
+        initContainer.add("        - \"" + FLINK_INTERNAL_FOLDER + FLINKJAR_INTERNAL_NAME + "\"");
         initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + fileName);
         initContainer.add("        volumeMounts:");
         initContainer.add("        - name: workdir");

@@ -210,10 +210,10 @@ public class AnalyticsService {
         IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (MessageDialog.openConfirm(win.getShell(), "Scripts",
                 "Analytics.jar including dependencies (~165MB) is getting downloaded. Press cancel if you want to provide it yourself.")) {
-            FileService.downloadFiles(dir + jarName, AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName,
-                    "JobmanagerJar");
+            FileService.downloadFiles(dir + AnalyticsKubernetesService.FLINKJAR_INTERNAL_NAME,
+                    AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName, "JobmanagerJar");
         }
-        return flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER;
+        return "./" + flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER;
     }
 
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,
