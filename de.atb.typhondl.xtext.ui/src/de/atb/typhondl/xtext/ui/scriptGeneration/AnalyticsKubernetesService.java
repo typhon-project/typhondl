@@ -31,7 +31,7 @@ import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsKubernetesService {
 
-    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/lib/";
+    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/usrlib/";
     private static final String FLINKJAR_POSTNAME = "-jar-with-dependencies.jar";
     private static final String FLINKJAR_PRENAME = "ac.york.typhon.analytics-";
     protected static final String FLINKJAR_INTERNAL_NAME = FLINKJAR_PRENAME + FLINKJAR_POSTNAME.substring(1);
