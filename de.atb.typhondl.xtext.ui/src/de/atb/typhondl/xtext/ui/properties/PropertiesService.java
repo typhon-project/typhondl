@@ -5,6 +5,7 @@ public class PropertiesService {
     public static final String POLYSTORE_USEANALYTICS = "polystore.useAnalytics";
     public static final String POLYSTORE_INAPPLICATION = "polystore.inApplication";
     public static final String POLYSTORE_USEEVOLUTION = "polystore.useEvolution";
+    public static final String POLYSTORE_USENLAE = "polystore.useNLAE";
     public static final String POLYSTORE_KUBECONFIG = "polystore.kubeconfig";
     public static final String API_NAME = "api.name";
     public static final String API_HOST = "api.host";
@@ -97,6 +98,15 @@ public class PropertiesService {
     public static final String EVOLUTION_FRONTEND_ENVIRONMENT_BACKEND_ENDPOINT = "evolution.frontend.environment.BACKEND_ENDPOINT";
     public static final String EVOLUTION_FRONTEND_PORT = "evolution.frontend.port";
     public static final String EVOLUTION_FRONTEND_PUBLISHEDPORT = "evolution.frontend.publishedPort";
+    public static final String NLAE_NAME = "nlae.name";
+    public static final String NLAE_API_HOST = "nlae.api.host";
+    public static final String NLAE_API_PORT = "nlae.api.port";
+    public static final String NLAE_TASKMANAGER_REPLICAS = "nlae.taskmanager.replicas";
+    public static final String NLAE_JOBMANAGER_HEAPSIZE = "nlae.jobmanager.heapsize";
+    public static final String NLAE_TASKMANAGER_HEAPSIZE = "nlae.taskmanager.heapsize";
+    public static final String NLAE_TASKMANAGER_SLOTS = "nlae.taskmanager.numberOfTaskSlots";
+    public static final String NLAE_PARALLELISM = "nlae.flink.parallelism.default";
+    public static final String NLAE_SHAREDVOLUME = "nlae.sharedvolume";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
     public static final String MONGO_PORT = "mongo.port";
