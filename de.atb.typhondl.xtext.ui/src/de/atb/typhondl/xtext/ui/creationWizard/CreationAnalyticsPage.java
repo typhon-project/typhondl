@@ -110,10 +110,12 @@ public class CreationAnalyticsPage extends MyWizardPage {
     public void updateData(Properties properties) {
         this.properties = properties;
         updateKafkaURI();
-        boolean contained = Boolean
-                .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
-        hiddenData.exclude = contained;
-        hidden.setVisible(!contained);
+        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
+            boolean contained = Boolean
+                    .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
+            hiddenData.exclude = contained;
+            hidden.setVisible(!contained);
+        }
         main.layout(true);
     }
 
