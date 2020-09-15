@@ -109,7 +109,7 @@ public class DeploymentModelService {
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
                         + properties.getProperty(PropertiesService.DB_PORT));
         if (clusterType == SupportedTechnologies.DockerCompose) {
-            polystoreDBContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes", new String[] {
+            polystoreDBContainer.getProperties().add(ModelService.createKeyValuesArray("volumes", new String[] {
                     "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
         application.getContainers().add(polystoreDBContainer);
@@ -133,7 +133,7 @@ public class DeploymentModelService {
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
             polystoreAPIContainer.getProperties()
-                    .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
+                    .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
         }
         application.getContainers().add(polystoreAPIContainer);
 
@@ -168,7 +168,7 @@ public class DeploymentModelService {
         }
         if (clusterType == SupportedTechnologies.DockerCompose) {
             qlServerContainer.getProperties()
-                    .addAll(ContainerService.createKeyValues(new String[] { "restart", "always" }));
+                    .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
         }
         application.getContainers().add(qlServerContainer);
 

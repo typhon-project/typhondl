@@ -31,6 +31,8 @@ public class CreationAnalyticsPage extends MyWizardPage {
     private SupportedTechnologies chosenTemplate;
     private Composite main;
     private Text kafkaURIText;
+    private GridData hiddenData;
+    private Composite hidden;
 
     /**
      * Creates an instance of the {@link CreationAnalyticsPage}
@@ -65,6 +67,26 @@ public class CreationAnalyticsPage extends MyWizardPage {
         kafkaURIText.setLayoutData(gridData);
         kafkaURIText.setEditable(false);
 
+        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
+            hidden = new Composite(main, SWT.NONE);
+            hidden.setLayout(new GridLayout(2, false));
+            hiddenData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            hiddenData.horizontalSpan = 2;
+            boolean contained = Boolean
+                    .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
+            hiddenData.exclude = contained;
+            hidden.setVisible(!contained);
+            hidden.setLayoutData(hiddenData);
+
+            new Label(hidden, SWT.NONE).setText("Analytics Cluster kubeconfig: ");
+            Text analyticsKubeconfigText = new Text(hidden, SWT.BORDER);
+            GridData gridDataHidden = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            analyticsKubeconfigText.setLayoutData(gridDataHidden);
+            analyticsKubeconfigText.setText(properties.getProperty(PropertiesService.ANALYTICS_KUBECONFIG));
+            analyticsKubeconfigText.addModifyListener(e -> properties
+                    .setProperty(PropertiesService.ANALYTICS_KUBECONFIG, analyticsKubeconfigText.getText()));
+        }
+
         KafkaConfigEditor editor = new KafkaConfigEditor();
         for (InputField inputField : editor.getInputFields(chosenTemplate)) {
             new Label(main, NONE).setText(inputField.label);
@@ -88,6 +110,11 @@ public class CreationAnalyticsPage extends MyWizardPage {
     public void updateData(Properties properties) {
         this.properties = properties;
         updateKafkaURI();
+        boolean contained = Boolean
+                .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
+        hiddenData.exclude = contained;
+        hidden.setVisible(!contained);
+        main.layout(true);
     }
 
     private void updateKafkaURI() {

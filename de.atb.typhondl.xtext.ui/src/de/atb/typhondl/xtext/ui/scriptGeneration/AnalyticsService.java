@@ -71,7 +71,7 @@ public class AnalyticsService {
                         properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME), containerType, kafka,
                         kafkaURI);
                 kafkaContainer.getDepends_on().add(ContainerService.createDependsOn(zookeeperContainer));
-                kafkaContainer.getProperties().add(ContainerService.createKeyValuesArray("volumes",
+                kafkaContainer.getProperties().add(ModelService.createKeyValuesArray("volumes",
                         new String[] { "/var/run/docker.sock:/var/run/docker.sock" }));
                 if (Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
                     kafkaContainer.setReplication(ContainerService.createStatelessReplication(
@@ -97,9 +97,9 @@ public class AnalyticsService {
                 flinkJobmanagerContainer
                         .setPorts(ContainerService.createPorts(new String[] { "published", "8081", "target", "8081" }));
                 flinkJobmanagerContainer.getProperties()
-                        .addAll(ContainerService.createKeyValues(new String[] { "command", "jobmanager" }));
+                        .addAll(ModelService.createKeyValues(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
-                        .add(ContainerService.createKeyValuesArray("expose", new String[] { "6123" }));
+                        .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
                 String analyticsVolume = downloadFlinkFatJar(outputFolder);
                 flinkJobmanagerContainer.setVolumes(
                         VolumesService.create(new String[] { analyticsVolume }, null, null, clusterTypeTech));
@@ -108,9 +108,9 @@ public class AnalyticsService {
                 flinkTaskmanagerContainer.getDepends_on()
                         .add(ContainerService.createDependsOn(flinkJobmanagerContainer));
                 flinkTaskmanagerContainer.getProperties()
-                        .addAll(ContainerService.createKeyValues(new String[] { "command", "taskmanager" }));
+                        .addAll(ModelService.createKeyValues(new String[] { "command", "taskmanager" }));
                 flinkTaskmanagerContainer.getProperties()
-                        .add(ContainerService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
+                        .add(ModelService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
                 // authAll
                 Software authAll = SoftwareService.create("authAll",
                         properties.getProperty(PropertiesService.ANALYTICS_AUTHALL_IMAGE));
@@ -170,6 +170,10 @@ public class AnalyticsService {
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
                     analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
+                    final String analyticsKubeconfig = properties.getProperty(PropertiesService.ANALYTICS_KUBECONFIG);
+                    if (!analyticsKubeconfig.isEmpty()) {
+                        analyticsCluster.getProperties().add(ModelService.createKubeconfig(analyticsKubeconfig));
+                    }
                     ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");

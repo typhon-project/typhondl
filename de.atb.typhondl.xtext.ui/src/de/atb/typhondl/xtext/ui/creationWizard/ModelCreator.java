@@ -47,11 +47,11 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DBType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -219,10 +219,7 @@ public class ModelCreator {
         cluster.setType(clusterType);
         final String property = properties.getProperty(PropertiesService.POLYSTORE_KUBECONFIG);
         if (!property.isEmpty()) {
-            Key_Values kubeconfig = TyphonDLFactory.eINSTANCE.createKey_Values();
-            kubeconfig.setName("kubeconfig");
-            kubeconfig.setValue(addQuotes(property));
-            cluster.getProperties().add(kubeconfig);
+            cluster.getProperties().add(ModelService.createKubeconfig(property));
         }
         deployment.getClusters().add(cluster);
 
@@ -246,10 +243,6 @@ public class ModelCreator {
         URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
         // return main model file to be opened in editor
         return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
-    }
-
-    private String addQuotes(String property) {
-        return property.contains("\"") ? property : "\"" + property + "\"";
     }
 
     /**
