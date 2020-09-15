@@ -221,7 +221,7 @@ public class ModelCreator {
         if (!property.isEmpty()) {
             Key_Values kubeconfig = TyphonDLFactory.eINSTANCE.createKey_Values();
             kubeconfig.setName("kubeconfig");
-            kubeconfig.setValue(property);
+            kubeconfig.setValue(addQuotes(property));
             cluster.getProperties().add(kubeconfig);
         }
         deployment.getClusters().add(cluster);
@@ -246,6 +246,10 @@ public class ModelCreator {
         URI DLmodelURI = URI.createPlatformResourceURI(this.folder.append(filename).toString(), true);
         // return main model file to be opened in editor
         return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(DLmodelURI.toPlatformString(true)));
+    }
+
+    private String addQuotes(String property) {
+        return property.contains("\"") ? property : "\"" + property + "\"";
     }
 
     /**
