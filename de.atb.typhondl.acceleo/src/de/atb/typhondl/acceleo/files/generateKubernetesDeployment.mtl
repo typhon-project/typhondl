@@ -12,7 +12,7 @@
 [/file]
 [file ('analyticsKubernetes/analyticsDeployment.sh', false, 'UTF-8')]
 #!/bin/bash
-kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]"
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 echo "Running Typhon Kafka K8s installation ..."
@@ -49,7 +49,7 @@ echo "It may take a few minutes for all services to be up and running."
 [else]
 [file ('deploy.sh', false, 'UTF-8')]
 #!/bin/bash
-kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]"
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 if ['['/] -n "$kubeconfig" [']'/]; then
