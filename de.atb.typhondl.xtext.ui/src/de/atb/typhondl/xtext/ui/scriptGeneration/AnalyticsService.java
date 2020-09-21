@@ -217,7 +217,7 @@ public class AnalyticsService {
             FileService.downloadFiles(dir + AnalyticsKubernetesService.FLINKJAR_INTERNAL_NAME,
                     AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName, "JobmanagerJar");
         }
-        return "./" + flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER;
+        return "./" + flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER + "/";
     }
 
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,

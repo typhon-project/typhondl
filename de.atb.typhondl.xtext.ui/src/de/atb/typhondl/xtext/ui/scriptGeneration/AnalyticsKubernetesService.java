@@ -31,7 +31,7 @@ import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsKubernetesService {
 
-    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/usrlib/";
+    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/usrlib";
     private static final String FLINKJAR_POSTNAME = "-jar-with-dependencies.jar";
     private static final String FLINKJAR_PRENAME = "ac.york.typhon.analytics-";
     protected static final String FLINKJAR_INTERNAL_NAME = FLINKJAR_PRENAME + FLINKJAR_POSTNAME.substring(1);
@@ -98,10 +98,18 @@ public class AnalyticsKubernetesService {
         final String path = outputFolder.getAbsolutePath() + File.separator + "temp.xml";
         InputStream input = getAnalyticsPom(path);
         if (input != null) {
+            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumeMounts:") + 1, workdirMount());
             jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:"), initContainer(getLatestJarName(path)));
             jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:") + 1, initVolume());
         }
         return jobmanagerLines;
+    }
+
+    private static ArrayList<String> workdirMount() {
+        ArrayList<String> volumeMount = new ArrayList<>();
+        volumeMount.add("        - name: workdir");
+        volumeMount.add("          mountPath: " + FLINK_INTERNAL_FOLDER);
+        return volumeMount;
     }
 
     protected static InputStream getAnalyticsPom(String saveLocation) throws IOException {
@@ -123,7 +131,7 @@ public class AnalyticsKubernetesService {
         initContainer.add("        command:");
         initContainer.add("        - wget");
         initContainer.add("        - \"-O\"");
-        initContainer.add("        - \"" + FLINK_INTERNAL_FOLDER + FLINKJAR_INTERNAL_NAME + "\"");
+        initContainer.add("        - \"/work-dir/" + FLINKJAR_INTERNAL_NAME + "\"");
         initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + fileName);
         initContainer.add("        volumeMounts:");
         initContainer.add("        - name: workdir");
