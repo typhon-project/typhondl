@@ -33,7 +33,7 @@ public class CreationPolystorePage extends MyWizardPage {
     @Override
     public void createControl(Composite parent) {
         setTitle("Configure Polystore Components");
-        setDescription("API, QL");
+        setDescription("API, UI, QL Server");
         ScrolledComposite scrolling = new ScrolledComposite(parent, SWT.V_SCROLL);
         main = new Composite(scrolling, SWT.NONE);
         scrolling.setContent(main);
@@ -131,5 +131,10 @@ public class CreationPolystorePage extends MyWizardPage {
         public List<InputField> getResourceFieldsAPI() {
             return resourceFieldsAPI;
         }
+    }
+
+    public void updateData(Properties properties) {
+        this.properties = properties;
+        // TODO update textfields
     }
 }

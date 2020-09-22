@@ -75,6 +75,7 @@ public class CreateModelWizard extends Wizard {
     private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
     private final String PAGENAME_ANALYTICS = "Analytics";
     private final String PAGENAME_NLAE = "NLAE";
+    private final String PAGENAME_POLYSTORE = "Polystore";
 
     /**
      * To have a Scrollbar, a minSize has to be set. Somehow the page's width is
@@ -207,8 +208,9 @@ public class CreateModelWizard extends Wizard {
     @Override
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
-        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationDBMSPage
-                || currentPage instanceof CreationAnalyticsPage || currentPage instanceof CreationNLAEPage) {
+        if (currentPage instanceof CreationMainPage || currentPage instanceof CreationPolystorePage
+                || currentPage instanceof CreationDBMSPage || currentPage instanceof CreationAnalyticsPage
+                || currentPage instanceof CreationNLAEPage) {
             return false;
         }
         if (currentPage instanceof CreationDatabasePage && currentPage.getNextPage() instanceof CreationDatabasePage) {
@@ -237,6 +239,21 @@ public class CreateModelWizard extends Wizard {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
+            if (!pageExists(PAGENAME_POLYSTORE)) {
+                CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties,
+                        this.chosenTemplate);
+                polystorePage.setWizard(this);
+                addPage(polystorePage);
+            } else {
+                CreationPolystorePage polystorePage = (CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE);
+                if (polystorePage.getControl() != null) {
+                    polystorePage.updateData(properties);
+                }
+            }
+            return this.getPage(PAGENAME_POLYSTORE);
+        }
+
+        if (page instanceof CreationPolystorePage) {
             if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
