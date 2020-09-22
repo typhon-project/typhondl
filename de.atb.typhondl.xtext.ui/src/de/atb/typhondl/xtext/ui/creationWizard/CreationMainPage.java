@@ -152,7 +152,6 @@ public class CreationMainPage extends MyWizardPage {
         createAnalyticsGroup();
         createNLAEGroup();
         createConnectionGroup();
-        createScalingGroup();
     }
 
     private void createNLAEGroup() {
@@ -172,26 +171,6 @@ public class CreationMainPage extends MyWizardPage {
             }
         });
 
-    }
-
-    private void createScalingGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
-        Group mainGroup = new Group(main, SWT.READ_ONLY);
-        mainGroup.setLayout(new GridLayout(2, false));
-        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        mainGroup.setText("Scaling");
-
-        new Label(mainGroup, SWT.NONE).setText("API replicas: ");
-        Text repAPI = new Text(mainGroup, SWT.BORDER);
-        repAPI.setText("1");
-        repAPI.setLayoutData(gridData);
-        repAPI.addModifyListener(e -> properties.setProperty(PropertiesService.API_REPLICAS, repAPI.getText()));
-        new Label(mainGroup, SWT.NONE).setText("QL server replicas: ");
-        Text repQL = new Text(mainGroup, SWT.BORDER);
-        repQL.setText("1");
-        repQL.setLayoutData(gridData);
-        repQL.addModifyListener(e -> properties.setProperty(PropertiesService.QLSERVER_REPLICAS, repQL.getText()));
     }
 
     private void createMainGroup() {
