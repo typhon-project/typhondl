@@ -15,6 +15,10 @@ public class PropertiesService {
     public static final String API_IMAGE = "api.image";
     public static final String API_ENTRYPOINT = "api.entrypoint";
     public static final String API_REPLICAS = "api.replicas";
+    public static final String API_LIMIT_MEMORY = "api.limit.memory";
+    public static final String API_LIMIT_CPU = "api.limit.cpu";
+    public static final String API_RESERVATION_MEMORY = "api.reservation.memory";
+    public static final String API_RESERVATION_CPU = "api.reservation.cpu";
     public static final String UI_NAME = "ui.name";
     public static final String UI_CONTAINERNAME = "ui.containername";
     public static final String UI_IMAGE = "ui.image";
@@ -33,6 +37,10 @@ public class PropertiesService {
     public static final String QLSERVER_IMAGE = "qlserver.image";
     public static final String QLSERVER_PORT = "qlserver.port";
     public static final String QLSERVER_REPLICAS = "qlserver.replicas";
+    public static final String QLSERVER_LIMIT_MEMORY = "qlserver.limit.memory";
+    public static final String QLSERVER_LIMIT_CPU = "qlserver.limit.cpu";
+    public static final String QLSERVER_RESERVATION_MEMORY = "qlserver.reservation.memory";
+    public static final String QLSERVER_RESERVATION_CPU = "qlserver.reservation.cpu";
     public static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
     public static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
     public static final String ANALYTICS_AUTHALL_IMAGE = "analytics.authAll.image";
