@@ -47,10 +47,6 @@ public class CreationPolystorePage extends MyWizardPage {
         createAPIGroup(editor.getResourceFieldsAPI());
         createUIGroup();
 
-        if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-            createLoggingAndMonitoringGroup();
-        }
-
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
 
@@ -96,10 +92,6 @@ public class CreationPolystorePage extends MyWizardPage {
         text.addModifyListener(e -> {
             properties.setProperty(inputField.propertyName, text.getText());
         });
-    }
-
-    private void createLoggingAndMonitoringGroup() {
-        // TODO Auto-generated method stub
     }
 
     private Group createGroup(String name) {

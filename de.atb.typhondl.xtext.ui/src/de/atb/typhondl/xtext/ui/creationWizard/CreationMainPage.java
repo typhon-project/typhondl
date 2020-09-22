@@ -223,6 +223,8 @@ public class CreationMainPage extends MyWizardPage {
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
 
+        // TODO createLoggingAndMonitoringCheckbox
+
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
