@@ -151,7 +151,6 @@ public class CreationMainPage extends MyWizardPage {
         createMainGroup();
         createAnalyticsGroup();
         createNLAEGroup();
-        createConnectionGroup();
     }
 
     private void createNLAEGroup() {
@@ -430,31 +429,6 @@ public class CreationMainPage extends MyWizardPage {
             properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
             analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
         }
-    }
-
-    /**
-     * Creates fields to enter the API specs
-     */
-    private void createConnectionGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        Group connectionGroup = new Group(main, SWT.READ_ONLY);
-        connectionGroup.setLayout(new GridLayout(2, false));
-        connectionGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        connectionGroup.setText("API connection");
-
-        new Label(connectionGroup, SWT.NONE).setText("Api Host: ");
-        hostText = new Text(connectionGroup, SWT.BORDER);
-        hostText.setLayoutData(gridData);
-        hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-        hostText.addModifyListener(e -> properties.setProperty(PropertiesService.API_HOST, hostText.getText()));
-
-        new Label(connectionGroup, SWT.NONE).setText("Api Port: ");
-        portText = new Text(connectionGroup, SWT.BORDER);
-        portText.setLayoutData(gridData);
-        portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
-        portText.addModifyListener(e -> {
-            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, portText.getText());
-        });
     }
 
     /**
