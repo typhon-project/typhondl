@@ -1,6 +1,7 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,19 +16,18 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class CreationPolystorePage extends MyWizardPage {
 
     private Properties properties;
     private Composite main;
-    private SupportedTechnologies chosenTechnology;
+    private HashMap<Text, String> fields;
     private static final int pageWidth = 607;
 
-    protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
+    protected CreationPolystorePage(String pageName, Properties properties) {
         super(pageName);
         this.properties = properties;
-        this.chosenTechnology = chosenTechnology;
+        this.fields = new HashMap<>();
     }
 
     @Override
@@ -55,47 +55,54 @@ public class CreationPolystorePage extends MyWizardPage {
     }
 
     private void createUIGroup() {
-        Group uiGroup = createGroup("UI settings");
-        createPublishedPortFields(uiGroup, PropertiesService.UI_PUBLISHEDPORT);
+        Group uiGroup = createGroup("UI settings", main);
+        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        createFields(uiGroup, gridData, new InputField("Published port: ", PropertiesService.UI_PUBLISHEDPORT));
     }
 
     private void createAPIGroup(List<InputField> list) {
-        Group apiGroup = createGroup("API settings");
+        Group apiGroup = createGroup("API settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         createScalingFields(apiGroup, "API", PropertiesService.API_REPLICAS);
-        createPublishedPortFields(apiGroup, PropertiesService.API_PUBLISHEDPORT);
+        createFields(apiGroup, gridData, new InputField("Published port: ", PropertiesService.API_PUBLISHEDPORT));
+        Group resourceGroup = createGroupInGroup("Resources (can be left empty)", apiGroup);
         for (InputField inputField : list) {
-            createResourceFields(apiGroup, gridData, inputField);
+            createFields(resourceGroup, gridData, inputField);
         }
-    }
-
-    private void createPublishedPortFields(Group group, String property) {
-        // TODO Auto-generated method stub
-
     }
 
     private void createQLGroup(List<InputField> list) {
-        Group qlGroup = createGroup("QL Settings");
+        Group qlGroup = createGroup("QL Settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         createScalingFields(qlGroup, "QL Server", PropertiesService.QLSERVER_REPLICAS);
+        Group resourceGroup = createGroupInGroup("Resources (can be left empty)", qlGroup);
         for (InputField inputField : list) {
-            createResourceFields(qlGroup, gridData, inputField);
+            createFields(resourceGroup, gridData, inputField);
         }
     }
 
-    private void createResourceFields(Group qlGroup, GridData gridData, InputField inputField) {
+    private void createFields(Group group, GridData gridData, InputField inputField) {
         // TODO put in hidden composite, activate with checkbox
-        new Label(qlGroup, NONE).setText(inputField.label);
-        Text text = new Text(qlGroup, SWT.BORDER);
+        new Label(group, NONE).setText(inputField.label);
+        Text text = new Text(group, SWT.BORDER);
         text.setText(properties.getProperty(inputField.propertyName));
         text.setLayoutData(gridData);
         text.addModifyListener(e -> {
             properties.setProperty(inputField.propertyName, text.getText());
         });
+        this.fields.put(text, inputField.propertyName);
     }
 
-    private Group createGroup(String name) {
-        Group group = new Group(main, SWT.READ_ONLY);
+    private Group createGroupInGroup(String name, Group parent) {
+        Group group = createGroup(name, parent);
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gridData.horizontalSpan = 2;
+        group.setLayoutData(gridData);
+        return group;
+    }
+
+    private Group createGroup(String name, Composite parent) {
+        Group group = new Group(parent, SWT.READ_ONLY);
         group.setLayout(new GridLayout(2, false));
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         group.setText(name);
@@ -135,6 +142,8 @@ public class CreationPolystorePage extends MyWizardPage {
 
     public void updateData(Properties properties) {
         this.properties = properties;
-        // TODO update textfields
+        for (Text text : this.fields.keySet()) {
+            text.setText(properties.getProperty(this.fields.get(text)));
+        }
     }
 }

@@ -196,7 +196,7 @@ public class CreateModelWizard extends Wizard {
     }
 
     /**
-     * TODO Checks if the TyphonDL Creation Wizard can finish.
+     * Checks if the TyphonDL Creation Wizard can finish.
      * 
      * @return <code>false</code> if
      *         <li>the current page is the Main Page or</li>
@@ -240,8 +240,7 @@ public class CreateModelWizard extends Wizard {
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
             if (!pageExists(PAGENAME_POLYSTORE)) {
-                CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties,
-                        this.chosenTemplate);
+                CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties);
                 polystorePage.setWizard(this);
                 addPage(polystorePage);
             } else {
