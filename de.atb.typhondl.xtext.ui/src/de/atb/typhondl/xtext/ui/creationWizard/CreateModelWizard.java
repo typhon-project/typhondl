@@ -240,13 +240,14 @@ public class CreateModelWizard extends Wizard {
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
             }
             if (!pageExists(PAGENAME_POLYSTORE)) {
-                CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties);
+                CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties,
+                        chosenTemplate);
                 polystorePage.setWizard(this);
                 addPage(polystorePage);
             } else {
                 CreationPolystorePage polystorePage = (CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE);
                 if (polystorePage.getControl() != null) {
-                    polystorePage.updateData(properties);
+                    polystorePage.updateData(properties, chosenTemplate);
                 }
             }
             return this.getPage(PAGENAME_POLYSTORE);

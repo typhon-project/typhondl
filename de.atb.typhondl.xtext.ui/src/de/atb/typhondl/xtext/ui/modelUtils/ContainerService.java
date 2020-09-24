@@ -63,7 +63,13 @@ public class ContainerService {
     }
 
     public static boolean isPortInKubernetesRange(String port) {
-        return Integer.parseInt(port) <= 32767 && Integer.parseInt(port) >= 30000;
+        int portInt = 0;
+        try {
+            portInt = Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return portInt <= 32767 && Integer.parseInt(port) >= 30000;
     }
 
     public static String createRandomPort() {

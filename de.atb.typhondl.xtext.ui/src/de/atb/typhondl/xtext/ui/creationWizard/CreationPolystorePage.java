@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
@@ -14,20 +16,29 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class CreationPolystorePage extends MyWizardPage {
 
     private Properties properties;
     private Composite main;
-    private HashMap<Text, String> fields;
+    private HashMap<Text, String> resourceFields;
+    private HashMap<Text, String> scalingFields;
+    private HashMap<Text, String> portFields;
+    private SupportedTechnologies chosenTechnology;
+
     private static final int pageWidth = 607;
 
-    protected CreationPolystorePage(String pageName, Properties properties) {
+    protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
         super(pageName);
         this.properties = properties;
-        this.fields = new HashMap<>();
+        this.resourceFields = new HashMap<>();
+        this.scalingFields = new HashMap<>();
+        this.portFields = new HashMap<>();
+        this.chosenTechnology = chosenTechnology;
     }
 
     @Override
@@ -57,17 +68,22 @@ public class CreationPolystorePage extends MyWizardPage {
     private void createUIGroup() {
         Group uiGroup = createGroup("UI settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        createFields(uiGroup, gridData, new InputField("Published port: ", PropertiesService.UI_PUBLISHEDPORT));
+        createPortFields(uiGroup, gridData, new InputField("Published port: ", PropertiesService.UI_PUBLISHEDPORT));
+    }
+
+    private void createPortFields(Group group, GridData gridData, InputField inputField) {
+        Text text = createFields(group, gridData, inputField);
+        portFields.put(text, inputField.propertyName);
     }
 
     private void createAPIGroup(List<InputField> list) {
         Group apiGroup = createGroup("API settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         createScalingFields(apiGroup, "API", PropertiesService.API_REPLICAS);
-        createFields(apiGroup, gridData, new InputField("Published port: ", PropertiesService.API_PUBLISHEDPORT));
+        createPortFields(apiGroup, gridData, new InputField("Published port: ", PropertiesService.API_PUBLISHEDPORT));
         Group resourceGroup = createGroupInGroup("Resources (can be left empty)", apiGroup);
         for (InputField inputField : list) {
-            createFields(resourceGroup, gridData, inputField);
+            createResourceFields(resourceGroup, gridData, inputField);
         }
     }
 
@@ -77,11 +93,16 @@ public class CreationPolystorePage extends MyWizardPage {
         createScalingFields(qlGroup, "QL Server", PropertiesService.QLSERVER_REPLICAS);
         Group resourceGroup = createGroupInGroup("Resources (can be left empty)", qlGroup);
         for (InputField inputField : list) {
-            createFields(resourceGroup, gridData, inputField);
+            createResourceFields(resourceGroup, gridData, inputField);
         }
     }
 
-    private void createFields(Group group, GridData gridData, InputField inputField) {
+    private void createResourceFields(Group resourceGroup, GridData gridData, InputField inputField) {
+        Text text = createFields(resourceGroup, gridData, inputField);
+        this.resourceFields.put(text, inputField.propertyName);
+    }
+
+    private Text createFields(Group group, GridData gridData, InputField inputField) {
         // TODO put in hidden composite, activate with checkbox
         new Label(group, NONE).setText(inputField.label);
         Text text = new Text(group, SWT.BORDER);
@@ -89,8 +110,9 @@ public class CreationPolystorePage extends MyWizardPage {
         text.setLayoutData(gridData);
         text.addModifyListener(e -> {
             properties.setProperty(inputField.propertyName, text.getText());
+            validate();
         });
-        this.fields.put(text, inputField.propertyName);
+        return text;
     }
 
     private Group createGroupInGroup(String name, Group parent) {
@@ -115,7 +137,53 @@ public class CreationPolystorePage extends MyWizardPage {
         Text rep = new Text(group, SWT.BORDER);
         rep.setText("1");
         rep.setLayoutData(gridData);
-        rep.addModifyListener(e -> properties.setProperty(property, rep.getText()));
+        rep.addModifyListener(e -> {
+            properties.setProperty(property, rep.getText());
+            validate();
+        });
+        this.scalingFields.put(rep, property);
+    }
+
+    private void validate() {
+        setStatus(null);
+        if (this.chosenTechnology == SupportedTechnologies.DockerCompose) {
+            for (Text text : resourceFields.keySet()) {
+                if (!text.getText().isEmpty()) {
+                    raiseWarning("resources");
+                }
+            }
+        }
+        for (Text text : scalingFields.keySet()) {
+            int parseInt = 0;
+            try {
+                parseInt = Integer.parseInt(text.getText());
+            } catch (NumberFormatException exp) {
+                raiseError("replication");
+            }
+            if (this.chosenTechnology == SupportedTechnologies.DockerCompose && parseInt != 1) {
+                raiseWarning("replication");
+            }
+            if (parseInt == 0) {
+                raiseError("replication");
+            }
+        }
+        if (this.chosenTechnology == SupportedTechnologies.Kubernetes) {
+            for (Text text : portFields.keySet()) {
+                if (!ContainerService.isPortInKubernetesRange(text.getText())) {
+                    setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
+                }
+            }
+        }
+    }
+
+    private void raiseError(String context) {
+        setStatus(new Status(IStatus.ERROR, "Wizard", "Please set a value bigger than 0 as " + context));
+
+    }
+
+    private void raiseWarning(String context) {
+        setStatus(new Status(IStatus.WARNING, "Wizard",
+                "Setting " + context + " is only possible when using Docker Swarm"));
     }
 
     private class ResourceEditor {
@@ -140,10 +208,17 @@ public class CreationPolystorePage extends MyWizardPage {
         }
     }
 
-    public void updateData(Properties properties) {
+    public void updateData(Properties properties, SupportedTechnologies chosenTemplate) {
         this.properties = properties;
-        for (Text text : this.fields.keySet()) {
-            text.setText(properties.getProperty(this.fields.get(text)));
+        this.chosenTechnology = chosenTemplate;
+        if (chosenTechnology == SupportedTechnologies.Kubernetes) {
+            setStatus(null);
+        }
+        for (Text text : this.resourceFields.keySet()) {
+            text.setText(properties.getProperty(this.resourceFields.get(text)));
+        }
+        for (Text text : this.portFields.keySet()) {
+            text.setText(properties.getProperty(this.portFields.get(text)));
         }
     }
 }
