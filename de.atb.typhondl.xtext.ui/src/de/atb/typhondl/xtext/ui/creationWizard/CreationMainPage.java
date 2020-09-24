@@ -255,8 +255,31 @@ public class CreationMainPage extends MyWizardPage {
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
 
                 setKafkaProperties();
+                setResourceProperties();
             }
         });
+    }
+
+    protected void setResourceProperties() {
+        if (this.chosenTemplate == SupportedTechnologies.DockerCompose) {
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
+            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
+        } else if (this.chosenTemplate == SupportedTechnologies.Kubernetes) {
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
+            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
+        }
     }
 
     private void createAnalyticsGroup() {
