@@ -38,8 +38,8 @@ public class FileService {
         return "ERROR";
     }
 
-    public static void applyMapToFile(Properties properties, Path path,
-            HashMap<String, String> map) throws IOException {
+    public static void applyMapToFile(Properties properties, Path path, HashMap<String, String> map)
+            throws IOException {
         List<String> list = Files.readAllLines(path);
         for (int i = 0; i < list.size(); i++) {
             for (String propertyNameInFile : map.keySet()) {
@@ -53,13 +53,12 @@ public class FileService {
         Files.write(path, list, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
-    public static InputStream downloadFiles(String zipPath, String address, String component) throws IOException {
+    public static InputStream downloadFiles(String path, String address, String component) throws IOException {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
-        MessageDialog.openInformation(win.getShell(), "Scripts", component + " files are now getting downloaded");
         try {
             URL url = new URL(address);
             connection = (HttpURLConnection) url.openConnection();
@@ -76,9 +75,9 @@ public class FileService {
 
             // download the file
             input = connection.getInputStream();
-            output = new FileOutputStream(zipPath);
+            output = new FileOutputStream(path);
 
-            byte data[] = new byte[4096];
+            byte data[] = new byte[BUFFER_SIZE];
             int count;
             while ((count = input.read(data)) != -1) {
                 output.write(data, 0, count);
@@ -141,5 +140,9 @@ public class FileService {
             bos.write(bytesIn, 0, read);
         }
         bos.close();
+    }
+
+    public static void save(Path path, List<String> lines) throws IOException {
+        Files.write(path, lines, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

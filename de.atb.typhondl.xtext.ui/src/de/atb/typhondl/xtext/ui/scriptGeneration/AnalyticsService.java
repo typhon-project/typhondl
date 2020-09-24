@@ -1,7 +1,19 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Cluster;
@@ -16,13 +28,16 @@ import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.FileService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class AnalyticsService {
 
     public static DeploymentModel addAnalytics(DeploymentModel model, Properties properties, ClusterType clusterType,
-            ContainerType containerType) {
+            ContainerType containerType, String outputFolder)
+            throws ParserConfigurationException, IOException, SAXException {
         String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
@@ -80,17 +95,20 @@ public class AnalyticsService {
                 flinkJobmanagerContainer
                         .setPorts(ContainerService.createPorts(new String[] { "published", "8081", "target", "8081" }));
                 flinkJobmanagerContainer.getProperties()
-                        .addAll(ContainerService.createKeyValues(new String[] { "command", "jobmanager" }));
+                        .addAll(ModelService.createKeyValues(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
-                        .add(ContainerService.createKeyValuesArray("expose", new String[] { "6123" }));
+                        .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
+                String analyticsVolume = downloadFlinkFatJar(outputFolder);
+                flinkJobmanagerContainer.setVolumes(
+                        VolumesService.create(new String[] { analyticsVolume }, null, null, clusterTypeTech));
                 Container flinkTaskmanagerContainer = ContainerService.create("taskmanager", containerType,
                         flinkTaskmanager, null);
                 flinkTaskmanagerContainer.getDepends_on()
                         .add(ContainerService.createDependsOn(flinkJobmanagerContainer));
                 flinkTaskmanagerContainer.getProperties()
-                        .addAll(ContainerService.createKeyValues(new String[] { "command", "taskmanager" }));
+                        .addAll(ModelService.createKeyValues(new String[] { "command", "taskmanager" }));
                 flinkTaskmanagerContainer.getProperties()
-                        .add(ContainerService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
+                        .add(ModelService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
                 // authAll
                 Software authAll = SoftwareService.create("authAll",
                         properties.getProperty(PropertiesService.ANALYTICS_AUTHALL_IMAGE));
@@ -150,6 +168,10 @@ public class AnalyticsService {
                     Cluster analyticsCluster = TyphonDLFactory.eINSTANCE.createCluster();
                     analyticsCluster.setType(clusterType);
                     analyticsCluster.setName("analyticsCluster");
+                    final String analyticsKubeconfig = properties.getProperty(PropertiesService.ANALYTICS_KUBECONFIG);
+                    if (!analyticsKubeconfig.isEmpty()) {
+                        analyticsCluster.getProperties().add(ModelService.createKubeconfig(analyticsKubeconfig));
+                    }
                     ModelService.getPlatform(model).getClusters().add(analyticsCluster);
                     Application analyticsApplication = TyphonDLFactory.eINSTANCE.createApplication();
                     analyticsApplication.setName("analytics");
@@ -167,6 +189,33 @@ public class AnalyticsService {
             model = addEvolutionAnalytics(model, properties, containerType);
         }
         return model;
+    }
+
+    private static String downloadFlinkFatJar(String outputFolder)
+            throws ParserConfigurationException, IOException, SAXException {
+        final String flinkFolder = "flinkJar" + File.separator;
+        final String dir = outputFolder + File.separator + flinkFolder;
+        final String tempPath = dir + "temp.xml";
+        if (!Files.exists(Paths.get(outputFolder))) {
+            new File(outputFolder).mkdir();
+        }
+        if (!Files.exists(Paths.get(dir))) {
+            new File(dir).mkdir();
+        }
+        InputStream pomXML = AnalyticsKubernetesService.getAnalyticsPom(tempPath);
+        String jarName = "";
+        if (pomXML != null) {
+            jarName = AnalyticsKubernetesService.getLatestJarName(tempPath);
+        } else {
+            return "error";
+        }
+        IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (MessageDialog.openConfirm(win.getShell(), "Scripts",
+                "Analytics.jar including dependencies (~165MB) is getting downloaded. Press cancel if you want to provide it yourself.")) {
+            FileService.downloadFiles(dir + AnalyticsKubernetesService.FLINKJAR_INTERNAL_NAME,
+                    AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName, "JobmanagerJar");
+        }
+        return "./" + flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER + "/";
     }
 
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,

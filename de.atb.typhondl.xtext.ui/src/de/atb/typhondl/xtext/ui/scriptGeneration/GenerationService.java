@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -12,6 +14,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+import org.xml.sax.SAXException;
 
 import de.atb.typhondl.acceleo.services.Options;
 import de.atb.typhondl.acceleo.services.Services;
@@ -38,8 +41,8 @@ public class GenerationService {
         this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()));
     }
 
-    public void startGeneration() {
-        this.model = DeploymentModelService.createModel(file, provider, properties);
+    public void startGeneration() throws ParserConfigurationException, IOException, SAXException {
+        this.model = DeploymentModelService.createModel(file, provider, properties, outputFolder);
         saveModelAsXMI();
         this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), file, properties, model);
         generateDeployment();
