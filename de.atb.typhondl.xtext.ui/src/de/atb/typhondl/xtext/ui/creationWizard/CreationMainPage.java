@@ -89,16 +89,6 @@ public class CreationMainPage extends MyWizardPage {
      */
     private Properties properties;
 
-    /**
-     * The textfield to enter the API IP address
-     */
-    private Text hostText;
-
-    /**
-     * The textfield to enter the API port
-     */
-    private Text portText;
-
     private Composite main;
 
     private boolean useAnalytics;
@@ -233,8 +223,6 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
                     parent.layout(true);
@@ -244,8 +232,6 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
                     parent.layout(true);
