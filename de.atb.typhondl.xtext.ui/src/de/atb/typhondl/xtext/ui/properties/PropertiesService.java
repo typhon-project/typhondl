@@ -43,6 +43,7 @@ public class PropertiesService {
     public static final String QLSERVER_RESERVATION_CPU = "qlserver.reservation.cpu";
     public static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
     public static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
+    public static final String ANALYTICS_KUBECONFIG = "analytics.kubeconfig";
     public static final String ANALYTICS_AUTHALL_IMAGE = "analytics.authAll.image";
     public static final String ANALYTICS_ZOOKEEPER_CONTAINERNAME = "analytics.zookeeper.containername";
     public static final String ANALYTICS_ZOOKEEPER_PORT = "analytics.zookeeper.port";

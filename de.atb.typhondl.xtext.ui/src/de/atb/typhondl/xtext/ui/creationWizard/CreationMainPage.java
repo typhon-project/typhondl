@@ -318,9 +318,8 @@ public class CreationMainPage extends MyWizardPage {
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
         analyticsURIText.setText(ModelService.getKafkaInternalURI(chosenTemplate));
-        analyticsURIText.addModifyListener(e -> {
-            properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText());
-        });
+        analyticsURIText.addModifyListener(
+                e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText()));
 
         // TODO necessary for displaying the useEvolutionCheck checkbox. Only remove if
         // fixed:

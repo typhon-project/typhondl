@@ -254,7 +254,8 @@ public class CreateModelWizard extends Wizard {
         }
 
         if (page instanceof CreationPolystorePage) {
-            if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
+            if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
+                    && properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
                         CreationAnalyticsPage newPage = new CreationAnalyticsPage(PAGENAME_ANALYTICS + value.name(),

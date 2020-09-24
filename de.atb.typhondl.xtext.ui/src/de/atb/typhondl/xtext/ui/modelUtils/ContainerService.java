@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
-import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Ports;
@@ -87,33 +86,13 @@ public class ContainerService {
         ArrayList<String> list = new ArrayList<>(
                 Arrays.asList(new String[] { "wait-for-it", "polystore-mongo:27017", "-t", "'60'", "--" }));
         list.addAll(new ArrayList<>(Arrays.asList(entrypoint.split(","))));
-        return createKeyValuesArray("entrypoint", list.toArray(new String[0]));
+        return ModelService.createKeyValuesArray("entrypoint", list.toArray(new String[0]));
     }
 
     public static Dependency createDependsOn(Container dependsOn) {
         Dependency dependency = TyphonDLFactory.eINSTANCE.createDependency();
         dependency.setReference(dependsOn);
         return dependency;
-    }
-
-    public static ArrayList<Key_Values> createKeyValues(String[] strings) {
-        ArrayList<Key_Values> list = new ArrayList<>();
-        for (int i = 0; i < strings.length; i = i + 2) {
-            Key_Values keyValues = TyphonDLFactory.eINSTANCE.createKey_Values();
-            keyValues.setName(strings[i]);
-            keyValues.setValue(strings[i + 1]);
-            list.add(keyValues);
-        }
-        return list;
-    }
-
-    public static Key_ValueArray createKeyValuesArray(String name, String[] values) {
-        Key_ValueArray array = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
-        array.setName(name);
-        for (int i = 0; i < values.length; i++) {
-            array.getValues().add(values[i]);
-        }
-        return array;
     }
 
     public static ArrayList<Dependency> createDependencies(Container[] containers) {

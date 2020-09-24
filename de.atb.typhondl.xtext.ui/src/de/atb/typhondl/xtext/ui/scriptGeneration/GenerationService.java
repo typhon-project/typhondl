@@ -2,8 +2,9 @@ package de.atb.typhondl.xtext.ui.scriptGeneration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -12,6 +13,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
+import org.xml.sax.SAXException;
 
 import de.atb.typhondl.acceleo.services.Options;
 import de.atb.typhondl.acceleo.services.Services;
@@ -38,10 +40,11 @@ public class GenerationService {
         this.outputFolder = fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()));
     }
 
-    public void startGeneration() {
-        this.model = DeploymentModelService.createModel(file, provider, properties);
-        saveModelAsXMI();
-        this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), file, properties, model);
+    public void startGeneration() throws ParserConfigurationException, IOException, SAXException {
+        this.model = DeploymentModelService.createModel(file, provider, properties, outputFolder);
+        String dlXMIPath = saveModelAsXMI();
+        this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), dlXMIPath, file, properties,
+                model);
         generateDeployment();
     }
 
@@ -63,20 +66,15 @@ public class GenerationService {
      * @param DLmodelResource The given DL model
      * @return URI to the saved DL model
      */
-    public void saveModelAsXMI() {
+    public String saveModelAsXMI() {
         Resource DLmodelResource = model.eResource();
         XtextResourceSet resourceSet = (XtextResourceSet) DLmodelResource.getResourceSet();
-        URI fileName = DLmodelResource.getURI().trimFileExtension();
-        Resource xmiResource = resourceSet.createResource(fileName.appendFileExtension("xmi"));
+        URI fileName = URI
+                .createPlatformResourceURI(
+                        DLmodelResource.getURI().trimFileExtension().toPlatformString(true).concat("_DL"), true)
+                .appendFileExtension("xmi");
+        Resource xmiResource = resourceSet.createResource(fileName);
 
-        // delete resource in case it already exists
-        if (resourceSet.getResource(fileName, false) != null) {
-            try {
-                resourceSet.getResource(fileName, true).delete(Collections.EMPTY_MAP);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         // add model
         xmiResource.getContents().add(this.model);
 
@@ -86,6 +84,7 @@ public class GenerationService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return fileName.toString();
     }
 
     public void generateDeployment() {
