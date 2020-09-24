@@ -440,16 +440,13 @@ public class CreationMainPage extends MyWizardPage {
                 properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI,
                         ModelService.getKafkaInternalURI(chosenTemplate));
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
-                analyticsURIText.setEditable(false);
             } else {
                 properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
-                analyticsURIText.setEditable(true);
             }
         } else {
             properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
             analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
-            analyticsURIText.setEditable(true);
         }
     }
 
