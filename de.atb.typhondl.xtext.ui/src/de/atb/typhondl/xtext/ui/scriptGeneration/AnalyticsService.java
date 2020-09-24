@@ -71,8 +71,6 @@ public class AnalyticsService {
                         properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME), containerType, kafka,
                         kafkaURI);
                 kafkaContainer.getDepends_on().add(ContainerService.createDependsOn(zookeeperContainer));
-                kafkaContainer.getProperties().add(ModelService.createKeyValuesArray("volumes",
-                        new String[] { "/var/run/docker.sock:/var/run/docker.sock" }));
                 if (Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
                     kafkaContainer.setReplication(ContainerService.createStatelessReplication(
                             Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS))));
