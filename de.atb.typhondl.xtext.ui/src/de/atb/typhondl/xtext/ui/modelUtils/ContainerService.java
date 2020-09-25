@@ -14,7 +14,6 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Replication;
-import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.Services;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
@@ -106,20 +105,6 @@ public class ContainerService {
             }
         }
         return dependencyList;
-    }
-
-    public static Resources createResources(String limitCpu, String limitMemory, String reservationCpu,
-            String reservationMemory) {
-        if (!(limitCpu.isEmpty() && limitMemory.isEmpty() && reservationCpu.isEmpty() && reservationMemory.isEmpty())) {
-            Resources resources = TyphonDLFactory.eINSTANCE.createResources();
-            resources.setLimitCPU(limitCpu);
-            resources.setLimitMemory(limitMemory);
-            resources.setReservationCPU(reservationCpu);
-            resources.setReservationMemory(reservationMemory);
-            return resources;
-        } else {
-            return null;
-        }
     }
 
 }

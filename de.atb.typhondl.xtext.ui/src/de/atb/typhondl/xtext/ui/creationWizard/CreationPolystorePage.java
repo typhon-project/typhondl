@@ -9,18 +9,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
@@ -59,8 +54,8 @@ public class CreationPolystorePage extends MyWizardPage {
         main.setLayout(new GridLayout(1, false));
 
         ResourceEditor editor = new ResourceEditor();
-        createQLGroup(editor);
-        createAPIGroup(editor);
+        createQLGroup(editor.getResourceFieldsQL());
+        createAPIGroup(editor.getResourceFieldsAPI());
         createUIGroup();
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -81,109 +76,36 @@ public class CreationPolystorePage extends MyWizardPage {
         portFields.put(text, inputField.propertyName);
     }
 
-    private void createAPIGroup(ResourceEditor editor) {
+    private void createAPIGroup(List<InputField> list) {
         Group apiGroup = createGroup("API settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         createScalingFields(apiGroup, "API", PropertiesService.API_REPLICAS);
         createPortFields(apiGroup, gridData, new InputField("Published port: ", PropertiesService.API_PUBLISHEDPORT));
         Group resourceGroup = createGroupInGroup("Resources (can be left empty)", apiGroup);
-        createResourceFields(resourceGroup, gridData, editor.resourceFieldsLimitAPI,
-                editor.resourceFieldsReservationAPI);
+        for (InputField inputField : list) {
+            createResourceFields(resourceGroup, gridData, inputField);
+        }
     }
 
-    private void createResourceFields(Group resourceGroup, GridData gridData, List<InputField> resourceFieldsLimitAPI,
-            List<InputField> resourceFieldsReservationAPI) {
-        GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        gridDataChecks.horizontalSpan = 2;
-
-        Button limitCheck = new Button(resourceGroup, SWT.CHECK);
-        limitCheck.setText("Set container resource limits");
-        limitCheck.setLayoutData(gridDataChecks);
-        // create invisible Limit Composite in each resource composite
-        Composite limitComposite = new Composite(resourceGroup, SWT.NONE);
-        limitComposite.setLayout(new GridLayout(2, false));
-        GridData limitData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        limitData.exclude = true;
-        limitComposite.setLayoutData(limitData);
-        for (InputField inputField : resourceFieldsLimitAPI) {
-            Text text = createFields(limitComposite, gridDataFields, inputField);
-            resourceFields.put(text, inputField.propertyName);
-        }
-
-        Button reservationCheck = new Button(resourceGroup, SWT.CHECK);
-        reservationCheck.setText("Set container resource reservations (this will set limits as well)");
-        reservationCheck.setLayoutData(gridDataChecks);
-        // create invisible Reservation Composite in each resource composite
-        Composite reservationComposite = new Composite(resourceGroup, SWT.NONE);
-        reservationComposite.setLayout(new GridLayout(2, false));
-        GridData reservationData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        reservationData.exclude = true;
-        reservationComposite.setLayoutData(reservationData);
-        for (InputField inputField : resourceFieldsReservationAPI) {
-            Text text = createFields(reservationComposite, gridDataFields, inputField);
-            resourceFields.put(text, inputField.propertyName);
-        }
-
-        limitCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                // set the textfields visible, resize window
-                boolean useLimits = limitCheck.getSelection();
-                limitData.exclude = !useLimits;
-                limitComposite.setVisible(useLimits);
-                if (!useLimits) {
-                    container.setResources(null);
-                }
-            }
-        });
-        reservationCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                // set the textfields visible, resize window
-                boolean useReservations = reservationCheck.getSelection();
-                reservationData.exclude = !useReservations;
-                reservationComposite.setVisible(useReservations);
-                parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
-                ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
-                if (useReservations) {
-                    limitCheck.setSelection(true);
-                    limitCheck.notifyListeners(13, new Event());
-                    // TODO check if this can be null:
-                    Resources newResources = container.getResources();
-                    newResources.setReservationCPU(resCPUText.getText());
-                    newResources.setReservationMemory(resMemText.getText());
-                    container.setResources(newResources);
-                } else {
-                    Resources newResources = container.getResources();
-                    if (newResources != null) {
-                        newResources.setReservationCPU(null);
-                        newResources.setReservationMemory(null);
-                        container.setResources(newResources);
-                    }
-                }
-            }
-        });
-
-    }
-
-    private void createQLGroup(ResourceEditor editor) {
+    private void createQLGroup(List<InputField> list) {
         Group qlGroup = createGroup("QL Settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         createScalingFields(qlGroup, "QL Server", PropertiesService.QLSERVER_REPLICAS);
         Group resourceGroup = createGroupInGroup("Resources (can be left empty)", qlGroup);
-        createResourceFields(resourceGroup, gridData, editor.resourceFieldsLimitQL, editor.resourceFieldsReservationQL);
+        for (InputField inputField : list) {
+            createResourceFields(resourceGroup, gridData, inputField);
+        }
     }
 
-//    private void createResourceFields(Group resourceGroup, GridData gridData, InputField inputField) {
-//        Text text = createFields(resourceGroup, gridData, inputField);
-//        this.resourceFields.put(text, inputField.propertyName);
-//    }
+    private void createResourceFields(Group resourceGroup, GridData gridData, InputField inputField) {
+        Text text = createFields(resourceGroup, gridData, inputField);
+        this.resourceFields.put(text, inputField.propertyName);
+    }
 
-    private Text createFields(Composite limitComposite, GridData gridData, InputField inputField) {
+    private Text createFields(Group group, GridData gridData, InputField inputField) {
         // TODO put in hidden composite, activate with checkbox
-        new Label(limitComposite, NONE).setText(inputField.label);
-        Text text = new Text(limitComposite, SWT.BORDER);
+        new Label(group, NONE).setText(inputField.label);
+        Text text = new Text(group, SWT.BORDER);
         text.setText(properties.getProperty(inputField.propertyName));
         text.setLayoutData(gridData);
         text.addModifyListener(e -> {
@@ -265,34 +187,24 @@ public class CreationPolystorePage extends MyWizardPage {
     }
 
     private class ResourceEditor {
-        public List<InputField> resourceFieldsLimitQL = Arrays.asList(
+        public List<InputField> resourceFieldsQL = Arrays.asList(
                 new InputField("limit.memory: ", PropertiesService.QLSERVER_LIMIT_MEMORY),
-                new InputField("limit.cpu: ", PropertiesService.QLSERVER_LIMIT_CPU));
-        public List<InputField> resourceFieldsReservationQL = Arrays.asList(
+                new InputField("limit.cpu: ", PropertiesService.QLSERVER_LIMIT_CPU),
                 new InputField("reservation.memory: ", PropertiesService.QLSERVER_RESERVATION_MEMORY),
                 new InputField("reservation.cpu: ", PropertiesService.QLSERVER_RESERVATION_CPU));
 
-        public List<InputField> resourceFieldsLimitAPI = Arrays.asList(
+        public List<InputField> resourceFieldsAPI = Arrays.asList(
                 new InputField("limit.memory: ", PropertiesService.API_LIMIT_MEMORY),
-                new InputField("limit.cpu: ", PropertiesService.API_LIMIT_CPU));
-        public List<InputField> resourceFieldsReservationAPI = Arrays.asList(
+                new InputField("limit.cpu: ", PropertiesService.API_LIMIT_CPU),
                 new InputField("reservation.memory: ", PropertiesService.API_RESERVATION_MEMORY),
                 new InputField("reservation.cpu: ", PropertiesService.API_RESERVATION_CPU));
 
-        public List<InputField> getResourceFieldsLimitQL() {
-            return resourceFieldsLimitQL;
+        public List<InputField> getResourceFieldsQL() {
+            return resourceFieldsQL;
         }
 
-        public List<InputField> getResourceFieldsLimitAPI() {
-            return resourceFieldsLimitAPI;
-        }
-
-        public List<InputField> getResourceFieldsReservationQL() {
-            return resourceFieldsReservationQL;
-        }
-
-        public List<InputField> getResourceFieldsReservationAPI() {
-            return resourceFieldsReservationAPI;
+        public List<InputField> getResourceFieldsAPI() {
+            return resourceFieldsAPI;
         }
     }
 
