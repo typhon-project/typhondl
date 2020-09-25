@@ -63,7 +63,7 @@ public class CreationPolystorePage extends MyWizardPage {
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         scrolling.setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-
+        validate();
         setControl(scrolling);
 
     }
@@ -191,7 +191,7 @@ public class CreationPolystorePage extends MyWizardPage {
     }
 
     private void checkCPUSyntax(ArrayList<Text> texts) {
-        Pattern pattern = Pattern.compile("(0.)[1-9]+");
+        Pattern pattern = Pattern.compile("(0)(\\.)[1-9]+");
         for (Text text : texts) {
             if (!text.getText().isEmpty()) {
                 Matcher matcher = pattern.matcher(text.getText());
