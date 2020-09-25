@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -162,6 +164,8 @@ public class CreationPolystorePage extends MyWizardPage {
         avoidReservationWithoutLimits(apiLimits, apiRes, "api");
         alwaysFillBothLimits(qlLimits, "qlserver");
         alwaysFillBothLimits(apiLimits, "api");
+        checkMemorySyntax(getTexts("memory"));
+        checkCPUSyntax(getTexts("cpu"));
 
         for (Text text : scalingFields.keySet()) {
             int parseInt = 0;
@@ -181,6 +185,34 @@ public class CreationPolystorePage extends MyWizardPage {
             for (Text text : portFields.keySet()) {
                 if (!ContainerService.isPortInKubernetesRange(text.getText())) {
                     setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
+                }
+            }
+        }
+    }
+
+    private void checkCPUSyntax(ArrayList<Text> texts) {
+        Pattern pattern = Pattern.compile("(0.)[1-9]+");
+        for (Text text : texts) {
+            if (!text.getText().isEmpty()) {
+                Matcher matcher = pattern.matcher(text.getText());
+                if (!matcher.matches()) {
+                    raiseSyntaxError("for CPU is 0.x+");
+                }
+            }
+        }
+    }
+
+    private void raiseSyntaxError(String string) {
+        setStatus(new Status(IStatus.ERROR, "Wizard", "Correct Syntax " + string));
+    }
+
+    private void checkMemorySyntax(ArrayList<Text> texts) {
+        Pattern pattern = Pattern.compile("[0-9]+[M]");
+        for (Text text : texts) {
+            if (!text.getText().isEmpty()) {
+                Matcher matcher = pattern.matcher(text.getText());
+                if (!matcher.matches()) {
+                    raiseSyntaxError("for Memory is (x+)M");
                 }
             }
         }
