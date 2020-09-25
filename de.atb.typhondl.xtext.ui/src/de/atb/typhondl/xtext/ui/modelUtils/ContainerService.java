@@ -114,8 +114,12 @@ public class ContainerService {
             Resources resources = TyphonDLFactory.eINSTANCE.createResources();
             resources.setLimitCPU(limitCpu);
             resources.setLimitMemory(limitMemory);
-            resources.setReservationCPU(reservationCpu);
-            resources.setReservationMemory(reservationMemory);
+            if (!reservationCpu.isEmpty()) {
+                resources.setReservationCPU(reservationCpu);
+            }
+            if (!reservationMemory.isEmpty()) {
+                resources.setReservationMemory(reservationMemory);
+            }
             return resources;
         } else {
             return null;

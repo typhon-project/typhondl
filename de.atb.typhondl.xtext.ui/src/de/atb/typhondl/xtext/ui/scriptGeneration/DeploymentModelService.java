@@ -129,9 +129,11 @@ public class DeploymentModelService {
             polystoreAPIContainer.setReplication(ContainerService.createStatelessReplication(
                     Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS))));
         }
-        polystoreAPIContainer.setResources(
-                ContainerService.createResources(PropertiesService.API_LIMIT_CPU, PropertiesService.API_LIMIT_MEMORY,
-                        PropertiesService.API_RESERVATION_CPU, PropertiesService.API_RESERVATION_MEMORY));
+        polystoreAPIContainer
+                .setResources(ContainerService.createResources(properties.getProperty(PropertiesService.API_LIMIT_CPU),
+                        properties.getProperty(PropertiesService.API_LIMIT_MEMORY),
+                        properties.getProperty(PropertiesService.API_RESERVATION_CPU),
+                        properties.getProperty(PropertiesService.API_RESERVATION_MEMORY)));
         if (clusterType == SupportedTechnologies.DockerCompose) {
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
@@ -169,9 +171,11 @@ public class DeploymentModelService {
             qlServerContainer.setReplication(ContainerService.createStatelessReplication(
                     Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS))));
         }
-        qlServerContainer.setResources(ContainerService.createResources(PropertiesService.QLSERVER_LIMIT_CPU,
-                PropertiesService.QLSERVER_LIMIT_MEMORY, PropertiesService.QLSERVER_RESERVATION_CPU,
-                PropertiesService.QLSERVER_RESERVATION_MEMORY));
+        qlServerContainer.setResources(
+                ContainerService.createResources(properties.getProperty(PropertiesService.QLSERVER_LIMIT_CPU),
+                        properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
+                        properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
+                        properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
         if (clusterType == SupportedTechnologies.DockerCompose) {
             qlServerContainer.getProperties()
                     .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
