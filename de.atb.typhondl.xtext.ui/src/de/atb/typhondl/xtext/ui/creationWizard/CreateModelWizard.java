@@ -245,10 +245,7 @@ public class CreateModelWizard extends Wizard {
                 polystorePage.setWizard(this);
                 addPage(polystorePage);
             } else {
-                CreationPolystorePage polystorePage = (CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE);
-                if (polystorePage.getControl() != null) {
-                    polystorePage.updateData(properties, chosenTemplate);
-                }
+                ((CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE)).updateData(properties, chosenTemplate);
             }
             return this.getPage(PAGENAME_POLYSTORE);
         }

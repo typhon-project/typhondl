@@ -1,5 +1,6 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -134,14 +135,14 @@ public class CreationPolystorePage extends MyWizardPage {
     private void createScalingFields(Group group, String component, String property) {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         new Label(group, SWT.NONE).setText(component + " replicas: ");
-        Text rep = new Text(group, SWT.BORDER);
-        rep.setText("1");
-        rep.setLayoutData(gridData);
-        rep.addModifyListener(e -> {
-            properties.setProperty(property, rep.getText());
+        Text text = new Text(group, SWT.BORDER);
+        text.setText("1");
+        text.setLayoutData(gridData);
+        text.addModifyListener(e -> {
+            properties.setProperty(property, text.getText());
             validate();
         });
-        this.scalingFields.put(rep, property);
+        this.scalingFields.put(text, property);
     }
 
     private void validate() {
@@ -153,6 +154,15 @@ public class CreationPolystorePage extends MyWizardPage {
                 }
             }
         }
+        ArrayList<Text> qlLimits = getTexts("qlserver.limit");
+        ArrayList<Text> apiLimits = getTexts("api.limit");
+        ArrayList<Text> qlRes = getTexts("qlserver.reservation");
+        ArrayList<Text> apiRes = getTexts("api.reservation");
+        avoidReservationWithoutLimits(qlLimits, qlRes, "qlserver");
+        avoidReservationWithoutLimits(apiLimits, apiRes, "api");
+        alwaysFillBothLimits(qlLimits, "qlserver");
+        alwaysFillBothLimits(apiLimits, "api");
+
         for (Text text : scalingFields.keySet()) {
             int parseInt = 0;
             try {
@@ -176,6 +186,57 @@ public class CreationPolystorePage extends MyWizardPage {
         }
     }
 
+    private void alwaysFillBothLimits(ArrayList<Text> limits, String property) {
+        if (atLeastOneIsFilled(limits)) {
+            if (!bothAreFilled(limits)) {
+                raiseResError(property + ".limit");
+            }
+        }
+    }
+
+    private void avoidReservationWithoutLimits(ArrayList<Text> limits, ArrayList<Text> reservations, String property) {
+        if (atLeastOneIsFilled(reservations)) {
+            if (!bothAreFilled(reservations)) {
+                raiseResError(property + ".reservation");
+            }
+            if (!bothAreFilled(limits)) {
+                raiseResError(property + ".limit");
+            }
+        }
+    }
+
+    private void raiseResError(String string) {
+        setStatus(new Status(IStatus.ERROR, "Wizard", "Please fill both " + string + " fields"));
+    }
+
+    private boolean bothAreFilled(ArrayList<Text> texts) {
+        for (Text text : texts) {
+            if (text.getText().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean atLeastOneIsFilled(ArrayList<Text> texts) {
+        for (Text text : texts) {
+            if (!text.getText().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ArrayList<Text> getTexts(String string) {
+        ArrayList<Text> texts = new ArrayList<>();
+        for (Text text : resourceFields.keySet()) {
+            if (resourceFields.get(text).contains(string)) {
+                texts.add(text);
+            }
+        }
+        return texts;
+    }
+
     private void raiseError(String context) {
         setStatus(new Status(IStatus.ERROR, "Wizard", "Please set a value bigger than 0 as " + context));
 
@@ -188,16 +249,16 @@ public class CreationPolystorePage extends MyWizardPage {
 
     private class ResourceEditor {
         public List<InputField> resourceFieldsQL = Arrays.asList(
-                new InputField("limit.memory: ", PropertiesService.QLSERVER_LIMIT_MEMORY),
-                new InputField("limit.cpu: ", PropertiesService.QLSERVER_LIMIT_CPU),
-                new InputField("reservation.memory: ", PropertiesService.QLSERVER_RESERVATION_MEMORY),
-                new InputField("reservation.cpu: ", PropertiesService.QLSERVER_RESERVATION_CPU));
+                new InputField("qlserver.limit.memory: ", PropertiesService.QLSERVER_LIMIT_MEMORY),
+                new InputField("qlserver.limit.cpu: ", PropertiesService.QLSERVER_LIMIT_CPU),
+                new InputField("qlserver.reservation.memory: ", PropertiesService.QLSERVER_RESERVATION_MEMORY),
+                new InputField("qlserver.reservation.cpu: ", PropertiesService.QLSERVER_RESERVATION_CPU));
 
         public List<InputField> resourceFieldsAPI = Arrays.asList(
-                new InputField("limit.memory: ", PropertiesService.API_LIMIT_MEMORY),
-                new InputField("limit.cpu: ", PropertiesService.API_LIMIT_CPU),
-                new InputField("reservation.memory: ", PropertiesService.API_RESERVATION_MEMORY),
-                new InputField("reservation.cpu: ", PropertiesService.API_RESERVATION_CPU));
+                new InputField("api.limit.memory: ", PropertiesService.API_LIMIT_MEMORY),
+                new InputField("api.limit.cpu: ", PropertiesService.API_LIMIT_CPU),
+                new InputField("api.reservation.memory: ", PropertiesService.API_RESERVATION_MEMORY),
+                new InputField("api.reservation.cpu: ", PropertiesService.API_RESERVATION_CPU));
 
         public List<InputField> getResourceFieldsQL() {
             return resourceFieldsQL;
@@ -211,14 +272,16 @@ public class CreationPolystorePage extends MyWizardPage {
     public void updateData(Properties properties, SupportedTechnologies chosenTemplate) {
         this.properties = properties;
         this.chosenTechnology = chosenTemplate;
-        if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-            setStatus(null);
-        }
-        for (Text text : this.resourceFields.keySet()) {
-            text.setText(properties.getProperty(this.resourceFields.get(text)));
-        }
-        for (Text text : this.portFields.keySet()) {
-            text.setText(properties.getProperty(this.portFields.get(text)));
+        if (this.isControlCreated()) {
+            if (chosenTechnology == SupportedTechnologies.Kubernetes) {
+                setStatus(null);
+            }
+            for (Text text : this.resourceFields.keySet()) {
+                text.setText(properties.getProperty(this.resourceFields.get(text)));
+            }
+            for (Text text : this.portFields.keySet()) {
+                text.setText(properties.getProperty(this.portFields.get(text)));
+            }
         }
     }
 }
