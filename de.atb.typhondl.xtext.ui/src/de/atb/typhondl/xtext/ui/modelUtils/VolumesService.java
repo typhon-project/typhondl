@@ -84,9 +84,9 @@ public class VolumesService {
 
     public static Volumes create(String[] path, String type, String name, SupportedTechnologies chosenTechnology) {
         Volumes volumes = TyphonDLFactory.eINSTANCE.createVolumes();
-        if (type == null) {
-            type = getDefaultVolumesType(chosenTechnology);
-        }
+//        if (type == null) {
+//            type = getDefaultVolumesType(chosenTechnology);
+//        }
         volumes.getDecls().add(createVolume_Properties(path, type, name));
         return volumes;
     }
