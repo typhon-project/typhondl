@@ -221,7 +221,7 @@ public class AnalyticsService {
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,
             ContainerType containerType) {
         // evolution-mongo
-        DB evolutionMongo = DBService.create(PropertiesService.EVOLUTION_DB_CONTAINERNAME,
+        DB evolutionMongo = DBService.create(properties.getProperty(PropertiesService.EVOLUTION_DB_CONTAINERNAME),
                 DBService.getMongoDBType(model));
         evolutionMongo.setCredentials(
                 DBService.createCredentials(properties.getProperty(PropertiesService.EVOLUTION_DB_USERNAME),
@@ -240,6 +240,7 @@ public class AnalyticsService {
                 properties.getProperty(PropertiesService.EVOLUTION_JAVA_IMAGE));
         evolutionJava.setEnvironment(SoftwareService
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
+        model.getElements().add(evolutionJava);
         Container evolutionJavaContainer = ContainerService.create(evolutionJavaContainerName, containerType,
                 evolutionJava, null);
         evolutionJavaContainer.getDepends_on()
@@ -247,7 +248,7 @@ public class AnalyticsService {
                         ModelService.getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
                         ModelService.getContainer(model,
                                 properties.getProperty(PropertiesService.ANALYTICS_KAFKA_CONTAINERNAME)) }));
-
+        model.getElements().add(evolutionMongo);
         // evolution-backend
         final String evolutionBackendContainerName = properties
                 .getProperty(PropertiesService.EVOLUTION_BACKEND_CONTAINERNAME);
@@ -255,6 +256,7 @@ public class AnalyticsService {
                 properties.getProperty(PropertiesService.EVOLUTION_BACKEND_IMAGE));
         evolutionBackend.setEnvironment(SoftwareService
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.backend")));
+        model.getElements().add(evolutionBackend);
         Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
                 evolutionBackend,
                 evolutionBackendContainerName + ":" + properties.getProperty(PropertiesService.EVOLUTION_BACKEND_PORT));
@@ -268,6 +270,7 @@ public class AnalyticsService {
                 properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_IMAGE));
         evolutionFrontend.setEnvironment(SoftwareService
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.frontend")));
+        model.getElements().add(evolutionFrontend);
         Container evolutionFrontendContainer = ContainerService.create(evolutionFrontendContainerName, containerType,
                 evolutionFrontend, evolutionFrontendContainerName + ":"
                         + properties.getProperty(PropertiesService.EVOLUTION_FRONTEND_PORT));
