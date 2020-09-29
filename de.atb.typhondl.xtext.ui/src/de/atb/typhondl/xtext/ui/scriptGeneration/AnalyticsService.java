@@ -230,9 +230,7 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.db")));
         final String evolutionMongoContainerName = properties.getProperty(PropertiesService.EVOLUTION_DB_CONTAINERNAME);
         Container evolutionMongoContainer = ContainerService.create(evolutionMongoContainerName, containerType,
-                evolutionMongo, evolutionMongoContainerName + ":"
-                        + properties.getProperty(PropertiesService.EVOLUTION_BACKEND_CONTAINERNAME));
-
+                evolutionMongo, null);
         // evolution-java
         final String evolutionJavaContainerName = properties
                 .getProperty(PropertiesService.EVOLUTION_JAVA_CONTAINERNAME);
@@ -258,8 +256,7 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.backend")));
         model.getElements().add(evolutionBackend);
         Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
-                evolutionBackend,
-                evolutionBackendContainerName + ":" + properties.getProperty(PropertiesService.EVOLUTION_BACKEND_PORT));
+                evolutionBackend, null);
         evolutionBackendContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer }));
 
