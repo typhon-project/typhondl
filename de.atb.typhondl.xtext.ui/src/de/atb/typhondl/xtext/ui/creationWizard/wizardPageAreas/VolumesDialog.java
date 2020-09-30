@@ -2,6 +2,7 @@ package de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.jface.widgets.WidgetFactory;
@@ -29,12 +30,14 @@ public class VolumesDialog extends StatusDialog {
     private Text typeText;
     private Text mountPathText;
     private SupportedTechnologies chosenTechnology;
+    private Volume_Properties tempVolumeDefinition;
 //    private Text hostPathText;
 
     public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit,
             SupportedTechnologies chosenTechnology) {
         super(parent);
         this.volumeDefinition = volumeDefinition;
+        this.tempVolumeDefinition = EcoreUtil.copy(volumeDefinition);
         this.chosenTechnology = chosenTechnology;
         String title = edit ? "Edit Volume" : "New Volume";
         setTitle(title);
@@ -78,8 +81,14 @@ public class VolumesDialog extends StatusDialog {
 
     private void textModified(ModifyEvent event) {
         Text now = ((Text) event.widget);
-        this.volumeDefinition = VolumesService.setProperty(now, this.volumeDefinition);
+        this.tempVolumeDefinition = VolumesService.setProperty(now, this.tempVolumeDefinition);
         validate();
+    }
+
+    @Override
+    protected void okPressed() {
+        this.volumeDefinition = EcoreUtil.copy(this.tempVolumeDefinition);
+        super.okPressed();
     }
 
     private void validate() {

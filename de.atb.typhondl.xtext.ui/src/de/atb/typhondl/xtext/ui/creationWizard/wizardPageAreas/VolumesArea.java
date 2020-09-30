@@ -94,7 +94,6 @@ public class VolumesArea extends Area {
                 if ((objects == null) || (objects.length != 1))
                     return;
                 final Volume_Properties selectedProperty = (Volume_Properties) selection.getFirstElement();
-                addOrRemoveProperties(selectedProperty, this.volumes.getDecls()::remove);
                 addOrRemoveProperties(editVolumes(selectedProperty, true), this.volumes.getDecls()::add);
             });
         }
@@ -119,6 +118,7 @@ public class VolumesArea extends Area {
     private Volume_Properties editVolumes(Volume_Properties volumeDefinition, boolean edit) {
         VolumesDialog dialog = new VolumesDialog(volumeDefinition, this.parent.getShell(), edit, this.chosenTechnology);
         if (dialog.open() == Window.OK) {
+            addOrRemoveProperties(volumeDefinition, this.volumes.getDecls()::remove);
             return dialog.getVolumeDefinition();
         }
         return null;
