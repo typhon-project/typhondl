@@ -3,6 +3,7 @@ package de.atb.typhondl.xtext.ui.refactoring;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.emf.ecore.EObject;
@@ -10,12 +11,15 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
@@ -56,6 +60,7 @@ public class ClusterTypeRefactor {
                     }
                 }
                 clusterType.setName(newClusterType.getName());
+                changeVolumeTypes(model, clusterType);
                 try {
                     resource.save(SavingOptions.getTDLoptions());
                 } catch (IOException e) {
@@ -71,6 +76,17 @@ public class ClusterTypeRefactor {
 
         }
 
+    }
+
+    private static void changeVolumeTypes(DeploymentModel model, ClusterType clusterType) {
+        final List<Volume_Properties> allVolumeProperties = EcoreUtil2.getAllContentsOfType(model,
+                Volume_Properties.class);
+        for (Volume_Properties volume_Properties : allVolumeProperties) {
+            if (volume_Properties.getVolumeType() != null) {
+                volume_Properties.setVolumeType(
+                        VolumesService.getDefaultVolumesType(ModelService.getSupportedTechnology(clusterType)));
+            }
+        }
     }
 
     private static boolean shouldChangeAnalytics(Shell shell, Properties properties) {
