@@ -22,9 +22,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
-import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Ports;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
@@ -36,7 +34,7 @@ public class ClusterTypeDialog extends StatusDialog {
     private DeploymentModel model;
     private ClusterType oldClusterType;
     private ClusterType newClusterType;
-    private ArrayList<Key_Values> portList;
+    private ArrayList<Text> portList;
 
     public ClusterTypeDialog(Shell parent, Properties properties, DeploymentModel model, ClusterType clusterType) {
         super(parent);
@@ -70,23 +68,23 @@ public class ClusterTypeDialog extends StatusDialog {
             validatePorts();
         });
 
-        new Label(main, SWT.NONE).setText("API host: ");
-        Text apiHostText = new Text(main, SWT.BORDER);
-        apiHostText.setText(properties.getProperty(PropertiesService.API_HOST));
-        apiHostText.setLayoutData(gridDataFields);
-        apiHostText.addModifyListener(e -> properties.setProperty(PropertiesService.API_HOST, apiHostText.getText()));
+        new Label(main, SWT.NONE).setText("UI published port: ");
+        Text uiPort = new Text(main, SWT.BORDER);
+        uiPort.setText(properties.getProperty(PropertiesService.UI_PUBLISHEDPORT));
+        uiPort.setLayoutData(gridDataFields);
+        portList.add(uiPort);
+        uiPort.addModifyListener(e -> {
+            properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, uiPort.getText());
+            validatePorts();
+        });
 
-        Key_Values apiPort = TyphonDLFactory.eINSTANCE.createKey_Values();
-        apiPort.setName("apiPort");
-        apiPort.setValue(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
-        portList.add(apiPort);
         new Label(main, SWT.NONE).setText("API published port: ");
         Text apiPortText = new Text(main, SWT.BORDER);
         apiPortText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
         apiPortText.setLayoutData(gridDataFields);
+        portList.add(apiPortText);
         apiPortText.addModifyListener(e -> {
             properties.setProperty(PropertiesService.API_PUBLISHEDPORT, apiPortText.getText());
-            apiPort.setValue(apiPortText.getText());
             validatePorts();
         });
 
@@ -97,7 +95,7 @@ public class ClusterTypeDialog extends StatusDialog {
                     Text text = new Text(main, SWT.BORDER);
                     text.setText(port.getValue());
                     text.setLayoutData(gridDataFields);
-                    portList.add(port);
+                    portList.add(text);
                     text.addModifyListener(e -> {
                         port.setValue(text.getText());
                         validatePorts();
@@ -109,9 +107,9 @@ public class ClusterTypeDialog extends StatusDialog {
 
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
-        for (Key_Values port : portList) {
+        for (Text port : portList) {
             if (ModelService.getSupportedTechnology(newClusterType) == SupportedTechnologies.Kubernetes
-                    && !ContainerService.isPortInKubernetesRange(port.getValue())) {
+                    && !ContainerService.isPortInKubernetesRange(port.getText())) {
                 this.updateStatus(
                         new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
             }

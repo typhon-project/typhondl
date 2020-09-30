@@ -102,6 +102,7 @@ public class PropertiesService {
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_URL = "evolution.backend.environment.WEBSERVICE_URL";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_USERNAME = "evolution.backend.environment.WEBSERVICE_USERNAME";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_PASSWORD = "evolution.backend.environment.WEBSERVICE_PASSWORD";
+    public static final String EVOLUTION_BACKEND_PUBLISHEDPORT = "evolution.backend.publishedPort";
     public static final String EVOLUTION_FRONTEND_CONTAINERNAME = "evolution.frontend.containername";
     public static final String EVOLUTION_FRONTEND_IMAGE = "evolution.frontend.image";
     public static final String EVOLUTION_FRONTEND_ENVIRONMENT_BACKEND_ENDPOINT = "evolution.frontend.environment.BACKEND_ENDPOINT";
