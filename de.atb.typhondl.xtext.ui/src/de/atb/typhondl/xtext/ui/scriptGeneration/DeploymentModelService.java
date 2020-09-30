@@ -195,9 +195,9 @@ public class DeploymentModelService {
         return model;
     }
 
-    public static DeploymentModel addToMetadata(String outputFolder, String MLName, String dlXMIPath, IFile file,
+    public static DeploymentModel addToMetadata(String outputFolder, String MLName, String dlXMIName, IFile file,
             Properties properties, DeploymentModel model) {
-        Path DLPath = Paths.get(dlXMIPath);
+        Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), dlXMIName));
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
         switch (ModelService.getSupportedTechnology(ModelService.getClusterType(model))) {

@@ -42,8 +42,8 @@ public class GenerationService {
 
     public void startGeneration() throws ParserConfigurationException, IOException, SAXException {
         this.model = DeploymentModelService.createModel(file, provider, properties, outputFolder);
-        String dlXMIPath = saveModelAsXMI();
-        this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), dlXMIPath, file, properties,
+        String dlXMIName = saveModelAsXMI();
+        this.model = DeploymentModelService.addToMetadata(outputFolder, getMLmodelPath(), dlXMIName, file, properties,
                 model);
         generateDeployment();
     }
@@ -84,7 +84,7 @@ public class GenerationService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return fileName.toString();
+        return fileName.lastSegment();
     }
 
     public void generateDeployment() {

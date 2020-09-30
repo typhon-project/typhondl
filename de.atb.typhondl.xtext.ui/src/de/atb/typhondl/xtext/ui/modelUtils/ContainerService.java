@@ -18,10 +18,13 @@ import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.Services;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
+import de.atb.typhondl.xtext.typhonDL.Volumes;
+import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ContainerService {
 
-    public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
+    public static Container create(String name, ContainerType containerType, Services deploys, String uri,
+            String volumeTarget, SupportedTechnologies chosenTechnology) {
         Container container = TyphonDLFactory.eINSTANCE.createContainer();
         container.setName(name);
         container.setType(containerType);
@@ -34,6 +37,11 @@ public class ContainerService {
             URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
             uriObject.setValue(uri);
             container.setUri(uriObject);
+        }
+        if (volumeTarget != null) {
+            Volumes volumes = VolumesService.create(new String[] { volumeTarget },
+                    VolumesService.getDefaultVolumesType(chosenTechnology), name + "volume");
+            container.setVolumes(volumes);
         }
         return container;
     }
@@ -124,5 +132,13 @@ public class ContainerService {
         } else {
             return null;
         }
+    }
+    
+    public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
+        return create(name, containerType, deploys, uri, null, null);
+    }
+
+    public static Container create(String name, ContainerType containerType, Services deploys) {
+        return create(name, containerType, deploys, null, null, null);
     }
 }

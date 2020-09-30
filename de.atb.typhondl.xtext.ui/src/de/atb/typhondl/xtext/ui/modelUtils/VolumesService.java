@@ -27,8 +27,7 @@ public class VolumesService {
     }
 
     private static ValueArray createPathArray(String[] volumePath) {
-        ValueArray volumePathArray;
-        volumePathArray = TyphonDLFactory.eINSTANCE.createValueArray();
+        ValueArray volumePathArray = TyphonDLFactory.eINSTANCE.createValueArray();
         volumePathArray.setValue(volumePath[0]);
         for (int i = 1; i < volumePath.length; i++) {
             volumePathArray.getValues().add(volumePath[i]);
@@ -82,11 +81,11 @@ public class VolumesService {
         return "";
     }
 
-    public static Volumes create(String[] path, String type, String name, SupportedTechnologies chosenTechnology) {
+    public static Volumes create(String[] path, String type, String name) {
         Volumes volumes = TyphonDLFactory.eINSTANCE.createVolumes();
-        if (type == null) {
-            type = getDefaultVolumesType(chosenTechnology);
-        }
+//        if (type == null) {
+//            type = getDefaultVolumesType(chosenTechnology);
+//        }
         volumes.getDecls().add(createVolume_Properties(path, type, name));
         return volumes;
     }
