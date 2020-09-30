@@ -50,6 +50,7 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.PlatformType;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
@@ -227,12 +228,24 @@ public class ModelCreator {
         application.setName("Polystore");
         cluster.getApplications().add(application);
 
+        Volume_Toplevel toplevelVolume = TyphonDLFactory.eINSTANCE.createVolume_Toplevel();
+
         for (DB db : result.keySet()) {
             Container container = result.get(db);
             if (!db.isExternal()) {
                 container.setType(containerType);
                 application.getContainers().add(container);
+                if (container.getVolumes() != null) {
+                    String volumeName = container.getVolumes().getDecls().get(0).getVolumeName();
+                    if (!volumeName.isEmpty()) {
+                        toplevelVolume.getNames().add(volumeName);
+                    }
+                }
             }
+        }
+
+        if (!toplevelVolume.getNames().isEmpty()) {
+            application.setVolumes(toplevelVolume);
         }
 
         /*
