@@ -1,15 +1,21 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 import de.atb.typhondl.xtext.ui.utilities.KafkaConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
@@ -33,6 +39,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
     private Text kafkaURIText;
     private GridData hiddenData;
     private Composite hidden;
+    private ArrayList<Text> portList;
 
     /**
      * Creates an instance of the {@link CreationAnalyticsPage}
@@ -44,6 +51,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
         super(pageName);
         this.properties = properties;
         this.chosenTemplate = chosenTemplate;
+        this.portList = new ArrayList<>();
     }
 
     @Override
@@ -96,6 +104,38 @@ public class CreationAnalyticsPage extends MyWizardPage {
             text.addModifyListener(e -> {
                 properties.setProperty(inputField.propertyName, text.getText());
             });
+        }
+        if (properties.getProperty(PropertiesService.POLYSTORE_USEEVOLUTION).equals("true")) {
+            Group evolution = new Group(main, SWT.READ_ONLY);
+            evolution.setLayout(new GridLayout(2, false));
+            GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            GridData gridDataFields2 = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
+            layoutData.horizontalSpan = 2;
+            evolution.setLayoutData(layoutData);
+            evolution.setText("Evolution");
+            EvolutionConfigEditor evEditor = new EvolutionConfigEditor();
+            for (InputField inputField : evEditor.getInputFields(chosenTemplate)) {
+                new Label(evolution, SWT.NONE).setText(inputField.label);
+                Text text = new Text(evolution, SWT.BORDER);
+                text.setText(properties.getProperty(inputField.propertyName));
+                text.setLayoutData(gridDataFields2);
+                portList.add(text);
+                text.addModifyListener(e -> {
+                    properties.setProperty(inputField.propertyName, text.getText());
+                    validatePorts();
+                });
+            }
+            validatePorts();
+        }
+    }
+
+    private void validatePorts() {
+        this.setStatus(null);
+        for (Text port : portList) {
+            if (chosenTemplate == SupportedTechnologies.Kubernetes
+                    && !ContainerService.isPortInKubernetesRange(port.getText())) {
+                this.setStatus(new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
+            }
         }
     }
 
