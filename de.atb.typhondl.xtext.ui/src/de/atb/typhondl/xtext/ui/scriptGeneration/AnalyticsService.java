@@ -257,6 +257,8 @@ public class AnalyticsService {
         model.getElements().add(evolutionBackend);
         Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
                 evolutionBackend, null);
+        evolutionBackendContainer
+                .setPorts(ContainerService.createPorts(new String[] { "target", "3000", "published", "3000" }));
         evolutionBackendContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer }));
 
