@@ -81,12 +81,17 @@ public class CreationDatabasePage extends MyWizardPage {
         String containerName = ContainerService.createContainerName(db.getName());
         // the containerType get's created and added to the container in ModelCreator,
         // so that all containers have the same containerType instance
-        Container newContainer = ContainerService.create(containerName, null, db, containerName + ":" + getPort());
+        Container newContainer = ContainerService.create(containerName, null, db, containerName + ":" + getPort(),
+                getVolumeTarget(), chosenTechnology);
         return newContainer;
     }
 
     private String getPort() {
         return properties.getProperty(db.getType().getName().toLowerCase() + ".port");
+    }
+
+    private String getVolumeTarget() {
+        return properties.getProperty(db.getType().getName().toLowerCase() + ".volumeTarget");
     }
 
     @Override

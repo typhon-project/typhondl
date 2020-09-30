@@ -91,7 +91,7 @@ public class AnalyticsService {
                         SoftwareService.createEnvironment(new String[] { "JOB_MANAGER_RPC_ADDRESS", "jobmanager" }));
                 model.getElements().add(flinkTaskmanager);
                 Container flinkJobmanagerContainer = ContainerService.create("jobmanager", containerType,
-                        flinkJobmanager, null);
+                        flinkJobmanager);
                 flinkJobmanagerContainer
                         .setPorts(ContainerService.createPorts(new String[] { "published", "8081", "target", "8081" }));
                 flinkJobmanagerContainer.getProperties()
@@ -99,10 +99,10 @@ public class AnalyticsService {
                 flinkJobmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
                 String analyticsVolume = downloadFlinkFatJar(outputFolder);
-                flinkJobmanagerContainer.setVolumes(
-                        VolumesService.create(new String[] { analyticsVolume }, null, null, clusterTypeTech));
+                flinkJobmanagerContainer
+                        .setVolumes(VolumesService.create(new String[] { analyticsVolume }, null, null));
                 Container flinkTaskmanagerContainer = ContainerService.create("taskmanager", containerType,
-                        flinkTaskmanager, null);
+                        flinkTaskmanager);
                 flinkTaskmanagerContainer.getDepends_on()
                         .add(ContainerService.createDependsOn(flinkJobmanagerContainer));
                 flinkTaskmanagerContainer.getProperties()
@@ -113,7 +113,7 @@ public class AnalyticsService {
                 Software authAll = SoftwareService.create("authAll",
                         properties.getProperty(PropertiesService.ANALYTICS_AUTHALL_IMAGE));
                 model.getElements().add(authAll);
-                Container authAllContainer = ContainerService.create("authAll", containerType, authAll, null);
+                Container authAllContainer = ContainerService.create("authAll", containerType, authAll);
 
                 if (properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED).equals("false")) {
                     // separate deployment scripts for analytics get generated. the analytics
@@ -230,7 +230,7 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.db")));
         final String evolutionMongoContainerName = properties.getProperty(PropertiesService.EVOLUTION_DB_CONTAINERNAME);
         Container evolutionMongoContainer = ContainerService.create(evolutionMongoContainerName, containerType,
-                evolutionMongo, null);
+                evolutionMongo);
         // evolution-java
         final String evolutionJavaContainerName = properties
                 .getProperty(PropertiesService.EVOLUTION_JAVA_CONTAINERNAME);
@@ -240,7 +240,7 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.java")));
         model.getElements().add(evolutionJava);
         Container evolutionJavaContainer = ContainerService.create(evolutionJavaContainerName, containerType,
-                evolutionJava, null);
+                evolutionJava);
         evolutionJavaContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer,
                         ModelService.getContainer(model, properties.getProperty(PropertiesService.API_CONTAINERNAME)),
@@ -256,7 +256,7 @@ public class AnalyticsService {
                 .createEnvironment(SoftwareService.getEnvironmentFromProperties(properties, "evolution.backend")));
         model.getElements().add(evolutionBackend);
         Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
-                evolutionBackend, null);
+                evolutionBackend);
         evolutionBackendContainer
                 .setPorts(ContainerService.createPorts(new String[] { "target", "3000", "published", "3000" }));
         evolutionBackendContainer.getDepends_on()

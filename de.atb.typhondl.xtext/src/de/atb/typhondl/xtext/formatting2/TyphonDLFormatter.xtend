@@ -51,6 +51,7 @@ import de.atb.typhondl.xtext.typhonDL.Environment
 import de.atb.typhondl.xtext.typhonDL.Replication
 import de.atb.typhondl.xtext.typhonDL.Volumes
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties
+import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel
 
 class TyphonDLFormatter extends AbstractFormatter2 {
 
@@ -225,7 +226,16 @@ class TyphonDLFormatter extends AbstractFormatter2 {
 		for (container : app.containers) {
 			container.format
 		}
+		app.volumes.format
 	}
+    
+    def dispatch void format(Volume_Toplevel volume, extension IFormattableDocument document) {
+        interior(
+            volume.regionFor.keyword('{').append[newLine],
+            volume.regionFor.keyword('}').prepend[newLine].append[newLine],
+            [indent]
+        )
+    }
 
 	def dispatch void format(Container container, extension IFormattableDocument document) {
 		interior(
