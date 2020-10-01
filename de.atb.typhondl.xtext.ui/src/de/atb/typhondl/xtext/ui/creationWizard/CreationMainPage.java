@@ -89,16 +89,6 @@ public class CreationMainPage extends MyWizardPage {
      */
     private Properties properties;
 
-    /**
-     * The textfield to enter the API IP address
-     */
-    private Text hostText;
-
-    /**
-     * The textfield to enter the API port
-     */
-    private Text portText;
-
     private Composite main;
 
     private boolean useAnalytics;
@@ -151,8 +141,6 @@ public class CreationMainPage extends MyWizardPage {
         createMainGroup();
         createAnalyticsGroup();
         createNLAEGroup();
-        createConnectionGroup();
-        createScalingGroup();
     }
 
     private void createNLAEGroup() {
@@ -172,26 +160,6 @@ public class CreationMainPage extends MyWizardPage {
             }
         });
 
-    }
-
-    private void createScalingGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
-        Group mainGroup = new Group(main, SWT.READ_ONLY);
-        mainGroup.setLayout(new GridLayout(2, false));
-        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        mainGroup.setText("Scaling");
-
-        new Label(mainGroup, SWT.NONE).setText("API replicas: ");
-        Text repAPI = new Text(mainGroup, SWT.BORDER);
-        repAPI.setText("1");
-        repAPI.setLayoutData(gridData);
-        repAPI.addModifyListener(e -> properties.setProperty(PropertiesService.API_REPLICAS, repAPI.getText()));
-        new Label(mainGroup, SWT.NONE).setText("QL server replicas: ");
-        Text repQL = new Text(mainGroup, SWT.BORDER);
-        repQL.setText("1");
-        repQL.setLayoutData(gridData);
-        repQL.addModifyListener(e -> properties.setProperty(PropertiesService.QLSERVER_REPLICAS, repQL.getText()));
     }
 
     private void createMainGroup() {
@@ -244,6 +212,8 @@ public class CreationMainPage extends MyWizardPage {
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
 
+        // TODO createLoggingAndMonitoringCheckbox
+
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -253,8 +223,6 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                     hiddenData.exclude = false;
                     hidden.setVisible(true);
                     parent.layout(true);
@@ -264,8 +232,6 @@ public class CreationMainPage extends MyWizardPage {
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-                    hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-                    portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
                     parent.layout(true);
@@ -275,8 +241,31 @@ public class CreationMainPage extends MyWizardPage {
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
 
                 setKafkaProperties();
+                setResourceProperties();
             }
         });
+    }
+
+    protected void setResourceProperties() {
+        if (this.chosenTemplate == SupportedTechnologies.DockerCompose) {
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
+            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
+        } else if (this.chosenTemplate == SupportedTechnologies.Kubernetes) {
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
+            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
+            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
+        }
     }
 
     private void createAnalyticsGroup() {
@@ -448,31 +437,6 @@ public class CreationMainPage extends MyWizardPage {
             properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
             analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
         }
-    }
-
-    /**
-     * Creates fields to enter the API specs
-     */
-    private void createConnectionGroup() {
-        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        Group connectionGroup = new Group(main, SWT.READ_ONLY);
-        connectionGroup.setLayout(new GridLayout(2, false));
-        connectionGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        connectionGroup.setText("API connection");
-
-        new Label(connectionGroup, SWT.NONE).setText("Api Host: ");
-        hostText = new Text(connectionGroup, SWT.BORDER);
-        hostText.setLayoutData(gridData);
-        hostText.setText(properties.getProperty(PropertiesService.API_HOST));
-        hostText.addModifyListener(e -> properties.setProperty(PropertiesService.API_HOST, hostText.getText()));
-
-        new Label(connectionGroup, SWT.NONE).setText("Api Port: ");
-        portText = new Text(connectionGroup, SWT.BORDER);
-        portText.setLayoutData(gridData);
-        portText.setText(properties.getProperty(PropertiesService.API_PUBLISHEDPORT));
-        portText.addModifyListener(e -> {
-            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, portText.getText());
-        });
     }
 
     /**

@@ -15,6 +15,10 @@ public class PropertiesService {
     public static final String API_IMAGE = "api.image";
     public static final String API_ENTRYPOINT = "api.entrypoint";
     public static final String API_REPLICAS = "api.replicas";
+    public static final String API_LIMIT_MEMORY = "api.limit.memory";
+    public static final String API_LIMIT_CPU = "api.limit.cpu";
+    public static final String API_RESERVATION_MEMORY = "api.reservation.memory";
+    public static final String API_RESERVATION_CPU = "api.reservation.cpu";
     public static final String UI_NAME = "ui.name";
     public static final String UI_CONTAINERNAME = "ui.containername";
     public static final String UI_IMAGE = "ui.image";
@@ -33,6 +37,10 @@ public class PropertiesService {
     public static final String QLSERVER_IMAGE = "qlserver.image";
     public static final String QLSERVER_PORT = "qlserver.port";
     public static final String QLSERVER_REPLICAS = "qlserver.replicas";
+    public static final String QLSERVER_LIMIT_MEMORY = "qlserver.limit.memory";
+    public static final String QLSERVER_LIMIT_CPU = "qlserver.limit.cpu";
+    public static final String QLSERVER_RESERVATION_MEMORY = "qlserver.reservation.memory";
+    public static final String QLSERVER_RESERVATION_CPU = "qlserver.reservation.cpu";
     public static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
     public static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
     public static final String ANALYTICS_KUBECONFIG = "analytics.kubeconfig";
@@ -94,6 +102,7 @@ public class PropertiesService {
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_URL = "evolution.backend.environment.WEBSERVICE_URL";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_USERNAME = "evolution.backend.environment.WEBSERVICE_USERNAME";
     public static final String EVOLUTION_BACKEND_ENVIRONMENT_WEBSERVICE_PASSWORD = "evolution.backend.environment.WEBSERVICE_PASSWORD";
+    public static final String EVOLUTION_BACKEND_PUBLISHEDPORT = "evolution.backend.publishedPort";
     public static final String EVOLUTION_FRONTEND_CONTAINERNAME = "evolution.frontend.containername";
     public static final String EVOLUTION_FRONTEND_IMAGE = "evolution.frontend.image";
     public static final String EVOLUTION_FRONTEND_ENVIRONMENT_BACKEND_ENDPOINT = "evolution.frontend.environment.BACKEND_ENDPOINT";

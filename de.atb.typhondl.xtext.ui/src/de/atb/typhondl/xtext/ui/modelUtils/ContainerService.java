@@ -14,6 +14,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.Reference;
 import de.atb.typhondl.xtext.typhonDL.Replication;
+import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.Services;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
@@ -70,7 +71,13 @@ public class ContainerService {
     }
 
     public static boolean isPortInKubernetesRange(String port) {
-        return Integer.parseInt(port) <= 32767 && Integer.parseInt(port) >= 30000;
+        int portInt = 0;
+        try {
+            portInt = Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return portInt <= 32767 && Integer.parseInt(port) >= 30000;
     }
 
     public static String createRandomPort() {
@@ -109,6 +116,24 @@ public class ContainerService {
         return dependencyList;
     }
 
+    public static Resources createResources(String limitCpu, String limitMemory, String reservationCpu,
+            String reservationMemory) {
+        if (!(limitCpu.isEmpty() && limitMemory.isEmpty() && reservationCpu.isEmpty() && reservationMemory.isEmpty())) {
+            Resources resources = TyphonDLFactory.eINSTANCE.createResources();
+            resources.setLimitCPU(limitCpu);
+            resources.setLimitMemory(limitMemory);
+            if (!reservationCpu.isEmpty()) {
+                resources.setReservationCPU(reservationCpu);
+            }
+            if (!reservationMemory.isEmpty()) {
+                resources.setReservationMemory(reservationMemory);
+            }
+            return resources;
+        } else {
+            return null;
+        }
+    }
+    
     public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
         return create(name, containerType, deploys, uri, null, null);
     }
@@ -116,5 +141,4 @@ public class ContainerService {
     public static Container create(String name, ContainerType containerType, Services deploys) {
         return create(name, containerType, deploys, null, null, null);
     }
-
 }
