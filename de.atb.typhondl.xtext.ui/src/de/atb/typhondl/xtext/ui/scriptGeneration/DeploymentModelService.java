@@ -31,10 +31,12 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -191,6 +193,36 @@ public class DeploymentModelService {
         // NLAE
         if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
             model = NLAEService.addNLAE(model, properties);
+        }
+        if (properties.getProperty(PropertiesService.POLYSTORE_USENLAEDEV).equals("true")) {
+            Software nlaeDev = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME),
+                    properties.getProperty(PropertiesService.NLAEDEV_IMAGE));
+            nlaeDev.setExternal(true);
+            de.atb.typhondl.xtext.typhonDL.URI nlaeDevURI = TyphonDLFactory.eINSTANCE.createURI();
+            nlaeDevURI.setValue("localhost:" + properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT));
+            nlaeDev.setUri(nlaeDevURI);
+            model.getElements().add(nlaeDev);
+            Container nlaeDevContainer = ContainerService.create("nlaeDEV", containerType, nlaeDev);
+            nlaeDevContainer.setPorts(ContainerService.createPorts(new String[] { "target", "8080", "published",
+                    properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT) }));
+            application.getContainers().add(nlaeDevContainer);
+            Software elasticsearch = SoftwareService.create("elasticsearchDEV",
+                    "docker.elastic.co/elasticsearch/elasticsearch:6.8.1");
+            elasticsearch.setEnvironment(SoftwareService.createEnvironment(
+                    new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
+            model.getElements().add(elasticsearch);
+            Container elasticsearchContainer = ContainerService.create("elasticsearchDEV", containerType,
+                    elasticsearch);
+            nlaeDevContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
+            elasticsearchContainer.setVolumes(
+                    VolumesService.create(new String[] { "esdata1:/usr/share/elasticsearch/data" }, null, null));
+            application.getContainers().add(elasticsearchContainer);
+            Volume_Toplevel topLevelVolumes = application.getVolumes();
+            if (topLevelVolumes == null) {
+                topLevelVolumes = TyphonDLFactory.eINSTANCE.createVolume_Toplevel();
+                application.setVolumes(topLevelVolumes);
+            }
+            topLevelVolumes.getNames().add("esdata1");
         }
         return model;
     }

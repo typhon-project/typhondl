@@ -152,11 +152,32 @@ public class CreationMainPage extends MyWizardPage {
         Button nlae = new Button(mainGroup, SWT.CHECK);
         nlae.setText("Use Typhon NLAE (needs Docker Swarm)");
         nlae.setSelection(useNLAE);
+
+        Button nlaeDev = new Button(mainGroup, SWT.CHECK);
+        nlaeDev.setText("Add NLAE-lite (only for development)");
+        nlaeDev.setSelection(Boolean.parseBoolean(properties.getProperty(PropertiesService.POLYSTORE_USENLAEDEV)));
+
         nlae.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 useNLAE = nlae.getSelection();
                 properties.setProperty(PropertiesService.POLYSTORE_USENLAE, Boolean.toString(useNLAE));
+                if (useNLAE) {
+                    nlaeDev.setSelection(false);
+                    properties.setProperty(PropertiesService.POLYSTORE_USENLAEDEV, "false");
+                }
+            }
+        });
+        nlaeDev.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = nlaeDev.getSelection();
+                properties.setProperty(PropertiesService.POLYSTORE_USENLAEDEV, Boolean.toString(selected));
+                if (selected) {
+                    nlae.setSelection(false);
+                    useNLAE = false;
+                    properties.setProperty(PropertiesService.POLYSTORE_USENLAE, "false");
+                }
             }
         });
 

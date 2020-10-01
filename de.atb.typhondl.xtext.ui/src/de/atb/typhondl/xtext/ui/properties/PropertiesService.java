@@ -6,6 +6,7 @@ public class PropertiesService {
     public static final String POLYSTORE_INAPPLICATION = "polystore.inApplication";
     public static final String POLYSTORE_USEEVOLUTION = "polystore.useEvolution";
     public static final String POLYSTORE_USENLAE = "polystore.useNLAE";
+    public static final String POLYSTORE_USENLAEDEV = "polystore.useNLAEDev";
     public static final String POLYSTORE_KUBECONFIG = "polystore.kubeconfig";
     public static final String API_NAME = "api.name";
     public static final String API_HOST = "api.host";
@@ -117,6 +118,8 @@ public class PropertiesService {
     public static final String NLAE_TASKMANAGER_SLOTS = "nlae.taskmanager.numberOfTaskSlots";
     public static final String NLAE_PARALLELISM = "nlae.flink.parallelism.default";
     public static final String NLAE_SHAREDVOLUME = "nlae.sharedvolume";
+    public static final String NLAEDEV_IMAGE = "nlaedev.image";
+    public static final String NLAEDEV_PUBLISHEDPORT = "nlaedev.publishedport";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
     public static final String MONGO_PORT = "mongo.port";
