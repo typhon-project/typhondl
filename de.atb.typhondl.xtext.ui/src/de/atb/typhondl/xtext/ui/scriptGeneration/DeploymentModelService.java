@@ -162,6 +162,8 @@ public class DeploymentModelService {
         // QL Server
         Software qlServer = SoftwareService.create(properties.getProperty(PropertiesService.QLSERVER_NAME),
                 properties.getProperty(PropertiesService.QLSERVER_IMAGE));
+        qlServer.setEnvironment(SoftwareService
+                .createEnvironment(new String[] { "TZ", properties.getProperty(PropertiesService.QLSERVER_TIMEZONE) }));
         model.getElements().add(qlServer);
         Container qlServerContainer = ContainerService.create(
                 properties.getProperty(PropertiesService.QLSERVER_CONTAINERNAME), containerType, qlServer,

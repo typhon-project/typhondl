@@ -41,6 +41,7 @@ public class PropertiesService {
     public static final String QLSERVER_LIMIT_CPU = "qlserver.limit.cpu";
     public static final String QLSERVER_RESERVATION_MEMORY = "qlserver.reservation.memory";
     public static final String QLSERVER_RESERVATION_CPU = "qlserver.reservation.cpu";
+    public static final String QLSERVER_TIMEZONE = "qlserver.timezone";
     public static final String ANALYTICS_DEPLOYMENT_CREATE = "analytics.deployment.create";
     public static final String ANALYTICS_DEPLOYMENT_CONTAINED = "analytics.deployment.contained";
     public static final String ANALYTICS_KUBECONFIG = "analytics.kubeconfig";

@@ -1,7 +1,9 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -12,8 +14,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -98,6 +103,20 @@ public class CreationPolystorePage extends MyWizardPage {
         for (InputField inputField : list) {
             createResourceFields(resourceGroup, gridData, inputField);
         }
+        new Label(qlGroup, NONE).setText("Timezone");
+        Combo combo = new Combo(qlGroup, SWT.READ_ONLY);
+        ArrayList<String> timeZones = new ArrayList<>();
+        timeZones.addAll(ZoneId.getAvailableZoneIds());
+        Collections.sort(timeZones);
+        combo.setItems(timeZones.toArray(new String[0]));
+        combo.setText(ZoneId.systemDefault().getId());
+        properties.setProperty(PropertiesService.QLSERVER_TIMEZONE, combo.getText());
+        combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                properties.setProperty(PropertiesService.QLSERVER_TIMEZONE, combo.getText());
+            }
+        });
     }
 
     private void createResourceFields(Group resourceGroup, GridData gridData, InputField inputField) {
