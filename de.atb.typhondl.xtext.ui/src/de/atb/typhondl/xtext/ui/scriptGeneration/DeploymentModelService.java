@@ -167,6 +167,9 @@ public class DeploymentModelService {
         // Polystore UI
         Software polystoreUI = SoftwareService.create(properties.getProperty(PropertiesService.UI_NAME),
                 properties.getProperty(PropertiesService.UI_IMAGE));
+        polystoreUI.setEnvironment(SoftwareService.createEnvironment(
+                new String[] { "API_PORT", "\"" + properties.getProperty(PropertiesService.API_PORT) + "\"", "API_HOST",
+                        "\"" + properties.getProperty(PropertiesService.API_HOST) + "\"" }));
         model.getElements().add(polystoreUI);
         Container polystoreUIContainer = ContainerService.create(
                 properties.getProperty(PropertiesService.UI_CONTAINERNAME), containerType, polystoreUI,
