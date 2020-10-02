@@ -213,8 +213,8 @@ public class AnalyticsService {
 
     private static String downloadFlinkFatJar(String outputFolder)
             throws ParserConfigurationException, IOException, SAXException {
-        final String flinkFolder = "flinkJar" + File.separator;
-        final String dir = outputFolder + File.separator + flinkFolder;
+        final String flinkFolder = "flinkJar/";
+        final String dir = outputFolder + "/" + flinkFolder;
         final String tempPath = dir + "temp.xml";
         if (!Files.exists(Paths.get(outputFolder))) {
             new File(outputFolder).mkdir();
