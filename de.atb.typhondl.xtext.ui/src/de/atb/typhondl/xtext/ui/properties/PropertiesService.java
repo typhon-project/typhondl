@@ -1,11 +1,32 @@
 package de.atb.typhondl.xtext.ui.properties;
 
+/*-
+ * #%L
+ * de.atb.typhondl.xtext.ui
+ * %%
+ * Copyright (C) 2018 - 2020 ATB
+ * %%
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is
+ * available at https://www.gnu.org/software/classpath/license.html.
+ * 
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ * #L%
+ */
+
 public class PropertiesService {
 
     public static final String POLYSTORE_USEANALYTICS = "polystore.useAnalytics";
     public static final String POLYSTORE_INAPPLICATION = "polystore.inApplication";
     public static final String POLYSTORE_USEEVOLUTION = "polystore.useEvolution";
     public static final String POLYSTORE_USENLAE = "polystore.useNLAE";
+    public static final String POLYSTORE_USENLAEDEV = "polystore.useNLAEDev";
     public static final String POLYSTORE_KUBECONFIG = "polystore.kubeconfig";
     public static final String API_NAME = "api.name";
     public static final String API_HOST = "api.host";
@@ -118,6 +139,8 @@ public class PropertiesService {
     public static final String NLAE_TASKMANAGER_SLOTS = "nlae.taskmanager.numberOfTaskSlots";
     public static final String NLAE_PARALLELISM = "nlae.flink.parallelism.default";
     public static final String NLAE_SHAREDVOLUME = "nlae.sharedvolume";
+    public static final String NLAEDEV_IMAGE = "nlaedev.image";
+    public static final String NLAEDEV_PUBLISHEDPORT = "nlaedev.publishedport";
     public static final String MARIADB_PORT = "mariadb.port";
     public static final String MYSQL_PORT = "mysql.port";
     public static final String MONGO_PORT = "mongo.port";

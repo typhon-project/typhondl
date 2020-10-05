@@ -1,5 +1,25 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
+/*-
+ * #%L
+ * de.atb.typhondl.xtext.ui
+ * %%
+ * Copyright (C) 2018 - 2020 ATB
+ * %%
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is
+ * available at https://www.gnu.org/software/classpath/license.html.
+ * 
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ * #L%
+ */
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,10 +51,12 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
+import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -193,6 +215,36 @@ public class DeploymentModelService {
         // NLAE
         if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
             model = NLAEService.addNLAE(model, properties);
+        }
+        if (properties.getProperty(PropertiesService.POLYSTORE_USENLAEDEV).equals("true")) {
+            Software nlaeDev = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME),
+                    properties.getProperty(PropertiesService.NLAEDEV_IMAGE));
+            nlaeDev.setExternal(true);
+            de.atb.typhondl.xtext.typhonDL.URI nlaeDevURI = TyphonDLFactory.eINSTANCE.createURI();
+            nlaeDevURI.setValue("localhost:" + properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT));
+            nlaeDev.setUri(nlaeDevURI);
+            model.getElements().add(nlaeDev);
+            Container nlaeDevContainer = ContainerService.create("nlaeDEV", containerType, nlaeDev);
+            nlaeDevContainer.setPorts(ContainerService.createPorts(new String[] { "target", "8080", "published",
+                    properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT) }));
+            application.getContainers().add(nlaeDevContainer);
+            Software elasticsearch = SoftwareService.create("elasticsearchDEV",
+                    "docker.elastic.co/elasticsearch/elasticsearch:6.8.1");
+            elasticsearch.setEnvironment(SoftwareService.createEnvironment(
+                    new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
+            model.getElements().add(elasticsearch);
+            Container elasticsearchContainer = ContainerService.create("elasticsearchDEV", containerType,
+                    elasticsearch);
+            nlaeDevContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
+            elasticsearchContainer.setVolumes(
+                    VolumesService.create(new String[] { "esdata1:/usr/share/elasticsearch/data" }, null, null));
+            application.getContainers().add(elasticsearchContainer);
+            Volume_Toplevel topLevelVolumes = application.getVolumes();
+            if (topLevelVolumes == null) {
+                topLevelVolumes = TyphonDLFactory.eINSTANCE.createVolume_Toplevel();
+                application.setVolumes(topLevelVolumes);
+            }
+            topLevelVolumes.getNames().add("esdata1");
         }
         return model;
     }
