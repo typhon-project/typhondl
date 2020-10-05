@@ -26,14 +26,41 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
+import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesDialog;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Utility class for easier {@link Volumes} model object handling
+ * 
+ * @author flug
+ *
+ */
 public class VolumesService {
 
-    public static Volume_Properties createTestVolumeProperties() {
-        return createVolume_Properties(new String[] { "./test/volume/" }, "testType", "testName");
+    /**
+     * Create a Volumes model object
+     * 
+     * @param path the targetpath (for a named volume), the complete path (e.g.
+     *             my/local/:target/container/) if not named
+     * @param type the type (e.g. "volume", "persitendVolumeClaim")
+     * @param name name of volume if named
+     * @return a new Volumes object
+     */
+    public static Volumes create(String[] path, String type, String name) {
+        Volumes volumes = TyphonDLFactory.eINSTANCE.createVolumes();
+        volumes.getDecls().add(createVolume_Properties(path, type, name));
+        return volumes;
     }
 
+    /**
+     * Creates a {@link Volume_Properties} object
+     * 
+     * @param volumePath the targetpath (for a named volume), the complete path
+     *                   (e.g. my/local/:target/container/) if not named
+     * @param volumeType the type (e.g. "volume", "persitendVolumeClaim")
+     * @param volumeName name of volume if named
+     * @return a new Volume_Properties object
+     */
     public static Volume_Properties createVolume_Properties(String[] volumePath, String volumeType, String volumeName) {
         Volume_Properties properties = TyphonDLFactory.eINSTANCE.createVolume_Properties();
         ValueArray volumePathArray = null;
@@ -46,6 +73,12 @@ public class VolumesService {
         return properties;
     }
 
+    /**
+     * Creates a {@link ValueArray} object from a String array
+     * 
+     * @param volumePath array containing path Strings
+     * @return a new ValueArray to be used in a {@link Volume_Properties}
+     */
     private static ValueArray createPathArray(String[] volumePath) {
         ValueArray volumePathArray = TyphonDLFactory.eINSTANCE.createValueArray();
         volumePathArray.setValue(volumePath[0]);
@@ -55,24 +88,39 @@ public class VolumesService {
         return volumePathArray;
     }
 
+    /**
+     * Helper for {@link VolumesDialog}
+     */
     public static String getVolumesPath(Volume_Properties property) {
         return property.getVolumePath() != null ? property.getVolumePath().getValue() : ""; // TODO;
     }
 
+    /**
+     * Helper for {@link VolumesDialog}
+     */
     public static String getVolumesName(Volume_Properties property) {
         return property.getVolumeName() != null ? property.getVolumeName() : "";
     }
 
+    /**
+     * Helper for {@link VolumesDialog}
+     */
     public static String getVolumesType(Volume_Properties property) {
         return property.getVolumeType() != null ? property.getVolumeType() : "";
     }
 
+    /**
+     * Helper for {@link VolumesDialog}
+     */
     public static ValueArray createPath(String string) {
         ValueArray array = TyphonDLFactory.eINSTANCE.createValueArray();
         array.setValue(string);
         return array;
     }
 
+    /**
+     * Helper for {@link VolumesDialog}
+     */
     public static Volume_Properties setProperty(Text now, Volume_Properties properties) {
         final String text = now.getText();
         switch (now.getData("type").toString()) {
@@ -90,6 +138,12 @@ public class VolumesService {
         return properties;
     }
 
+    /**
+     * Returns technology dependent default volume type
+     * 
+     * @param chosenTechnology the clusterType
+     * @return technology dependent default volume type
+     */
     public static String getDefaultVolumesType(SupportedTechnologies chosenTechnology) {
         if (chosenTechnology.equals(SupportedTechnologies.Kubernetes)) {
             return "persistentVolumeClaim";
@@ -101,12 +155,4 @@ public class VolumesService {
         return "";
     }
 
-    public static Volumes create(String[] path, String type, String name) {
-        Volumes volumes = TyphonDLFactory.eINSTANCE.createVolumes();
-//        if (type == null) {
-//            type = getDefaultVolumesType(chosenTechnology);
-//        }
-        volumes.getDecls().add(createVolume_Properties(path, type, name));
-        return volumes;
-    }
 }

@@ -34,6 +34,12 @@ import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Utility class for easier {@link DB} model object handling
+ * 
+ * @author flug
+ *
+ */
 public class DBService {
 
     public static DB createPolystoreDB(Properties properties, SupportedTechnologies clusterType, DBType mongo) {

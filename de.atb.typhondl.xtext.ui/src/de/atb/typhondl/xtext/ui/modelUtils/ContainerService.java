@@ -85,6 +85,31 @@ public class ContainerService {
     }
 
     /**
+     * Creates {@link Container} object
+     * 
+     * @param name          name of the container
+     * @param containerType e.g. Docker
+     * @param deploys       the {@link Services} this container shall run
+     * @param uri           the URI of the container for the API to parse
+     * @return a new Container object
+     */
+    public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
+        return create(name, containerType, deploys, uri, null, null);
+    }
+
+    /**
+     * Creates {@link Container} object
+     * 
+     * @param name          name of the container
+     * @param containerType e.g. Docker
+     * @param deploys       the {@link Services} this container shall run
+     * @return a new Container object
+     */
+    public static Container create(String name, ContainerType containerType, Services deploys) {
+        return create(name, containerType, deploys, null, null, null);
+    }
+
+    /**
      * Names of container have to be DNS subdomain names (see DL #31)
      * 
      * @param name
@@ -97,6 +122,13 @@ public class ContainerService {
         return Pattern.compile("-{2,}").matcher(name).replaceAll("-");
     }
 
+    /**
+     * Creates {@link Key_Values} for {@link Ports} from the input String array.
+     * Example for input String array: ["target", 123, "published", 123]
+     * 
+     * @param strings array in the form of [name, value, name, value, ... ]
+     * @return a new Ports object
+     */
     public static Ports createPorts(String[] strings) {
         Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
         for (int i = 0; i < strings.length; i = i + 2) {
@@ -108,6 +140,13 @@ public class ContainerService {
         return ports;
     }
 
+    /**
+     * Checks if the given String is an Integer and in Kubernetes Range (between
+     * 30000 and 32767)
+     * 
+     * @param port String to check
+     * @return true if port is an Integer in Kubernetes range
+     */
     public static boolean isPortInKubernetesRange(String port) {
         int portInt = 0;
         try {
@@ -118,10 +157,21 @@ public class ContainerService {
         return portInt <= 32767 && Integer.parseInt(port) >= 30000;
     }
 
+    /**
+     * Creates a random port as String in Kuberenetes range
+     * 
+     * @return a random port in Kubernetes range
+     */
     public static String createRandomPort() {
         return Integer.toString(ThreadLocalRandom.current().nextInt(30000, 32767));
     }
 
+    /**
+     * Creates a {@link Replication} object with stateless mode
+     * 
+     * @param replicas the number of replicas
+     * @return a new Replication object with stateless mode
+     */
     public static Replication createStatelessReplication(int replicas) {
         Replication replication = TyphonDLFactory.eINSTANCE.createReplication();
         replication.setMode(Modes.STATELESS);
@@ -129,6 +179,13 @@ public class ContainerService {
         return replication;
     }
 
+    /**
+     * Adds wait-for-it functionality to the API container
+     * 
+     * @param entrypoint the entrypoint to run the API
+     * @return the entrypoint as {@link Property} enriched with wait-for-it
+     *         functionality
+     */
     public static Property addAPIEntrypoint(String entrypoint) {
         ArrayList<String> list = new ArrayList<>(
                 Arrays.asList(new String[] { "wait-for-it", "polystore-mongo:27017", "-t", "'60'", "--" }));
@@ -136,24 +193,43 @@ public class ContainerService {
         return ModelService.createKeyValuesArray("entrypoint", list.toArray(new String[0]));
     }
 
+    /**
+     * Create intercontainer dependency model object
+     * 
+     * @param dependsOn the container to depend on
+     * @return a new Dependency
+     */
     public static Dependency createDependsOn(Container dependsOn) {
         Dependency dependency = TyphonDLFactory.eINSTANCE.createDependency();
         dependency.setReference(dependsOn);
         return dependency;
     }
 
+    /**
+     * Create intercontainer dependencies
+     * 
+     * @param containers the containers to depend on
+     * @return a list of new Dependencies
+     */
     public static ArrayList<Dependency> createDependencies(Container[] containers) {
         ArrayList<Dependency> dependencyList = new ArrayList<>();
         for (Container container : containers) {
             if (container != null) {
-                Dependency dependency = TyphonDLFactory.eINSTANCE.createDependency();
-                dependency.setReference(container);
-                dependencyList.add(dependency);
+                dependencyList.add(createDependsOn(container));
             }
         }
         return dependencyList;
     }
 
+    /**
+     * Create Resources model object. Does not check for validity
+     * 
+     * @param limitCpu          the CPU limit to set (0.x+)
+     * @param limitMemory       the memory limit to set (x+M)
+     * @param reservationCpu    the CPU reservations to set (0.x+)
+     * @param reservationMemory the memory reservations to set (x+M)
+     * @return a new Resource object
+     */
     public static Resources createResources(String limitCpu, String limitMemory, String reservationCpu,
             String reservationMemory) {
         if (!(limitCpu.isEmpty() && limitMemory.isEmpty() && reservationCpu.isEmpty() && reservationMemory.isEmpty())) {
@@ -170,13 +246,5 @@ public class ContainerService {
         } else {
             return null;
         }
-    }
-
-    public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
-        return create(name, containerType, deploys, uri, null, null);
-    }
-
-    public static Container create(String name, ContainerType containerType, Services deploys) {
-        return create(name, containerType, deploys, null, null, null);
     }
 }
