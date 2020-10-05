@@ -1,7 +1,5 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.time.ZoneId;
-
 /*-
  * #%L
  * de.atb.typhondl.xtext.ui
@@ -22,6 +20,7 @@ import java.time.ZoneId;
  * #L%
  */
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
