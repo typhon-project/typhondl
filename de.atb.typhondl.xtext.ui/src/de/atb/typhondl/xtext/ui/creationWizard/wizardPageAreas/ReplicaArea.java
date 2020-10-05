@@ -40,8 +40,24 @@ import de.atb.typhondl.xtext.typhonDL.Replication;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * WizardPage {@link Area} to configure (stateful) replication of databases
+ * 
+ * @author flug
+ *
+ */
 public class ReplicaArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to configure (stateful) replication of databases
+     * 
+     * @param db               database from DatabasePage
+     * @param container        the container in which the database shall run
+     * @param chosenTechnology the clusterType
+     * @param parent           the main control
+     * @param properties       properties to extract possible replication method
+     *                         from
+     */
     public ReplicaArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
             Properties properties) {
         super(db, container, chosenTechnology, parent, "Replication", properties);

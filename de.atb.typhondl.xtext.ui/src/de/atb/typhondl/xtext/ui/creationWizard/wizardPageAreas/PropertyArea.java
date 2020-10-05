@@ -27,8 +27,22 @@ import org.eclipse.swt.widgets.Composite;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
 
+/**
+ * WizardPage {@link Area} to configure possible given Parameters (from the DB
+ * template)
+ * 
+ * @author flug
+ *
+ */
 public class PropertyArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to configure possible given Parameters (from the DB
+     * template)
+     * 
+     * @param db     database from DatabasePage
+     * @param parent the main control
+     */
     public PropertyArea(DB db, Composite parent) {
         super(db, null, null, parent, "Parameters", null);
     }

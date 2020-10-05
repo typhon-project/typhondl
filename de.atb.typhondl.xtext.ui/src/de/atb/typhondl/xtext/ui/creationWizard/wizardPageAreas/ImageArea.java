@@ -30,8 +30,20 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
+/**
+ * WizardPage {@link Area} to alter the default image
+ * 
+ * @author flug
+ *
+ */
 public class ImageArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to alter the default image
+     * 
+     * @param db     database from DatabasePage
+     * @param parent the main control
+     */
     public ImageArea(DB db, Composite parent) {
         super(db, null, null, parent, "Image used", null);
     }

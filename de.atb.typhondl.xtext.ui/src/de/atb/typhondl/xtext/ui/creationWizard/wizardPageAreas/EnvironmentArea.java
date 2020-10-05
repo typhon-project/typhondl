@@ -28,8 +28,21 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * WizardPage {@link Area} to alter DB's environment
+ * 
+ * @author flug
+ *
+ */
 public class EnvironmentArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to alter DB's environment
+     * 
+     * @param db               database from DatabasePage
+     * @param chosenTechnology the clusterType
+     * @param parent           the main control
+     */
     public EnvironmentArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, null, chosenTechnology, parent, "Environment", null);
     }

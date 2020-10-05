@@ -30,8 +30,20 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
 
+/**
+ * WizardPage {@link Area} to give address to external database
+ * 
+ * @author flug
+ *
+ */
 public class AddressArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to give address to external database
+     * 
+     * @param db     external database from DatabasePage
+     * @param parent the main control
+     */
     public AddressArea(DB db, Composite parent) {
         super(db, null, null, parent, "Database Address", null);
     }

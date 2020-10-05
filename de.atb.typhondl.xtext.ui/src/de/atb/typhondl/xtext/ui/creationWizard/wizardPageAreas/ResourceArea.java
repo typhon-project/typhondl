@@ -37,8 +37,23 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Resources;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 
+/**
+ * WizardPage {@link Area} to set the db's container's resource limits and
+ * reservations
+ * 
+ * @author flug
+ *
+ */
 public class ResourceArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to set the db's container's resource limits and
+     * reservations
+     * 
+     * @param db        database from DatabasePage
+     * @param container the container in which the database shall run
+     * @param parent    the main control
+     */
     public ResourceArea(DB db, Container container, Composite parent) {
         super(db, container, null, parent, "Container Resources", null);
     }

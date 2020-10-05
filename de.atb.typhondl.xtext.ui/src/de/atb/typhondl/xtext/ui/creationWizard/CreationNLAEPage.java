@@ -35,6 +35,13 @@ import org.eclipse.swt.widgets.Text;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
+/**
+ * Page of TyphonDL {@link CreateModelWizard}. Offers possibility to adjust the
+ * NLAE component
+ * 
+ * @author flug
+ *
+ */
 public class CreationNLAEPage extends WizardPage {
 
     private Properties properties;
@@ -45,6 +52,12 @@ public class CreationNLAEPage extends WizardPage {
         this.properties = properties;
     }
 
+    /**
+     * NLAE input fields
+     * 
+     * @author flug
+     *
+     */
     public class NLAEConfigEditor {
         public List<InputField> fields = Arrays.asList(
                 new InputField("NLAE API host: ", PropertiesService.NLAE_API_HOST),

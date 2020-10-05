@@ -48,13 +48,15 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  * <li>A {@link CreationMainPage} to enter the DL model name, select a
  * technology (i.e. Docker Compose or Kubernetes), and specify API IP and
  * port.</li>
+ * <li>A {@link CreationPolystorePage} to configure polystore settings</li>
+ * <li>An optional {@link CreationAnalyticsPage} to enter Kafka and Zookeeper
+ * configuration if the Typhon Analytics component is used.</li>
+ * <li>An optional {@link CreationNLAEPage} to enter NLP and Flink
+ * configuration</li>
  * <li>A {@link CreationDBMSPage} to select the DBMS (i.e. database template)
  * for each database extracted from the ML model.</li>
- * <li>An otional {@link CreationTemplateVariablePage} to enter values for
- * template variables if the previously chosen template contains template
- * variables.</li>
- * <li>An otional {@link CreationAnalyticsPage} to enter Kafka and Zookeeper
- * configuration if the Typhon Analytics component is used.</li>
+ * <li>A {@link CreationDatabasePage} for each database to enter database
+ * specific configurations</li>
  * 
  * @author flug
  *
@@ -195,16 +197,6 @@ public class CreateModelWizard extends Wizard {
         return result;
     }
 
-    /**
-     * Checks if the TyphonDL Creation Wizard can finish.
-     * 
-     * @return <code>false</code> if
-     *         <li>the current page is the Main Page or</li>
-     *         <li>the current page is the DBMSPage or</li>
-     *         <li>the current page is a DatabasePage and the next page as well</li>
-     *         <p>
-     *         Otherwise {@link Wizard#canFinish()}.
-     */
     @Override
     public boolean canFinish() {
         IWizardPage currentPage = this.getContainer().getCurrentPage();
@@ -231,6 +223,7 @@ public class CreateModelWizard extends Wizard {
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
+            // next page is CreationPolystorePage
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
             if (this.chosenTemplate == SupportedTechnologies.DockerCompose
@@ -251,6 +244,7 @@ public class CreateModelWizard extends Wizard {
         }
 
         if (page instanceof CreationPolystorePage) {
+            // next page can be CrreationAnalyticsPage, CreationNLAEPage or CreationDBMSPage
             if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
                     && properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                 if (!analyticsPagesExist()) {
@@ -275,6 +269,7 @@ public class CreateModelWizard extends Wizard {
         }
 
         if (page instanceof CreationAnalyticsPage) {
+            // next page can be CreationNLAEPage or CreationDBMSPage
             this.properties = ((CreationAnalyticsPage) page).getProperties();
             if (this.chosenTemplate == SupportedTechnologies.DockerCompose
                     && Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
@@ -287,10 +282,12 @@ public class CreateModelWizard extends Wizard {
             return this.getPage(getDBMSPageName());
         }
         if (page instanceof CreationNLAEPage) {
+            // next page is CreationDBMSPage
             this.properties = ((CreationNLAEPage) page).getProperties();
             return this.getPage(getDBMSPageName());
         }
         if (page instanceof CreationDBMSPage) {
+            // next pages are the CreationDatabasePage(s)
             ArrayList<DB> result = ((CreationDBMSPage) page).getResult();
             for (DB db : result) {
                 String pageName = PAGENAME_DATABASE + db.getName();
@@ -342,12 +339,6 @@ public class CreateModelWizard extends Wizard {
         return pageExists(PAGENAME_NLAE);
     }
 
-    /**
-     * Checks if a page already exists
-     * 
-     * @param pageName The name of the page to check
-     * @return true if page exists, false otherwise
-     */
     private boolean pageExists(String pageName) {
         return Arrays.asList(this.getPages()).stream().anyMatch(page -> page.getName().equalsIgnoreCase(pageName));
     }

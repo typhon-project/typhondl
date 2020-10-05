@@ -35,8 +35,21 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * WizardPage {@link Area} to alter helm chart configuration
+ * 
+ * @author flug
+ *
+ */
 public class HelmArea extends Area {
 
+    /**
+     * WizardPage {@link Area} to alter helm chart configuration
+     * 
+     * @param db               database from DatabasePage
+     * @param chosenTechnology the clusterType
+     * @param parent           the main control
+     */
     public HelmArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, null, chosenTechnology, parent, "Helm Charts", null);
     }

@@ -44,12 +44,29 @@ import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * WizardPage {@link Area} to publish a database's ports
+ * 
+ * @author flug
+ *
+ */
 public class PortArea extends Area {
 
     private MyWizardPage page;
     private Text targetPortText;
     private Text publishedPortText;
 
+    /**
+     * WizardPage {@link Area} to publish a database's ports
+     * 
+     * @param db               database from DatabasePage
+     * @param container        the container in which the database shall run
+     * @param chosenTechnology the clusterType
+     * @param parent           the main control
+     * @param properties       properties to get the DBMS's target port from
+     * @param page             CreationDatabasePage to set the status and adjust
+     *                         size and scrolling
+     */
     public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
             Properties properties, MyWizardPage page) {
         super(db, container, chosenTechnology, parent, "Ports", properties);

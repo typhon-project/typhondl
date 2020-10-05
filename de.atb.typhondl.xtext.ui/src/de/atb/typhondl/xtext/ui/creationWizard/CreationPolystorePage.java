@@ -49,17 +49,34 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Page of TyphonDL {@link CreateModelWizard}. Offers possibility to adjust
+ * polystore components
+ * 
+ * @author flug
+ *
+ */
 public class CreationPolystorePage extends MyWizardPage {
 
     private Properties properties;
     private Composite main;
+
+    // Maps for validation
     private HashMap<Text, String> resourceFields;
     private HashMap<Text, String> scalingFields;
     private HashMap<Text, String> portFields;
+
     private SupportedTechnologies chosenTechnology;
 
     private static final int pageWidth = 607;
 
+    /**
+     * Creates an instance of {@link CreationPolystorePage}
+     * 
+     * @param pageName         name of the page
+     * @param properties       properties, updated from main page
+     * @param chosenTechnology DockerCompose or Kubernetes
+     */
     protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
         super(pageName);
         this.properties = properties;
@@ -93,6 +110,10 @@ public class CreationPolystorePage extends MyWizardPage {
 
     }
 
+    /**
+     * Field(s) for
+     * <li>published port</li>
+     */
     private void createUIGroup() {
         Group uiGroup = createGroup("UI settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -104,6 +125,14 @@ public class CreationPolystorePage extends MyWizardPage {
         portFields.put(text, inputField.propertyName);
     }
 
+    /**
+     * Field(s) for
+     * <li>published port</li>
+     * <li>scaling</li>
+     * <li>resources</li>
+     * 
+     * @param list resource input fields
+     */
     private void createAPIGroup(List<InputField> list) {
         Group apiGroup = createGroup("API settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -115,6 +144,14 @@ public class CreationPolystorePage extends MyWizardPage {
         }
     }
 
+    /**
+     * Field(s) for
+     * <li>scaling</li>
+     * <li>resources</li>
+     * <li>timeZone</li>
+     * 
+     * @param list resource input fields
+     */
     private void createQLGroup(List<InputField> list) {
         Group qlGroup = createGroup("QL Settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);

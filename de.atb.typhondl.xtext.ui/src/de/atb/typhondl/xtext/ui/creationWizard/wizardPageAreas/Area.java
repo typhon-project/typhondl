@@ -44,8 +44,16 @@ import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
+import de.atb.typhondl.xtext.ui.creationWizard.CreationDatabasePage;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Parent class for all {@link CreationDatabasePage} areas. Takes care of the
+ * visibility of each area.
+ * 
+ * @author flug
+ *
+ */
 public abstract class Area {
 
     protected DB db;

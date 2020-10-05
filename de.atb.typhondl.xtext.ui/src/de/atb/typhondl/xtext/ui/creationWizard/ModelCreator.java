@@ -230,11 +230,13 @@ public class ModelCreator {
 
         Volume_Toplevel toplevelVolume = TyphonDLFactory.eINSTANCE.createVolume_Toplevel();
 
+        // Create containers for non-external DBs
         for (DB db : result.keySet()) {
             Container container = result.get(db);
             if (!db.isExternal()) {
                 container.setType(containerType);
                 application.getContainers().add(container);
+                // add toplevel volume if volume is named
                 if (container.getVolumes() != null) {
                     String volumeName = container.getVolumes().getDecls().get(0).getVolumeName();
                     if (!volumeName.isEmpty()) {

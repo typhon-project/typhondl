@@ -43,6 +43,12 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Dialog to add and edit Volumes in {@link VolumesArea}
+ * 
+ * @author flug
+ *
+ */
 public class VolumesDialog extends StatusDialog {
 
     private Volume_Properties volumeDefinition;

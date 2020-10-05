@@ -51,8 +51,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  * First page of the TyphonDL {@link CreateModelWizard}.
  * <li>The name of the TyphonDL model to be created is entered,</li>
  * <li>a technology template (i.e. Docker Compose or Kubernetes) is chosen,</li>
- * <li>the Typhon Data Analytics component can be activated and</li>
- * <li>the API IP address and port can be entered.</li>
+ * <li>the Typhon Data Analytics, Continuous Evolution and NLAE components can
+ * be activated</li>
  * 
  * @author flug
  *
@@ -212,8 +212,6 @@ public class CreationMainPage extends MyWizardPage {
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
             itemList.add(tech.getDisplayedName());
-            // templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow
-            // doesn't work
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));

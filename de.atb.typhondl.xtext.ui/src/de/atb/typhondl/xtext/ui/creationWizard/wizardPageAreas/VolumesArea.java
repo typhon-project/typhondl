@@ -46,11 +46,26 @@ import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * WizardPage {@link Area} to configure and add container volumes, opens
+ * {@link VolumesDialog}
+ * 
+ * @author flug
+ *
+ */
 public class VolumesArea extends Area {
 
     private Volumes volumes;
     private TableViewer tableViewer;
 
+    /**
+     * WizardPage {@link Area} to configure and add container volumes
+     * 
+     * @param db               database from DatabasePage
+     * @param container        the container in which the database shall run
+     * @param chosenTechnology the clusterType
+     * @param parent           the main control
+     */
     public VolumesArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent) {
         super(db, container, chosenTechnology, parent, "Volumes", null);
     }

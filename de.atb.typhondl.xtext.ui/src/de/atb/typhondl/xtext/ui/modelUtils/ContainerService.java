@@ -41,8 +41,26 @@ import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Utility class for easier {@link Container} model object handling
+ * 
+ * @author flug
+ *
+ */
 public class ContainerService {
 
+    /**
+     * Creates {@link Container} object
+     * 
+     * @param name             name of the container
+     * @param containerType    e.g. Docker
+     * @param deploys          the {@link Services} this container shall run
+     * @param uri              the URI of the container for the API to parse
+     * @param volumeTarget     database specific target entries for default named
+     *                         volumes
+     * @param chosenTechnology the clusterType
+     * @return a new Container object
+     */
     public static Container create(String name, ContainerType containerType, Services deploys, String uri,
             String volumeTarget, SupportedTechnologies chosenTechnology) {
         Container container = TyphonDLFactory.eINSTANCE.createContainer();
@@ -153,7 +171,7 @@ public class ContainerService {
             return null;
         }
     }
-    
+
     public static Container create(String name, ContainerType containerType, Services deploys, String uri) {
         return create(name, containerType, deploys, uri, null, null);
     }

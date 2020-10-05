@@ -38,11 +38,25 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 
+/**
+ * WizardPage {@link Area} to provide username and password for databases
+ * 
+ * @author flug
+ *
+ */
 public class CredentialsArea extends Area {
 
     private Text usernameText;
     private Text passwordText;
 
+    /**
+     * WizardPage {@link Area} to provide username and password for databases
+     * 
+     * @param db         database from DatabasePage
+     * @param parent     the main control
+     * @param properties properties to check if username and password shall be given
+     *                   or just the password
+     */
     public CredentialsArea(DB db, Composite parent, Properties properties) {
         super(db, null, null, parent, "Credentials", properties);
     }
