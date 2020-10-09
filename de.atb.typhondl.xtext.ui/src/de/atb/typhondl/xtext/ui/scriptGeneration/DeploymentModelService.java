@@ -225,7 +225,7 @@ public class DeploymentModelService {
                 model = addComposeLogging(model, containerType, application);
             }
             if (clusterType == SupportedTechnologies.Kubernetes) {
-                model = addKubernetesLogging(model);
+                addKubernetesLogging(application, containerType);
             }
         }
 
@@ -240,9 +240,9 @@ public class DeploymentModelService {
         return model;
     }
 
-    private static DeploymentModel addKubernetesLogging(DeploymentModel model) {
-        // TODO Auto-generated method stub
-        return null;
+    private static void addKubernetesLogging(Application application, ContainerType containerType) {
+        Container fluentd = ContainerService.create("fluentd", containerType, null);
+        application.getContainers().add(fluentd);
     }
 
     private static DeploymentModel addComposeLogging(DeploymentModel model, ContainerType containerType,

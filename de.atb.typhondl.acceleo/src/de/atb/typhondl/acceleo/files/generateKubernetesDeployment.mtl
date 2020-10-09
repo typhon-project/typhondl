@@ -50,6 +50,18 @@ echo "It may take a few minutes for all services to be up and running."
 [file ('deploy.sh', false, 'UTF-8')]
 #!/bin/bash
 kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (aContainer.name = 'fluentd')]
+echo "Create logging namespace"
+kubectl create namespace logging $kubeconfig
+helm repo add elastic https://helm.elastic.co
+helm repo add kokuwa https://kokuwaio.github.io/helm-charts
+helm install elasticsearch elastic/elasticsearch --namespace logging --set replicas=1 --set minimumMasterNodes=1 
+kubectl wait --for=condition=ready --timeout=300s -n logging pod/elasticsearch-master-0
+helm install kibana elastic/kibana --namespace logging --set service.type=NodePort
+helm install fluentd kokuwa/fluentd-elasticsearch --namespace logging --set elasticsearch.host=elasticsearch-master
+[/if]
+[/for]
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 if ['['/] -n "$kubeconfig" [']'/]; then

@@ -73,7 +73,7 @@ not(aContainer.getHelmList().oclIsUndefined())
 /]
 
 [query public getHelmList(aContainer : Container) : HelmList =  
-aContainer.deploys.reference.oclAsType(DB).helm
+aContainer.deploys.reference.helm
 /]
 
 [query public getHelmRepoAddress(aContainer : Container) : String =

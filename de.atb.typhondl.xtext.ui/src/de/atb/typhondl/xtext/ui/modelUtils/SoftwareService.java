@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import de.atb.typhondl.xtext.typhonDL.Environment;
+import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Software;
@@ -100,6 +101,14 @@ public class SoftwareService {
                     list.add(properties.getProperty(name));
                 });
         return list.toArray(new String[0]);
+    }
+
+    public static HelmList createHelm(String name, String repoName, String address) {
+        HelmList helmList = TyphonDLFactory.eINSTANCE.createHelmList();
+        helmList.setChartName(name);
+        helmList.setRepoName(repoName);
+        helmList.setRepoAddress(address);
+        return helmList;
     }
 
 }
