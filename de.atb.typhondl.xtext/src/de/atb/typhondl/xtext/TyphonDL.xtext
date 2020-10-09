@@ -42,6 +42,7 @@ Software:
 	(external?='external')? 'software' name=Name '{'
 	(image=IMAGE)?
 	(uri=URI)?
+	(helm=HelmList)?
 	(environment=Environment)?
 	(parameters+=Property)*
 	'}';
