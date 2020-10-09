@@ -89,6 +89,14 @@ services:
 [aCluster.analyticsConfig()/]
 [/file]
 [/if]
+[if (aContainer.name.equalsIgnoreCase('fluentd'))]
+[file ('fluentd/Dockerfile', false, 'UTF-8')]
+[aContainer.fluentdImage()/]
+[/file]
+[file ('fluentd/fluent.conf', false, 'UTF-8')]
+[aContainer.fluentConf()/]
+[/file]
+[/if]
 [/for]
 [for (aApp : Application | aCluster.applications)]
 [if (aApp.volumes <> null)]
@@ -112,6 +120,47 @@ volumes:
 [if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
     command: mongod --replSet [aContainer.name/]Replset
   [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
+[/template]
+
+[template public fluentdImage(aContainer : Container)]
+# fluentd/Dockerfile
+
+FROM fluent/fluentd:v1.9-debian-1
+USER root
+RUN ['['/]"gem", "install", "fluent-plugin-elasticsearch", "--no-document", "--version", "4.2.0"[']'/]
+# COPY fluent.conf /fluentd/etc/fluent.conf
+USER fluent
+[/template]
+
+[template public fluentConf(aContainer : Container)]
+# fluent.conf
+
+<source>
+  @type forward
+  bind 0.0.0.0
+  port 24224
+</source>
+
+<match *.**>
+  @type copy
+
+  <store>
+    @type elasticsearch
+    host elasticsearch
+    port 9200
+    logstash_format true
+    logstash_prefix fluentd
+    logstash_dateformat %Y%m%d
+    include_tag_key true
+    type_name access_log
+    tag_key @log_name
+    flush_interval 1s
+  </store>
+
+  <store>
+    @type stdout
+  </store>
+</match>
 [/template]
 
 [template public printMongoRep(aContainer : Container) post(trim())]

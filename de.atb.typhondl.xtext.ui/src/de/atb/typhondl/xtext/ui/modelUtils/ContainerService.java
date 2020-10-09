@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
@@ -263,7 +264,7 @@ public class ContainerService {
     public static DeploymentModel addDependencyToAllContainers(DeploymentModel model, Dependency dependency) {
         List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
         for (Container container : containers) {
-            container.getDepends_on().add(dependency);
+            container.getDepends_on().add(EcoreUtil.copy(dependency));
         }
         return model;
     }
