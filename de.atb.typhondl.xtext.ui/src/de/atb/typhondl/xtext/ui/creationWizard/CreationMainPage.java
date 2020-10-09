@@ -185,7 +185,8 @@ public class CreationMainPage extends MyWizardPage {
 
     private void createMainGroup() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
+        GridData gridDataWide = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        gridDataWide.horizontalSpan = 2;
         Group mainGroup = new Group(main, SWT.READ_ONLY);
         mainGroup.setLayout(new GridLayout(2, false));
         mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -231,7 +232,17 @@ public class CreationMainPage extends MyWizardPage {
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
 
-        // TODO createLoggingAndMonitoringCheckbox
+        Button checkbox = new Button(mainGroup, SWT.CHECK);
+        checkbox.setText("Use centralised logging with Elasticsearch, Kibana and Fluentd (EKF)");
+        checkbox.setSelection(false);
+        checkbox.setLayoutData(gridDataWide);
+        checkbox.setToolTipText("Check if you want use fluentd instead of stdout");
+        checkbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                properties.setProperty(PropertiesService.POLYSTORE_LOGGING, Boolean.toString(checkbox.getSelection()));
+            }
+        });
 
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override

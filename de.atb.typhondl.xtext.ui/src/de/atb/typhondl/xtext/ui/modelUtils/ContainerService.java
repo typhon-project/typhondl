@@ -22,12 +22,17 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+
+import org.eclipse.xtext.EcoreUtil2;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Ports;
@@ -246,5 +251,37 @@ public class ContainerService {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Adds {@link Dependency} to all containers in input {@link DeploymentModel}
+     * 
+     * @param model      the model containing containers
+     * @param dependency the dependency to add
+     * @return the model with added dependencies
+     */
+    public static DeploymentModel addDependencyToAllContainers(DeploymentModel model, Dependency dependency) {
+        List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
+        for (Container container : containers) {
+            container.getDepends_on().add(dependency);
+        }
+        return model;
+    }
+
+    /**
+     * Creates logging entry for DockerCompose containers
+     * 
+     * @param name the name of the container (used for the tag)
+     * @return a new {@link Key_KeyValueList} containing logging specifics
+     */
+    public static Key_KeyValueList createComposeLogging(String name) {
+        Key_KeyValueList logging = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+        logging.setName("logging");
+        logging.getProperties().add(ModelService.createKey_Values("driver", "\"fluentd\"", null));
+        Key_KeyValueList options = TyphonDLFactory.eINSTANCE.createKey_KeyValueList();
+        options.setName("options");
+        options.getProperties().add(ModelService.createKey_Values("tag", name, null));
+        logging.getProperties().add(options);
+        return logging;
     }
 }

@@ -34,6 +34,7 @@ public class PropertiesService {
     public static final String POLYSTORE_USENLAE = "polystore.useNLAE";
     public static final String POLYSTORE_USENLAEDEV = "polystore.useNLAEDev";
     public static final String POLYSTORE_KUBECONFIG = "polystore.kubeconfig";
+    public static final String POLYSTORE_LOGGING = "polystore.logging";
     public static final String API_NAME = "api.name";
     public static final String API_HOST = "api.host";
     public static final String API_CONTAINERNAME = "api.containername";

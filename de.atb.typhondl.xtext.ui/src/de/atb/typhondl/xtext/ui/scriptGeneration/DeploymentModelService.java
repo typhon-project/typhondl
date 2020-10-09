@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,7 +52,6 @@ import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
@@ -204,45 +204,77 @@ public class DeploymentModelService {
         application.getContainers().add(qlServerContainer);
 
         // Analytics
-        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
+        if (properties.getProperty(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")) {
             model = AnalyticsService.addAnalytics(model, properties, ModelService.getClusterType(model), containerType,
                     outputFolder);
         }
 
         // NLAE
-        if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
+        if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
             model = NLAEService.addNLAE(model, properties);
         }
+        // NLAEDEV
         if (properties.getProperty(PropertiesService.POLYSTORE_USENLAEDEV).equals("true")) {
-            Software nlaeDev = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME),
-                    properties.getProperty(PropertiesService.NLAEDEV_IMAGE));
-            nlaeDev.setExternal(true);
-            de.atb.typhondl.xtext.typhonDL.URI nlaeDevURI = TyphonDLFactory.eINSTANCE.createURI();
-            nlaeDevURI.setValue("localhost:" + properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT));
-            nlaeDev.setUri(nlaeDevURI);
-            model.getElements().add(nlaeDev);
-            Container nlaeDevContainer = ContainerService.create("nlaeDEV", containerType, nlaeDev);
-            nlaeDevContainer.setPorts(ContainerService.createPorts(new String[] { "target", "8080", "published",
-                    properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT) }));
-            application.getContainers().add(nlaeDevContainer);
-            Software elasticsearch = SoftwareService.create("elasticsearchDEV",
-                    "docker.elastic.co/elasticsearch/elasticsearch:6.8.1");
-            elasticsearch.setEnvironment(SoftwareService.createEnvironment(
-                    new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
-            model.getElements().add(elasticsearch);
-            Container elasticsearchContainer = ContainerService.create("elasticsearchDEV", containerType,
-                    elasticsearch);
-            nlaeDevContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
-            elasticsearchContainer.setVolumes(
-                    VolumesService.create(new String[] { "esdata1:/usr/share/elasticsearch/data" }, null, null));
-            application.getContainers().add(elasticsearchContainer);
-            Volume_Toplevel topLevelVolumes = application.getVolumes();
-            if (topLevelVolumes == null) {
-                topLevelVolumes = TyphonDLFactory.eINSTANCE.createVolume_Toplevel();
-                application.setVolumes(topLevelVolumes);
-            }
-            topLevelVolumes.getNames().add("esdata1");
+            model = NLAEService.addNLAEDEV(model, application, properties, containerType);
         }
+
+        // centralised logging
+        if (properties.getProperty(PropertiesService.POLYSTORE_LOGGING).equals("true")) {
+            if (clusterType == SupportedTechnologies.DockerCompose) {
+                model = addFluentdToAllContainers(model);
+                model = addComposeLogging(model, containerType, application);
+            }
+            if (clusterType == SupportedTechnologies.Kubernetes) {
+                model = addKubernetesLogging(model);
+            }
+        }
+
+        return model;
+    }
+
+    private static DeploymentModel addFluentdToAllContainers(DeploymentModel model) {
+        List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
+        for (Container container : containers) {
+            container.getProperties().add(ContainerService.createComposeLogging(container.getName()));
+        }
+        return model;
+    }
+
+    private static DeploymentModel addKubernetesLogging(DeploymentModel model) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private static DeploymentModel addComposeLogging(DeploymentModel model, ContainerType containerType,
+            Application application) {
+        // Fluentd
+        Software fluentd = SoftwareService.create("fluentd", null);
+        Container fluentdContainer = ContainerService.create("fluentd", containerType, fluentd);
+        fluentdContainer.getProperties().add(ModelService.createKey_Values("build", "./fluentd", null));
+        fluentdContainer.setVolumes(VolumesService.create(new String[] { "./fluentd:/fluentd/etc" }, null, null));
+        fluentdContainer
+                .setPorts(ContainerService.createPorts(new String[] { "target", "24224", "published", "24224" }));
+        model.getElements().add(fluentd);
+        model = ContainerService.addDependencyToAllContainers(model,
+                ContainerService.createDependsOn(fluentdContainer));
+        application.getContainers().add(fluentdContainer);
+        // Elasticsearch
+        Software elasticsearch = SoftwareService.create("elasticsearch",
+                "docker.elastic.co/elasticsearch/elasticsearch:7.9.2");
+        elasticsearch.setEnvironment(SoftwareService.createEnvironment(
+                new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
+        Container elasticsearchContainer = ContainerService.create("elasticsearch", containerType, elasticsearch);
+        elasticsearchContainer
+                .setPorts(ContainerService.createPorts(new String[] { "target", "9200", "published", "9200" }));
+        fluentdContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
+        model.getElements().add(elasticsearch);
+        application.getContainers().add(elasticsearchContainer);
+        // Kibana
+        Software kibana = SoftwareService.create("kibana", "docker.elastic.co/kibana/kibana:7.9.2");
+        Container kibanaContainer = ContainerService.create("kibana", containerType, kibana);
+        kibanaContainer.setPorts(ContainerService.createPorts(new String[] { "target", "5601", "published", "5601" }));
+        model.getElements().add(kibana);
+        application.getContainers().add(kibanaContainer);
         return model;
     }
 
