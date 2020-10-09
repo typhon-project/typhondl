@@ -34,29 +34,74 @@ import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
+/**
+ * Utility class for easier model object handling
+ * 
+ * @author flug
+ *
+ */
 public class ModelService {
 
+    /**
+     * Finds first {@link Application} in a {@link DeploymentModel}
+     * 
+     * @param model the model to search through
+     * @return the first {@link Application}
+     */
     public static Application getFirstApplication(DeploymentModel model) {
         return EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
     }
 
+    /**
+     * Finds a {@link Container} by name
+     * 
+     * @param model         the model to search through
+     * @param containerName name of container to be found
+     * @return the found {@link Container} or null
+     */
     public static Container getContainer(DeploymentModel model, String containerName) {
         return EcoreUtil2.getAllContentsOfType(model, Container.class).stream()
                 .filter(container -> container.getName().equalsIgnoreCase(containerName)).findFirst().orElse(null);
     }
 
+    /**
+     * Finds first {@link Platform}
+     * 
+     * @param model the model to search through
+     * @return the first {@link Platform}
+     */
     public static Platform getPlatform(DeploymentModel model) {
         return EcoreUtil2.getAllContentsOfType(model, Platform.class).get(0);
     }
 
+    /**
+     * Transforms a {@link ClusterType} into its corresponding
+     * {@link SupportedTechnologies}
+     * 
+     * @param clusterType the type to transform
+     * @return the corresponding {@link SupportedTechnologies}
+     */
     public static SupportedTechnologies getSupportedTechnology(ClusterType clusterType) {
         return SupportedTechnologies.valueOf(clusterType.getName());
     }
 
+    /**
+     * Finds first {@link ClusterType}
+     * 
+     * @param model the model to search through
+     * @return the first {@link ClusterType}
+     */
     public static ClusterType getClusterType(DeploymentModel model) {
         return EcoreUtil2.getAllContentsOfType(model, ClusterType.class).get(0);
     }
 
+    /**
+     * Gets docker network internal kafka URI. It seems that tests with
+     * DockerCompose using "kafka:29092" instead of "localhost:29092" are failing
+     * 
+     * @param tech the chosen technology (e.g. DockerCompose, Kubernetes)
+     * @return A String containing the internal kafka URI
+     */
     public static String getKafkaInternalURI(SupportedTechnologies tech) {
         switch (tech) {
         case DockerCompose:
@@ -68,6 +113,14 @@ public class ModelService {
         }
     }
 
+    /**
+     * Create a new {@link Key_Values} object
+     * 
+     * @param name   key
+     * @param value  value
+     * @param values additional values
+     * @return a new {@link Key_Values} object
+     */
     public static Key_Values createKey_Values(String name, String value, String[] values) {
         Key_Values key_Values = TyphonDLFactory.eINSTANCE.createKey_Values();
         key_Values.setName(name);
@@ -80,6 +133,13 @@ public class ModelService {
         return key_Values;
     }
 
+    /**
+     * Create a new {@link Key_ValueArray} object
+     * 
+     * @param name   key
+     * @param values values
+     * @return a new {@link Key_ValueArray} object
+     */
     public static Key_ValueArray createKeyValuesArray(String name, String[] values) {
         Key_ValueArray array = TyphonDLFactory.eINSTANCE.createKey_ValueArray();
         array.setName(name);
@@ -89,6 +149,12 @@ public class ModelService {
         return array;
     }
 
+    /**
+     * Create a List containing {@link Key_Values}s with one value each
+     * 
+     * @param strings [name, value, name, value, ...]
+     * @return a List containing {@link Key_Values}s
+     */
     public static ArrayList<Key_Values> createKeyValues(String[] strings) {
         ArrayList<Key_Values> list = new ArrayList<>();
         for (int i = 0; i < strings.length; i = i + 2) {
@@ -100,13 +166,25 @@ public class ModelService {
         return list;
     }
 
-    public static Key_Values createKubeconfig(String property) {
+    /**
+     * Creates a {@link Key_Values} for given path to kubeconfig
+     * 
+     * @param path the path to the kubeconfig file
+     * @return a new {@link Key_Values} with name "kubeconfig" and value path
+     */
+    public static Key_Values createKubeconfig(String path) {
         Key_Values kubeconfig = TyphonDLFactory.eINSTANCE.createKey_Values();
         kubeconfig.setName("kubeconfig");
-        kubeconfig.setValue(addQuotes(property));
+        kubeconfig.setValue(addQuotes(path));
         return kubeconfig;
     }
 
+    /**
+     * Adds quotes around a String if it doesn't already contains quotes
+     * 
+     * @param property the String to put quotes around
+     * @return the input String with quotes around
+     */
     private static String addQuotes(String property) {
         return property.contains("\"") ? property : "\"" + property + "\"";
     }

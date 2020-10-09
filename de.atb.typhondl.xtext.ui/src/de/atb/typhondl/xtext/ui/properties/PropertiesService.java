@@ -20,6 +20,12 @@ package de.atb.typhondl.xtext.ui.properties;
  * #L%
  */
 
+/**
+ * Service for finding property names
+ * 
+ * @author flug
+ *
+ */
 public class PropertiesService {
 
     public static final String POLYSTORE_USEANALYTICS = "polystore.useAnalytics";
