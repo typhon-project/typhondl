@@ -130,7 +130,7 @@ public class DeploymentModelService {
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
                         + properties.getProperty(PropertiesService.DB_PORT));
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186
             polystoreDBContainer.getProperties().add(ModelService.createKeyValuesArray("volumes", new String[] {
                     "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
@@ -156,7 +156,7 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.API_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.API_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.API_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
             polystoreAPIContainer.getProperties()
@@ -197,7 +197,7 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) {// TODO TYP-186
             qlServerContainer.getProperties()
                     .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
         }
@@ -252,6 +252,7 @@ public class DeploymentModelService {
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
         switch (ModelService.getSupportedTechnology(ModelService.getClusterType(model))) {
+        // TODO TYP-186
         case Kubernetes:
             // to be able to add the models to the kubernetes job, the
             // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo

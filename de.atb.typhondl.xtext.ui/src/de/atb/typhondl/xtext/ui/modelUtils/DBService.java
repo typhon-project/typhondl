@@ -53,7 +53,7 @@ public class DBService {
      */
     public static DB createPolystoreDB(Properties properties, SupportedTechnologies clusterType, DBType mongo) {
         DB polystoredb = create(properties.getProperty(PropertiesService.DB_NAME), mongo);
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186
             polystoredb.setEnvironment(SoftwareService.createEnvironment(new String[] { "MONGO_INITDB_DATABASE",
                     properties.getProperty(PropertiesService.DB_ENVIRONMENT_MONGO_INITDB_DATABASE) }));
         }

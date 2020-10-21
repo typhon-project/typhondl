@@ -158,7 +158,7 @@ public class ModelCreator {
         // create platform type from API HOST
         PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
         switch (chosenTemplate) {
-        case DockerCompose:
+        case DockerCompose:// TODO TYP-186
             platformType.setName("localhost");
             break;
         case Kubernetes:

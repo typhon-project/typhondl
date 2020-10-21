@@ -148,7 +148,7 @@ public class VolumesService {
         if (chosenTechnology.equals(SupportedTechnologies.Kubernetes)) {
             return "persistentVolumeClaim";
         }
-        if (chosenTechnology.equals(SupportedTechnologies.DockerCompose)) {
+        if (chosenTechnology.equals(SupportedTechnologies.DockerCompose)) {// TODO TYP-186
             return "volume";
         }
 

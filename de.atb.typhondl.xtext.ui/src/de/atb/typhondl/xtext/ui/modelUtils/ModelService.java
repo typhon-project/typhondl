@@ -102,7 +102,7 @@ public class ModelService {
      * @param tech the chosen technology (e.g. DockerCompose, Kubernetes)
      * @return A String containing the internal kafka URI
      */
-    public static String getKafkaInternalURI(SupportedTechnologies tech) {
+    public static String getKafkaInternalURI(SupportedTechnologies tech) {// TODO TYP-186
         switch (tech) {
         case DockerCompose:
             return "localhost:29092";

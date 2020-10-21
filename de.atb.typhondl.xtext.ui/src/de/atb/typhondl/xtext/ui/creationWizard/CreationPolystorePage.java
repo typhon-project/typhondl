@@ -75,7 +75,7 @@ public class CreationPolystorePage extends MyWizardPage {
      * 
      * @param pageName         name of the page
      * @param properties       properties, updated from main page
-     * @param chosenTechnology DockerCompose or Kubernetes
+     * @param chosenTechnology DockerCompose or Kubernetes //TODO TYP-186
      */
     protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
         super(pageName);
@@ -225,7 +225,7 @@ public class CreationPolystorePage extends MyWizardPage {
 
     private void validate() {
         setStatus(null);
-        if (this.chosenTechnology == SupportedTechnologies.DockerCompose) {
+        if (this.chosenTechnology == SupportedTechnologies.DockerCompose) {// TODO TYP-186
             for (Text text : resourceFields.keySet()) {
                 if (!text.getText().isEmpty()) {
                     raiseWarning("resources");
@@ -250,7 +250,7 @@ public class CreationPolystorePage extends MyWizardPage {
             } catch (NumberFormatException exp) {
                 raiseError("replication");
             }
-            if (this.chosenTechnology == SupportedTechnologies.DockerCompose && parseInt != 1) {
+            if (this.chosenTechnology == SupportedTechnologies.DockerCompose && parseInt != 1) {// TODO TYP-186
                 raiseWarning("replication");
             }
             if (parseInt == 0) {

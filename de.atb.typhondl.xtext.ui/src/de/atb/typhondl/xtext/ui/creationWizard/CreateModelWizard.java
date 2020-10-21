@@ -221,7 +221,7 @@ public class CreateModelWizard extends Wizard {
      * @return the next page
      */
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
+    public IWizardPage getNextPage(IWizardPage page) {// TODO TYP-186
         if (page instanceof CreationMainPage) {
             // next page is CreationPolystorePage
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();

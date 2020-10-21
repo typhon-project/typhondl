@@ -36,6 +36,7 @@ public class EvolutionConfigEditor {
 
     public List<InputField> getInputFields(SupportedTechnologies chosenTemplate) {
         switch (chosenTemplate) {
+        // TODO TYP-186
         case DockerCompose:
             return dockerComposeFields;
         case Kubernetes:

@@ -65,7 +65,7 @@ public class AnalyticsService {
         kafkaURIObject.setValue(kafkaURI);
 
         SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
-        if (clusterTypeTech == SupportedTechnologies.DockerCompose) {
+        if (clusterTypeTech == SupportedTechnologies.DockerCompose) { // TODO TYP-186
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();

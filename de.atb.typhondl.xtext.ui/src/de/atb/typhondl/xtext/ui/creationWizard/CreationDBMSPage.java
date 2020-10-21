@@ -220,7 +220,7 @@ public class CreationDBMSPage extends MyWizardPage {
             group.setText(db.getName());
 
             if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-                kubernetesComposeControls(group, templates, db);
+                kubernetesComposeControls(group, templates, db);// TODO TYP-186
             } else {
                 dockerComposeControls(group, templates, db);
             }

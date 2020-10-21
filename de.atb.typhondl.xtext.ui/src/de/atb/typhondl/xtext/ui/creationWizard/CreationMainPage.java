@@ -246,7 +246,7 @@ public class CreationMainPage extends MyWizardPage {
                     hidden.setVisible(true);
                     parent.layout(true);
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
-                } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
+                } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {// TODO TYP-186
                     properties.setProperty(PropertiesService.API_HOST, "localhost");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
                     properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
@@ -265,7 +265,7 @@ public class CreationMainPage extends MyWizardPage {
         });
     }
 
-    protected void setResourceProperties() {
+    protected void setResourceProperties() {// TODO TYP-186
         if (this.chosenTemplate == SupportedTechnologies.DockerCompose) {
             properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
             properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");

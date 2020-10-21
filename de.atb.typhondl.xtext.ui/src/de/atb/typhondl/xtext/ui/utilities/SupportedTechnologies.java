@@ -27,13 +27,15 @@ import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
 /**
  * Utility class for providing supported Technologies. Included at the moment:
  * <li>Docker Compose</li>
+ * <li>Docker Swarm</li>
  * <li>Kubernetes with Docker containers</li>
  * 
  * @author flug
  *
  */
 public enum SupportedTechnologies {
-    DockerCompose("Docker Compose", "Docker"), Kubernetes("Kubernetes with Docker", "Docker");
+    DockerCompose("Docker Compose", "Docker"), DockerSwarm("Docker Swarm", "Docker"),
+    Kubernetes("Kubernetes with Docker", "Docker");
 
     /**
      * The name that gets displayed in the {@link CreateModelWizard}
