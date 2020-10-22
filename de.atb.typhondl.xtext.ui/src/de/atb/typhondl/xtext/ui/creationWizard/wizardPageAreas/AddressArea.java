@@ -45,7 +45,7 @@ public class AddressArea extends Area {
      * @param parent the main control
      */
     public AddressArea(DB db, Composite parent) {
-        super(db, null, null, parent, "Database Address", null);
+        super(db, null, parent, "Database Address", null);
     }
 
     @Override

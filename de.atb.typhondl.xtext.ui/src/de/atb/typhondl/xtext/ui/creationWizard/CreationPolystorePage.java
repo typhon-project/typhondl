@@ -75,7 +75,7 @@ public class CreationPolystorePage extends MyWizardPage {
      * 
      * @param pageName         name of the page
      * @param properties       properties, updated from main page
-     * @param chosenTechnology DockerCompose or Kubernetes //TODO TYP-186
+     * @param chosenTechnology DockerCompose, DockerSwatm or Kubernetes
      */
     protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
         super(pageName);
@@ -225,13 +225,6 @@ public class CreationPolystorePage extends MyWizardPage {
 
     private void validate() {
         setStatus(null);
-        if (this.chosenTechnology == SupportedTechnologies.DockerCompose) {// TODO TYP-186
-            for (Text text : resourceFields.keySet()) {
-                if (!text.getText().isEmpty()) {
-                    raiseWarning("resources");
-                }
-            }
-        }
         ArrayList<Text> qlLimits = getTexts("qlserver.limit");
         ArrayList<Text> apiLimits = getTexts("api.limit");
         ArrayList<Text> qlRes = getTexts("qlserver.reservation");
@@ -250,8 +243,10 @@ public class CreationPolystorePage extends MyWizardPage {
             } catch (NumberFormatException exp) {
                 raiseError("replication");
             }
-            if (this.chosenTechnology == SupportedTechnologies.DockerCompose && parseInt != 1) {// TODO TYP-186
-                raiseWarning("replication");
+            if (!this.chosenTechnology.canDoStatelessReplication() && parseInt != 1) {
+                setStatus(
+                        new Status(IStatus.ERROR, "Wizard", "Setting stateless replication is not possible when using "
+                                + chosenTechnology.displayedName()));
             }
             if (parseInt == 0) {
                 raiseError("replication");
@@ -348,11 +343,6 @@ public class CreationPolystorePage extends MyWizardPage {
     private void raiseError(String context) {
         setStatus(new Status(IStatus.ERROR, "Wizard", "Please set a value bigger than 0 as " + context));
 
-    }
-
-    private void raiseWarning(String context) {
-        setStatus(new Status(IStatus.WARNING, "Wizard",
-                "Setting " + context + " is only possible when using Docker Swarm"));
     }
 
     private class ResourceEditor {

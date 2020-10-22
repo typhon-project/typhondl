@@ -55,7 +55,7 @@ public class ResourceArea extends Area {
      * @param parent    the main control
      */
     public ResourceArea(DB db, Container container, Composite parent) {
-        super(db, container, null, parent, "Container Resources", null);
+        super(db, container, parent, "Container Resources", null);
     }
 
     @Override

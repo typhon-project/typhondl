@@ -238,24 +238,16 @@ public class CreationMainPage extends MyWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
                 final Composite parent = mainGroup.getParent();
-                if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-                    properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
-                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-                    hiddenData.exclude = false;
-                    hidden.setVisible(true);
-                    parent.layout(true);
+                chosenTemplate.setConnectionDefaults(properties);
+                boolean canUseKubeConfig = chosenTemplate.canUseKubeConfig();
+                if (canUseKubeConfig) {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
-                } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {// TODO TYP-186
-                    properties.setProperty(PropertiesService.API_HOST, "localhost");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-                    hiddenData.exclude = true;
-                    hidden.setVisible(false);
-                    parent.layout(true);
+                } else {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
+                hiddenData.exclude = !canUseKubeConfig;
+                hidden.setVisible(canUseKubeConfig);
+                parent.layout(true);
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
 
@@ -265,26 +257,15 @@ public class CreationMainPage extends MyWizardPage {
         });
     }
 
-    protected void setResourceProperties() {// TODO TYP-186
-        if (this.chosenTemplate == SupportedTechnologies.DockerCompose) {
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
-            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
-        } else if (this.chosenTemplate == SupportedTechnologies.Kubernetes) {
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
-            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
-        }
+    protected void setResourceProperties() {
+        properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "2048M");
+        properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "0.5");
+        properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
+        properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "0.5");
+        properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+        properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+        properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+        properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
     }
 
     private void createAnalyticsGroup() {

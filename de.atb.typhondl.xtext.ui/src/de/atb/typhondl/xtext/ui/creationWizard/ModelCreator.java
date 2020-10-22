@@ -147,7 +147,7 @@ public class ModelCreator {
 
         // Add selected container type (chosen template in wizard)
         ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
-        containerType.setName(chosenTemplate.getContainerType());
+        containerType.setName(chosenTemplate.containerType());
         DLmodel.getElements().add(containerType);
 
         // Add selected cluster type (chosen template in wizard)
