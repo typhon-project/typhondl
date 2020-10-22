@@ -63,9 +63,8 @@ public class AnalyticsService {
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
         kafkaURIObject.setValue(kafkaURI);
-
         SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
-        if (clusterTypeTech == SupportedTechnologies.DockerCompose) { // TODO TYP-186
+        if (clusterTypeTech.createAllAnalyticsContainers()) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();
@@ -176,7 +175,7 @@ public class AnalyticsService {
                 zookeeper.setUri(zookeeperURI);
                 model.getElements().add(zookeeper);
             }
-        } else if (clusterTypeTech == SupportedTechnologies.Kubernetes) {
+        } else {
             Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
             kafka.setName("Kafka");
             model.getElements().add(kafka);

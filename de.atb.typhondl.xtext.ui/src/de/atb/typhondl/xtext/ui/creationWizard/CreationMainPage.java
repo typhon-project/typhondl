@@ -211,7 +211,7 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo = new Combo(mainGroup, SWT.READ_ONLY);
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
-            itemList.add(tech.getDisplayedName());
+            itemList.add(tech.displayedName());
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));

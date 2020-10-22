@@ -57,6 +57,7 @@ public class VolumesArea extends Area {
 
     private Volumes volumes;
     private TableViewer tableViewer;
+    private SupportedTechnologies chosenTechnology;
 
     /**
      * WizardPage {@link Area} to configure and add container volumes
@@ -67,7 +68,8 @@ public class VolumesArea extends Area {
      * @param parent           the main control
      */
     public VolumesArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Volumes", null);
+        super(db, container, parent, "Volumes", null);
+        this.chosenTechnology = chosenTechnology;
     }
 
     @Override

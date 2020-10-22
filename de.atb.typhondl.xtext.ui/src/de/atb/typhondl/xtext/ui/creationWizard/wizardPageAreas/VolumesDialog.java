@@ -86,7 +86,7 @@ public class VolumesDialog extends StatusDialog {
         this.typeText = textFactory.create(main);
         typeText.setData("type", "type");
         if (this.volumeDefinition.getVolumeType() == null) {
-            this.volumeDefinition.setVolumeType(VolumesService.getDefaultVolumesType(chosenTechnology));
+            this.volumeDefinition.setVolumeType(chosenTechnology.defaultVolumesType());
         }
         typeText.setText(VolumesService.getVolumesType(this.volumeDefinition));
         new Label(main, SWT.NONE).setText("Path:");
@@ -124,10 +124,9 @@ public class VolumesDialog extends StatusDialog {
             return;
         }
         if (this.volumeDefinition.getVolumeType() == null) {
-            this.updateStatus(new Status(IStatus.ERROR, "VolumesDialog",
-                    "If no special volumes type should be given, enter \""
-                            + VolumesService.getDefaultVolumesType(chosenTechnology)
-                            + "\" for default volume definition"));
+            this.updateStatus(
+                    new Status(IStatus.ERROR, "VolumesDialog", "If no special volumes type should be given, enter \""
+                            + chosenTechnology.defaultVolumesType() + "\" for default volume definition"));
             return;
         }
         if (this.volumeDefinition.getVolumeName() != null) {

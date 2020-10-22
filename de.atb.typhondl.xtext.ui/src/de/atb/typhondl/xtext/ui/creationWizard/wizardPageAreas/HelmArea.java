@@ -43,6 +43,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class HelmArea extends Area {
 
+    private SupportedTechnologies chosenTechnology;
+
     /**
      * WizardPage {@link Area} to alter helm chart configuration
      * 
@@ -51,12 +53,13 @@ public class HelmArea extends Area {
      * @param parent           the main control
      */
     public HelmArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, null, chosenTechnology, parent, "Helm Charts", null);
+        super(db, null, parent, "Helm Charts", null);
+        this.chosenTechnology = chosenTechnology;
     }
 
     @Override
     public void createArea() {
-        if (chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null) {
+        if (chosenTechnology.canUseHelm() && db.getHelm() != null) {
             if (group == null) {
                 createGroup("Helm Charts");
             }

@@ -38,6 +38,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Replication;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.modelUtils.ReplicationService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -47,6 +48,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  *
  */
 public class ReplicaArea extends Area {
+
+    private String replicationProperty;
 
     /**
      * WizardPage {@link Area} to configure (stateful) replication of databases
@@ -60,12 +63,14 @@ public class ReplicaArea extends Area {
      */
     public ReplicaArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
             Properties properties) {
-        super(db, container, chosenTechnology, parent, "Replication", properties);
+        super(db, container, parent, "Replication", properties);
+        this.replicationProperty = ReplicationService.getReplicationProperty(db.getType().getName().toLowerCase(),
+                chosenTechnology, properties);
     }
 
     @Override
     public void createArea() {
-        if (!db.isExternal() && !getReplicationProperty().isEmpty() && db.getHelm() == null) {
+        if (!db.isExternal() && !replicationProperty.isEmpty() && db.getHelm() == null) {
 
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             GridData gridDataChecks = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -76,7 +81,7 @@ public class ReplicaArea extends Area {
             checkbox.setLayoutData(gridDataChecks);
 
             container.setReplication(null);
-            Replication replication = createDefaultReplication();
+            Replication replication = ReplicationService.createDefaultReplication(replicationProperty);
             Composite hiddenComposite = new Composite(group, SWT.NONE);
             hiddenComposite.setLayout(new GridLayout(2, false));
             GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -109,7 +114,7 @@ public class ReplicaArea extends Area {
                             newReplication = TyphonDLFactory.eINSTANCE.createReplication();
                         }
                         newReplication.setReplicas(getNumber(replicaText.getText()));
-                        newReplication.setMode(getReplicationMode());
+                        newReplication.setMode(Modes.getByName(replicationProperty));
                         container.setReplication(newReplication);
                     } else {
                         container.setReplication(null);
@@ -124,27 +129,8 @@ public class ReplicaArea extends Area {
         return string.isEmpty() ? 0 : Integer.parseInt(string);
     }
 
-    private Replication createDefaultReplication() {
-        Replication replication;
-        replication = TyphonDLFactory.eINSTANCE.createReplication();
-        replication.setReplicas(3);
-        replication.setMode(getReplicationMode());
-        return replication;
-    }
-
-    private Modes getReplicationMode() {
-        switch (getReplicationProperty()) {
-        case "replicaset":
-            return Modes.REPLICASET;
-        case "multi":
-            return Modes.MULTIPRIMARY;
-        default:
-            return null;
-        }
-    }
-
     private String getCheckboxText() {
-        switch (getReplicationProperty()) {
+        switch (replicationProperty) {
         case "replicaset":
             return "Create Replicas to serve as backup (Primary/Replica setup)";
         case "multi":
@@ -152,12 +138,6 @@ public class ReplicaArea extends Area {
         default:
             return "";
         }
-    }
-
-    private String getReplicationProperty() {
-        String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
-                + chosenTechnology.name().toLowerCase();
-        return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 
 }

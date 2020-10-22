@@ -78,7 +78,7 @@ public class ContainerService {
         }
         if (volumeTarget != null) {
             Volumes volumes = VolumesService.create(new String[] { volumeTarget },
-                    VolumesService.getDefaultVolumesType(chosenTechnology), name + "volume");
+                    chosenTechnology.defaultVolumesType(), name + "volume");
             container.setVolumes(volumes);
         }
         return container;

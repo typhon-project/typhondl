@@ -77,7 +77,7 @@ public class ClusterTypeDialog extends StatusDialog {
         Combo typeCombo = new Combo(main, SWT.READ_ONLY);
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
-            itemList.add(tech.getDisplayedName());
+            itemList.add(tech.displayedName());
             // templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow
             // doesn't work
         }
