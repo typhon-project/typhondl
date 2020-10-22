@@ -155,19 +155,11 @@ public class ModelCreator {
         clusterType.setName(chosenTemplate.name());
         DLmodel.getElements().add(clusterType);
 
-        // create platform type from API HOST
+        // create platform type. Since it has no influence on script generation
+        // "localhost" is default
+        // TODO add meaning to "platformtype"
         PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-        switch (chosenTemplate) {
-        case DockerCompose:// TODO TYP-186
-            platformType.setName("localhost");
-            break;
-        case Kubernetes:
-            platformType.setName("minikube");
-            break;
-        default:
-            platformType.setName("localhost");
-            break;
-        }
+        platformType.setName("localhost");
         DLmodel.getElements().add(platformType);
 
         ArrayList<DBType> dbTypes = new ArrayList<DBType>();

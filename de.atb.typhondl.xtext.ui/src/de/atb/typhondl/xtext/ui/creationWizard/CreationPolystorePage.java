@@ -254,8 +254,9 @@ public class CreationPolystorePage extends MyWizardPage {
         }
         if (this.chosenTechnology == SupportedTechnologies.Kubernetes) {
             for (Text text : portFields.keySet()) {
-                if (!ContainerService.isPortInKubernetesRange(text.getText())) {
-                    setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
+                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                    setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between " + chosenTechnology.minPort()
+                            + " and " + chosenTechnology.maxPort()));
                 }
             }
         }

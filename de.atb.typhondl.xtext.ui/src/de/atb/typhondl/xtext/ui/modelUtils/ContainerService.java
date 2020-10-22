@@ -144,17 +144,18 @@ public class ContainerService {
      * Checks if the given String is an Integer and in Kubernetes Range (between
      * 30000 and 32767)
      * 
-     * @param port String to check
+     * @param port             String to check
+     * @param chosenTechnology
      * @return true if port is an Integer in Kubernetes range
      */
-    public static boolean isPortInKubernetesRange(String port) {
+    public static boolean isPortValidRange(String port, SupportedTechnologies chosenTechnology) {
         int portInt = 0;
         try {
             portInt = Integer.parseInt(port);
         } catch (NumberFormatException e) {
             return false;
         }
-        return portInt <= 32767 && Integer.parseInt(port) >= 30000;
+        return portInt <= chosenTechnology.maxPort() && Integer.parseInt(port) >= chosenTechnology.minPort();
     }
 
     /**

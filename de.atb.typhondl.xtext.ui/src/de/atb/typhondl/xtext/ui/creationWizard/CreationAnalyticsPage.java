@@ -37,12 +37,11 @@ import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
-import de.atb.typhondl.xtext.ui.utilities.KafkaConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Optional page for the TyphonDL {@link CreateModelWizard}. The properties for
- * the TyphonDL Analytics component, i.e. Kafka and Zookeepter properties can be
+ * the TyphonDL Analytics component, i.e. Kafka and Zookeeper properties can be
  * edited and are stored in the polystore.properties
  * 
  * @author flug
@@ -54,7 +53,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * The polystore.properties
      */
     private Properties properties;
-    private SupportedTechnologies chosenTemplate;
+    private SupportedTechnologies chosenTechnology;
     private Composite main;
     private Text kafkaURIText;
     private GridData hiddenData;
@@ -67,10 +66,10 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * @param pageName   the name of the page
      * @param properties
      */
-    protected CreationAnalyticsPage(String pageName, Properties properties, SupportedTechnologies chosenTemplate) {
+    protected CreationAnalyticsPage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
         super(pageName);
         this.properties = properties;
-        this.chosenTemplate = chosenTemplate;
+        this.chosenTechnology = chosenTechnology;
         this.portList = new ArrayList<>();
     }
 
@@ -95,7 +94,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
         kafkaURIText.setLayoutData(gridData);
         kafkaURIText.setEditable(false);
 
-        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
+        if (chosenTechnology.canUseKubeConfig()) {
             hidden = new Composite(main, SWT.NONE);
             hidden.setLayout(new GridLayout(2, false));
             hiddenData = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -115,8 +114,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
                     .setProperty(PropertiesService.ANALYTICS_KUBECONFIG, analyticsKubeconfigText.getText()));
         }
 
-        KafkaConfigEditor editor = new KafkaConfigEditor();
-        for (InputField inputField : editor.getInputFields(chosenTemplate)) {
+        for (InputField inputField : chosenTechnology.kafkaInputFields()) {
             new Label(main, NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
             text.setText(properties.getProperty(inputField.propertyName));
@@ -134,7 +132,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
             evolution.setLayoutData(layoutData);
             evolution.setText("Evolution");
             EvolutionConfigEditor evEditor = new EvolutionConfigEditor();
-            for (InputField inputField : evEditor.getInputFields(chosenTemplate)) {
+            for (InputField inputField : evEditor.getInputFields()) {
                 new Label(evolution, SWT.NONE).setText(inputField.label);
                 Text text = new Text(evolution, SWT.BORDER);
                 text.setText(properties.getProperty(inputField.propertyName));
@@ -152,9 +150,9 @@ public class CreationAnalyticsPage extends MyWizardPage {
     private void validatePorts() {
         this.setStatus(null);
         for (Text port : portList) {
-            if (chosenTemplate == SupportedTechnologies.Kubernetes
-                    && !ContainerService.isPortInKubernetesRange(port.getText())) {
-                this.setStatus(new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
+            if (!ContainerService.isPortValidRange(port.getText(), chosenTechnology)) {
+                this.setStatus(new Status(IStatus.ERROR, "Change clusterType",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }
@@ -170,7 +168,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
     public void updateData(Properties properties) {
         this.properties = properties;
         updateKafkaURI();
-        if (chosenTemplate == SupportedTechnologies.Kubernetes) {
+        if (chosenTechnology.canUseKubeConfig()) {
             boolean contained = Boolean
                     .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
             hiddenData.exclude = contained;

@@ -114,7 +114,7 @@ public class AnalyticsService {
                 flinkJobmanagerContainer
                         .setPorts(ContainerService.createPorts(new String[] { "published", "8081", "target", "8081" }));
                 flinkJobmanagerContainer.getProperties()
-                        .addAll(ModelService.createKeyValues(new String[] { "command", "jobmanager" }));
+                        .addAll(ModelService.createListOfKey_Values(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
                 String analyticsVolume = downloadFlinkFatJar(outputFolder);
@@ -125,7 +125,7 @@ public class AnalyticsService {
                 flinkTaskmanagerContainer.getDepends_on()
                         .add(ContainerService.createDependsOn(flinkJobmanagerContainer));
                 flinkTaskmanagerContainer.getProperties()
-                        .addAll(ModelService.createKeyValues(new String[] { "command", "taskmanager" }));
+                        .addAll(ModelService.createListOfKey_Values(new String[] { "command", "taskmanager" }));
                 flinkTaskmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
                 // authAll

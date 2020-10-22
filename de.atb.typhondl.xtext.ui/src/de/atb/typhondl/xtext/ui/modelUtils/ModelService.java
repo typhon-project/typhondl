@@ -96,24 +96,6 @@ public class ModelService {
     }
 
     /**
-     * Gets docker network internal kafka URI. It seems that tests with
-     * DockerCompose using "kafka:29092" instead of "localhost:29092" are failing
-     * 
-     * @param tech the chosen technology (e.g. DockerCompose, Kubernetes)
-     * @return A String containing the internal kafka URI
-     */
-    public static String getKafkaInternalURI(SupportedTechnologies tech) {// TODO TYP-186
-        switch (tech) {
-        case DockerCompose:
-            return "localhost:29092";
-        case Kubernetes:
-            return "typhon-cluster-kafka-bootstrap:9092";
-        default:
-            return "";
-        }
-    }
-
-    /**
      * Create a new {@link Key_Values} object
      * 
      * @param name   key
@@ -155,7 +137,7 @@ public class ModelService {
      * @param strings [name, value, name, value, ...]
      * @return a List containing {@link Key_Values}s
      */
-    public static ArrayList<Key_Values> createKeyValues(String[] strings) {
+    public static ArrayList<Key_Values> createListOfKey_Values(String[] strings) {
         ArrayList<Key_Values> list = new ArrayList<>();
         for (int i = 0; i < strings.length; i = i + 2) {
             Key_Values keyValues = TyphonDLFactory.eINSTANCE.createKey_Values();

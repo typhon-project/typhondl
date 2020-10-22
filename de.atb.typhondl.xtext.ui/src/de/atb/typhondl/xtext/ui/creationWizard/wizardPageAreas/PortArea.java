@@ -150,10 +150,9 @@ public class PortArea extends Area {
     private void validate() {
         page.setStatus(null);
         if (container.getPorts() != null) {
-            if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-                if (!ContainerService.isPortInKubernetesRange(this.publishedPortText.getText())) {
-                    page.setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
-                }
+            if (!ContainerService.isPortValidRange(this.publishedPortText.getText(), chosenTechnology)) {
+                page.setStatus(new Status(IStatus.ERROR, "Wizard",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }

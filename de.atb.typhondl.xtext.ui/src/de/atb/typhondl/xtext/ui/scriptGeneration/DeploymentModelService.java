@@ -130,7 +130,7 @@ public class DeploymentModelService {
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
                         + properties.getProperty(PropertiesService.DB_PORT));
-        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186
+        if (clusterType.setInitDB()) {
             polystoreDBContainer.getProperties().add(ModelService.createKeyValuesArray("volumes", new String[] {
                     "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
@@ -156,11 +156,12 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.API_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.API_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.API_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186
+        if (clusterType.waitForMetadata()) {
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
-            polystoreAPIContainer.getProperties()
-                    .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
+        }
+        if (clusterType == SupportedTechnologies.DockerCompose) {
+            polystoreAPIContainer.getProperties().add(ModelService.createKey_Values("restart", "always", null));
         }
         application.getContainers().add(polystoreAPIContainer);
 
@@ -197,9 +198,9 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) {// TODO TYP-186
+        if (clusterType == SupportedTechnologies.DockerCompose) {
             qlServerContainer.getProperties()
-                    .addAll(ModelService.createKeyValues(new String[] { "restart", "always" }));
+                    .addAll(ModelService.createListOfKey_Values(new String[] { "restart", "always" }));
         }
         application.getContainers().add(qlServerContainer);
 
@@ -251,22 +252,8 @@ public class DeploymentModelService {
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), dlXMIName));
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
-        switch (ModelService.getSupportedTechnology(ModelService.getClusterType(model))) {
-        // TODO TYP-186
-        case Kubernetes:
-            // to be able to add the models to the kubernetes job, the
-            // mongo.insert(DLxmi,MLxmi) has to be added to the model here, so that acceleo
-            // can access it. It's not nice, maybe we should think about a different plugin
-            // to generate our scripts
-            addInsertStatementToPolystoreMongoContainer(getPolystoreMongoContainer(model, properties),
-                    mongoInsertStatement, properties);
-            break;
-        case DockerCompose:
-            writeInsertStatementToJavaScriptFile(outputFolder, mongoInsertStatement, properties);
-            break;
-        default:
-            break;
-        }
+        ModelService.getSupportedTechnology(ModelService.getClusterType(model)).insertModelsToMetadata(
+                getPolystoreMongoContainer(model, properties), outputFolder, mongoInsertStatement, properties);
         return model;
     }
 
@@ -279,7 +266,7 @@ public class DeploymentModelService {
      * @param mongoInsertStatement
      * @param properties
      */
-    private static void writeInsertStatementToJavaScriptFile(String outputFolder, String mongoInsertStatement,
+    public static void writeInsertStatementToJavaScriptFile(String outputFolder, String mongoInsertStatement,
             Properties properties) {
         String modelsFolder = outputFolder + File.separator + properties.getProperty(PropertiesService.DB_VOLUME);
         String path = modelsFolder + File.separator + "addModels.js";
@@ -329,7 +316,7 @@ public class DeploymentModelService {
      * @param properties              The polystore.properties saved in the project
      *                                folder
      */
-    private static void addInsertStatementToPolystoreMongoContainer(Container polystoreMongoContainer,
+    public static void addInsertStatementToPolystoreMongoContainer(Container polystoreMongoContainer,
             String addToMongoContainer, Properties properties) {
         Key_Values print = TyphonDLFactory.eINSTANCE.createKey_Values();
         print.setName("print");

@@ -122,7 +122,7 @@ public class CreateModelWizard extends Wizard {
         addPage(mainPage);
 
         for (SupportedTechnologies value : SupportedTechnologies.values()) {
-            CreationDBMSPage newPage = new CreationDBMSPage(PAGENAME_DBMS + value.name(), MLmodel, value);
+            CreationDBMSPage newPage = value.createDBMSPage(PAGENAME_DBMS, MLmodel);
             newPage.setWizard(this);
             addPage(newPage);
         }
@@ -226,12 +226,6 @@ public class CreateModelWizard extends Wizard {
             // next page is CreationPolystorePage
             this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
-            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
-                    && (Integer.parseInt(properties.getProperty(PropertiesService.API_REPLICAS)) > 1
-                            || Integer.parseInt(properties.getProperty(PropertiesService.QLSERVER_REPLICAS)) > 1)) {
-                MessageDialog.openInformation(getShell(), "Wizard",
-                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
-            }
             if (!pageExists(PAGENAME_POLYSTORE)) {
                 CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties,
                         chosenTemplate);

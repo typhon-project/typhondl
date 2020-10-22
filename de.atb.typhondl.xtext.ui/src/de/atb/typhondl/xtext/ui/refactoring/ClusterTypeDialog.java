@@ -128,10 +128,10 @@ public class ClusterTypeDialog extends StatusDialog {
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
         for (Text port : portList) {
-            if (ModelService.getSupportedTechnology(newClusterType) == SupportedTechnologies.Kubernetes
-                    && !ContainerService.isPortInKubernetesRange(port.getText())) {
-                this.updateStatus(
-                        new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
+            SupportedTechnologies chosenTechnology = ModelService.getSupportedTechnology(newClusterType);
+            if (!ContainerService.isPortValidRange(port.getText(), chosenTechnology)) {
+                this.updateStatus(new Status(IStatus.ERROR, "Wizard",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }

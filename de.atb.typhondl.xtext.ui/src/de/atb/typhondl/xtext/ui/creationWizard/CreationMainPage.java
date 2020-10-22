@@ -43,7 +43,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
@@ -317,7 +316,7 @@ public class CreationMainPage extends MyWizardPage {
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
-        analyticsURIText.setText(ModelService.getKafkaInternalURI(chosenTemplate));
+        analyticsURIText.setText(chosenTemplate.kafkaInternalURI());
         analyticsURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText()));
 
@@ -426,8 +425,7 @@ public class CreationMainPage extends MyWizardPage {
         properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI,
-                        ModelService.getKafkaInternalURI(chosenTemplate));
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, chosenTemplate.kafkaInternalURI());
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
             } else {
                 properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");

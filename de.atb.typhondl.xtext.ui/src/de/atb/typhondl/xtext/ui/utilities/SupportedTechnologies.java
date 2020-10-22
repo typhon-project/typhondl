@@ -1,31 +1,19 @@
 package de.atb.typhondl.xtext.ui.utilities;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
-/*-
- * #%L
- * de.atb.typhondl.xtext.ui
- * %%
- * Copyright (C) 2018 - 2020 ATB
- * %%
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- * 
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is
- * available at https://www.gnu.org/software/classpath/license.html.
- * 
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- * #L%
- */
+import org.eclipse.core.resources.IFile;
 
-import de.atb.typhondl.xtext.typhonDL.ClusterType;
+import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
+import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPage;
+import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPageHelm;
+import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPageNoHelm;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 
 /**
  * Utility class for providing supported Technologies. Included at the moment:
@@ -33,32 +21,98 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
  * <li>Docker Swarm</li>
  * <li>Kubernetes with Docker containers</li>
  * 
- * @author flug
- *
+ * @author flug TODO TYP-186 test ports
  */
 public enum SupportedTechnologies {
-    DockerCompose("Docker Compose", "Docker", true, "volume", false, false, false) {
+    DockerCompose("Docker Compose", "Docker", true, "volume", false, false, false, 1, 99999, true, true,
+            "localhost:29092") {
 
         @Override
         public void setConnectionDefaults(Properties properties) {
             properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
             properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
         }
-    },
-    DockerSwarm("Docker Swarm", "Docker", true, "volume", false, false, true) {
-        // TODO TYP-186 volumes in swam
+
         @Override
-        public void setConnectionDefaults(Properties properties) { // TODO
+        public void insertModelsToMetadata(Container polystoreMongoContainer, String outputFolder,
+                String mongoInsertStatement, Properties properties) {
+            DeploymentModelService.writeInsertStatementToJavaScriptFile(outputFolder, mongoInsertStatement, properties);
+        }
+
+        @Override
+        public List<InputField> kafkaInputFields() {
+            return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"));
+        }
+
+        @Override
+        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
+            return new CreationDBMSPageNoHelm(pagename + this.name(), MLmodel);
+        }
+    },
+    DockerSwarm("Docker Swarm", "Docker", true, "volume", false, false, true, 1, 99999, false, false, "kafka:29092") {
+        // TODO TYP-186 volumes in swam
+        // TODO TYP-186 find restart in model, add to "deploy"
+        // TODO TYP-186 It seems that tests with DockerCompose using "kafka:29092"
+        // instead of "localhost:29092" are failing
+        @Override
+        public void setConnectionDefaults(Properties properties) {
             properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
             properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
         }
+
+        @Override
+        public void insertModelsToMetadata(Container polystoreMongoContainer, String outputFolder,
+                String mongoInsertStatement, Properties properties) {
+            // TODO TYP-186 upload models to metadata in swarm
+        }
+
+        @Override
+        public List<InputField> kafkaInputFields() {
+            return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"),
+                    new InputField("Replicas: ", "analytics.kafka.replicas"));
+        }
+
+        @Override
+        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
+            return new CreationDBMSPageNoHelm(pagename + this.name(), MLmodel);
+        }
     },
-    Kubernetes("Kubernetes with Docker", "Docker", false, "persistentVolumeClaim", true, true, true) {
-        // TODO proxy to localhost?
+    Kubernetes("Kubernetes with Docker", "Docker", false, "persistentVolumeClaim", true, true, true, 30000, 32767,
+            false, false, "typhon-cluster-kafka-bootstrap:9092") {
         @Override
         public void setConnectionDefaults(Properties properties) {
             properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
             properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
+        }
+
+        @Override
+        public void insertModelsToMetadata(Container polystoreMongoContainer, String outputFolder,
+                String mongoInsertStatement, Properties properties) {
+            DeploymentModelService.addInsertStatementToPolystoreMongoContainer(polystoreMongoContainer,
+                    mongoInsertStatement, properties);
+        }
+
+        @Override
+        public List<InputField> kafkaInputFields() {
+            return Arrays.asList(new InputField("Flink jobmanager heap size: ", "analytics.flink.jobmanager.heap.size"),
+                    new InputField("Flink taskmanager memory: ", "analytics.flink.taskmanager.memory.process.size"),
+                    new InputField("Logglevel rootlogger: ", "analytics.logging.rootlogger"),
+                    new InputField("Logglevel akka: ", "analytics.logging.akka"),
+                    new InputField("Logglevel kafka: ", "analytics.logging.kafka"),
+                    new InputField("Logglevel hadoop: ", "analytics.logging.hadoop"),
+                    new InputField("Logglevel zookeeper: ", "analytics.logging.zookeeper"),
+                    new InputField("Logglevel flink: ", "analytics.logging.flink"),
+                    new InputField("Flink jobmanager rest nodeport: ", "analytics.flink.rest.port"),
+                    new InputField("Flink taskmanager replicas: ", "analytics.flink.taskmanager.replicas"),
+                    new InputField("Kafka replicas: ", "analytics.kafka.cluster.replicas"),
+                    new InputField("Kafka version: ", "analytics.kafka.version"),
+                    new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
+                    new InputField("zookeeper storage claim: ", "analytics.zookeeper.storageclaim"));
+        }
+
+        @Override
+        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
+            return new CreationDBMSPageHelm(pagename + this.name(), MLmodel);
         }
     };
 
@@ -81,6 +135,16 @@ public enum SupportedTechnologies {
     private boolean canUseKubeConfig;
 
     private boolean canDoStatelessReplication;
+
+    private int minPort;
+
+    private int maxPort;
+
+    private boolean setInitDB;
+
+    private boolean waitForMetadata;
+
+    private String kafkaInternalURI;
 
     public String displayedName() {
         return displayedName;
@@ -110,18 +174,58 @@ public enum SupportedTechnologies {
         return canDoStatelessReplication;
     }
 
+    public int minPort() {
+        return minPort;
+    }
+
+    public int maxPort() {
+        return maxPort;
+    }
+
+    public boolean setInitDB() {
+        return setInitDB;
+    }
+
+    public boolean waitForMetadata() {
+        return waitForMetadata;
+    }
+
+    public String kafkaInternalURI() {
+        return kafkaInternalURI;
+    }
+
     /**
-     * Creates an instance with
+     * Creates enum constant with
      * 
-     * @param displayedName The name that gets displayed in the
-     *                      {@link CreateModelWizard}
-     * @param containerType Name of the Container Type for {@link ContainerType}
-     * @param clusterType   Name of the Cluster Type for {@link ClusterType} TODO
-     *                      TYP-186
+     * @param displayedName                The name to show in Wizard's combo
+     * @param containerType                The type of container associated with
+     *                                     this technology (e.g. Docker)
+     * @param createAllAnalyticsContainers true if all five Analytics containers
+     *                                     (kafka, zookeeper, authAll, flink
+     *                                     jobmanager, flink taskmanager) should be
+     *                                     created, false if just a kafka container
+     *                                     for the API to reference should be
+     *                                     created
+     * @param defaultVolumesType           Default Volumes Type for the technology
+     *                                     (e.g. "volume" or
+     *                                     "persistentVolumeClaim")
+     * @param canUseHelm                   true if Helm Charts can be used
+     * @param canUseKubeConfig             true if a kubeconfig file can be used
+     * @param canDoStatelessReplication    true if stateless replication is provided
+     * @param minPort                      minimal number in published port range
+     * @param maxPort                      maximal number in published port range
+     * @param setInitDB                    true if the ML and DL model can be
+     *                                     inserted into the metadata container via
+     *                                     a script in docker-entrypoint-initdb.d
+     *                                     when the container is first created
+     * @param waitForMetadata              true if the API container has to wait for
+     *                                     the metadata container to be ready and
+     *                                     have the models uploaded
+     * @param kafkaInternalURI             internal kafka URI
      */
     private SupportedTechnologies(String displayedName, String containerType, boolean createAllAnalyticsContainers,
-            String defaultVolumesType, boolean canUseHelm, boolean canUseKubeConfig,
-            boolean canDoStatelessReplication) {
+            String defaultVolumesType, boolean canUseHelm, boolean canUseKubeConfig, boolean canDoStatelessReplication,
+            int minPort, int maxPort, boolean setInitDB, boolean waitForMetadata, String kafkaInternalURI) {
         this.displayedName = displayedName;
         this.containerType = containerType;
         this.createAllAnalyticsContainers = createAllAnalyticsContainers;
@@ -129,33 +233,19 @@ public enum SupportedTechnologies {
         this.canUseHelm = canUseHelm;
         this.canUseKubeConfig = canUseKubeConfig;
         this.canDoStatelessReplication = canDoStatelessReplication;
+        this.minPort = minPort;
+        this.maxPort = maxPort;
+        this.setInitDB = setInitDB;
+        this.waitForMetadata = waitForMetadata;
+        this.kafkaInternalURI = kafkaInternalURI;
     }
 
     public abstract void setConnectionDefaults(Properties properties);
 
-    /**
-     * Decides, if all Analytics containers (kafka, zookeeper, authAll, flink
-     * jobmanager, flink taskmanager) should be created or just a kafka container
-     * for the API to reference
-     * 
-     * @return true if all containers are needed, false if only the kafka reference
-     *         should be created
-     *
-     *         Returns technology dependent default volume type
-     **/
-    /**
-     * if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-     * properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
-     * properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
-     * properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-     * hiddenData.exclude = false; hidden.setVisible(true); parent.layout(true);
-     * properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG,
-     * kubeconfig.getText()); } else if (chosenTemplate ==
-     * SupportedTechnologies.DockerCompose) {// TODO TYP-186
-     * properties.setProperty(PropertiesService.API_HOST, "localhost");
-     * properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-     * properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-     * hiddenData.exclude = true; hidden.setVisible(false); parent.layout(true);
-     * properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, ""); }
-     */
+    public abstract void insertModelsToMetadata(Container polystoreMongoContainer, String outputFolder,
+            String mongoInsertStatement, Properties properties);
+
+    public abstract List<InputField> kafkaInputFields();
+
+    public abstract CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel);
 }
