@@ -4,14 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.core.resources.IFile;
-
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPage;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPageHelm;
-import de.atb.typhondl.xtext.ui.creationWizard.CreationDBMSPageNoHelm;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 
@@ -43,11 +38,6 @@ public enum SupportedTechnologies {
         public List<InputField> kafkaInputFields() {
             return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"));
         }
-
-        @Override
-        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
-            return new CreationDBMSPageNoHelm(pagename + this.name(), MLmodel);
-        }
     },
     DockerSwarm("Docker Swarm", "Docker", true, "volume", false, false, true, 1, 99999, false, false, "kafka:29092") {
         // TODO TYP-186 volumes in swam
@@ -70,11 +60,6 @@ public enum SupportedTechnologies {
         public List<InputField> kafkaInputFields() {
             return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"),
                     new InputField("Replicas: ", "analytics.kafka.replicas"));
-        }
-
-        @Override
-        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
-            return new CreationDBMSPageNoHelm(pagename + this.name(), MLmodel);
         }
     },
     Kubernetes("Kubernetes with Docker", "Docker", false, "persistentVolumeClaim", true, true, true, 30000, 32767,
@@ -108,11 +93,6 @@ public enum SupportedTechnologies {
                     new InputField("Kafka version: ", "analytics.kafka.version"),
                     new InputField("Kafka storage claim: ", "analytics.kafka.storageclaim"),
                     new InputField("zookeeper storage claim: ", "analytics.zookeeper.storageclaim"));
-        }
-
-        @Override
-        public CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel) {
-            return new CreationDBMSPageHelm(pagename + this.name(), MLmodel);
         }
     };
 
@@ -247,5 +227,4 @@ public enum SupportedTechnologies {
 
     public abstract List<InputField> kafkaInputFields();
 
-    public abstract CreationDBMSPage createDBMSPage(String pagename, IFile MLmodel);
 }

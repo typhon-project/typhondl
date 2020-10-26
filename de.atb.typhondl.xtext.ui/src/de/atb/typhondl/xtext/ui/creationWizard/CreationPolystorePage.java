@@ -368,12 +368,12 @@ public class CreationPolystorePage extends MyWizardPage {
         }
     }
 
-    public void updateData(Properties properties, SupportedTechnologies chosenTemplate) {
+    public void updateData(Properties properties, SupportedTechnologies chosenTechnology) {
         this.properties = properties;
-        this.chosenTechnology = chosenTemplate;
+        this.chosenTechnology = chosenTechnology;
         if (this.isControlCreated()) {
-            if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-                setStatus(null);
+            if (this.chosenTechnology == SupportedTechnologies.Kubernetes) {
+                setStatus(null); // TODO TYP-186
             }
             for (Text text : this.resourceFields.keySet()) {
                 text.setText(properties.getProperty(this.resourceFields.get(text)));

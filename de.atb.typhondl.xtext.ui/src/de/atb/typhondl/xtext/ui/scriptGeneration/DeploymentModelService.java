@@ -160,7 +160,7 @@ public class DeploymentModelService {
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
         }
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186 (replace with restartIsDefault()
             polystoreAPIContainer.getProperties().add(ModelService.createKey_Values("restart", "always", null));
         }
         application.getContainers().add(polystoreAPIContainer);
@@ -198,7 +198,7 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186 (replace with restartIsDefault()
             qlServerContainer.getProperties()
                     .addAll(ModelService.createListOfKey_Values(new String[] { "restart", "always" }));
         }

@@ -130,12 +130,12 @@ public class ModelCreator {
      * Creates the new DL model
      * 
      * @param result         The DBs and Containers to add to the new model
-     * @param chosenTemplate The int representation of the chosen technology
+     * @param chosenTechnology The int representation of the chosen technology
      *                       Template from {@link SupportedTechnologies}
      * @param properties     The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
-    public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTemplate,
+    public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTechnology,
             Properties properties) {
 
         // create main model
@@ -147,12 +147,12 @@ public class ModelCreator {
 
         // Add selected container type (chosen template in wizard)
         ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
-        containerType.setName(chosenTemplate.containerType());
+        containerType.setName(chosenTechnology.containerType());
         DLmodel.getElements().add(containerType);
 
         // Add selected cluster type (chosen template in wizard)
         ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
-        clusterType.setName(chosenTemplate.name());
+        clusterType.setName(chosenTechnology.name());
         DLmodel.getElements().add(clusterType);
 
         // create platform type. Since it has no influence on script generation

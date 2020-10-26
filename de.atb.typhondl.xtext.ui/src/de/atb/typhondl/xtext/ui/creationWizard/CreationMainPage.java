@@ -76,7 +76,7 @@ public class CreationMainPage extends MyWizardPage {
     /**
      * The chosen technology template from enum {@link SupportedTechnologies}
      */
-    private SupportedTechnologies chosenTemplate;
+    private SupportedTechnologies chosenTechnology;
 
     /**
      * The entered name for the DL model to be created
@@ -214,7 +214,7 @@ public class CreationMainPage extends MyWizardPage {
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));
-        chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+        chosenTechnology = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
 
         Composite hidden = new Composite(mainGroup, SWT.NONE);
         hidden.setLayout(new GridLayout(2, false));
@@ -235,10 +235,10 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+                chosenTechnology = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
                 final Composite parent = mainGroup.getParent();
-                chosenTemplate.setConnectionDefaults(properties);
-                boolean canUseKubeConfig = chosenTemplate.canUseKubeConfig();
+                chosenTechnology.setConnectionDefaults(properties);
+                boolean canUseKubeConfig = chosenTechnology.canUseKubeConfig();
                 if (canUseKubeConfig) {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
                 } else {
@@ -316,7 +316,7 @@ public class CreationMainPage extends MyWizardPage {
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
-        analyticsURIText.setText(chosenTemplate.kafkaInternalURI());
+        analyticsURIText.setText(chosenTechnology.kafkaInternalURI());
         analyticsURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText()));
 
@@ -413,6 +413,7 @@ public class CreationMainPage extends MyWizardPage {
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
                     parent.layout(true);
+
                 }
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
@@ -425,7 +426,7 @@ public class CreationMainPage extends MyWizardPage {
         properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, chosenTemplate.kafkaInternalURI());
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, chosenTechnology.kafkaInternalURI());
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
             } else {
                 properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
@@ -462,7 +463,7 @@ public class CreationMainPage extends MyWizardPage {
      *         {@link SupportedTechnologies}
      */
     public SupportedTechnologies getChosenTemplate() {
-        return this.chosenTemplate;
+        return this.chosenTechnology;
     }
 
     /**

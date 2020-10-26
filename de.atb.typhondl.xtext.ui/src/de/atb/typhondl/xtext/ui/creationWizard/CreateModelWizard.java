@@ -73,7 +73,7 @@ public class CreateModelWizard extends Wizard {
      */
     private CreationMainPage mainPage;
 
-    private final String PAGENAME_DBMS = "DBMS"; // + chosenTemplate.ClusterType
+    private final String PAGENAME_DBMS = "DBMS";
     private final String PAGENAME_DATABASE = "Database"; // + DatabaseName
     private final String PAGENAME_ANALYTICS = "Analytics";
     private final String PAGENAME_NLAE = "NLAE";
@@ -88,7 +88,7 @@ public class CreateModelWizard extends Wizard {
     /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
-    private SupportedTechnologies chosenTemplate;
+    private SupportedTechnologies chosenTechnology;
 
     private Properties properties;
 
@@ -121,11 +121,9 @@ public class CreateModelWizard extends Wizard {
         mainPage.setWizard(this);
         addPage(mainPage);
 
-        for (SupportedTechnologies value : SupportedTechnologies.values()) {
-            CreationDBMSPage newPage = value.createDBMSPage(PAGENAME_DBMS, MLmodel);
-            newPage.setWizard(this);
-            addPage(newPage);
-        }
+        CreationDBMSPage creationDBMSPage = new CreationDBMSPage(PAGENAME_DBMS, MLmodel, this.chosenTechnology);
+        creationDBMSPage.setWizard(this);
+        this.addPage(creationDBMSPage);
     }
 
     /**
@@ -153,7 +151,7 @@ public class CreateModelWizard extends Wizard {
         result = removeMongoCredentialsIfReplicated(result);
         ModelCreator modelCreator = new ModelCreator(MLmodel, mainPage.getDLmodelName());
         // create DL model
-        IFile file = modelCreator.createDLmodel(result, chosenTemplate, properties);
+        IFile file = modelCreator.createDLmodel(result, chosenTechnology, properties);
         // get fileOpener
         FileOpener fileOpener = Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
                 .getInstance(FileOpener.class);
@@ -224,15 +222,15 @@ public class CreateModelWizard extends Wizard {
     public IWizardPage getNextPage(IWizardPage page) {// TODO TYP-186 bad
         if (page instanceof CreationMainPage) {
             // next page is CreationPolystorePage
-            this.chosenTemplate = ((CreationMainPage) page).getChosenTemplate();
+            this.chosenTechnology = ((CreationMainPage) page).getChosenTemplate();
             this.properties = ((CreationMainPage) page).getProperties();
             if (!pageExists(PAGENAME_POLYSTORE)) {
                 CreationPolystorePage polystorePage = new CreationPolystorePage(PAGENAME_POLYSTORE, this.properties,
-                        chosenTemplate);
+                        chosenTechnology);
                 polystorePage.setWizard(this);
                 addPage(polystorePage);
             } else {
-                ((CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE)).updateData(properties, chosenTemplate);
+                ((CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE)).updateData(properties, chosenTechnology);
             }
             return this.getPage(PAGENAME_POLYSTORE);
         }
@@ -259,13 +257,19 @@ public class CreateModelWizard extends Wizard {
             } else if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
                 return getNLAEPage();
             }
-            return this.getPage(getDBMSPageName());
+            if (pageExists(PAGENAME_DBMS)) {
+                CreationDBMSPage creationDBMSPage = (CreationDBMSPage) this.getPage(PAGENAME_DBMS);
+                if (creationDBMSPage.getControl() != null) {
+                    creationDBMSPage.updateData(this.chosenTechnology);
+                }
+            }
+            return this.getPage(PAGENAME_DBMS);
         }
 
         if (page instanceof CreationAnalyticsPage) {
             // next page can be CreationNLAEPage or CreationDBMSPage
             this.properties = ((CreationAnalyticsPage) page).getProperties();
-            if (this.chosenTemplate == SupportedTechnologies.DockerCompose
+            if (this.chosenTechnology == SupportedTechnologies.DockerCompose // TODO TYP-186
                     && Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
                 MessageDialog.openInformation(getShell(), "Wizard",
                         "To be able to replicate containers, Docker has to run in Swarm Mode.");
@@ -286,15 +290,15 @@ public class CreateModelWizard extends Wizard {
             for (DB db : result) {
                 String pageName = PAGENAME_DATABASE + db.getName();
                 if (!pageExists(pageName)) {
-                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, chosenTemplate,
+                    CreationDatabasePage databasePage = new CreationDatabasePage(pageName, db, chosenTechnology,
                             properties, pageWidth);
                     databasePage.setWizard(this);
                     addPage(databasePage);
                 } else {
                     CreationDatabasePage databasePage = (CreationDatabasePage) this.getPage(pageName);
                     if (((CreationDBMSPage) page).hasFieldChanged(db.getName())
-                            || databasePage.getChosenTechnology() != this.chosenTemplate) {
-                        databasePage.setChosenTechnology(this.chosenTemplate);
+                            || databasePage.getChosenTechnology() != this.chosenTechnology) {
+                        databasePage.setChosenTechnology(this.chosenTechnology);
                         databasePage.setDB(db);
                         ((CreationDBMSPage) page).setFieldChanged(db.getName(), false);
                         if (databasePage.getControl() != null) {
@@ -303,7 +307,7 @@ public class CreateModelWizard extends Wizard {
                     }
                 }
             }
-            // skip other DBMS pages
+            // skip other pages to get to database pages
             IWizardPage nextPage = super.getNextPage(page);
             while (nextPage instanceof CreationDBMSPage || nextPage instanceof CreationAnalyticsPage
                     || nextPage instanceof CreationNLAEPage || nextPage instanceof CreationPolystorePage) {
@@ -342,11 +346,11 @@ public class CreateModelWizard extends Wizard {
     }
 
     private String getAnalyticsPageName() {
-        return PAGENAME_ANALYTICS + chosenTemplate.name();
+        return PAGENAME_ANALYTICS + chosenTechnology.name();
     }
 
     private String getDBMSPageName() {
-        return PAGENAME_DBMS + chosenTemplate.name();
+        return PAGENAME_DBMS + chosenTechnology.name();
     }
 
     public int getPageWidth() {

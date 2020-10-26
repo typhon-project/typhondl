@@ -91,7 +91,7 @@ public class VolumesService {
      * Helper for {@link VolumesDialog}
      */
     public static String getVolumesPath(Volume_Properties property) {
-        return property.getVolumePath() != null ? property.getVolumePath().getValue() : ""; // TODO;
+        return property.getVolumePath() != null ? property.getVolumePath().getValue() : "";
     }
 
     /**
