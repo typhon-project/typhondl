@@ -3,7 +3,8 @@
 
 [import de::atb::typhondl::acceleo::files::generateKubernetesDeployment/]
 [import de::atb::typhondl::acceleo::files::generateDockerComposeDeployment/]
-[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+[import de::atb::typhondl::acceleo::files::generateDockerSwarmDeployment/]
+[import de::atb::typhondl::acceleo::common::utilityGenerator /]
 
 [template public generate(aDeploymentModel : DeploymentModel)]
 [comment @main/]
@@ -13,5 +14,8 @@
 	[if (aDeploymentModel.isDockerCompose())]
 		[generateDockerComposeDeployment(aDeploymentModel)/]
 	[/if]
+    [if (aDeploymentModel.isDockerSwarm())]
+        [generateDockerSwarmDeployment(aDeploymentModel)/]
+    [/if]
 [/template]
 

@@ -1,10 +1,10 @@
 [comment encoding = UTF-8 /]
-[module generateDockerComposeDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+[module generateDockerSwarmDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
 
 [import de::atb::typhondl::acceleo::common::utilityGenerator/]
 [import de::atb::typhondl::acceleo::files::analyticsConfig/]
 
-[template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
+[template public generateDockerSwarmDeployment(aDeploymentModel : DeploymentModel) post (trim())]
 
 [for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
 [if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
@@ -12,7 +12,7 @@
 [aCluster.createYamlContent()/]
 [/file]
 [else]
-[file ('docker-compose.yaml', false, 'UTF-8')]
+[file ('docker-stack.yaml', false, 'UTF-8')]
 [aCluster.createYamlContent()/]
 [/file]
 [/if]
@@ -20,7 +20,7 @@
 [/template]
 
 [template public createYamlContent(aCluster : Cluster)]
-version: '2.4'
+version: '3.8'
 
 [if (aCluster.networks <> null)]
 [for (aNetwork : Cluster_Network | aCluster.networks)]
@@ -32,12 +32,6 @@ services:
   [aContainer.name/]:
 [if (aContainer.deploys <> null)]
     [aContainer.deploys.reference.print()/]
-[/if]
-[if (not aContainer.depends_on -> isEmpty())]
-    depends_on:
-[for (aDependency : Dependency | aContainer.depends_on)]
-      - [aDependency.reference.name/]
-[/for]
 [/if]
 [if (aContainer.networks <> null)]
     [aContainer.networks.print()/]
@@ -70,7 +64,11 @@ services:
     [aContainer.ports.print()/]
 [/if]
 [if (aContainer.resources <> null)]
-    [aContainer.resources.print()/]
+    [aContainer.printResourcesAndReplication()/]
+[elseif (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+    [aContainer.replication.printStateless()/]
+[/if]   
 [/if]    
 [if (not aContainer.properties -> isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
@@ -101,68 +99,6 @@ volumes:
 [/for]
 [/template]
 
-[template public printDBReplication(aContainer : Container)]
-[if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
-    command: mongod --replSet [aContainer.name/]Replset
-  [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
-[/template]
-
-[template public printMongoRep(aContainer : Container) post(trim())]
-[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
-[if (i <= aContainer.replication.replicas)]
-[aContainer.name/]-replica[i/]:
-  [aContainer.deploys.reference.oclAsType(DB).printImage()/]
-  command: mongod --replSet [aContainer.name/]Replset
-[/if][/for]
-[aContainer.name/]-rsinit:
-  build:
-    context: .
-    dockerfile: [aContainer.name/]/rsinit
-  entrypoint: ['['/]
-    'sh', 
-    '-c', 
-    'init_set.sh'
-    [']'/] 
-[/template]
-
-[template public printMongoInitFiles(aContainer : Container)]
-[file (aContainer.name + '/init_set.sh', false, 'UTF-8')]
-#!/bin/bash
-echo "sleeping for 10 seconds"
-sleep 10
-
-echo init_set.sh time now: `date +"%T" `
-mongo --host [aContainer.uri.value/] <<EOF
-  var cfg = {
-    "_id": "[aContainer.name/]Replset",
-    "version": 1,
-    "members": ['['/]
-      {
-        "_id": 0,
-        "host": "[aContainer.uri.value/]"
-      }
-[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
-[if (i <= aContainer.replication.replicas)]
-      ,{
-        "_id": [i/],
-        "host": "[aContainer.name/]-replica[i/]:27017"
-      }
-[/if][/for]
-    [']'/]
-  };
-  rs.initiate(cfg);
-EOF
-[/file]
-
-[file (aContainer.name + '/rsinit', false, 'UTF-8')]
-FROM mongo
-
-ADD [aContainer.name/]/init_set.sh /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/init_set.sh
-[/file]
-[/template]
-
 [template public print(aPorts : Ports) post (trim())]
 ports:
   - target: [aPorts.getTargetPort().value/]
@@ -188,16 +124,37 @@ networks:
 [/for]
 [/template]
 
+[template public printStateless(aReplication : Replication) post (trim())]
+deploy:
+  [aReplication.printStatelessInsideDeploy()/]
+[/template]
+
+[template public printStatelessInsideDeploy(aReplication : Replication)]
+replicas: [aReplication.replicas/]
+[/template]
+
 [template public print(aResources : Resources) post (trim())]
-cpus: '[aResources.limitCPU/]'
-mem_limit: [aResources.limitMemory/]
-[if (aResources.reservationMemory <> null)]
-mem_reservation: [aResources.reservationMemory/]
+resources:
+  limits:
+    cpus: '[aResources.limitCPU/]'
+    memory: [aResources.limitMemory/]
+[if (aResources.reservationCPU <> null)]
+  reservations:
+    cpus: '[aResources.reservationCPU/]'
+    memory: [aResources.reservationMemory/]
+[/if]
+[/template]
+
+[template public printResourcesAndReplication(aContainer : Container) post (trim())]
+deploy:
+  [aContainer.resources.print()/]
+[if (aContainer.replication <> null)]
+  [aContainer.replication.printStatelessInsideDeploy()/]
 [/if]
 [/template]
 
 [template public print(aProperty : Property) post (trim()) ]
-	something went wrong with Rule Property
+    something went wrong with Rule Property
 [/template]
 
 [template public print(aProperty : Key_Values)  post (trim())]
@@ -218,7 +175,7 @@ mem_reservation: [aResources.reservationMemory/]
 [/template]
 
 [template public print(services : Services)  post (trim())]
-	something went wrong with Rule Services
+    something went wrong with Rule Services
 [/template]
 
 [template public print(software : Software)  post (trim())]
