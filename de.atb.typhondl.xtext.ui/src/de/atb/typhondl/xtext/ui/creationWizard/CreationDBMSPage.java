@@ -33,6 +33,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -64,8 +66,8 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
+import de.atb.typhondl.xtext.ui.utilities.Quadruple;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
-import de.atb.typhondl.xtext.ui.utilities.Tripple;
 
 /**
  * Second page of the TyphonDL {@link CreateModelWizard}. The ML model gets
@@ -119,15 +121,11 @@ public class CreationDBMSPage extends MyWizardPage {
 
     private SupportedTechnologies chosenTechnology;
 
-    private Composite hidden;
-
-    private GridData hiddenData;
-
     private Composite main;
 
     private int pageWidth = 607;
 
-    private ArrayList<Tripple<Composite, GridData, Group>> hiddenThings;
+    private ArrayList<Quadruple<Composite, GridData, Combo, String[]>> hiddenThings;
 
     /**
      * Creates a CreationDBMSPage, reading the ML model from the given file.
@@ -137,7 +135,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     public CreationDBMSPage(String pageName, IFile file, SupportedTechnologies chosenTechnology) {
         this(pageName, file, readModel(file));
-        this.chosenTechnology = chosenTechnology == null ? SupportedTechnologies.values()[2] : chosenTechnology;
+        this.chosenTechnology = chosenTechnology == null ? SupportedTechnologies.values()[0] : chosenTechnology;
     }
 
     /**
@@ -196,9 +194,6 @@ public class CreationDBMSPage extends MyWizardPage {
         return null;
     }
 
-    // TODO TYP-186
-//    public abstract void createControl(Composite parent);
-//
     @Override
     public void createControl(Composite parent) {
         setTitle("Choose a DBMS for each database");
@@ -207,6 +202,7 @@ public class CreationDBMSPage extends MyWizardPage {
         scrolling.setContent(main);
         scrolling.setExpandVertical(true);
         scrolling.setExpandHorizontal(true);
+        scrolling.setVisible(true);
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         main.setLayout(new GridLayout(1, false));
         helmValidationList = new HashMap<>();
@@ -231,12 +227,6 @@ public class CreationDBMSPage extends MyWizardPage {
             group.setText(db.getName());
 
             createFields(group, templates, db);
-
-//            if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-//                kubernetesComposeControls(group, templates, db);// TODO TYP-186 bad
-//            } else {
-//                dockerComposeControls(group, templates, db);
-//            }
         }
         validate();
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -270,32 +260,30 @@ public class CreationDBMSPage extends MyWizardPage {
         externalDatabaseCheck
                 .setToolTipText("Check this box if you already have this database outside of the polystore");
 
-        hidden = new Composite(group, SWT.NONE);
-        hidden.setLayout(new GridLayout(2, false));
-        hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        Composite hidden = new Composite(group, SWT.NONE);
+        hidden.setLayout(new GridLayout(1, false));
+        GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
         hiddenData.exclude = !chosenTechnology.canUseHelm();
         hiddenData.horizontalSpan = 2;
         hidden.setLayoutData(hiddenData);
-        hiddenThings.add(new Tripple<Composite, GridData, Group>(hidden, hiddenData, group));
 
         Button useHelmChartCheck = new Button(hidden, SWT.CHECK);
         useHelmChartCheck.setText("Use Helm chart (please select DBMS from Templates)");
         useHelmChartCheck.setSelection(false);
-        useHelmChartCheck.setLayoutData(wideGridData);
         useHelmChartCheck.setToolTipText("Use a Helm chart for one of the supported technologies");
         helmValidationList.put(db, useHelmChartCheck);
 
         new Label(group, NONE).setText("Choose Template:");
         Combo combo = new Combo(group, SWT.READ_ONLY);
-        combo.setItems(dbTemplateNames);
+        combo.setItems(chosenTechnology.canUseHelm() ? dbTemplateNames : removeHelmTemplates(dbTemplateNames));
         combo.setText(dbTemplateNames[0]);
         // set initial dbTemplate
         if (!existingModelCheck.getSelection()) {
             result.add(useBufferOnDB(db, templates.get(0)));
         }
         changedField.put(dbName, false);
-
-        new Label(group, SWT.NONE).setText("test");
+        hiddenThings
+                .add(new Quadruple<Composite, GridData, Combo, String[]>(hidden, hiddenData, combo, dbTemplateNames));
 
         existingModelCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -312,15 +300,14 @@ public class CreationDBMSPage extends MyWizardPage {
                 removeDBfromResult(dbName);
                 if (useExistingModel) {
                     newDB = readExistingFile(dbName);
-                    newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.add(newDB);
                 } else {
                     DB template = getDBTemplateByName(templates, combo.getText());
                     newDB = useBufferOnDB(db, template);
-                    newDB.setExternal(externalDatabaseCheck.getSelection());
-                    result.add(newDB);
                 }
+                newDB.setExternal(externalDatabaseCheck.getSelection());
+                result.add(newDB);
                 changedField.put(newDB.getName(), true);
+                updateHelmList(dbName, newDB);
                 validate();
             }
         });
@@ -337,12 +324,14 @@ public class CreationDBMSPage extends MyWizardPage {
                     useHelmChartCheck.setSelection(!useExternalDatabase);
                 }
                 removeDBfromResult(dbName);
+                combo.setText(combo.getItem(0));
                 DB template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template);
                 newDB.setExternal(useExternalDatabase);
                 clearEverythingExceptTypeAndCredentials(newDB);
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
+                updateHelmList(dbName, newDB);
                 validate();
             };
         });
@@ -359,14 +348,17 @@ public class CreationDBMSPage extends MyWizardPage {
                     externalDatabaseCheck.setSelection(!useHelmChart);
                 }
                 removeDBfromResult(dbName);
+                if (useHelmChart) {
+                    combo.setText(getFirstHelmTemplate(combo.getItems()));
+                } else {
+                    combo.setText(combo.getItem(0));
+                }
                 DB template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template);
                 newDB.setExternal(externalDatabaseCheck.getSelection());
-                if (useHelmChart) {
-                    newDB = addHelmChartKeys(newDB);
-                }
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
+                updateHelmList(dbName, newDB);
                 validate();
             }
         });
@@ -379,19 +371,35 @@ public class CreationDBMSPage extends MyWizardPage {
                 removeDBfromResult(dbName);
                 DB template = getDBTemplateByName(templates, combo.getText());
                 DB newDB = useBufferOnDB(db, template);
-                if (useHelmChartCheck != null && useHelmChartCheck.getSelection()) {
-                    newDB = addHelmChartKeys(newDB);
-                }
                 if (externalDatabaseCheck.getSelection()) {
                     newDB.setExternal(true);
                     clearEverythingExceptTypeAndCredentials(newDB);
                 }
                 result.add(newDB);
                 changedField.put(newDB.getName(), true);
+                updateHelmList(dbName, newDB);
                 validate();
             }
         });
 
+    }
+
+    protected void updateHelmList(String dbName, DB newDB) {
+        DB db = findDBByNameInList(dbName,
+                helmValidationList.keySet().stream().collect(Collectors.toCollection(ArrayList::new)));
+        helmValidationList.put(newDB, helmValidationList.get(db));
+        if (!db.equals(newDB)) {
+            helmValidationList.remove(db);
+        }
+    }
+
+    protected String getFirstHelmTemplate(String[] items) {
+        for (String string : items) {
+            if (string.toLowerCase().contains("helm")) {
+                return string;
+            }
+        }
+        return "ERROR";
     }
 
     /**
@@ -406,140 +414,14 @@ public class CreationDBMSPage extends MyWizardPage {
         newDB.setImage(null);
     }
 
-//
-//    /**
-//     * Creates controls for DBMS docker compose page
-//     * <li>existing model</li>
-//     * <li>existing database</li>
-//     * <li>combo for choosing template</li>
-//     * 
-//     * @param group
-//     * @param templates
-//     * @param db
-//     */
-//    private void dockerComposeControls(Composite group, ArrayList<DB> templates, DB db) {
-//        String dbName = db.getName();
-//        String[] dbTemplateNames = templates.stream().map(dbTemplate -> dbTemplate.getName())
-//                .collect(Collectors.toList()).toArray(new String[0]);
-//        GridData wideGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-//        wideGridData.horizontalSpan = 2;
-//
-//        Button existingModelCheck = new Button(group, SWT.CHECK);
-//        existingModelCheck.setText("Use existing " + dbName + ".tdl file in this project folder");
-//        existingModelCheck.setSelection(fileExists(dbName + ".tdl"));
-//        if (existingModelCheck.getSelection()) {
-//            result.add(readExistingFile(dbName));
-//        }
-//        existingModelCheck.setLayoutData(wideGridData);
-//        existingModelCheck.setToolTipText("Check this box if you already have a model file for " + dbName);
-//        fileNameValidationList.put(dbName, existingModelCheck);
-//
-//        Button externalDatabaseCheck = new Button(group, SWT.CHECK);
-//        externalDatabaseCheck.setText("Use existing database for " + dbName + " (please select DBMS from Templates)");
-//        externalDatabaseCheck.setSelection(false);
-//        externalDatabaseCheck.setLayoutData(wideGridData);
-//        externalDatabaseCheck
-//                .setToolTipText("Check this box if you already have this database outside of the polystore");
-//
-//        changedField.put(dbName, false);
-//
-//        new Label(group, NONE).setText("Choose Template:");
-//        Combo combo = new Combo(group, SWT.READ_ONLY);
-//        combo.setItems(removeHelmTemplates(dbTemplateNames));
-//        combo.setText(dbTemplateNames[0]);
-//        // set initial dbTemplate
-//        if (!existingModelCheck.getSelection()) {
-//            result.add(useBufferOnDB(db, templates.get(0)));
-//        }
-//
-//        existingModelCheck.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                boolean useExistingModel = existingModelCheck.getSelection();
-//                combo.setEnabled(!useExistingModel);
-//                if (externalDatabaseCheck.getSelection()) {
-//                    externalDatabaseCheck.setSelection(!useExistingModel);
-//                }
-//                removeDBfromResult(dbName);
-//                DB newDB;
-//                if (useExistingModel) {
-//                    newDB = readExistingFile(dbName);
-//                    newDB.setExternal(externalDatabaseCheck.getSelection());
-//                    result.add(newDB);
-//                } else {
-//                    DB template = getDBTemplateByName(templates, combo.getText());
-//                    newDB = useBufferOnDB(db, template);
-//                    newDB.setExternal(externalDatabaseCheck.getSelection());
-//                    result.add(newDB);
-//                }
-//                changedField.put(newDB.getName(), true);
-//                validate();
-//            }
-//        });
-//
-//        externalDatabaseCheck.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                boolean useExternalDatabase = externalDatabaseCheck.getSelection();
-//                combo.setEnabled(true);
-//                if (existingModelCheck.getSelection()) {
-//                    existingModelCheck.setSelection(!useExternalDatabase);
-//                }
-//                removeDBfromResult(dbName);
-//                DB template = getDBTemplateByName(templates, combo.getText());
-//                DB newDB = useBufferOnDB(db, template);
-//                newDB.setExternal(useExternalDatabase);
-//                clearEverythingExceptTypeAndCredentials(newDB);
-//                result.add(newDB);
-//                changedField.put(newDB.getName(), true);
-//                validate();
-//            };
-//        });
-//
-//        combo.setEnabled(!existingModelCheck.getSelection());
-//        combo.setToolTipText("Choose specific DBMS Template for " + dbName);
-//        combo.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                removeDBfromResult(dbName);
-//                DB template = getDBTemplateByName(templates, combo.getText());
-//                DB newDB = useBufferOnDB(db, template);
-//                if (externalDatabaseCheck.getSelection()) {
-//                    newDB.setExternal(true);
-//                    clearEverythingExceptTypeAndCredentials(newDB);
-//                }
-//                result.add(newDB);
-//                changedField.put(newDB.getName(), true);
-//                validate();
-//            }
-//        });
-//    }
-//
-//    private String[] removeHelmTemplates(String[] dbTemplateNames) {
-//        ArrayList<String> listWithoutHelm = new ArrayList<>();
-//        for (String string : dbTemplateNames) {
-//            if (!string.toLowerCase().contains("helm")) {
-//                listWithoutHelm.add(string);
-//            }
-//        }
-//        return listWithoutHelm.toArray(new String[0]);
-//    }
-//
-    /**
-     * Adds default HelmList to the newDB
-     * 
-     * @param newDB
-     * @return
-     */
-    private DB addHelmChartKeys(DB newDB) {
-        if (newDB.getHelm() == null) {
-            HelmList helmList = TyphonDLFactory.eINSTANCE.createHelmList();
-            helmList.setChartName(newDB.getType().getName().toLowerCase());
-            helmList.setRepoAddress("https://charts.bitnami.com/bitnami");
-            helmList.setRepoName("bitnami");
-            newDB.setHelm(helmList);
+    private String[] removeHelmTemplates(String[] dbTemplateNames) {
+        ArrayList<String> listWithoutHelm = new ArrayList<>();
+        for (String string : dbTemplateNames) {
+            if (!string.toLowerCase().contains("helm")) {
+                listWithoutHelm.add(string);
+            }
         }
-        return newDB;
+        return listWithoutHelm.toArray(new String[0]);
     }
 
     /**
@@ -548,15 +430,20 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param dbName The name of the DB to delete from result map
      */
     protected void removeDBfromResult(String dbName) {
+        DB dbToRemove = findDBByNameInList(dbName, result);
+        if (dbToRemove != null) {
+            result.remove(dbToRemove);
+        }
+    }
+
+    private DB findDBByNameInList(String dbName, ArrayList<DB> list) {
         DB dbToRemove = null;
-        for (DB db : result) {
+        for (DB db : list) {
             if (db.getName().equalsIgnoreCase(dbName)) {
                 dbToRemove = db;
             }
         }
-        if (dbToRemove != null) {
-            result.remove(dbToRemove);
-        }
+        return dbToRemove;
     }
 
     /**
@@ -633,67 +520,63 @@ public class CreationDBMSPage extends MyWizardPage {
         db.setName(dbName);
         return db;
     }
-//
-//    /**
-//     * Checks if a database file already exists, gives warning if the file exists
-//     * and would be overwritten or error if the file doesn't exist but the
-//     * fileExists checkbox is checked
-//     * 
-//     * Shows error if the chosen template contains a HelmList but the
-//     * useHelmChartButton is not checked
-//     */
-//    protected void validate() {
-//        Status status = null;
-//        ArrayList<String> warning = new ArrayList<String>();
-//        for (String dbName : fileNameValidationList.keySet()) {
-//            Button existingModelCheck = fileNameValidationList.get(dbName);
-//            String path = dbName + ".tdl";
-//            if (existingModelCheck.getSelection()) {
-//                if (!fileExists(path)) {
-//                    status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
-//                }
-//            } else {
-//                if (fileExists(path)) {
-//                    warning.add(path);
-//                }
-//            }
-//        }
-//        if (helmValidationList != null) {
-//            for (DB db : helmValidationList.keySet()) {
-//                if (db.getHelm() != null && !helmValidationList.get(db).getSelection()) {
-//                    status = new Status(IStatus.ERROR, "Wizzard", "The Template for " + db.getName()
-//                            + " contains a helm key. Please check \"Use Helm chart\" ");
-//                }
-//            }
-//        }
-//
-//        if (!warning.isEmpty() && status == null) {
-//            status = new Status(IStatus.WARNING, "Wizard", "Database file(s) " + Arrays.toString(warning.toArray())
-//                    + " already exist(s) and will be overwritten if you continue");
-//        }
-//
-//        setStatus(status);
-//    }
 
-    private void validate() {
-        // TODO Auto-generated method stub
+    /**
+     * Checks if a database file already exists, gives warning if the file exists
+     * and would be overwritten or error if the file doesn't exist but the
+     * fileExists checkbox is checked
+     * 
+     * Shows error if the chosen template contains a HelmList but the
+     * useHelmChartButton is not checked
+     */
+    protected void validate() {
+        Status status = null;
+        ArrayList<String> warning = new ArrayList<String>();
+        for (String dbName : fileNameValidationList.keySet()) {
+            Button existingModelCheck = fileNameValidationList.get(dbName);
+            String path = dbName + ".tdl";
+            if (existingModelCheck.getSelection()) {
+                if (!fileExists(path)) {
+                    status = new Status(IStatus.ERROR, "Wizard", "Database file " + path + " doesn't exists.");
+                }
+            } else {
+                if (fileExists(path)) {
+                    warning.add(path);
+                }
+            }
+        }
+        for (DB db : helmValidationList.keySet()) {
+            if (db.getHelm() != null && !helmValidationList.get(db).getSelection()) {
+                status = new Status(IStatus.ERROR, "Wizzard",
+                        "The Template for " + db.getName() + " contains a helm key. Please check \"Use Helm chart\" ");
+            }
+            if (db.getHelm() == null && helmValidationList.get(db).getSelection()) {
+                status = new Status(IStatus.ERROR, "Wizzard",
+                        "Please select a template for " + db.getName() + " that contains Helm configuration ");
+            }
+        }
 
+        if (!warning.isEmpty() && status == null) {
+            status = new Status(IStatus.WARNING, "Wizard", "Database file(s) " + Arrays.toString(warning.toArray())
+                    + " already exist(s) and will be overwritten if you continue");
+        }
+
+        setStatus(status);
     }
 
     public void updateData(SupportedTechnologies chosenTechnology) {
-        if (this.chosenTechnology != chosenTechnology) {
+        final boolean canUseHelm = chosenTechnology.canUseHelm();
+        if (this.chosenTechnology.canUseHelm() != canUseHelm) {
             this.chosenTechnology = chosenTechnology;
-            for (Tripple<Composite, GridData, Group> tripple : hiddenThings) {
-                tripple.first.setVisible(chosenTechnology.canUseHelm());
-                tripple.second.exclude = !chosenTechnology.canUseHelm();
-                System.out.println("Can use helm: " + chosenTechnology.canUseHelm() + ", " + "Helm is visible in group "
-                        + tripple.third.getText() + ": " + tripple.first.isVisible());
-//                tripple.third.layout(true);
+            for (Quadruple<Composite, GridData, Combo, String[]> quadruple : hiddenThings) {
+                quadruple.first.setVisible(canUseHelm);
+                quadruple.second.exclude = !canUseHelm;
+                quadruple.third.setItems(canUseHelm ? quadruple.fourth : removeHelmTemplates(quadruple.fourth));
+                quadruple.third.setText(quadruple.third.getItem(0));
             }
             main.layout(true);
             main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
             ((ScrolledComposite) main.getParent()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
-            // TODO Auto-generated method stub
         }
     }
 
