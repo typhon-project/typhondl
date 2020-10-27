@@ -32,12 +32,9 @@ import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
@@ -72,22 +69,7 @@ public class DeploymentModelService {
 
     public static DeploymentModel readModel(IFile file, XtextLiveScopeResourceSetProvider provider,
             Properties properties) {
-        XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
-        resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-        // adds all .tdl files in project folder to resourceSet
-        IResource members[] = null;
-        try {
-            members = file.getProject().members();
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-        for (IResource member : members) {
-            if (member instanceof IFile) {
-                if (((IFile) member).getFileExtension().equals("tdl")) {
-                    resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
-                }
-            }
-        }
+        XtextResourceSet resourceSet = ModelService.getResourceSet(provider, file);
         // read DL model and properties
         URI modelURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
         Resource DLmodelResource = resourceSet.getResource(modelURI, true);

@@ -27,14 +27,11 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
@@ -104,35 +101,21 @@ public class ModelCreator {
     }
 
     /**
-     * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
+     * Gets the provided ResourceSet with all .tdl files
      */
     private void addResources() {
-        this.resourceSet = (XtextResourceSet) Activator.getInstance()
-                .getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-                .getInstance(XtextLiveScopeResourceSetProvider.class).get(this.MLmodel.getProject());
-        this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-        IResource members[] = null;
-        try {
-            members = this.MLmodel.getProject().members();
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-        for (IResource member : members) {
-            if (member instanceof IFile) {
-                if (((IFile) member).getFileExtension().equals("tdl")) {
-                    resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
-                }
-            }
-        }
+        this.resourceSet = ModelService
+                .getResourceSet(Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+                        .getInstance(XtextLiveScopeResourceSetProvider.class), MLmodel);
     }
 
     /**
      * Creates the new DL model
      * 
-     * @param result         The DBs and Containers to add to the new model
+     * @param result           The DBs and Containers to add to the new model
      * @param chosenTechnology The int representation of the chosen technology
-     *                       Template from {@link SupportedTechnologies}
-     * @param properties     The polystore.properties
+     *                         Template from {@link SupportedTechnologies}
+     * @param properties       The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
     public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTechnology,

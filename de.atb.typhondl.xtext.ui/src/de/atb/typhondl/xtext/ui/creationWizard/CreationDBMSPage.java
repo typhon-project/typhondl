@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
@@ -50,7 +48,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 import org.xml.sax.SAXException;
@@ -63,6 +60,7 @@ import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
@@ -160,23 +158,9 @@ public class CreationDBMSPage extends MyWizardPage {
      * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
      */
     private void addResources() {
-        this.resourceSet = (XtextResourceSet) Activator.getInstance()
-                .getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-                .getInstance(XtextLiveScopeResourceSetProvider.class).get(this.file.getProject());
-        this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-        IResource members[] = null;
-        try {
-            members = this.file.getProject().members();
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-        for (IResource member : members) {
-            if (member instanceof IFile) {
-                if (((IFile) member).getFileExtension().equals("tdl")) {
-                    resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
-                }
-            }
-        }
+        this.resourceSet = ModelService
+                .getResourceSet(Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+                        .getInstance(XtextLiveScopeResourceSetProvider.class), file);
     }
 
     /**
@@ -454,6 +438,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private DB readExistingFile(String dbName) {
         String path = dbName + ".tdl";
+        System.out.println("file exists: " + path + ": " + fileExists(path));
         if (fileExists(path)) {
             URI dbURI = URI.createPlatformResourceURI(
                     this.file.getFullPath().removeLastSegments(1).append(path).toString(), true);

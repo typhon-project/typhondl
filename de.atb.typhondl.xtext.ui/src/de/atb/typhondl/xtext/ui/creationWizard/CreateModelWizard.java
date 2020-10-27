@@ -135,7 +135,7 @@ public class CreateModelWizard extends Wizard {
      */
     @Override
     public boolean performFinish() {
-        String message = this.getPage(getDBMSPageName()).getMessage();
+        String message = this.getPage(PAGENAME_DBMS).getMessage();
         if (message != null) {
             if (!MessageDialog.openConfirm(this.getShell(), "Wizard", message)) {
                 return false;
@@ -277,12 +277,12 @@ public class CreateModelWizard extends Wizard {
             if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
                 return getNLAEPage();
             }
-            return this.getPage(getDBMSPageName());
+            return this.getPage(PAGENAME_DBMS);
         }
         if (page instanceof CreationNLAEPage) {
             // next page is CreationDBMSPage
             this.properties = ((CreationNLAEPage) page).getProperties();
-            return this.getPage(getDBMSPageName());
+            return this.getPage(PAGENAME_DBMS);
         }
         if (page instanceof CreationDBMSPage) {
             // next pages are the CreationDatabasePage(s)
@@ -347,10 +347,6 @@ public class CreateModelWizard extends Wizard {
 
     private String getAnalyticsPageName() {
         return PAGENAME_ANALYTICS + chosenTechnology.name();
-    }
-
-    private String getDBMSPageName() {
-        return PAGENAME_DBMS + chosenTechnology.name();
     }
 
     public int getPageWidth() {

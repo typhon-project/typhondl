@@ -22,7 +22,14 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.ClusterType;
@@ -32,6 +39,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
+import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
@@ -169,5 +177,35 @@ public class ModelService {
      */
     private static String addQuotes(String property) {
         return property.contains("\"") ? property : "\"" + property + "\"";
+    }
+
+    /**
+     * Gets the XtextResourceSet from given provider and adds all .tdl files
+     * contained in the parent folder of given file
+     * 
+     * @param provider the XtextLiveScopeResourceSetProvider (injected or obtained
+     *                 through {@link Activator})
+     * @param file     all .tdl siblings of this file get added to the ResourceSet
+     * @return the XtextResourceSet containing all .tdl files contained in the
+     *         parent folder of given file
+     */
+    public static XtextResourceSet getResourceSet(XtextLiveScopeResourceSetProvider provider, IResource file) {
+        XtextResourceSet resourceSet = (XtextResourceSet) provider.get(file.getProject());
+        resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+        // adds all .tdl files in project folder to resourceSet
+        IResource members[] = null;
+        try {
+            members = file.getParent().members();
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+        for (IResource member : members) {
+            if (member instanceof IFile) {
+                if (((IFile) member).getFileExtension().equals("tdl")) {
+                    resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
+                }
+            }
+        }
+        return resourceSet;
     }
 }
