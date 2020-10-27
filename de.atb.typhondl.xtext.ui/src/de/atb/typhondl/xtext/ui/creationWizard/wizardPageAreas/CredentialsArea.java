@@ -58,7 +58,7 @@ public class CredentialsArea extends Area {
      *                   or just the password
      */
     public CredentialsArea(DB db, Composite parent, Properties properties) {
-        super(db, null, parent, "Credentials", properties);
+        super(db, null, parent, "Credentials", properties, null, null);
     }
 
     @Override

@@ -68,8 +68,7 @@ public class VolumesArea extends Area {
      * @param parent           the main control
      */
     public VolumesArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, container, parent, "Volumes", null);
-        this.chosenTechnology = chosenTechnology;
+        super(db, container, parent, "Volumes", null, chosenTechnology, null);
     }
 
     @Override

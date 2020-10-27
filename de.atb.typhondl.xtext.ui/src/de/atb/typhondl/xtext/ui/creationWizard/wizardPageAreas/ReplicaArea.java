@@ -63,13 +63,13 @@ public class ReplicaArea extends Area {
      */
     public ReplicaArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
             Properties properties) {
-        super(db, container, parent, "Replication", properties);
-        this.replicationProperty = ReplicationService.getReplicationProperty(db.getType().getName().toLowerCase(),
-                chosenTechnology, properties);
+        super(db, container, parent, "Replication", properties, chosenTechnology, null);
     }
 
     @Override
     public void createArea() {
+        this.replicationProperty = ReplicationService.getReplicationProperty(db.getType().getName().toLowerCase(),
+                chosenTechnology, properties);
         if (!db.isExternal() && !replicationProperty.isEmpty() && db.getHelm() == null) {
 
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);

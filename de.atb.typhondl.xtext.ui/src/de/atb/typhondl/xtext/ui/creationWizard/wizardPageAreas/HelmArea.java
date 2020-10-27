@@ -43,8 +43,6 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class HelmArea extends Area {
 
-    private SupportedTechnologies chosenTechnology;
-
     /**
      * WizardPage {@link Area} to alter helm chart configuration
      * 
@@ -53,8 +51,7 @@ public class HelmArea extends Area {
      * @param parent           the main control
      */
     public HelmArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, null, parent, "Helm Charts", null);
-        this.chosenTechnology = chosenTechnology;
+        super(db, null, parent, "Helm Charts", null, chosenTechnology, null);
     }
 
     @Override

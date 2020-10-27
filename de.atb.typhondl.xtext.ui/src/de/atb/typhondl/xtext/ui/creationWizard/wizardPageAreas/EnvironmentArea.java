@@ -44,7 +44,7 @@ public class EnvironmentArea extends Area {
      * @param parent           the main control
      */
     public EnvironmentArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, null, parent, "Environment", null);
+        super(db, null, parent, "Environment", null, null, null);
     }
 
     @Override

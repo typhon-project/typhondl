@@ -52,10 +52,8 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class PortArea extends Area {
 
-    private MyWizardPage page;
     private Text targetPortText;
     private Text publishedPortText;
-    private SupportedTechnologies chosenTechnology;
 
     /**
      * WizardPage {@link Area} to publish a database's ports
@@ -70,9 +68,7 @@ public class PortArea extends Area {
      */
     public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
             Properties properties, MyWizardPage page) {
-        super(db, container, parent, "Ports", properties);
-        this.page = page;
-        this.chosenTechnology = chosenTechnology;
+        super(db, container, parent, "Ports", properties, chosenTechnology, page);
     }
 
     @Override
