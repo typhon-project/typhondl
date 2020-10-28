@@ -21,16 +21,8 @@
 aCluster.type.name->any(str | str='DockerCompose')<>null
 /]
 
-[query public isDockerSwarm(aCluster : Cluster) : Boolean = 
-aCluster.type.name->any(str | str='DockerSwarm')<>null 
-/]
-
 [query public isKubernetes(aCluster : Cluster) : Boolean = 
 aCluster.type.name->any(str | str='Kubernetes') <> null
-/]
-
-[query public isDockerSwarm(aDeploymentModel : DeploymentModel) : Boolean = 
-aDeploymentModel.elements->filter(typhonDL::ClusterType).name->any(str | str='DockerSwarm')<>null
 /]
 
 [query public isDockerCompose(aDeploymentModel : DeploymentModel) : Boolean = 

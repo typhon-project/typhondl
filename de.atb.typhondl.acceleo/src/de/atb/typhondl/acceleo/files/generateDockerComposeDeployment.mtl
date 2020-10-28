@@ -20,7 +20,7 @@
 [/template]
 
 [template public createYamlContent(aCluster : Cluster)]
-version: '2.4'
+version: '3.7'
 
 [if (aCluster.networks <> null)]
 [for (aNetwork : Cluster_Network | aCluster.networks)]
@@ -70,12 +70,19 @@ services:
     [aContainer.ports.print()/]
 [/if]
 [if (aContainer.resources <> null)]
-    [aContainer.resources.print()/]
+    [aContainer.printResourcesAndReplication()/]
+[elseif (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+    [aContainer.replication.printStateless()/]
+[/if]	
 [/if]    
 [if (not aContainer.properties -> isEmpty())]
 [for (aProperty : Property | aContainer.properties)]
     [aProperty.print()/]
 [/for]
+[/if]
+[if (aContainer.replication <> null and aContainer.containsDB())]
+[aContainer.printDBReplication()/]
 [/if]
 [if (aContainer.name.equalsIgnoreCase('kafka'))]
 [file ('typhonAnalyticsConfig.properties', false, 'UTF-8')]
@@ -188,11 +195,32 @@ networks:
 [/for]
 [/template]
 
+[template public printStateless(aReplication : Replication) post (trim())]
+deploy:
+  [aReplication.printStatelessInsideDeploy()/]
+[/template]
+
+[template public printStatelessInsideDeploy(aReplication : Replication)]
+replicas: [aReplication.replicas/]
+[/template]
+
 [template public print(aResources : Resources) post (trim())]
-cpus: '[aResources.limitCPU/]'
-mem_limit: [aResources.limitMemory/]
-[if (aResources.reservationMemory <> null)]
-mem_reservation: [aResources.reservationMemory/]
+resources:
+  limits:
+    cpus: '[aResources.limitCPU/]'
+    memory: [aResources.limitMemory/]
+[if (aResources.reservationCPU <> null)]
+  reservations:
+    cpus: '[aResources.reservationCPU/]'
+    memory: [aResources.reservationMemory/]
+[/if]
+[/template]
+
+[template public printResourcesAndReplication(aContainer : Container) post (trim())]
+deploy:
+  [aContainer.resources.print()/]
+[if (aContainer.replication <> null)]
+  [aContainer.replication.printStatelessInsideDeploy()/]
 [/if]
 [/template]
 

@@ -39,29 +39,6 @@ public enum SupportedTechnologies {
             return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"));
         }
     },
-    DockerSwarm("Docker Swarm", "Docker", true, "volume", false, false, true, 1, 99999, false, false, "kafka:29092") {
-        // TODO TYP-186 volumes in swam
-        // TODO TYP-186 find restart in model, add to "deploy"
-        // TODO TYP-186 It seems that tests with DockerCompose using "kafka:29092"
-        // instead of "localhost:29092" are failing
-        @Override
-        public void setConnectionDefaults(Properties properties) {
-            properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-            properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-        }
-
-        @Override
-        public void insertModelsToMetadata(Container polystoreMongoContainer, String outputFolder,
-                String mongoInsertStatement, Properties properties) {
-            // TODO TYP-186 upload models to metadata in swarm
-        }
-
-        @Override
-        public List<InputField> kafkaInputFields() {
-            return Arrays.asList(new InputField("Kafka version: ", "analytics.kafka.version"),
-                    new InputField("Replicas: ", "analytics.kafka.replicas"));
-        }
-    },
     Kubernetes("Kubernetes with Docker", "Docker", false, "persistentVolumeClaim", true, true, true, 30000, 32767,
             false, false, "typhon-cluster-kafka-bootstrap:9092") {
         @Override
