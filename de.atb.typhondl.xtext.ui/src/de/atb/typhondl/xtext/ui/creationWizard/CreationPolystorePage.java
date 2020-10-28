@@ -264,7 +264,7 @@ public class CreationPolystorePage extends MyWizardPage {
             }
             if (!this.chosenTechnology.canDoStatelessReplication() && parseInt != 1) {
                 setStatus(new Status(IStatus.WARNING, "Wizard",
-                        "Setting stateless replication is not fully supported when using "
+                        "Setting stateless replication may lead to errors when using "
                                 + chosenTechnology.displayedName()));
             }
             if (parseInt == 0) {

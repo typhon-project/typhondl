@@ -103,16 +103,17 @@ public class DeploymentModelService {
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-        SupportedTechnologies clusterType = ModelService.getSupportedTechnology(ModelService.getClusterType(model));
+        SupportedTechnologies chosenTechnology = ModelService
+                .getSupportedTechnology(ModelService.getClusterType(model));
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
-        DB polystoreDB = DBService.createPolystoreDB(properties, clusterType, DBService.getMongoDBType(model));
+        DB polystoreDB = DBService.createPolystoreDB(properties, chosenTechnology, DBService.getMongoDBType(model));
         model.getElements().add(polystoreDB);
         Container polystoreDBContainer = ContainerService.create(
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME), containerType, polystoreDB,
                 properties.getProperty(PropertiesService.DB_CONTAINERNAME) + ":"
                         + properties.getProperty(PropertiesService.DB_PORT));
-        if (clusterType.setInitDB()) {
+        if (chosenTechnology.setInitDB()) {
             polystoreDBContainer.getProperties().add(ModelService.createKeyValuesArray("volumes", new String[] {
                     "./" + properties.getProperty(PropertiesService.DB_VOLUME) + "/:/docker-entrypoint-initdb.d" }));
         }
@@ -138,11 +139,11 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.API_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.API_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.API_RESERVATION_MEMORY)));
-        if (clusterType.waitForMetadata()) {
+        if (chosenTechnology.waitForMetadata()) {
             polystoreAPIContainer.getProperties()
                     .add(ContainerService.addAPIEntrypoint(properties.getProperty(PropertiesService.API_ENTRYPOINT)));
         }
-        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186 (replace with restartIsDefault()
+        if (!chosenTechnology.restartIsDefault()) {
             polystoreAPIContainer.getProperties().add(ModelService.createKey_Values("restart", "always", null));
         }
         application.getContainers().add(polystoreAPIContainer);
@@ -180,7 +181,7 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
-        if (clusterType == SupportedTechnologies.DockerCompose) { // TODO TYP-186 (replace with restartIsDefault()
+        if (chosenTechnology.restartIsDefault()) {
             qlServerContainer.getProperties()
                     .addAll(ModelService.createListOfKey_Values(new String[] { "restart", "always" }));
         }

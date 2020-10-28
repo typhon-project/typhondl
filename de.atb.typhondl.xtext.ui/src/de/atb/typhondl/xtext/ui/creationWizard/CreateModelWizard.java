@@ -219,7 +219,7 @@ public class CreateModelWizard extends Wizard {
      * @return the next page
      */
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {// TODO TYP-186 bad
+    public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof CreationMainPage) {
             // next page is CreationPolystorePage
             this.chosenTechnology = ((CreationMainPage) page).getChosenTemplate();
@@ -272,11 +272,6 @@ public class CreateModelWizard extends Wizard {
         if (page instanceof CreationAnalyticsPage) {
             // next page can be CreationNLAEPage or CreationDBMSPage
             this.properties = ((CreationAnalyticsPage) page).getProperties();
-            if (this.chosenTechnology == SupportedTechnologies.DockerCompose // TODO TYP-186
-                    && Integer.parseInt(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_REPLICAS)) > 1) {
-                MessageDialog.openInformation(getShell(), "Wizard",
-                        "To be able to replicate containers, Docker has to run in Swarm Mode.");
-            }
             if (properties.getProperty(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
                 return getNLAEPage();
             }

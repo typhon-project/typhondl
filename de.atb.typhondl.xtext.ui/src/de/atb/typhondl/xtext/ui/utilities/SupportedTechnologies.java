@@ -13,14 +13,13 @@ import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 /**
  * Utility class for providing supported Technologies. Included at the moment:
  * <li>Docker Compose</li>
- * <li>Docker Swarm</li>
  * <li>Kubernetes with Docker containers</li>
  * 
- * @author flug TODO TYP-186 test ports
+ * @author flug
  */
 public enum SupportedTechnologies {
     DockerCompose("Docker Compose", "Docker", true, "volume", false, false, false, 1, 99999, true, true,
-            "localhost:29092") {
+            "localhost:29092", false) {
 
         @Override
         public void setConnectionDefaults(Properties properties) {
@@ -40,7 +39,7 @@ public enum SupportedTechnologies {
         }
     },
     Kubernetes("Kubernetes with Docker", "Docker", false, "persistentVolumeClaim", true, true, true, 30000, 32767,
-            false, false, "typhon-cluster-kafka-bootstrap:9092") {
+            false, false, "typhon-cluster-kafka-bootstrap:9092", true) {
         @Override
         public void setConnectionDefaults(Properties properties) {
             properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
@@ -103,6 +102,8 @@ public enum SupportedTechnologies {
 
     private String kafkaInternalURI;
 
+    private boolean restartIsDefault;
+
     public String displayedName() {
         return displayedName;
     }
@@ -151,6 +152,10 @@ public enum SupportedTechnologies {
         return kafkaInternalURI;
     }
 
+    public boolean restartIsDefault() {
+        return restartIsDefault;
+    }
+
     /**
      * Creates enum constant with
      * 
@@ -179,10 +184,13 @@ public enum SupportedTechnologies {
      *                                     the metadata container to be ready and
      *                                     have the models uploaded
      * @param kafkaInternalURI             internal kafka URI
+     * @param restartIsDefault             if false, "restart = always" is added to
+     *                                     QL and API containers
      */
     private SupportedTechnologies(String displayedName, String containerType, boolean createAllAnalyticsContainers,
             String defaultVolumesType, boolean canUseHelm, boolean canUseKubeConfig, boolean canDoStatelessReplication,
-            int minPort, int maxPort, boolean setInitDB, boolean waitForMetadata, String kafkaInternalURI) {
+            int minPort, int maxPort, boolean setInitDB, boolean waitForMetadata, String kafkaInternalURI,
+            boolean restartIsDefault) {
         this.displayedName = displayedName;
         this.containerType = containerType;
         this.createAllAnalyticsContainers = createAllAnalyticsContainers;
@@ -195,6 +203,7 @@ public enum SupportedTechnologies {
         this.setInitDB = setInitDB;
         this.waitForMetadata = waitForMetadata;
         this.kafkaInternalURI = kafkaInternalURI;
+        this.restartIsDefault = restartIsDefault;
     }
 
     public abstract void setConnectionDefaults(Properties properties);
