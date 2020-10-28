@@ -230,13 +230,16 @@ public class CreateModelWizard extends Wizard {
                 polystorePage.setWizard(this);
                 addPage(polystorePage);
             } else {
-                ((CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE)).updateData(properties, chosenTechnology);
+                CreationPolystorePage creationPolystorePage = (CreationPolystorePage) this.getPage(PAGENAME_POLYSTORE);
+                if (creationPolystorePage.getControl() != null) {
+                    creationPolystorePage.updateData(properties, chosenTechnology);
+                }
             }
             return this.getPage(PAGENAME_POLYSTORE);
         }
 
         if (page instanceof CreationPolystorePage) {
-            // next page can be CrreationAnalyticsPage, CreationNLAEPage or CreationDBMSPage
+            // next page can be CreationAnalyticsPage, CreationNLAEPage or CreationDBMSPage
             if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
                     && properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")) {
                 if (!analyticsPagesExist()) {

@@ -128,6 +128,7 @@ public class CreationMainPage extends MyWizardPage {
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
+        setResourceProperties();
         addGroups();
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));

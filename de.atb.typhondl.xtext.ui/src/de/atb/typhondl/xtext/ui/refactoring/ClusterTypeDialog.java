@@ -84,7 +84,13 @@ public class ClusterTypeDialog extends StatusDialog {
         typeCombo.setItems(itemList.toArray(new String[0]));
         typeCombo.setText(typeCombo.getItem(ModelService.getSupportedTechnology(oldClusterType).ordinal()));
         typeCombo.addModifyListener(e -> {
-            newClusterType.setName(SupportedTechnologies.values()[typeCombo.getSelectionIndex()].name());
+            SupportedTechnologies chosenTechnology = SupportedTechnologies.values()[typeCombo.getSelectionIndex()];
+            newClusterType.setName(chosenTechnology.name());
+            for (Text text : portList) {
+                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                    text.setText(ContainerService.createRandomPort(chosenTechnology));
+                }
+            }
             validatePorts();
         });
 

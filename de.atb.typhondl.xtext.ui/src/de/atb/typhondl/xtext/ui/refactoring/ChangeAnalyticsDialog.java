@@ -69,7 +69,6 @@ public class ChangeAnalyticsDialog extends StatusDialog {
         new Label(main, SWT.NONE).setText("Kafka URI: ");
         Text kafkaURIText = new Text(main, SWT.BORDER);
         kafkaURIText.setText(getKafkaUri());
-//        kafkaURIText.setLayoutData(gridDataFields);
         properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText());
         kafkaURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText()));
@@ -93,6 +92,10 @@ public class ChangeAnalyticsDialog extends StatusDialog {
                 new Label(evolution, SWT.NONE).setText(inputField.label);
                 Text text = new Text(evolution, SWT.BORDER);
                 text.setText(properties.getProperty(inputField.propertyName));
+                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                    text.setText(ContainerService.createRandomPort(chosenTechnology));
+                    properties.setProperty(inputField.propertyName, text.getText());
+                }
                 text.setLayoutData(gridDataFields2);
                 portList.add(text);
                 text.addModifyListener(e -> {

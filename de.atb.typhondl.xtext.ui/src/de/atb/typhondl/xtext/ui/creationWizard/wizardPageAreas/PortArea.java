@@ -85,7 +85,7 @@ public class PortArea extends Area {
             Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
             Key_Values publishedPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             publishedPort.setName("published");
-            publishedPort.setValue(ContainerService.createRandomPort());
+            publishedPort.setValue(ContainerService.createRandomPort(chosenTechnology));
             Key_Values targetPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             targetPort.setName("target");
             targetPort.setValue(properties.getProperty(db.getType().getName().toLowerCase() + ".port"));

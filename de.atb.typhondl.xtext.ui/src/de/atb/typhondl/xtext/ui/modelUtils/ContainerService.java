@@ -159,12 +159,15 @@ public class ContainerService {
     }
 
     /**
-     * Creates a random port as String in Kuberenetes range
+     * Creates a random port as String in chosenTechnology's range
      * 
-     * @return a random port in Kubernetes range
+     * @param chosenTechnology
+     * 
+     * @return a random port in chosenTechnology's range
      */
-    public static String createRandomPort() {
-        return Integer.toString(ThreadLocalRandom.current().nextInt(30000, 32767));
+    public static String createRandomPort(SupportedTechnologies chosenTechnology) {
+        return Integer
+                .toString(ThreadLocalRandom.current().nextInt(chosenTechnology.minPort(), chosenTechnology.maxPort()));
     }
 
     /**

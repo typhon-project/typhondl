@@ -438,7 +438,6 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private DB readExistingFile(String dbName) {
         String path = dbName + ".tdl";
-        System.out.println("file exists: " + path + ": " + fileExists(path));
         if (fileExists(path)) {
             URI dbURI = URI.createPlatformResourceURI(
                     this.file.getFullPath().removeLastSegments(1).append(path).toString(), true);

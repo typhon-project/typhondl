@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -67,6 +69,8 @@ public class CreationPolystorePage extends MyWizardPage {
     private HashMap<Text, String> portFields;
 
     private SupportedTechnologies chosenTechnology;
+    private Composite hidden;
+    private GridData hiddenData;
 
     private static final int pageWidth = 607;
 
@@ -136,7 +140,13 @@ public class CreationPolystorePage extends MyWizardPage {
     private void createAPIGroup(List<InputField> list) {
         Group apiGroup = createGroup("API settings", main);
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        createScalingFields(apiGroup, "API", PropertiesService.API_REPLICAS);
+        hidden = new Composite(apiGroup, SWT.NONE);
+        hidden.setLayout(new GridLayout(2, false));
+        hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenData.exclude = !chosenTechnology.canDoStatelessReplication();
+        hiddenData.horizontalSpan = 2;
+        hidden.setLayoutData(hiddenData);
+        createScalingFields(hidden, "API", PropertiesService.API_REPLICAS);
         createPortFields(apiGroup, gridData, new InputField("Published port: ", PropertiesService.API_PUBLISHEDPORT));
         Group resourceGroup = createGroupInGroup("Resources (can be left empty)", apiGroup);
         for (InputField inputField : list) {
@@ -210,10 +220,10 @@ public class CreationPolystorePage extends MyWizardPage {
         return group;
     }
 
-    private void createScalingFields(Group group, String component, String property) {
+    private void createScalingFields(Composite hidden, String component, String property) {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        new Label(group, SWT.NONE).setText(component + " replicas: ");
-        Text text = new Text(group, SWT.BORDER);
+        new Label(hidden, SWT.NONE).setText(component + " replicas: ");
+        Text text = new Text(hidden, SWT.BORDER);
         text.setText("1");
         text.setLayoutData(gridData);
         text.addModifyListener(e -> {
@@ -235,7 +245,16 @@ public class CreationPolystorePage extends MyWizardPage {
         alwaysFillBothLimits(apiLimits, "api");
         checkMemorySyntax(getTexts("memory"));
         checkCPUSyntax(getTexts("cpu"));
-
+        List<Text> combinedList = Stream.of(qlLimits, apiLimits, qlRes, apiRes).flatMap(list -> list.stream())
+                .collect(Collectors.toList());
+        if (chosenTechnology == SupportedTechnologies.DockerCompose) {
+            for (Text text : combinedList) {
+                if (!text.getText().isEmpty()) {
+                    setStatus(new Status(IStatus.WARNING, "Wizard",
+                            "Setting resources requires at least Docker Compose version 1.27.0 or Docker Swarm"));
+                }
+            }
+        }
         for (Text text : scalingFields.keySet()) {
             int parseInt = 0;
             try {
@@ -244,20 +263,18 @@ public class CreationPolystorePage extends MyWizardPage {
                 raiseError("replication");
             }
             if (!this.chosenTechnology.canDoStatelessReplication() && parseInt != 1) {
-                setStatus(
-                        new Status(IStatus.ERROR, "Wizard", "Setting stateless replication is not possible when using "
+                setStatus(new Status(IStatus.WARNING, "Wizard",
+                        "Setting stateless replication is not fully supported when using "
                                 + chosenTechnology.displayedName()));
             }
             if (parseInt == 0) {
                 raiseError("replication");
             }
         }
-        if (this.chosenTechnology == SupportedTechnologies.Kubernetes) {
-            for (Text text : portFields.keySet()) {
-                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
-                    setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between " + chosenTechnology.minPort()
-                            + " and " + chosenTechnology.maxPort()));
-                }
+        for (Text text : portFields.keySet()) {
+            if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                setStatus(new Status(IStatus.ERROR, "Wizard",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }
@@ -370,11 +387,14 @@ public class CreationPolystorePage extends MyWizardPage {
 
     public void updateData(Properties properties, SupportedTechnologies chosenTechnology) {
         this.properties = properties;
+        final boolean canDoStatelessReplication = chosenTechnology.canDoStatelessReplication();
+        if (this.chosenTechnology.canDoStatelessReplication() != canDoStatelessReplication) {
+            hidden.setVisible(canDoStatelessReplication);
+            hiddenData.exclude = !canDoStatelessReplication;
+        }
+        setStatus(null);
         this.chosenTechnology = chosenTechnology;
         if (this.isControlCreated()) {
-            if (this.chosenTechnology == SupportedTechnologies.Kubernetes) {
-                setStatus(null); // TODO TYP-186
-            }
             for (Text text : this.resourceFields.keySet()) {
                 text.setText(properties.getProperty(this.resourceFields.get(text)));
             }
@@ -382,5 +402,10 @@ public class CreationPolystorePage extends MyWizardPage {
                 text.setText(properties.getProperty(this.portFields.get(text)));
             }
         }
+        main.layout(true);
+        main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
+        ((ScrolledComposite) main.getParent()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
+        validate();
+
     }
 }

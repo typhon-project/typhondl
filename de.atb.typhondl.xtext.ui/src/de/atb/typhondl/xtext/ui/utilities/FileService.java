@@ -89,8 +89,6 @@ public class FileService {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 MessageDialog.openError(win.getShell(), "Scripts", component + " files could not be downloaded at "
                         + address + ", please check your internet connection and try again");
-                System.out.println(
-                        "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage());
             }
 
             // download the file
