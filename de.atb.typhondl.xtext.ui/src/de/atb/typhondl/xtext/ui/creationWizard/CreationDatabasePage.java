@@ -44,8 +44,8 @@ import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesArea;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.ReplicationService;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Each Database has a page to define and/or change the image and other

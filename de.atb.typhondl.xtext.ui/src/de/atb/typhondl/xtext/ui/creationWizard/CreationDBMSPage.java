@@ -61,11 +61,11 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
 import de.atb.typhondl.xtext.ui.utilities.Quadruple;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Second page of the TyphonDL {@link CreateModelWizard}. The ML model gets

@@ -1,4 +1,4 @@
-package de.atb.typhondl.xtext.ui.utilities;
+package de.atb.typhondl.xtext.ui.technologies;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +9,7 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.ui.creationWizard.CreateModelWizard;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
+import de.atb.typhondl.xtext.ui.utilities.InputField;
 
 /**
  * Utility class for providing supported Technologies. Included at the moment:

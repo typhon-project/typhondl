@@ -48,8 +48,8 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Page of TyphonDL {@link CreateModelWizard}. Offers possibility to adjust

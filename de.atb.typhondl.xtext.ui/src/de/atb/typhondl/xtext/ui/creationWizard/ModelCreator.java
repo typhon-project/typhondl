@@ -51,8 +51,8 @@ import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * This class creates the new TyphonDL model from the selected ML model and the

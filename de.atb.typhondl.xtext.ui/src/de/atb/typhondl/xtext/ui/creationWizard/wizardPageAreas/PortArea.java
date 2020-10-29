@@ -42,7 +42,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 
 /**
  * WizardPage {@link Area} to publish a database's ports

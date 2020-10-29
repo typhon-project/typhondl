@@ -46,7 +46,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationDatabasePage;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 
 /**
  * Parent class for all {@link CreationDatabasePage} areas. Takes care of the
