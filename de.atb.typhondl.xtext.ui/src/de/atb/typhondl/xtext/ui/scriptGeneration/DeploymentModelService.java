@@ -55,7 +55,7 @@ import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 public class DeploymentModelService {
 
@@ -103,8 +103,7 @@ public class DeploymentModelService {
         // get Application for polystore containers TODO remove application
         ContainerType containerType = EcoreUtil2.getAllContentsOfType(model, ContainerType.class).get(0);
         Application application = EcoreUtil2.getAllContentsOfType(model, Application.class).get(0);
-        SupportedTechnologies chosenTechnology = ModelService
-                .getSupportedTechnology(ModelService.getClusterType(model));
+        ITechnology chosenTechnology = ModelService.getTechnology(ModelService.getClusterType(model));
         // Polystore Metadata
         model = DBService.addMongoIfNotExists(model);
         DB polystoreDB = DBService.createPolystoreDB(properties, chosenTechnology, DBService.getMongoDBType(model));
@@ -235,7 +234,7 @@ public class DeploymentModelService {
         Path DLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), dlXMIName));
         Path MLPath = Paths.get(file.getLocation().toOSString().replace(file.getName(), MLName));
         String mongoInsertStatement = createMongoCommands(DLPath, MLPath);
-        ModelService.getSupportedTechnology(ModelService.getClusterType(model)).insertModelsToMetadata(
+        ModelService.getTechnology(ModelService.getClusterType(model)).insertModelsToMetadata(
                 getPolystoreMongoContainer(model, properties), outputFolder, mongoInsertStatement, properties);
         return model;
     }

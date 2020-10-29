@@ -50,7 +50,7 @@ import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsService {
@@ -63,7 +63,7 @@ public class AnalyticsService {
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
         kafkaURIObject.setValue(kafkaURI);
-        SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
+        ITechnology clusterTypeTech = ModelService.getTechnology(clusterType);
         if (clusterTypeTech.createAllAnalyticsContainers()) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);

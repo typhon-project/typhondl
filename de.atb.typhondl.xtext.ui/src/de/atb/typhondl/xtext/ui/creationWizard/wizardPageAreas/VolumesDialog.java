@@ -41,7 +41,7 @@ import org.eclipse.xtext.conversion.ValueConverterException;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * Dialog to add and edit Volumes in {@link VolumesArea}
@@ -55,12 +55,11 @@ public class VolumesDialog extends StatusDialog {
     private Text nameText;
     private Text typeText;
     private Text mountPathText;
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private Volume_Properties tempVolumeDefinition;
 //    private Text hostPathText;
 
-    public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit,
-            SupportedTechnologies chosenTechnology) {
+    public VolumesDialog(Volume_Properties volumeDefinition, Shell parent, boolean edit, ITechnology chosenTechnology) {
         super(parent);
         this.volumeDefinition = volumeDefinition;
         this.tempVolumeDefinition = EcoreUtil.copy(volumeDefinition);

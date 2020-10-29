@@ -67,7 +67,7 @@ public class ClusterTypeRefactor {
                         && properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")
                         && !clusterType.getName().equals(newClusterType.getName())) {
                     ChangeAnalyticsDialog analyticsDialog = new ChangeAnalyticsDialog(editor.getShell(), properties,
-                            ModelService.getSupportedTechnology(newClusterType), Boolean.parseBoolean(
+                            ModelService.getTechnology(newClusterType), Boolean.parseBoolean(
                                     properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED)));
                     if (shouldChangeAnalytics(editor.getShell(), properties)) {
                         if (analyticsDialog.open() == Window.OK) {
@@ -102,7 +102,7 @@ public class ClusterTypeRefactor {
                 Volume_Properties.class);
         for (Volume_Properties volume_Properties : allVolumeProperties) {
             if (volume_Properties.getVolumeType() != null) {
-                volume_Properties.setVolumeType(ModelService.getSupportedTechnology(clusterType).defaultVolumesType());
+                volume_Properties.setVolumeType(ModelService.getTechnology(clusterType).defaultVolumesType());
             }
         }
     }

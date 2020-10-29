@@ -44,7 +44,7 @@ import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesArea;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.ReplicationService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 
 /**
@@ -57,13 +57,13 @@ import de.atb.typhondl.xtext.ui.utilities.Pair;
 public class CreationDatabasePage extends MyWizardPage {
     private DB db;
     private Container container;
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private int pageWidth;
     private Properties properties;
     private ArrayList<Area> areas;
     private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, SupportedTechnologies chosenTechnology, Properties properties,
+    public CreationDatabasePage(String pageName, DB db, ITechnology chosenTechnology, Properties properties,
             int pageWidth) {
         super(pageName);
         this.db = db;
@@ -189,11 +189,11 @@ public class CreationDatabasePage extends MyWizardPage {
         ((Composite) this.getControl()).layout();
     }
 
-    public SupportedTechnologies getChosenTechnology() {
+    public ITechnology getChosenTechnology() {
         return this.chosenTechnology;
     }
 
-    public void setChosenTechnology(SupportedTechnologies chosenTechnology) {
+    public void setChosenTechnology(ITechnology chosenTechnology) {
         this.chosenTechnology = chosenTechnology;
     }
 

@@ -108,8 +108,9 @@ public class GenerationService {
     }
 
     public void generateDeployment() {
-        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true") && ModelService
-                .getSupportedTechnology(ModelService.getClusterType(this.model)) == SupportedTechnologies.Kubernetes) {
+        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
+                && ModelService.getTechnology(ModelService.getClusterType(this.model))
+                        .getType() == SupportedTechnologies.KubernetesDocker) {
             AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
         }
         if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {

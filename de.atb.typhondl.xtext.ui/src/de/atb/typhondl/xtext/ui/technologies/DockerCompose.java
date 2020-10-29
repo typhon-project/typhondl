@@ -9,7 +9,13 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
-public class DockerCompose implements ITechnologies {
+public class DockerCompose implements ITechnology {
+
+    private SupportedTechnologies type;
+
+    public DockerCompose(SupportedTechnologies type) {
+        this.type = type;
+    }
 
     @Override
     public void setConnectionDefaults(Properties properties) {
@@ -91,6 +97,11 @@ public class DockerCompose implements ITechnologies {
     @Override
     public boolean restartIsDefault() {
         return false;
+    }
+
+    @Override
+    public SupportedTechnologies getType() {
+        return this.type;
     }
 
 }

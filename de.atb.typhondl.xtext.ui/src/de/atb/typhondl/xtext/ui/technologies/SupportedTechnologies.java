@@ -5,12 +5,22 @@ package de.atb.typhondl.xtext.ui.technologies;
  * <li>Docker Compose</li>
  * <li>Kubernetes with Docker containers</li>
  * 
- * In case of extension a new class implementing {@link ITechnologies} has to be
+ * In case of extension a new class implementing {@link ITechnology} has to be
  * created. Additionally a case to create that class has to be added to
  * {@link TechnologyFactory}
  * 
  * @author flug
  */
 public enum SupportedTechnologies {
-    DockerCompose, KubernetesDocker
+    DockerCompose("Docker Compose"), KubernetesDocker("Docker Compose");
+
+    private String displayName;
+
+    SupportedTechnologies(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayedName() {
+        return displayName;
+    }
 }

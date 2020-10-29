@@ -5,7 +5,7 @@ import java.util.Properties;
 import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Replication;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 public class ReplicationService {
 
@@ -17,9 +17,8 @@ public class ReplicationService {
      * @param properties
      * @return
      */
-    public static String getReplicationProperty(String dbType, SupportedTechnologies chosenTechnology,
-            Properties properties) {
-        String propertyName = dbType + ".replication" + "." + chosenTechnology.name().toLowerCase();
+    public static String getReplicationProperty(String dbType, ITechnology chosenTechnology, Properties properties) {
+        String propertyName = dbType + ".replication" + "." + chosenTechnology.getType().name().toLowerCase();
         return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
     }
 

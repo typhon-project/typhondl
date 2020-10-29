@@ -39,7 +39,7 @@ import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Replication;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ReplicationService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to configure (stateful) replication of databases
@@ -61,7 +61,7 @@ public class ReplicaArea extends Area {
      * @param properties       properties to extract possible replication method
      *                         from
      */
-    public ReplicaArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
+    public ReplicaArea(DB db, Container container, ITechnology chosenTechnology, Composite parent,
             Properties properties) {
         super(db, container, parent, "Replication", properties, chosenTechnology, null);
     }

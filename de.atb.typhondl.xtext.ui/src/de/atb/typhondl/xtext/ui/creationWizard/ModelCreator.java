@@ -51,6 +51,7 @@ import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
@@ -118,8 +119,7 @@ public class ModelCreator {
      * @param properties       The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
-    public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTechnology,
-            Properties properties) {
+    public IFile createDLmodel(HashMap<DB, Container> result, ITechnology chosenTechnology, Properties properties) {
 
         // create main model
         DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -135,7 +135,7 @@ public class ModelCreator {
 
         // Add selected cluster type (chosen template in wizard)
         ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
-        clusterType.setName(chosenTechnology.name());
+        clusterType.setName(chosenTechnology.getType().name());
         DLmodel.getElements().add(clusterType);
 
         // create platform type. Since it has no influence on script generation

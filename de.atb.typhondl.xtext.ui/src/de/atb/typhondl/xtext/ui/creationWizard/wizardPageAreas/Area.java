@@ -46,7 +46,7 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.ui.creationWizard.CreationDatabasePage;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * Parent class for all {@link CreationDatabasePage} areas. Takes care of the
@@ -62,12 +62,12 @@ public abstract class Area {
     protected Composite parent;
     protected Group group;
     protected Properties properties;
-    protected SupportedTechnologies chosenTechnology;
+    protected ITechnology chosenTechnology;
     protected MyWizardPage page;
     protected static final int pageWidth = 607;
 
     protected Area(DB db, Container container, Composite parent, String groupName, Properties properties,
-            SupportedTechnologies chosenTechnology, MyWizardPage page) {
+            ITechnology chosenTechnology, MyWizardPage page) {
         this.db = db;
         this.container = container;
         this.parent = parent;

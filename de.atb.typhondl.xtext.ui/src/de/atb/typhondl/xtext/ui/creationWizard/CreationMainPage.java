@@ -44,7 +44,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 
 /**
  * First page of the TyphonDL {@link CreateModelWizard}.
@@ -76,7 +78,7 @@ public class CreationMainPage extends MyWizardPage {
     /**
      * The chosen technology template from enum {@link SupportedTechnologies}
      */
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
 
     /**
      * The entered name for the DL model to be created
@@ -211,11 +213,12 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo = new Combo(mainGroup, SWT.READ_ONLY);
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
-            itemList.add(tech.displayedName());
+            itemList.add(tech.getDisplayedName());
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));
-        chosenTechnology = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+        chosenTechnology = TechnologyFactory
+                .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
 
         Composite hidden = new Composite(mainGroup, SWT.NONE);
         hidden.setLayout(new GridLayout(2, false));
@@ -236,7 +239,8 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                chosenTechnology = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+                chosenTechnology = TechnologyFactory
+                        .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
                 final Composite parent = mainGroup.getParent();
                 chosenTechnology.setConnectionDefaults(properties);
                 boolean canUseKubeConfig = chosenTechnology.canUseKubeConfig();
@@ -463,7 +467,7 @@ public class CreationMainPage extends MyWizardPage {
      * @return int representation of the chosen technology from
      *         {@link SupportedTechnologies}
      */
-    public SupportedTechnologies getChosenTemplate() {
+    public ITechnology getChosenTemplate() {
         return this.chosenTechnology;
     }
 

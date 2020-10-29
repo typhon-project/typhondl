@@ -38,18 +38,18 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
 public class ChangeAnalyticsDialog extends StatusDialog {
 
     private Properties properties;
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private boolean analyticsContained;
     private ArrayList<Text> portList;
 
-    public ChangeAnalyticsDialog(Shell shell, Properties properties, SupportedTechnologies chosenTechnology,
+    public ChangeAnalyticsDialog(Shell shell, Properties properties, ITechnology chosenTechnology,
             boolean analyticsContained) {
         super(shell);
         this.setTitle("Change Analytics Component");

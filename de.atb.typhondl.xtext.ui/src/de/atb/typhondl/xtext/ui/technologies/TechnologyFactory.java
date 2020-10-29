@@ -2,14 +2,14 @@ package de.atb.typhondl.xtext.ui.technologies;
 
 public class TechnologyFactory {
 
-    public ITechnologies createTechnology(SupportedTechnologies chosenTechnology) {
+    public static ITechnology createTechnology(SupportedTechnologies chosenTechnology) {
         switch (chosenTechnology) {
         case DockerCompose:
-            return new DockerCompose();
+            return new DockerCompose(chosenTechnology);
         case KubernetesDocker:
-            return new KubernetesDocker();
+            return new KubernetesDocker(chosenTechnology);
         default:
-            return new DockerCompose();
+            return new DockerCompose(chosenTechnology);
         }
     }
 }

@@ -40,7 +40,9 @@ import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 
 /**
  * Utility class for easier model object handling
@@ -83,14 +85,13 @@ public class ModelService {
     }
 
     /**
-     * Transforms a {@link ClusterType} into its corresponding
-     * {@link SupportedTechnologies}
+     * Transforms a {@link ClusterType} into its corresponding {@link ITechnology}
      * 
      * @param clusterType the type to transform
-     * @return the corresponding {@link SupportedTechnologies}
+     * @return the corresponding {@link ITechnology}
      */
-    public static SupportedTechnologies getSupportedTechnology(ClusterType clusterType) {
-        return SupportedTechnologies.valueOf(clusterType.getName());
+    public static ITechnology getTechnology(ClusterType clusterType) {
+        return TechnologyFactory.createTechnology(SupportedTechnologies.valueOf(clusterType.getName()));
     }
 
     /**

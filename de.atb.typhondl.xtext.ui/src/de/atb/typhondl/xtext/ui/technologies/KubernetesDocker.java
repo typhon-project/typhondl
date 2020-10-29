@@ -9,7 +9,13 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
-public class KubernetesDocker implements ITechnologies {
+public class KubernetesDocker implements ITechnology {
+
+    private SupportedTechnologies type;
+
+    public KubernetesDocker(SupportedTechnologies type) {
+        this.type = type;
+    }
 
     @Override
     public void setConnectionDefaults(Properties properties) {
@@ -105,6 +111,10 @@ public class KubernetesDocker implements ITechnologies {
     @Override
     public boolean restartIsDefault() {
         return true;
+    }
+
+    public SupportedTechnologies getType() {
+        return type;
     }
 
 }

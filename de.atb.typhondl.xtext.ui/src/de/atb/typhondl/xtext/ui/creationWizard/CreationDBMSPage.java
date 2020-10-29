@@ -61,7 +61,9 @@ import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 import de.atb.typhondl.xtext.ui.utilities.MLmodelReader;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PreferenceReader;
@@ -117,7 +119,7 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private HashMap<String, Boolean> changedField;
 
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
 
     private Composite main;
 
@@ -131,9 +133,11 @@ public class CreationDBMSPage extends MyWizardPage {
      * @param pageName
      * @param file     ML model file
      */
-    public CreationDBMSPage(String pageName, IFile file, SupportedTechnologies chosenTechnology) {
+    public CreationDBMSPage(String pageName, IFile file, ITechnology chosenTechnology) {
         this(pageName, file, readModel(file));
-        this.chosenTechnology = chosenTechnology == null ? SupportedTechnologies.values()[0] : chosenTechnology;
+        this.chosenTechnology = chosenTechnology == null
+                ? TechnologyFactory.createTechnology(SupportedTechnologies.values()[0])
+                : chosenTechnology;
     }
 
     /**
@@ -548,7 +552,7 @@ public class CreationDBMSPage extends MyWizardPage {
         setStatus(status);
     }
 
-    public void updateData(SupportedTechnologies chosenTechnology) {
+    public void updateData(ITechnology chosenTechnology) {
         final boolean canUseHelm = chosenTechnology.canUseHelm();
         if (this.chosenTechnology.canUseHelm() != canUseHelm) {
             this.chosenTechnology = chosenTechnology;

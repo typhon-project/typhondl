@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
@@ -53,7 +53,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * The polystore.properties
      */
     private Properties properties;
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private Composite main;
     private Text kafkaURIText;
     private GridData hiddenData;
@@ -66,7 +66,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
      * @param pageName   the name of the page
      * @param properties
      */
-    protected CreationAnalyticsPage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
+    protected CreationAnalyticsPage(String pageName, Properties properties, ITechnology chosenTechnology) {
         super(pageName);
         this.properties = properties;
         this.chosenTechnology = chosenTechnology;

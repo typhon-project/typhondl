@@ -46,7 +46,9 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 
 public class ClusterTypeDialog extends StatusDialog {
 
@@ -77,15 +79,16 @@ public class ClusterTypeDialog extends StatusDialog {
         Combo typeCombo = new Combo(main, SWT.READ_ONLY);
         List<String> itemList = new ArrayList<String>();
         for (SupportedTechnologies tech : SupportedTechnologies.values()) {
-            itemList.add(tech.displayedName());
+            itemList.add(tech.getDisplayedName());
             // templateCombo.setItem(tech.ordinal(), tech.getDisplayedName()); somehow
             // doesn't work
         }
         typeCombo.setItems(itemList.toArray(new String[0]));
-        typeCombo.setText(typeCombo.getItem(ModelService.getSupportedTechnology(oldClusterType).ordinal()));
+        typeCombo.setText(typeCombo.getItem(ModelService.getTechnology(oldClusterType).getType().ordinal()));
         typeCombo.addModifyListener(e -> {
-            SupportedTechnologies chosenTechnology = SupportedTechnologies.values()[typeCombo.getSelectionIndex()];
-            newClusterType.setName(chosenTechnology.name());
+            ITechnology chosenTechnology = TechnologyFactory
+                    .createTechnology(SupportedTechnologies.values()[typeCombo.getSelectionIndex()]);
+            newClusterType.setName(chosenTechnology.getType().name());
             for (Text text : portList) {
                 if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
                     text.setText(ContainerService.createRandomPort(chosenTechnology));
@@ -134,7 +137,7 @@ public class ClusterTypeDialog extends StatusDialog {
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
         for (Text port : portList) {
-            SupportedTechnologies chosenTechnology = ModelService.getSupportedTechnology(newClusterType);
+            ITechnology chosenTechnology = ModelService.getTechnology(newClusterType);
             if (!ContainerService.isPortValidRange(port.getText(), chosenTechnology)) {
                 this.updateStatus(new Status(IStatus.ERROR, "Wizard",
                         "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));

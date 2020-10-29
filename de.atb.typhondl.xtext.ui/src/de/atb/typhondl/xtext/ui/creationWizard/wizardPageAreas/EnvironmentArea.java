@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.Property;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to alter DB's environment
@@ -43,7 +43,7 @@ public class EnvironmentArea extends Area {
      * @param chosenTechnology the clusterType
      * @param parent           the main control
      */
-    public EnvironmentArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
+    public EnvironmentArea(DB db, ITechnology chosenTechnology, Composite parent) {
         super(db, null, parent, "Environment", null, null, null);
     }
 

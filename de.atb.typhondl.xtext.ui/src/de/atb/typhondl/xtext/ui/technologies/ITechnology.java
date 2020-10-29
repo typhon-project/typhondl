@@ -6,7 +6,7 @@ import java.util.Properties;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
-public interface ITechnologies {
+public interface ITechnology {
 
     public void setConnectionDefaults(Properties properties);
 
@@ -40,4 +40,7 @@ public interface ITechnologies {
     public String kafkaInternalURI();
 
     public boolean restartIsDefault();
+
+    public SupportedTechnologies getType();
+
 }

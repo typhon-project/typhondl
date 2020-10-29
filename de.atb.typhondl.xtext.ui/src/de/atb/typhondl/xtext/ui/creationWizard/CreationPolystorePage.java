@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
@@ -68,7 +69,7 @@ public class CreationPolystorePage extends MyWizardPage {
     private HashMap<Text, String> scalingFields;
     private HashMap<Text, String> portFields;
 
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private Composite hidden;
     private GridData hiddenData;
 
@@ -81,7 +82,7 @@ public class CreationPolystorePage extends MyWizardPage {
      * @param properties       properties, updated from main page
      * @param chosenTechnology DockerCompose, DockerSwatm or Kubernetes
      */
-    protected CreationPolystorePage(String pageName, Properties properties, SupportedTechnologies chosenTechnology) {
+    protected CreationPolystorePage(String pageName, Properties properties, ITechnology chosenTechnology) {
         super(pageName);
         this.properties = properties;
         this.resourceFields = new HashMap<>();
@@ -247,7 +248,7 @@ public class CreationPolystorePage extends MyWizardPage {
         checkCPUSyntax(getTexts("cpu"));
         List<Text> combinedList = Stream.of(qlLimits, apiLimits, qlRes, apiRes).flatMap(list -> list.stream())
                 .collect(Collectors.toList());
-        if (chosenTechnology == SupportedTechnologies.DockerCompose) {
+        if (chosenTechnology.getType() == SupportedTechnologies.DockerCompose) {
             for (Text text : combinedList) {
                 if (!text.getText().isEmpty()) {
                     setStatus(new Status(IStatus.WARNING, "Wizard",
@@ -385,7 +386,7 @@ public class CreationPolystorePage extends MyWizardPage {
         }
     }
 
-    public void updateData(Properties properties, SupportedTechnologies chosenTechnology) {
+    public void updateData(Properties properties, ITechnology chosenTechnology) {
         this.properties = properties;
         final boolean canDoStatelessReplication = chosenTechnology.canDoStatelessReplication();
         if (this.chosenTechnology.canDoStatelessReplication() != canDoStatelessReplication) {

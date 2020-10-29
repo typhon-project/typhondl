@@ -39,7 +39,9 @@ import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 
@@ -88,7 +90,7 @@ public class CreateModelWizard extends Wizard {
     /**
      * The chosen technology template from {@link SupportedTechnologies}
      */
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
 
     private Properties properties;
 
@@ -245,7 +247,7 @@ public class CreateModelWizard extends Wizard {
                 if (!analyticsPagesExist()) {
                     for (SupportedTechnologies value : SupportedTechnologies.values()) {
                         CreationAnalyticsPage newPage = new CreationAnalyticsPage(PAGENAME_ANALYTICS + value.name(),
-                                properties, value);
+                                properties, TechnologyFactory.createTechnology(value));
                         newPage.setWizard(this);
                         addPage(newPage);
                     }
@@ -344,7 +346,7 @@ public class CreateModelWizard extends Wizard {
     }
 
     private String getAnalyticsPageName() {
-        return PAGENAME_ANALYTICS + chosenTechnology.name();
+        return PAGENAME_ANALYTICS + chosenTechnology.getType().name();
     }
 
     public int getPageWidth() {

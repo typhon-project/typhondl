@@ -42,7 +42,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to publish a database's ports
@@ -66,8 +66,8 @@ public class PortArea extends Area {
      * @param page             CreationDatabasePage to set the status and adjust
      *                         size and scrolling
      */
-    public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
-            Properties properties, MyWizardPage page) {
+    public PortArea(DB db, Container container, ITechnology chosenTechnology, Composite parent, Properties properties,
+            MyWizardPage page) {
         super(db, container, parent, "Ports", properties, chosenTechnology, page);
     }
 

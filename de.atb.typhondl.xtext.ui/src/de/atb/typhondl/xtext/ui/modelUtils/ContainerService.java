@@ -39,7 +39,7 @@ import de.atb.typhondl.xtext.typhonDL.Services;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * Utility class for easier {@link Container} model object handling
@@ -62,7 +62,7 @@ public class ContainerService {
      * @return a new Container object
      */
     public static Container create(String name, ContainerType containerType, Services deploys, String uri,
-            String volumeTarget, SupportedTechnologies chosenTechnology) {
+            String volumeTarget, ITechnology chosenTechnology) {
         Container container = TyphonDLFactory.eINSTANCE.createContainer();
         container.setName(name);
         container.setType(containerType);
@@ -148,7 +148,7 @@ public class ContainerService {
      * @param chosenTechnology
      * @return true if port is an Integer in Kubernetes range
      */
-    public static boolean isPortValidRange(String port, SupportedTechnologies chosenTechnology) {
+    public static boolean isPortValidRange(String port, ITechnology chosenTechnology) {
         int portInt = 0;
         try {
             portInt = Integer.parseInt(port);
@@ -165,7 +165,7 @@ public class ContainerService {
      * 
      * @return a random port in chosenTechnology's range
      */
-    public static String createRandomPort(SupportedTechnologies chosenTechnology) {
+    public static String createRandomPort(ITechnology chosenTechnology) {
         return Integer
                 .toString(ThreadLocalRandom.current().nextInt(chosenTechnology.minPort(), chosenTechnology.maxPort()));
     }
