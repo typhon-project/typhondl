@@ -52,7 +52,6 @@ import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.technologies.ITechnology;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
 
 /**
@@ -114,8 +113,7 @@ public class ModelCreator {
      * Creates the new DL model
      * 
      * @param result           The DBs and Containers to add to the new model
-     * @param chosenTechnology The int representation of the chosen technology
-     *                         Template from {@link SupportedTechnologies}
+     * @param chosenTechnology The chosen technology
      * @param properties       The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */

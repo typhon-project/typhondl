@@ -9,6 +9,12 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
+/**
+ * Implements Kubernetes using Docker
+ * 
+ * @author flug
+ *
+ */
 public class KubernetesDocker implements ITechnology {
 
     private SupportedTechnologies type;

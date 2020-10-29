@@ -76,7 +76,7 @@ public class CreationMainPage extends MyWizardPage {
     private Combo templateCombo;
 
     /**
-     * The chosen technology template from enum {@link SupportedTechnologies}
+     * The chosen technology
      */
     private ITechnology chosenTechnology;
 
@@ -465,8 +465,7 @@ public class CreationMainPage extends MyWizardPage {
 
     /**
      * 
-     * @return int representation of the chosen technology from
-     *         {@link SupportedTechnologies}
+     * @return the chosen technology
      */
     public ITechnology getChosenTemplate() {
         return this.chosenTechnology;

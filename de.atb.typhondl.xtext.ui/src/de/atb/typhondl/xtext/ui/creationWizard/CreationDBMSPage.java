@@ -106,10 +106,6 @@ public class CreationDBMSPage extends MyWizardPage {
      */
     private IFile file;
 
-    /**
-     * The chosen technology from {@link SupportedTechnologies}
-     */
-
     private XtextResourceSet resourceSet;
 
     /**

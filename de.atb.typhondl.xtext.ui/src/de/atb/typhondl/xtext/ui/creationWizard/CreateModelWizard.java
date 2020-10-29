@@ -88,7 +88,7 @@ public class CreateModelWizard extends Wizard {
     private final int pageWidth = 607;
 
     /**
-     * The chosen technology template from {@link SupportedTechnologies}
+     * The chosen technology
      */
     private ITechnology chosenTechnology;
 
@@ -114,8 +114,7 @@ public class CreateModelWizard extends Wizard {
     /**
      * Two types of pages are initially added:
      * <li>Main Page {@link CreationMainPage}</li>
-     * <li>one DBMS Page {@link CreationDBMSPage} for every
-     * {@link SupportedTechnologies}</li>
+     * <li>the DBMS Page {@link CreationDBMSPage}
      */
     @Override
     public void addPages() {

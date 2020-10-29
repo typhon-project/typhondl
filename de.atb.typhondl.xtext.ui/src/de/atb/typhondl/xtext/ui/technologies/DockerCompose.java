@@ -9,6 +9,12 @@ import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
+/**
+ * Implements DockerCompose
+ * 
+ * @author flug
+ *
+ */
 public class DockerCompose implements ITechnology {
 
     private SupportedTechnologies type;

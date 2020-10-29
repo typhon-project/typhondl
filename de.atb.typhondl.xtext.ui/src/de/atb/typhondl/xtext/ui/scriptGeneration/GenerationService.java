@@ -41,7 +41,6 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Import;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 
 public class GenerationService {
@@ -108,9 +107,8 @@ public class GenerationService {
     }
 
     public void generateDeployment() {
-        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true")
-                && ModelService.getTechnology(ModelService.getClusterType(this.model))
-                        .getType() == SupportedTechnologies.Kubernetes) {
+        if (properties.get(PropertiesService.POLYSTORE_USEANALYTICS).equals("true") && !ModelService
+                .getTechnology(ModelService.getClusterType(this.model)).createAllAnalyticsContainers()) {
             AnalyticsKubernetesService.addAnalyticsFiles(this.model, outputFolder, properties);
         }
         if (properties.get(PropertiesService.POLYSTORE_USENLAE).equals("true")) {
