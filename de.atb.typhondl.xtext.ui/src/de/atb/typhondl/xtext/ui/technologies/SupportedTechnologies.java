@@ -12,15 +12,15 @@ package de.atb.typhondl.xtext.ui.technologies;
  * @author flug
  */
 public enum SupportedTechnologies {
-    DockerCompose("Docker Compose"), KubernetesDocker("Docker Compose");
+    DockerCompose("Docker Compose"), Kubernetes("Kubernetes with Docker");
 
-    private String displayName;
+    private String displayedName;
 
-    SupportedTechnologies(String displayName) {
-        this.displayName = displayName;
+    SupportedTechnologies(String displayedName) {
+        this.displayedName = displayedName;
     }
 
     public String getDisplayedName() {
-        return displayName;
+        return displayedName;
     }
 }

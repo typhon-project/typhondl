@@ -43,4 +43,6 @@ public interface ITechnology {
 
     public SupportedTechnologies getType();
 
+    public boolean canDeployEvolution();
+
 }

@@ -6,7 +6,7 @@ public class TechnologyFactory {
         switch (chosenTechnology) {
         case DockerCompose:
             return new DockerCompose(chosenTechnology);
-        case KubernetesDocker:
+        case Kubernetes:
             return new KubernetesDocker(chosenTechnology);
         default:
             return new DockerCompose(chosenTechnology);

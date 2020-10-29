@@ -117,4 +117,9 @@ public class KubernetesDocker implements ITechnology {
         return type;
     }
 
+    @Override
+    public boolean canDeployEvolution() {
+        return false;
+    }
+
 }

@@ -104,4 +104,9 @@ public class DockerCompose implements ITechnology {
         return this.type;
     }
 
+    @Override
+    public boolean canDeployEvolution() {
+        return true;
+    }
+
 }

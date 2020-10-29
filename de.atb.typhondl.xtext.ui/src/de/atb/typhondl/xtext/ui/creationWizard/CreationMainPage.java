@@ -316,7 +316,8 @@ public class CreationMainPage extends MyWizardPage {
         useEvolutionCheck.setText("Use Typhon Continuous Evolution");
         useEvolutionCheck.setSelection(false);
         useEvolutionCheck.setLayoutData(gridData);
-        useEvolutionCheck.setToolTipText("Only possible with contained Analytics component in this version");
+        useEvolutionCheck
+                .setToolTipText("Only possible with contained Analytics component and Docker Compose in this version");
 
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
@@ -390,7 +391,7 @@ public class CreationMainPage extends MyWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (useEvolutionCheck.getSelection()) {
-                    if (!analyticsContained) {
+                    if (!analyticsContained || !chosenTechnology.canDeployEvolution()) {
                         useEvolutionCheck.setSelection(false);
                     } else {
                         properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "true");
