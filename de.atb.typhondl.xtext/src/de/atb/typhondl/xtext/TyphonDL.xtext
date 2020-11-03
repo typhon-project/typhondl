@@ -194,13 +194,17 @@ Ports:
 	'}';
 
 Resources:
-	'resources' '{'
-	   'limitCPU' '=' limitCPU=Value ';'
-	   'limitMemory' '=' limitMemory=Value ';'
-	   ('reservationCPU' '=' reservationCPU=Value ';')?
-	   ('reservationMemory' '=' reservationMemory=Value ';')?
-	'}'
+	'resources' '{'(LimitCPU | LimitMemory | ReservationCPU | ReservationMemory)'}'
 ;
+
+LimitCPU:
+	'limitCPU' '=' limitCPU=Value ';';
+LimitMemory:
+	'limitMemory' '=' limitMemory=Value ';';
+ReservationCPU: 
+	'reservationCPU' '=' reservationCPU=Value ';';
+ReservationMemory:
+	'reservationMemory' '=' reservationMemory=Value ';';
 
 URI:
 	'uri' '=' value=Value ';'
