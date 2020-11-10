@@ -263,7 +263,7 @@ public class CreationMainPage extends MyWizardPage {
 
     protected void setResourceProperties() {
         properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "2048M");
-        properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "0.5");
+        properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
         properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
         properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "0.5");
         properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");

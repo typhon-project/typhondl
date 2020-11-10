@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -236,20 +234,10 @@ public class CreationPolystorePage extends MyWizardPage {
 
     private void validate() {
         setStatus(null);
-        ArrayList<Text> qlLimits = getTexts("qlserver.limit");
-        ArrayList<Text> apiLimits = getTexts("api.limit");
-        ArrayList<Text> qlRes = getTexts("qlserver.reservation");
-        ArrayList<Text> apiRes = getTexts("api.reservation");
-        avoidReservationWithoutLimits(qlLimits, qlRes, "qlserver");
-        avoidReservationWithoutLimits(apiLimits, apiRes, "api");
-        alwaysFillBothLimits(qlLimits, "qlserver");
-        alwaysFillBothLimits(apiLimits, "api");
         checkMemorySyntax(getTexts("memory"));
         checkCPUSyntax(getTexts("cpu"));
-        List<Text> combinedList = Stream.of(qlLimits, apiLimits, qlRes, apiRes).flatMap(list -> list.stream())
-                .collect(Collectors.toList());
         if (chosenTechnology.getType() == SupportedTechnologies.DockerCompose) {
-            for (Text text : combinedList) {
+            for (Text text : resourceFields.keySet()) {
                 if (!text.getText().isEmpty()) {
                     setStatus(new Status(IStatus.WARNING, "Wizard",
                             "Setting resources requires at least Docker Compose version 1.27.0 or Docker Swarm"));
@@ -306,47 +294,6 @@ public class CreationPolystorePage extends MyWizardPage {
                 }
             }
         }
-    }
-
-    private void alwaysFillBothLimits(ArrayList<Text> limits, String property) {
-        if (atLeastOneIsFilled(limits)) {
-            if (!bothAreFilled(limits)) {
-                raiseResError(property + ".limit");
-            }
-        }
-    }
-
-    private void avoidReservationWithoutLimits(ArrayList<Text> limits, ArrayList<Text> reservations, String property) {
-        if (atLeastOneIsFilled(reservations)) {
-            if (!bothAreFilled(reservations)) {
-                raiseResError(property + ".reservation");
-            }
-            if (!bothAreFilled(limits)) {
-                raiseResError(property + ".limit");
-            }
-        }
-    }
-
-    private void raiseResError(String string) {
-        setStatus(new Status(IStatus.ERROR, "Wizard", "Please fill both " + string + " fields"));
-    }
-
-    private boolean bothAreFilled(ArrayList<Text> texts) {
-        for (Text text : texts) {
-            if (text.getText().isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean atLeastOneIsFilled(ArrayList<Text> texts) {
-        for (Text text : texts) {
-            if (!text.getText().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private ArrayList<Text> getTexts(String string) {
@@ -407,6 +354,5 @@ public class CreationPolystorePage extends MyWizardPage {
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
         ((ScrolledComposite) main.getParent()).setMinSize(main.computeSize(pageWidth, SWT.DEFAULT));
         validate();
-
     }
 }
