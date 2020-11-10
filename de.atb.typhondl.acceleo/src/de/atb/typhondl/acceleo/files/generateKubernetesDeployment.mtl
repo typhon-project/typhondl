@@ -188,13 +188,15 @@ spec:
 
 [template public print(aResources : Resources) post (trim())]
 resources:
+[if(aResources.limitCPU <> null or aResources.limitMemory <> null)]
   limits:
-    memory: "[aResources.limitMemory.convertMemoryToKubernetes()/]"
-    cpu: "[aResources.limitCPU.convertCPUToKubernetes()/]"
-[if (aResources.reservationCPU <> null)]
+    [if(aResources.limitCPU <> null)]cpu: "[aResources.limitCPU/]"[/if]
+    [if(aResources.limitMemory <> null)]memory: "[aResources.limitMemory/]"[/if]
+[/if]
+[if(aResources.reservationCPU <> null or aResources.reservationMemory <> null)]
   requests:
-    memory: "[aResources.reservationMemory.convertMemoryToKubernetes()/]"
-    cpu: "[aResources.reservationCPU.convertCPUToKubernetes()/]"
+    [if(aResources.reservationCPU <> null)]cpu: "[aResources.reservationCPU/]"[/if]
+    [if(aResources.reservationMemory <> null)]memory: "[aResources.reservationMemory/]"[/if]
 [/if]
 [/template]
 

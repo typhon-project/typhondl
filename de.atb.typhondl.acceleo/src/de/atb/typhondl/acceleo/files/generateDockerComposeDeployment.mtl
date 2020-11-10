@@ -206,13 +206,15 @@ replicas: [aReplication.replicas/]
 
 [template public print(aResources : Resources) post (trim())]
 resources:
+[if(aResources.limitCPU <> null or aResources.limitMemory <> null)]
   limits:
-    cpus: '[aResources.limitCPU/]'
-    memory: [aResources.limitMemory/]
-[if (aResources.reservationCPU <> null)]
+    [if(aResources.limitCPU <> null)]cpus: '[aResources.limitCPU/]'[/if]
+    [if(aResources.limitMemory <> null)]memory: [aResources.limitMemory/][/if]
+[/if]
+[if(aResources.reservationCPU <> null or aResources.reservationMemory <> null)]
   reservations:
-    cpus: '[aResources.reservationCPU/]'
-    memory: [aResources.reservationMemory/]
+    [if(aResources.reservationCPU <> null)]cpus: '[aResources.reservationCPU/]'[/if]
+    [if(aResources.reservationMemory <> null)]memory: [aResources.reservationMemory/][/if]
 [/if]
 [/template]
 

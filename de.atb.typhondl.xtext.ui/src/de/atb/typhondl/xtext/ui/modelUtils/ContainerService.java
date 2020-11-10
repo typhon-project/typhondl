@@ -238,8 +238,12 @@ public class ContainerService {
             String reservationMemory) {
         if (!(limitCpu.isEmpty() && limitMemory.isEmpty() && reservationCpu.isEmpty() && reservationMemory.isEmpty())) {
             Resources resources = TyphonDLFactory.eINSTANCE.createResources();
-            resources.setLimitCPU(limitCpu);
-            resources.setLimitMemory(limitMemory);
+            if (!limitCpu.isEmpty()) {
+                resources.setLimitCPU(limitCpu);
+            }
+            if (!limitMemory.isEmpty()) {
+                resources.setLimitMemory(limitMemory);
+            }
             if (!reservationCpu.isEmpty()) {
                 resources.setReservationCPU(reservationCpu);
             }
