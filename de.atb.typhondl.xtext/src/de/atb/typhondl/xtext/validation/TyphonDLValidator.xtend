@@ -38,6 +38,13 @@ import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
+import de.atb.typhondl.xtext.typhonDL.Resources
+import de.atb.typhondl.xtext.typhonDL.LimitCPU
+import de.atb.typhondl.xtext.typhonDL.LimitMemory
+import de.atb.typhondl.xtext.typhonDL.ReservationMemory
+import org.eclipse.emf.common.util.EList
+import de.atb.typhondl.xtext.typhonDL.ResourceParameters
+import de.atb.typhondl.xtext.typhonDL.ReservationCPU
 
 /**
  * This class contains custom validation rules. 
@@ -154,4 +161,23 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
         }
     }
 
+    @Check
+    def checkResources(Resources resources) {
+        val parameters = resources.parameters
+        if (listHasDoubleEntries(parameters)) {
+            error("Only use each resource parameter once", TyphonDLPackage.Literals.RESOURCES__PARAMETERS)
+        }
+    }
+
+    def boolean listHasDoubleEntries(EList<ResourceParameters> list) {
+        var checkList = newArrayList
+        for (parameter : list) {
+            if (!checkList.contains(parameter.class.name)) {
+                checkList.add(parameter.class.name)
+            } else {
+                return true
+            }
+        }
+        return false
+    }
 }
