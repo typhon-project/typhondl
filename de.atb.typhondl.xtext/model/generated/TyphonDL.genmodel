@@ -123,10 +123,20 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Ports/key_values"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//Resources">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/limitCPU"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/limitMemory"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationCPU"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//Resources/reservationMemory"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TyphonDL.ecore#//Resources/parameters"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//ResourceParameters"/>
+    <genClasses ecoreClass="TyphonDL.ecore#//LimitCPU">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//LimitCPU/limitCPU"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//LimitMemory">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//LimitMemory/limitMemory"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//ReservationCPU">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//ReservationCPU/reservationCPU"/>
+    </genClasses>
+    <genClasses ecoreClass="TyphonDL.ecore#//ReservationMemory">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//ReservationMemory/reservationMemory"/>
     </genClasses>
     <genClasses ecoreClass="TyphonDL.ecore#//URI">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TyphonDL.ecore#//URI/value"/>

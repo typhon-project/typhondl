@@ -41,6 +41,22 @@ aPorts.key_values->any(key | key.name='published')
 aPorts.key_values->any(key | key.name='target') 
 /]
 
+[query public getLimitCPU(aResourceList : OrderedSet(ResourceParameters)) : LimitCPU = 
+aResourceList -> any(parameter | parameter.oclIsTypeOf(LimitCPU))
+/]
+
+[query public getLimitMemory(aResourceList : OrderedSet(ResourceParameters)) : LimitMemory = 
+aResourceList -> any(parameter | parameter.oclIsTypeOf(LimitMemory)) 
+/]
+
+[query public getReservationCPU(aResourceList : OrderedSet(ResourceParameters)) : ReservationCPU = 
+aResourceList -> any(parameter | parameter.oclIsTypeOf(ReservationCPU))
+/]
+
+[query public getReservationMemory(aResourceList : OrderedSet(ResourceParameters)) : ReservationMemory = 
+aResourceList -> any(parameter | parameter.oclIsTypeOf(ReservationMemory)) 
+/]
+
 [query public getMongoPrint(aContainer : Container) : String =
 aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
 /]
