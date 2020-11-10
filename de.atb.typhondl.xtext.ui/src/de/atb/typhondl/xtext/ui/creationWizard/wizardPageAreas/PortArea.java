@@ -42,7 +42,7 @@ import de.atb.typhondl.xtext.typhonDL.Ports;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.creationWizard.MyWizardPage;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to publish a database's ports
@@ -52,7 +52,6 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  */
 public class PortArea extends Area {
 
-    private MyWizardPage page;
     private Text targetPortText;
     private Text publishedPortText;
 
@@ -67,10 +66,9 @@ public class PortArea extends Area {
      * @param page             CreationDatabasePage to set the status and adjust
      *                         size and scrolling
      */
-    public PortArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent,
-            Properties properties, MyWizardPage page) {
-        super(db, container, chosenTechnology, parent, "Ports", properties);
-        this.page = page;
+    public PortArea(DB db, Container container, ITechnology chosenTechnology, Composite parent, Properties properties,
+            MyWizardPage page) {
+        super(db, container, parent, "Ports", properties, chosenTechnology, page);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class PortArea extends Area {
             Ports ports = TyphonDLFactory.eINSTANCE.createPorts();
             Key_Values publishedPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             publishedPort.setName("published");
-            publishedPort.setValue(ContainerService.createRandomPort());
+            publishedPort.setValue(ContainerService.createRandomPort(chosenTechnology));
             Key_Values targetPort = TyphonDLFactory.eINSTANCE.createKey_Values();
             targetPort.setName("target");
             targetPort.setValue(properties.getProperty(db.getType().getName().toLowerCase() + ".port"));
@@ -148,10 +146,9 @@ public class PortArea extends Area {
     private void validate() {
         page.setStatus(null);
         if (container.getPorts() != null) {
-            if (chosenTechnology == SupportedTechnologies.Kubernetes) {
-                if (!ContainerService.isPortInKubernetesRange(this.publishedPortText.getText())) {
-                    page.setStatus(new Status(IStatus.ERROR, "Wizard", "Choose a port between 30000 and 32767"));
-                }
+            if (!ContainerService.isPortValidRange(this.publishedPortText.getText(), chosenTechnology)) {
+                page.setStatus(new Status(IStatus.ERROR, "Wizard",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }

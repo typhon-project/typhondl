@@ -32,7 +32,7 @@ import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * Utility class for easier {@link DB} model object handling
@@ -47,17 +47,17 @@ public class DBService {
      * the ML and DL model
      * 
      * @param properties
-     * @param clusterType
+     * @param chosenTechnology
      * @param mongo
      * @return a new DB object to be used as polystore-mongo
      */
-    public static DB createPolystoreDB(Properties properties, SupportedTechnologies clusterType, DBType mongo) {
+    public static DB createPolystoreDB(Properties properties, ITechnology chosenTechnology, DBType mongo) {
         DB polystoredb = create(properties.getProperty(PropertiesService.DB_NAME), mongo);
-        if (clusterType == SupportedTechnologies.DockerCompose) {
+        if (chosenTechnology.setInitDB()) {
             polystoredb.setEnvironment(SoftwareService.createEnvironment(new String[] { "MONGO_INITDB_DATABASE",
                     properties.getProperty(PropertiesService.DB_ENVIRONMENT_MONGO_INITDB_DATABASE) }));
         }
-        polystoredb.setCredentials(createCredentials("admin", "admin"));
+        polystoredb.setCredentials(createCredentials("admin", "admin")); // TODO extract this to properties
         return polystoredb;
     }
 

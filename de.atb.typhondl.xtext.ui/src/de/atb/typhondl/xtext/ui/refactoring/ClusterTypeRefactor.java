@@ -39,7 +39,6 @@ import de.atb.typhondl.xtext.typhonDL.ClusterType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
-import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.utilities.PropertiesLoader;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
@@ -68,7 +67,7 @@ public class ClusterTypeRefactor {
                         && properties.get(PropertiesService.ANALYTICS_DEPLOYMENT_CREATE).equals("true")
                         && !clusterType.getName().equals(newClusterType.getName())) {
                     ChangeAnalyticsDialog analyticsDialog = new ChangeAnalyticsDialog(editor.getShell(), properties,
-                            ModelService.getSupportedTechnology(newClusterType), Boolean.parseBoolean(
+                            ModelService.getTechnology(newClusterType), Boolean.parseBoolean(
                                     properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED)));
                     if (shouldChangeAnalytics(editor.getShell(), properties)) {
                         if (analyticsDialog.open() == Window.OK) {
@@ -103,8 +102,7 @@ public class ClusterTypeRefactor {
                 Volume_Properties.class);
         for (Volume_Properties volume_Properties : allVolumeProperties) {
             if (volume_Properties.getVolumeType() != null) {
-                volume_Properties.setVolumeType(
-                        VolumesService.getDefaultVolumesType(ModelService.getSupportedTechnology(clusterType)));
+                volume_Properties.setVolumeType(ModelService.getTechnology(clusterType).defaultVolumesType());
             }
         }
     }

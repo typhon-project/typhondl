@@ -33,7 +33,7 @@ import de.atb.typhondl.xtext.typhonDL.HelmList;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to alter helm chart configuration
@@ -50,13 +50,13 @@ public class HelmArea extends Area {
      * @param chosenTechnology the clusterType
      * @param parent           the main control
      */
-    public HelmArea(DB db, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, null, chosenTechnology, parent, "Helm Charts", null);
+    public HelmArea(DB db, ITechnology chosenTechnology, Composite parent) {
+        super(db, null, parent, "Helm Charts", null, chosenTechnology, null);
     }
 
     @Override
     public void createArea() {
-        if (chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null) {
+        if (chosenTechnology.canUseHelm() && db.getHelm() != null) {
             if (group == null) {
                 createGroup("Helm Charts");
             }

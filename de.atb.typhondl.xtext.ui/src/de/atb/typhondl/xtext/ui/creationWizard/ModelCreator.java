@@ -27,14 +27,11 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.ui.resource.XtextLiveScopeResourceSetProvider;
 
@@ -54,8 +51,8 @@ import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.activator.Activator;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.SavingOptions;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * This class creates the new TyphonDL model from the selected ML model and the
@@ -104,39 +101,23 @@ public class ModelCreator {
     }
 
     /**
-     * Gets the provided ResourceSet and adds all .tdl files to the ResourceSet
+     * Gets the provided ResourceSet with all .tdl files
      */
     private void addResources() {
-        this.resourceSet = (XtextResourceSet) Activator.getInstance()
-                .getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
-                .getInstance(XtextLiveScopeResourceSetProvider.class).get(this.MLmodel.getProject());
-        this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-        IResource members[] = null;
-        try {
-            members = this.MLmodel.getProject().members();
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-        for (IResource member : members) {
-            if (member instanceof IFile) {
-                if (((IFile) member).getFileExtension().equals("tdl")) {
-                    resourceSet.getResource(URI.createPlatformResourceURI(member.getFullPath().toString(), true), true);
-                }
-            }
-        }
+        this.resourceSet = ModelService
+                .getResourceSet(Activator.getInstance().getInjector(Activator.DE_ATB_TYPHONDL_XTEXT_TYPHONDL)
+                        .getInstance(XtextLiveScopeResourceSetProvider.class), MLmodel);
     }
 
     /**
      * Creates the new DL model
      * 
-     * @param result         The DBs and Containers to add to the new model
-     * @param chosenTemplate The int representation of the chosen technology
-     *                       Template from {@link SupportedTechnologies}
-     * @param properties     The polystore.properties
+     * @param result           The DBs and Containers to add to the new model
+     * @param chosenTechnology The chosen technology
+     * @param properties       The polystore.properties
      * @return The main model file to be opened by the Xtext editor after creation
      */
-    public IFile createDLmodel(HashMap<DB, Container> result, SupportedTechnologies chosenTemplate,
-            Properties properties) {
+    public IFile createDLmodel(HashMap<DB, Container> result, ITechnology chosenTechnology, Properties properties) {
 
         // create main model
         DeploymentModel DLmodel = TyphonDLFactory.eINSTANCE.createDeploymentModel();
@@ -147,27 +128,19 @@ public class ModelCreator {
 
         // Add selected container type (chosen template in wizard)
         ContainerType containerType = TyphonDLFactory.eINSTANCE.createContainerType();
-        containerType.setName(chosenTemplate.getContainerType());
+        containerType.setName(chosenTechnology.containerType());
         DLmodel.getElements().add(containerType);
 
         // Add selected cluster type (chosen template in wizard)
         ClusterType clusterType = TyphonDLFactory.eINSTANCE.createClusterType();
-        clusterType.setName(chosenTemplate.name());
+        clusterType.setName(chosenTechnology.getType().name());
         DLmodel.getElements().add(clusterType);
 
-        // create platform type from API HOST
+        // create platform type. Since it has no influence on script generation
+        // "localhost" is default
+        // TODO add meaning to "platformtype"
         PlatformType platformType = TyphonDLFactory.eINSTANCE.createPlatformType();
-        switch (chosenTemplate) {
-        case DockerCompose:
-            platformType.setName("localhost");
-            break;
-        case Kubernetes:
-            platformType.setName("minikube");
-            break;
-        default:
-            platformType.setName("localhost");
-            break;
-        }
+        platformType.setName("localhost");
         DLmodel.getElements().add(platformType);
 
         ArrayList<DBType> dbTypes = new ArrayList<DBType>();

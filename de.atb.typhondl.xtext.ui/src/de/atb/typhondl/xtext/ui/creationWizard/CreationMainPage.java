@@ -43,9 +43,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.TechnologyFactory;
 
 /**
  * First page of the TyphonDL {@link CreateModelWizard}.
@@ -75,9 +76,9 @@ public class CreationMainPage extends MyWizardPage {
     private Combo templateCombo;
 
     /**
-     * The chosen technology template from enum {@link SupportedTechnologies}
+     * The chosen technology
      */
-    private SupportedTechnologies chosenTemplate;
+    private ITechnology chosenTechnology;
 
     /**
      * The entered name for the DL model to be created
@@ -129,6 +130,7 @@ public class CreationMainPage extends MyWizardPage {
         main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         main.setLayout(new GridLayout(1, false));
 
+        setResourceProperties();
         addGroups();
 
         main.setSize(main.computeSize(pageWidth, SWT.DEFAULT));
@@ -215,7 +217,8 @@ public class CreationMainPage extends MyWizardPage {
         }
         templateCombo.setItems(itemList.toArray(new String[itemList.size()]));
         templateCombo.setText(templateCombo.getItem(0));
-        chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+        chosenTechnology = TechnologyFactory
+                .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
 
         Composite hidden = new Composite(mainGroup, SWT.NONE);
         hidden.setLayout(new GridLayout(2, false));
@@ -236,26 +239,19 @@ public class CreationMainPage extends MyWizardPage {
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                chosenTemplate = SupportedTechnologies.values()[templateCombo.getSelectionIndex()];
+                chosenTechnology = TechnologyFactory
+                        .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
                 final Composite parent = mainGroup.getParent();
-                if (chosenTemplate == SupportedTechnologies.Kubernetes) {
-                    properties.setProperty(PropertiesService.API_HOST, "192.168.99.101");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "30061");
-                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "30075");
-                    hiddenData.exclude = false;
-                    hidden.setVisible(true);
-                    parent.layout(true);
+                chosenTechnology.setConnectionDefaults(properties);
+                boolean canUseKubeConfig = chosenTechnology.canUseKubeConfig();
+                if (canUseKubeConfig) {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText());
-                } else if (chosenTemplate == SupportedTechnologies.DockerCompose) {
-                    properties.setProperty(PropertiesService.API_HOST, "localhost");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-                    properties.setProperty(PropertiesService.API_PUBLISHEDPORT, "8080");
-                    properties.setProperty(PropertiesService.UI_PUBLISHEDPORT, "4200");
-                    hiddenData.exclude = true;
-                    hidden.setVisible(false);
-                    parent.layout(true);
+                } else {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
+                hiddenData.exclude = !canUseKubeConfig;
+                hidden.setVisible(canUseKubeConfig);
+                parent.layout(true);
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
 
@@ -266,25 +262,14 @@ public class CreationMainPage extends MyWizardPage {
     }
 
     protected void setResourceProperties() {
-        if (this.chosenTemplate == SupportedTechnologies.DockerCompose) {
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
-            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
-        } else if (this.chosenTemplate == SupportedTechnologies.Kubernetes) {
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
-            properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "");
-            properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
-            properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
-            properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
-        }
+        properties.setProperty(PropertiesService.QLSERVER_LIMIT_MEMORY, "2048M");
+        properties.setProperty(PropertiesService.QLSERVER_LIMIT_CPU, "0.5");
+        properties.setProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY, "2048M");
+        properties.setProperty(PropertiesService.QLSERVER_RESERVATION_CPU, "0.5");
+        properties.setProperty(PropertiesService.API_LIMIT_MEMORY, "");
+        properties.setProperty(PropertiesService.API_LIMIT_CPU, "");
+        properties.setProperty(PropertiesService.API_RESERVATION_MEMORY, "");
+        properties.setProperty(PropertiesService.API_RESERVATION_CPU, "");
     }
 
     private void createAnalyticsGroup() {
@@ -331,12 +316,13 @@ public class CreationMainPage extends MyWizardPage {
         useEvolutionCheck.setText("Use Typhon Continuous Evolution");
         useEvolutionCheck.setSelection(false);
         useEvolutionCheck.setLayoutData(gridData);
-        useEvolutionCheck.setToolTipText("Only possible with contained Analytics component in this version");
+        useEvolutionCheck
+                .setToolTipText("Only possible with contained Analytics component and Docker Compose in this version");
 
         new Label(hidden, SWT.NONE).setText("Analytics URI: ");
         analyticsURIText = new Text(hidden, SWT.BORDER);
         analyticsURIText.setLayoutData(gridData);
-        analyticsURIText.setText(ModelService.getKafkaInternalURI(chosenTemplate));
+        analyticsURIText.setText(chosenTechnology.kafkaInternalURI());
         analyticsURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, analyticsURIText.getText()));
 
@@ -405,7 +391,7 @@ public class CreationMainPage extends MyWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (useEvolutionCheck.getSelection()) {
-                    if (!analyticsContained) {
+                    if (!analyticsContained || !chosenTechnology.canDeployEvolution()) {
                         useEvolutionCheck.setSelection(false);
                     } else {
                         properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "true");
@@ -433,6 +419,7 @@ public class CreationMainPage extends MyWizardPage {
                     hiddenData.exclude = true;
                     hidden.setVisible(false);
                     parent.layout(true);
+
                 }
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
@@ -445,8 +432,7 @@ public class CreationMainPage extends MyWizardPage {
         properties.setProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED, String.valueOf(analyticsContained));
         if (createScripts) {
             if (analyticsContained) {
-                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI,
-                        ModelService.getKafkaInternalURI(chosenTemplate));
+                properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, chosenTechnology.kafkaInternalURI());
                 analyticsURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
             } else {
                 properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, "localhost:29092");
@@ -479,11 +465,10 @@ public class CreationMainPage extends MyWizardPage {
 
     /**
      * 
-     * @return int representation of the chosen technology from
-     *         {@link SupportedTechnologies}
+     * @return the chosen technology
      */
-    public SupportedTechnologies getChosenTemplate() {
-        return this.chosenTemplate;
+    public ITechnology getChosenTemplate() {
+        return this.chosenTechnology;
     }
 
     /**

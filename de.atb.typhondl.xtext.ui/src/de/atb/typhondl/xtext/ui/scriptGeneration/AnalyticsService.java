@@ -50,8 +50,8 @@ import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.FileService;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class AnalyticsService {
 
@@ -63,9 +63,8 @@ public class AnalyticsService {
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
         de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
         kafkaURIObject.setValue(kafkaURI);
-
-        SupportedTechnologies clusterTypeTech = ModelService.getSupportedTechnology(clusterType);
-        if (clusterTypeTech == SupportedTechnologies.DockerCompose) {
+        ITechnology clusterTypeTech = ModelService.getTechnology(clusterType);
+        if (clusterTypeTech.createAllAnalyticsContainers()) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);
             String zookeeperTargetPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PORT);
             de.atb.typhondl.xtext.typhonDL.URI zookeeperURI = TyphonDLFactory.eINSTANCE.createURI();
@@ -115,7 +114,7 @@ public class AnalyticsService {
                 flinkJobmanagerContainer
                         .setPorts(ContainerService.createPorts(new String[] { "published", "8081", "target", "8081" }));
                 flinkJobmanagerContainer.getProperties()
-                        .addAll(ModelService.createKeyValues(new String[] { "command", "jobmanager" }));
+                        .addAll(ModelService.createListOfKey_Values(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
                 String analyticsVolume = downloadFlinkFatJar(outputFolder);
@@ -126,7 +125,7 @@ public class AnalyticsService {
                 flinkTaskmanagerContainer.getDepends_on()
                         .add(ContainerService.createDependsOn(flinkJobmanagerContainer));
                 flinkTaskmanagerContainer.getProperties()
-                        .addAll(ModelService.createKeyValues(new String[] { "command", "taskmanager" }));
+                        .addAll(ModelService.createListOfKey_Values(new String[] { "command", "taskmanager" }));
                 flinkTaskmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6121", "6122" }));
                 // authAll
@@ -176,7 +175,7 @@ public class AnalyticsService {
                 zookeeper.setUri(zookeeperURI);
                 model.getElements().add(zookeeper);
             }
-        } else if (clusterTypeTech == SupportedTechnologies.Kubernetes) {
+        } else {
             Software kafka = TyphonDLFactory.eINSTANCE.createSoftware();
             kafka.setName("Kafka");
             model.getElements().add(kafka);
@@ -277,8 +276,8 @@ public class AnalyticsService {
         model.getElements().add(evolutionBackend);
         Container evolutionBackendContainer = ContainerService.create(evolutionBackendContainerName, containerType,
                 evolutionBackend);
-        evolutionBackendContainer
-                .setPorts(ContainerService.createPorts(new String[] { "target", "3000", "published", "3000" }));
+        evolutionBackendContainer.setPorts(ContainerService.createPorts(new String[] { "target", "3000", "published",
+                properties.getProperty(PropertiesService.EVOLUTION_BACKEND_PUBLISHEDPORT) }));
         evolutionBackendContainer.getDepends_on()
                 .addAll(ContainerService.createDependencies(new Container[] { evolutionMongoContainer }));
 
