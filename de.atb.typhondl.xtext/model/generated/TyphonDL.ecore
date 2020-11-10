@@ -153,20 +153,9 @@
         eType="#//Key_Values" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Resources">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
-        eType="#//ResourceParameters" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ResourceParameters"/>
-  <eClassifiers xsi:type="ecore:EClass" name="LimitCPU" eSuperTypes="#//ResourceParameters">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="limitCPU" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="LimitMemory" eSuperTypes="#//ResourceParameters">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="limitMemory" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ReservationCPU" eSuperTypes="#//ResourceParameters">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="reservationCPU" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ReservationMemory" eSuperTypes="#//ResourceParameters">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="reservationMemory" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="URI">
