@@ -1,0 +1,6 @@
+database VehicleMetadataDB : MariaDB {
+	credentials {
+		username = root ;
+		password = choosePassword ;
+	}
+}

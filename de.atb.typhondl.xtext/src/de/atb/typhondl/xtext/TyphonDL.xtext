@@ -1,3 +1,22 @@
+/*-
+ * #%L
+ * de.atb.typhondl.xtext
+ * %%
+ * Copyright (C) 2018 - 2020 ATB
+ * %%
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is
+ * available at https://www.gnu.org/software/classpath/license.html.
+ * 
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ * #L%
+ */
 grammar de.atb.typhondl.xtext.TyphonDL with org.eclipse.xtext.common.Terminals
 
 //import "http://www.eclipse.org/emf/2002/Ecore" as ecore
@@ -20,8 +39,10 @@ Services:
 	DB | Software;
 
 Software:
-	'software' name=ID '{'
-	(image=IMAGE)
+	(external?='external')? 'software' name=Name '{'
+	(image=IMAGE)?
+	(uri=URI)?
+	(environment=Environment)?
 	(parameters+=Property)*
 	'}';
 
@@ -29,22 +50,49 @@ Type:
 	PlatformType | ClusterType | ContainerType | DBType;
 
 DB:
-	'database' name=ID ':' type=[DBType] '{'
+	(external?='external')? 'database' name=Name ':' type=[DBType] '{'
 	(image=IMAGE)?
+	(uri=URI)?
+	(helm=HelmList)?	
+	(environment=Environment)?
+	(credentials=Credentials)?
 	(parameters+=Property)*
 	'}';
 
+Environment:
+	{Environment} 
+	'environment' '{'
+	   (parameters+=Key_Values)+
+	'}'
+;
+
+HelmList:
+	'helm' '{'
+	  'repoName' '=' repoName=Value ';'
+	  'repoAddress' '=' repoAddress=Value ';'
+	  'chartName' '=' chartName=Value ';'
+	  (parameters+=Property)*
+	'}'
+;
+
+Credentials:
+	{Credentials}
+	'credentials' '{'
+	  ('username' '=' username=Value ';')
+	  ('password' '=' password=Value ';')
+	'}';
+
 PlatformType:
-	'platformtype' name=ID;
+	'platformtype' name=Name;
 
 ClusterType:
-	'clustertype' name=ID;
+	'clustertype' name=Name;
 
 ContainerType:
-	'containertype' name=ID;
+	'containertype' name=Name;
 
 DBType:
-	'dbtype' name=ID '{'
+	'dbtype' name=Name '{'
 	'default' (image=IMAGE)
 	(images+=IMAGE)*
 	'}';
@@ -54,42 +102,90 @@ IMAGE:
 
 Platform:
 	{Platform}
-	'platform' name=ID ':' type=[PlatformType] '{'
-	(clusters+=Cluster)*
+	'platform' name=Name ':' type=[PlatformType] '{'
+	(properties+=Property)*
+	(clusters+=Cluster)+
 	'}';
 
 Cluster:
 	{Cluster}
-	'cluster' name=ID ':' type=[ClusterType] '{'
+	'cluster' name=Name ':' type=[ClusterType] '{'
 	(networks+=Cluster_Network)*
 	(properties+=Property)*
 	(applications+=Application)*
 	'}';
 
 Cluster_Network:
-	'network' name=ID
+	'networks' name=ID
 	('{'
 	(key_values+=Key_Values)*
 	'}')?;
 
-Container_Network:
-	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
-
 Application:
 	{Application}
-	'application' name=ID '{'
+	'application' name=Name '{'
 	(containers+=Container)*
+	(volumes=Volume_Toplevel)?
 	'}';
 
 Container:
 	{Container}
-	'container' name=Value ':' (type=[ContainerType])? '{'
+	'container' name=Name ':' (type=[ContainerType])? '{'
 	(deploys=Reference)?
 	(depends_on+=Dependency)*
 	(networks=Container_Network)?
 	(ports=Ports)?
+	(resources=Resources)?
+	(uri=URI)?
+	(replication=Replication)?
+    (volumes=Volumes)?
 	(properties+=Property)*
 	'}';
+
+Replication:
+    'replication' '{'
+        'replicas' '=' replicas=INT ';'
+        'mode' '=' mode=Modes ';'
+    '}'
+;
+
+enum Modes:
+    MULTIPRIMARY='multiPrimary' | REPLICASET='replicaSet' | STATELESS='stateless'
+;
+
+Volumes:
+	{Volumes}
+	'volumes' 
+	(decls+=Volume_Properties)+ 
+;
+
+Volume_Properties:
+	{Volume_Properties}
+	('{'
+	('volumeName''=' volumeName=ID';')? 
+	 'mountPath' '=' volumePath=ValueArray';'
+	('volumeType' '=' volumeType=Value';')?
+	(specifics+=Property)*
+	'}'
+	)
+;
+
+Volume_Toplevel:
+	{Volume_Toplevel}
+	'volumes' '{'
+	(names+=ID)*
+	(specifics+=Property)*
+	'}'
+;
+
+Reference:
+	'deploys' reference=[Services];
+
+Dependency:
+	'depends_on' reference=[Container]; 
+
+Container_Network:
+	'networks' references+=[Cluster_Network] (',' references+=[Cluster_Network])*;
 
 Ports:
 	{Ports}
@@ -97,11 +193,17 @@ Ports:
 	(key_values+=Key_Values)+
 	'}';
 
-Dependency:
-	'depends_on' reference=[Container];
+Resources: {Resources}
+    'resources' '{'
+        ('limitCPU' '=' limitCPU=Value ';')?
+        ('limitMemory' '=' limitMemory=Value ';')?
+        ('reservationCPU' '=' reservationCPU=Value ';')?
+        ('reservationMemory' '=' reservationMemory=Value ';')?
+    '}';
 
-Reference:
-	'deploys' reference=[Services];
+URI:
+	'uri' '=' value=Value ';'
+;
 
 Property:
 	Key_Values | Key_ValueArray | Key_KeyValueList;
@@ -110,15 +212,21 @@ Key_Values:
 	name=ID '=' value=Value (',' values+=Value)* ';';
 
 Key_KeyValueList:
-	name=ID '{' (key_Values+=Key_Values)+ '}';
+	name=ID '{' (properties+=Property)+ '}';
 
 Key_ValueArray:
 	name=ID ('[')
 	(values+=Value) (',' values+=Value)*
 	(']');
 
+ValueArray: 
+	value=Value (',' values+=Value)* 
+;
 Value:
-	(STRING | ID | INT | '/' | ':' | '-' | '.' | '=' | '//')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
+
+Name:
+	(STRING | ID | INT | '-')+;
 
 @Override
 terminal SL_COMMENT:

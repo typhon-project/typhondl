@@ -1,13 +1,14 @@
+address
 build
 cap_add
 cap_drop
 cgroup_parent
 command
 configs
-container_name
 credential_spec
 depends_on
 devices
+deploy
 dns
 dns_search
 entrypoint

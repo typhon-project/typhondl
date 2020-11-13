@@ -1,68 +1,187 @@
 package de.atb.typhondl.xtext.ui.creationWizard;
 
-import java.util.Arrays;
-import java.util.List;
+/*-
+ * #%L
+ * de.atb.typhondl.xtext.ui
+ * %%
+ * Copyright (C) 2018 - 2020 ATB
+ * %%
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is
+ * available at https://www.gnu.org/software/classpath/license.html.
+ * 
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ * #L%
+ */
+
+import java.util.ArrayList;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
+import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
+import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
+import de.atb.typhondl.xtext.ui.utilities.InputField;
+
+/**
+ * Optional page for the TyphonDL {@link CreateModelWizard}. The properties for
+ * the TyphonDL Analytics component, i.e. Kafka and Zookeeper properties can be
+ * edited and are stored in the polystore.properties
+ * 
+ * @author flug
+ *
+ */
 public class CreationAnalyticsPage extends MyWizardPage {
 
-	private Properties properties;
+    /**
+     * The polystore.properties
+     */
+    private Properties properties;
+    private ITechnology chosenTechnology;
+    private Composite main;
+    private Text kafkaURIText;
+    private GridData hiddenData;
+    private Composite hidden;
+    private ArrayList<Text> portList;
 
-	protected CreationAnalyticsPage(String pageName, Properties properties) {
-		super(pageName);
-		this.properties = properties;
-	}
+    /**
+     * Creates an instance of the {@link CreationAnalyticsPage}
+     * 
+     * @param pageName   the name of the page
+     * @param properties
+     */
+    protected CreationAnalyticsPage(String pageName, Properties properties, ITechnology chosenTechnology) {
+        super(pageName);
+        this.properties = properties;
+        this.chosenTechnology = chosenTechnology;
+        this.portList = new ArrayList<>();
+    }
 
-	public class InputField {
-		public final String label;
-		public final String propertyName;
+    @Override
+    public void createControl(Composite parent) {
 
-		public InputField(String label, String propertyName) {
-			this.label = label;
-			this.propertyName = propertyName;
-		}
-	}
+        setTitle("Configure Data Analytics");
+        main = new Composite(parent, SWT.NONE);
+        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        main.setLayout(new GridLayout(2, false));
 
-	public class KafkaConfigEditor {
-		public List<InputField> fields = Arrays.asList(new InputField("Zookeeper Port: ", "analytics.zookeeper.publishedPort"),
-				new InputField("Kafka Port: ", "analytics.kafka.publishedPort"),
-				new InputField("Kafka Listeners: ", "analytics.kafka.listeners"),
-				new InputField("Kafka Inter Broker Listener Name: ", "analytics.kafka.listenerName"));
-	}
+        createFields();
 
-	@Override
-	public void createControl(Composite parent) {
+        setControl(main);
+    }
 
-		setTitle("Configure Data Analytics");
-		Composite main = new Composite(parent, SWT.NONE);
-		main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		main.setLayout(new GridLayout(2, false));
-		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-		
-		KafkaConfigEditor editor = new KafkaConfigEditor();
+    private void createFields() {
+        GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        new Label(main, NONE).setText("Kafka URI: ");
+        kafkaURIText = new Text(main, SWT.BORDER);
+        kafkaURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
+        kafkaURIText.setLayoutData(gridData);
+        kafkaURIText.setEditable(false);
 
-		for (InputField inputField : editor.fields) {
-			new Label(main, NONE).setText(inputField.label);
-			Text text = new Text(main, SWT.BORDER);
-			text.setText(properties.getProperty(inputField.propertyName));
-			text.setLayoutData(gridData);
-			text.addModifyListener(e -> {
-				properties.setProperty(inputField.propertyName, text.getText());
-			});
-		}
+        if (chosenTechnology.canUseKubeConfig()) {
+            hidden = new Composite(main, SWT.NONE);
+            hidden.setLayout(new GridLayout(2, false));
+            hiddenData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            hiddenData.horizontalSpan = 2;
+            boolean contained = Boolean
+                    .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
+            hiddenData.exclude = contained;
+            hidden.setVisible(!contained);
+            hidden.setLayoutData(hiddenData);
 
-		setControl(main);
-	}
+            new Label(hidden, SWT.NONE).setText("Analytics Cluster kubeconfig: ");
+            Text analyticsKubeconfigText = new Text(hidden, SWT.BORDER);
+            GridData gridDataHidden = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            analyticsKubeconfigText.setLayoutData(gridDataHidden);
+            analyticsKubeconfigText.setText(properties.getProperty(PropertiesService.ANALYTICS_KUBECONFIG));
+            analyticsKubeconfigText.addModifyListener(e -> properties
+                    .setProperty(PropertiesService.ANALYTICS_KUBECONFIG, analyticsKubeconfigText.getText()));
+        }
 
-	public Properties getProperties() {
-		return properties;
-	}
+        for (InputField inputField : chosenTechnology.kafkaInputFields()) {
+            new Label(main, NONE).setText(inputField.label);
+            Text text = new Text(main, SWT.BORDER);
+            text.setText(properties.getProperty(inputField.propertyName));
+            text.setLayoutData(gridData);
+            text.addModifyListener(e -> {
+                properties.setProperty(inputField.propertyName, text.getText());
+            });
+        }
+        if (properties.getProperty(PropertiesService.POLYSTORE_USEEVOLUTION).equals("true")) {
+            Group evolution = new Group(main, SWT.READ_ONLY);
+            evolution.setLayout(new GridLayout(2, false));
+            GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            GridData gridDataFields2 = new GridData(SWT.FILL, SWT.BEGINNING, true, true);
+            layoutData.horizontalSpan = 2;
+            evolution.setLayoutData(layoutData);
+            evolution.setText("Evolution");
+            EvolutionConfigEditor evEditor = new EvolutionConfigEditor();
+            for (InputField inputField : evEditor.getInputFields()) {
+                new Label(evolution, SWT.NONE).setText(inputField.label);
+                Text text = new Text(evolution, SWT.BORDER);
+                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                    text.setText(ContainerService.createRandomPort(chosenTechnology));
+                    properties.setProperty(inputField.propertyName, text.getText());
+                }
+                text.setLayoutData(gridDataFields2);
+                portList.add(text);
+                text.addModifyListener(e -> {
+                    properties.setProperty(inputField.propertyName, text.getText());
+                    validatePorts();
+                });
+            }
+            validatePorts();
+        }
+    }
+
+    private void validatePorts() {
+        this.setStatus(null);
+        for (Text port : portList) {
+            if (!ContainerService.isPortValidRange(port.getText(), chosenTechnology)) {
+                this.setStatus(new Status(IStatus.ERROR, "Change clusterType",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
+            }
+        }
+    }
+
+    /**
+     * 
+     * @return The {@link Properties} enriched with Typhon Analytics settings
+     */
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public void updateData(Properties properties) {
+        this.properties = properties;
+        updateKafkaURI();
+        if (chosenTechnology.canUseKubeConfig()) {
+            boolean contained = Boolean
+                    .parseBoolean(properties.getProperty(PropertiesService.ANALYTICS_DEPLOYMENT_CONTAINED));
+            hiddenData.exclude = contained;
+            hidden.setVisible(!contained);
+        }
+        main.layout(true);
+    }
+
+    private void updateKafkaURI() {
+        kafkaURIText.setText(properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI));
+    }
 
 }

@@ -1,99 +1,208 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.atb.typhondl.xtext.TyphonDL</groupId>
-	<artifactId>typhondl</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modules>
-		<module>de.atb.typhondl.xtext</module>
-		<module>de.atb.typhondl.acceleo</module>
-		<module>de.atb.typhondl.xtext.ide</module>
-		<module>de.atb.typhondl.xtext.ui</module>
-	</modules>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.atb.typhondl</groupId>
+    <artifactId>typhondl-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <inceptionYear>2018</inceptionYear>
 
-	<properties>
-		<tycho-version>1.3.0</tycho-version>
-		<xtext-version>2.16.0</xtext-version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
+    <name>TyphonDL Tools</name>
+    <url>www.typhon-project.org/</url>
+    <organization>
+        <name>ATB</name>
+        <url>www.atb-bremen.de</url>
+    </organization>
 
-	<repositories>
-		<repository>
-			<id>kepler</id>
-			<url>http://download.eclipse.org/releases/2018-12</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>xtext</id>
-			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.16.0/</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>mwe</id>
-			<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.9.1/</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>emf</id>
-			<url>http://download.eclipse.org/modeling/emf/emf/builds/release</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>xpand</id>
-			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/xpand/</url>
-			<layout>p2</layout>
-		</repository>
+    <modules>
+        <module>de.atb.typhondl.xtext</module>
+        <module>de.atb.typhondl.xtext.ide</module>
+        <module>de.atb.typhondl.xtext.ui</module>
+        <module>de.atb.typhondl.acceleo</module>
+        <module>typhondl-feature</module>
+        <module>typhondl-update-site</module>
+    </modules>
 
-	</repositories>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <acceleo-version>3.7.8</acceleo-version>
+        <tycho-version>1.6.0</tycho-version>
+        <xtext-version>2.20.0</xtext-version>
+        <xtext-antlr-generator-version>2.1.1</xtext-antlr-generator-version>
+        <xtend-maven-plugin-version>2.21.0</xtend-maven-plugin-version>
+        <org.eclipse.acceleo.maven-version>3.6.4</org.eclipse.acceleo.maven-version>
+        <mwe-version>2.11.1</mwe-version>
+        <equinox-version>3.6.200-v20130402-1505</equinox-version>
+        <eclipse-version>2020-03</eclipse-version>
+        <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
+        <maven-antrun-plugin-version>3.0.0</maven-antrun-plugin-version>
+        <build-helper-maven-plugin-version>3.1.0</build-helper-maven-plugin-version>
+        <maven-clean-plugin-version>3.1.0</maven-clean-plugin-version>
+        <exec-maven-plugin-version>1.6.0</exec-maven-plugin-version>
+        <lifecycle-mapping-version>1.0.0</lifecycle-mapping-version>
+        <maven.plugin.license.min.version>2.0.0</maven.plugin.license.min.version>
+    </properties>
 
-	<build>
-		<plugins>
-			<!--<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-compiler-plugin</artifactId>
-			    <version>3.8.0</version>
-			    <configuration>
-			        <source>1.8</source>
-          			<target>1.8</target>
-			    </configuration>
-			</plugin>-->
-			<!--<plugin>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <artifactId>versions-maven-plugin</artifactId>
-			    <version>2.5</version>
-			    <configuration>
-			        <generateBackupPoms>false</generateBackupPoms>
-			    </configuration>
-			</plugin>-->
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-maven-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<extensions>true</extensions>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>xtend-maven-plugin</artifactId>
-				<version>${xtext-version}</version>
-				<configuration>
-					<encoding>UTF-8</encoding>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<!-- need to prefix by basedir to generate to currently built module -->
-							<outputDirectory>${basedir}/xtend-gen</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-compiler-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <compilerArgument>-parameters</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <includeAllDependencies>true</includeAllDependencies>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <resolver>p2</resolver>
+                    <configuration>
+                        <resolver>p2</resolver>
+                        <pomDependencies>consider</pomDependencies>
+                    </configuration>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+                <version>${xtext-version}</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <!-- need to prefix by basedir to generate to 
+                                currently built module -->
+                            <outputDirectory>${basedir}/xtend-gen</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${maven.plugin.license.min.version}</version>
+                    <configuration>
+                        <!--license to use for the project -->
+                        <licenseName>epl_v2</licenseName>
 
+                        <!--generate license file even if it exists -->
+                        <force>true</force>
+
+                        <!--specifies the folders to consider for header 
+                            replacement -->
+                        <roots>
+                            <root>src</root>
+                        </roots>
+
+                        <extraExtensions>
+                            <mwe2>java</mwe2>
+                            <xtend>java</xtend>
+                            <xtext>java</xtext>
+                        </extraExtensions>
+
+                        <!--exclude test-scoped dependencies from the 3rd 
+                            party license-list -->
+                        <excludedScopes>test</excludedScopes>
+
+                        <!--automatically update the copyright if current 
+                            or inception years change -->
+                        <canUpdateCopyright>true</canUpdateCopyright>
+                        <!--automatically update the project name or description -->
+                        <canUpdateDescription>true</canUpdateDescription>
+
+                        <!--whether the missing file should be used -->
+                        <useMissingFile>true</useMissingFile>
+                        
+                        <outputDirectory>${project.basedir}</outputDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>license-management</id>
+                            <goals>
+                                <!--updates the source's headers according 
+                                    to the specified license -->
+                                <goal>update-file-header</goal>
+
+                                <!--Adds the full-blown license file to the 
+                                    final product -->
+                                <goal>update-project-license</goal>
+
+                                <!--generate and add a list of third-party 
+                                    licenses -->
+                                <goal>add-third-party</goal>
+                            </goals>
+                            <phase>process-sources</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>typhon-repo</id>
+            <url>http://archiva.clmsuk.com:8090/repository/internal/</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>kepler</id>
+            <url>http://download.eclipse.org/releases/${eclipse-version}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>xtext</id>
+            <url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtext-version}/</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>mwe</id>
+            <url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/${mwe-version}/</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>emf</id>
+            <url>http://download.eclipse.org/modeling/emf/emf/builds/release</url>
+            <layout>p2</layout>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>acceleo</id>
+            <name>Acceleo Maven Repository</name>
+            <url>https://repo.eclipse.org/content/repositories/acceleo/</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>

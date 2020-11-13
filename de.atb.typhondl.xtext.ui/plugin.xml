@@ -354,7 +354,7 @@
 	<!-- Rename Refactoring -->
 	<extension point="org.eclipse.ui.handlers">
 		<handler 
-			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
+			class="de.atb.typhondl.xtext.ui.TyphonDLExecutableExtensionFactory:de.atb.typhondl.xtext.ui.refactoring.TyphonDLRenameHandler"
 			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
 			<activeWhen>
 				<reference
@@ -440,7 +440,7 @@
                 commandId="de.atb.typhondl.xtext.ui.creationWizard.CreateModel"
                 label="Create TyphonDL model"
                 style="push"
-                tooltip="Opens a Wizard to create a TyphonDL Files">
+                tooltip="Opens a Wizard to create TyphonDL Files">
            <visibleWhen
                  checkEnabled="false">
               <with

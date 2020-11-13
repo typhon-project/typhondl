@@ -1,0 +1,113 @@
+entity VehicleWeatherData {
+	timeStamp : datetime
+	vehicle_position : point
+	temperature: float
+	rain_Intensity: float
+	solar_Intensity: int
+	metadata -> VehicleMetadata."VehicleMetadata.vehicle_weather_data"[1]
+}
+
+entity VehicleMetadata{
+	VIN: int
+	brand: string
+	model: string
+	constr_year: int
+	color: string
+	t_sensor_h: int
+	engine_type: string
+	vehicle_weather_data :-> VehicleWeatherData[0..*]
+	vehicle_esp_data :-> ESP[0..*]
+}
+
+entity ESP{
+	timeStamp : datetime
+	vehicle_position : point
+	esp_edl: bool
+	esp_idd: bool
+	esp_abs: bool
+	metadata -> VehicleMetadata."VehicleMetadata.vehicle_esp_data"[1]
+}
+
+entity App {
+	VIN: int
+	timeStamp : datetime
+	vehicle_position : point
+	esp :-> ESP[0..*]
+	warnings :-> WarningWeatherData[0..*]
+}
+
+entity WarningWeatherData {
+	time_start : datetime
+	time_end : datetime
+	warningType : string
+	severity : int
+	area : polygon
+}
+
+entity TextWarning {
+	timeStamp : datetime
+	warning : text
+	extractedWarning : freetext[RelationExtraction[workflow1], TermExtraction[workflow1]]
+}
+
+entity ExtractedWarning {
+	ORGANIZATION : string
+	WEATHER_EVENT : string
+	WEATHER_EVENT_INTENSITY : float
+	WEATHER_EVENT_COUNT : int
+	LOCATION : point
+	WARNING_LEVEL : int
+	DAY: string
+	DATE : date
+	TIME : string
+	DISTANCE : string
+	DIRECTION : string
+	SPEED : float
+	SIZE : string
+	TEMPERATURE : float
+	NUMBER : int
+}
+
+
+relationaldb VehicleMetadataDB { 
+ 	tables { 
+		table { 
+			VehicleMetadataDB : VehicleMetadata 
+ 			index metadataIndex { 
+ 				attributes ("VehicleMetadata.VIN")  
+ 			} 
+ 			idSpec ("VehicleMetadata.VIN") 
+ 		} 
+ 	} 
+ } 
+ 
+ documentdb VehicleDataDB { 
+ 	collections { 
+ 		VehicleWeatherDataDB : VehicleWeatherData 
+ 		ESPDB : ESP
+ 	} 
+ } 
+
+relationaldb AppData {
+	tables {
+		table {
+			AppDB : App 
+			index appIndex {
+				attributes ("App.VIN")
+			}
+		}
+		table {
+			AnalyticsDB : ExtractedWarning
+			index analyticsIndex {
+				attributes ("ExtractedWarning.NUMBER")
+			}
+		}
+	}
+}
+
+documentdb TextWarningData {
+	collections {
+		TextWarningDB : TextWarning
+		WarningWeatherDB : WarningWeatherData
+	}
+}

@@ -1,5 +1,6 @@
-database AppData : mariadb {
-	environment {
-		MYSQL_ROOT_PASSWORD = example ;
+database AppData : MariaDB {
+	credentials {
+		username = root ;
+		password = choosePassword ;
 	}
 }
