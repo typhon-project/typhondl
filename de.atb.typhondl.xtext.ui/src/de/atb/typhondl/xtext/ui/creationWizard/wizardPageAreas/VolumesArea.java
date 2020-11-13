@@ -44,7 +44,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 
 /**
  * WizardPage {@link Area} to configure and add container volumes, opens
@@ -66,8 +66,8 @@ public class VolumesArea extends Area {
      * @param chosenTechnology the clusterType
      * @param parent           the main control
      */
-    public VolumesArea(DB db, Container container, SupportedTechnologies chosenTechnology, Composite parent) {
-        super(db, container, chosenTechnology, parent, "Volumes", null);
+    public VolumesArea(DB db, Container container, ITechnology chosenTechnology, Composite parent) {
+        super(db, container, parent, "Volumes", null, chosenTechnology, null);
     }
 
     @Override

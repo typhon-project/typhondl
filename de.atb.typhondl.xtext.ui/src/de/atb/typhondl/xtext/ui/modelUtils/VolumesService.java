@@ -27,7 +27,6 @@ import de.atb.typhondl.xtext.typhonDL.ValueArray;
 import de.atb.typhondl.xtext.typhonDL.Volume_Properties;
 import de.atb.typhondl.xtext.typhonDL.Volumes;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesDialog;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Utility class for easier {@link Volumes} model object handling
@@ -92,7 +91,7 @@ public class VolumesService {
      * Helper for {@link VolumesDialog}
      */
     public static String getVolumesPath(Volume_Properties property) {
-        return property.getVolumePath() != null ? property.getVolumePath().getValue() : ""; // TODO;
+        return property.getVolumePath() != null ? property.getVolumePath().getValue() : "";
     }
 
     /**
@@ -136,23 +135,6 @@ public class VolumesService {
             break;
         }
         return properties;
-    }
-
-    /**
-     * Returns technology dependent default volume type
-     * 
-     * @param chosenTechnology the clusterType
-     * @return technology dependent default volume type
-     */
-    public static String getDefaultVolumesType(SupportedTechnologies chosenTechnology) {
-        if (chosenTechnology.equals(SupportedTechnologies.Kubernetes)) {
-            return "persistentVolumeClaim";
-        }
-        if (chosenTechnology.equals(SupportedTechnologies.DockerCompose)) {
-            return "volume";
-        }
-
-        return "";
     }
 
 }

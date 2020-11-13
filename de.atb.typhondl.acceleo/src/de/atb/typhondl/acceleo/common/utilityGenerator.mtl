@@ -96,11 +96,6 @@ not aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('va
 aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('valuesFile')).oclAsType(Key_Values).value
 /]
 
-
-[query public convertCPUToKubernetes(aCPUString : String) : String = self /]
-
-[query public convertMemoryToKubernetes(aMemoryString : String) : String = self /]
-
 [query public allowsUsername(typeName: String) : Boolean =  
 typeName = 'mongo'
 /]

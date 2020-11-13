@@ -78,3 +78,7 @@ If the analytics component was started and also should be stopped and removed:
 ```bash
 $ kubectl delete namespaces kafka
 ```
+If logging was started and also should be stopped and removed:
+```bash
+$ kubectl delete namespaces logging
+```

@@ -44,7 +44,7 @@ public class PropertyArea extends Area {
      * @param parent the main control
      */
     public PropertyArea(DB db, Composite parent) {
-        super(db, null, null, parent, "Parameters", null);
+        super(db, null, parent, "Parameters", null, null, null);
     }
 
     @Override

@@ -37,28 +37,24 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
-import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.EvolutionConfigEditor;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
-import de.atb.typhondl.xtext.ui.utilities.KafkaConfigEditor;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 public class ChangeAnalyticsDialog extends StatusDialog {
 
     private Properties properties;
-    private Shell shell;
-    private SupportedTechnologies clusterType;
+    private ITechnology chosenTechnology;
     private boolean analyticsContained;
     private ArrayList<Text> portList;
 
-    public ChangeAnalyticsDialog(Shell shell, Properties properties, SupportedTechnologies clusterType,
+    public ChangeAnalyticsDialog(Shell shell, Properties properties, ITechnology chosenTechnology,
             boolean analyticsContained) {
         super(shell);
         this.setTitle("Change Analytics Component");
         this.properties = properties;
-        this.shell = shell;
-        this.clusterType = clusterType;
+        this.chosenTechnology = chosenTechnology;
         this.analyticsContained = analyticsContained;
         this.portList = new ArrayList<>();
     }
@@ -73,12 +69,10 @@ public class ChangeAnalyticsDialog extends StatusDialog {
         new Label(main, SWT.NONE).setText("Kafka URI: ");
         Text kafkaURIText = new Text(main, SWT.BORDER);
         kafkaURIText.setText(getKafkaUri());
-//        kafkaURIText.setLayoutData(gridDataFields);
         properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText());
         kafkaURIText.addModifyListener(
                 e -> properties.setProperty(PropertiesService.ANALYTICS_KAFKA_URI, kafkaURIText.getText()));
-        KafkaConfigEditor editor = new KafkaConfigEditor();
-        for (InputField inputField : editor.getInputFields(clusterType)) {
+        for (InputField inputField : chosenTechnology.kafkaInputFields()) {
             new Label(main, SWT.NONE).setText(inputField.label);
             Text text = new Text(main, SWT.BORDER);
             text.setText(properties.getProperty(inputField.propertyName));
@@ -94,10 +88,14 @@ public class ChangeAnalyticsDialog extends StatusDialog {
             evolution.setLayoutData(layoutData);
             evolution.setText("Evolution");
             EvolutionConfigEditor evEditor = new EvolutionConfigEditor();
-            for (InputField inputField : evEditor.getInputFields(clusterType)) {
+            for (InputField inputField : evEditor.getInputFields()) {
                 new Label(evolution, SWT.NONE).setText(inputField.label);
                 Text text = new Text(evolution, SWT.BORDER);
                 text.setText(properties.getProperty(inputField.propertyName));
+                if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
+                    text.setText(ContainerService.createRandomPort(chosenTechnology));
+                    properties.setProperty(inputField.propertyName, text.getText());
+                }
                 text.setLayoutData(gridDataFields2);
                 portList.add(text);
                 text.addModifyListener(e -> {
@@ -113,17 +111,16 @@ public class ChangeAnalyticsDialog extends StatusDialog {
     private void validatePorts() {
         this.updateStatus(new Status(IStatus.OK, "Change clusterType", ""));
         for (Text port : portList) {
-            if (clusterType == SupportedTechnologies.Kubernetes
-                    && !ContainerService.isPortInKubernetesRange(port.getText())) {
-                this.updateStatus(
-                        new Status(IStatus.ERROR, "Change clusterType", "Choose port between 30000 and 32767"));
+            if (!ContainerService.isPortValidRange(port.getText(), chosenTechnology)) {
+                this.updateStatus(new Status(IStatus.ERROR, "Wizard",
+                        "Choose a port between " + chosenTechnology.minPort() + " and " + chosenTechnology.maxPort()));
             }
         }
     }
 
     private String getKafkaUri() {
         if (analyticsContained) {
-            return ModelService.getKafkaInternalURI(clusterType);
+            return chosenTechnology.kafkaInternalURI();
         } else {
             return properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         }

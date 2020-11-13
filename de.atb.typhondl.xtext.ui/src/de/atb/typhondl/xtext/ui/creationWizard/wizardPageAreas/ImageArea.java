@@ -45,7 +45,7 @@ public class ImageArea extends Area {
      * @param parent the main control
      */
     public ImageArea(DB db, Composite parent) {
-        super(db, null, null, parent, "Image used", null);
+        super(db, null, parent, "Image used", null, null, null);
     }
 
     @Override

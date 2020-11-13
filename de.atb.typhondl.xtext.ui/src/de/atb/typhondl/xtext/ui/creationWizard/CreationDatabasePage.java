@@ -43,8 +43,9 @@ import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ReplicaArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.ResourceArea;
 import de.atb.typhondl.xtext.ui.creationWizard.wizardPageAreas.VolumesArea;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
+import de.atb.typhondl.xtext.ui.modelUtils.ReplicationService;
+import de.atb.typhondl.xtext.ui.technologies.ITechnology;
 import de.atb.typhondl.xtext.ui.utilities.Pair;
-import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
 
 /**
  * Each Database has a page to define and/or change the image and other
@@ -54,16 +55,15 @@ import de.atb.typhondl.xtext.ui.utilities.SupportedTechnologies;
  *
  */
 public class CreationDatabasePage extends MyWizardPage {
-
     private DB db;
     private Container container;
-    private SupportedTechnologies chosenTechnology;
+    private ITechnology chosenTechnology;
     private int pageWidth;
     private Properties properties;
     private ArrayList<Area> areas;
     private Composite main;
 
-    public CreationDatabasePage(String pageName, DB db, SupportedTechnologies chosenTechnology, Properties properties,
+    public CreationDatabasePage(String pageName, DB db, ITechnology chosenTechnology, Properties properties,
             int pageWidth) {
         super(pageName);
         this.db = db;
@@ -82,7 +82,7 @@ public class CreationDatabasePage extends MyWizardPage {
         // the containerType get's created and added to the container in ModelCreator,
         // so that all containers have the same containerType instance
         Container newContainer = ContainerService.create(containerName, null, db, containerName + ":" + getPort(),
-                getVolumeTarget(), chosenTechnology);
+                db.getHelm() == null ? getVolumeTarget() : null, chosenTechnology);
         return newContainer;
     }
 
@@ -126,8 +126,7 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new EnvironmentArea(db, chosenTechnology, main));
         }
 
-        if (!isInList(HelmArea.class) && chosenTechnology == SupportedTechnologies.Kubernetes && db.getHelm() != null
-                && !db.isExternal()) {
+        if (!isInList(HelmArea.class) && chosenTechnology.canUseHelm() && db.getHelm() != null && !db.isExternal()) {
             areas.add(new HelmArea(db, chosenTechnology, main));
         }
 
@@ -151,7 +150,8 @@ public class CreationDatabasePage extends MyWizardPage {
             areas.add(new PortArea(db, container, chosenTechnology, main, properties, this));
         }
 
-        if (!isInList(ReplicaArea.class) && !db.isExternal() && !getReplicationProperty().isEmpty()
+        if (!isInList(ReplicaArea.class) && !db.isExternal() && !ReplicationService
+                .getReplicationProperty(db.getType().getName().toLowerCase(), chosenTechnology, properties).isEmpty()
                 && db.getHelm() == null) {
             areas.add(new ReplicaArea(db, container, chosenTechnology, main, properties));
         }
@@ -169,12 +169,6 @@ public class CreationDatabasePage extends MyWizardPage {
         return false;
     }
 
-    private String getReplicationProperty() {
-        String propertyName = db.getType().getName().toLowerCase() + ".replication" + "."
-                + chosenTechnology.name().toLowerCase();
-        return properties.getProperty(propertyName) != null ? properties.getProperty(propertyName) : "";
-    }
-
     public String getDBName() {
         return db.getName();
     }
@@ -189,17 +183,17 @@ public class CreationDatabasePage extends MyWizardPage {
         this.container = createDBContainer();
         addAreasToList();
         for (Area area : areas) {
-            area.updateData(db, container, chosenTechnology);
+            area.updateData(db, container);
             area.updateArea();
         }
         ((Composite) this.getControl()).layout();
     }
 
-    public SupportedTechnologies getChosenTechnology() {
+    public ITechnology getChosenTechnology() {
         return this.chosenTechnology;
     }
 
-    public void setChosenTechnology(SupportedTechnologies chosenTechnology) {
+    public void setChosenTechnology(ITechnology chosenTechnology) {
         this.chosenTechnology = chosenTechnology;
     }
 

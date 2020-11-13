@@ -66,7 +66,7 @@ public class CreateModelHandler extends AbstractHandler {
         IWorkbenchPage page = window.getActivePage();
         ISelection selection = page.getSelection();
 
-        if (selection != null & selection instanceof IStructuredSelection) {
+        if (selection != null && selection instanceof IStructuredSelection) {
             IStructuredSelection strucSelection = (IStructuredSelection) selection;
             Object firstElement = strucSelection.getFirstElement();
             if (firstElement instanceof IAdaptable) {

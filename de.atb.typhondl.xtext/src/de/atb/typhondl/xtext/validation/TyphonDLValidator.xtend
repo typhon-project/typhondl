@@ -38,6 +38,7 @@ import java.io.InputStreamReader
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
+import de.atb.typhondl.xtext.typhonDL.Resources
 
 /**
  * This class contains custom validation rules. 
@@ -154,4 +155,11 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
         }
     }
 
+    @Check
+    def checkResources(Resources resources) {
+        if (resources.limitCPU === null && resources.limitMemory === null && resources.reservationCPU === null &&
+            resources.reservationMemory === null) {
+            error("Please give a resource parameter", TyphonDLPackage.Literals.RESOURCES__LIMIT_CPU)
+        }
+    }
 }

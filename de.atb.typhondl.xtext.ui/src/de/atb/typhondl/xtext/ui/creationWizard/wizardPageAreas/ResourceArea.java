@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -55,7 +54,7 @@ public class ResourceArea extends Area {
      * @param parent    the main control
      */
     public ResourceArea(DB db, Container container, Composite parent) {
-        super(db, container, null, parent, "Container Resources", null);
+        super(db, container, parent, "Container Resources", null, null, null);
     }
 
     @Override
@@ -86,7 +85,12 @@ public class ResourceArea extends Area {
             limCPUText.setText(resources.getLimitCPU());
             limCPUText.setLayoutData(gridDataFields);
             limCPUText.addModifyListener(e -> {
-                resources.setLimitCPU(limCPUText.getText());
+                String text = limCPUText.getText();
+                if (text.isEmpty()) {
+                    container.getResources().setLimitCPU(null);
+                } else {
+                    container.getResources().setLimitCPU(limCPUText.getText());
+                }
             });
             Label limMemLabel = new Label(limitComposite, SWT.NONE);
             limMemLabel.setText("limitMemory: ");
@@ -94,11 +98,16 @@ public class ResourceArea extends Area {
             limMemText.setText(resources.getLimitMemory());
             limMemText.setLayoutData(gridDataFields);
             limMemText.addModifyListener(e -> {
-                resources.setLimitMemory(limMemText.getText());
+                String text = limMemText.getText();
+                if (text.isEmpty()) {
+                    container.getResources().setLimitMemory(null);
+                } else {
+                    container.getResources().setLimitMemory(limMemText.getText());
+                }
             });
 
             Button reservationCheck = new Button(group, SWT.CHECK);
-            reservationCheck.setText("Set container resource reservations (this will set limits as well)");
+            reservationCheck.setText("Set container resource reservations");
             reservationCheck.setLayoutData(gridDataChecks);
             // create invisible Reservation Composite in each resource composite
             Composite reservationComposite = new Composite(group, SWT.NONE);
@@ -112,7 +121,12 @@ public class ResourceArea extends Area {
             resCPUText.setText(resources.getReservationCPU());
             resCPUText.setLayoutData(gridDataFields);
             resCPUText.addModifyListener(e -> {
-                resources.setReservationCPU(resCPUText.getText());
+                String text = resCPUText.getText();
+                if (text.isEmpty()) {
+                    container.getResources().setReservationCPU(null);
+                } else {
+                    container.getResources().setReservationCPU(resCPUText.getText());
+                }
             });
             Label resMemLabel = new Label(reservationComposite, SWT.NONE);
             resMemLabel.setText("reservationMemory: ");
@@ -120,7 +134,12 @@ public class ResourceArea extends Area {
             resMemText.setText(resources.getReservationMemory());
             resMemText.setLayoutData(gridDataFields);
             resMemText.addModifyListener(e -> {
-                resources.setReservationMemory(resMemText.getText());
+                String text = resMemText.getText();
+                if (text.isEmpty()) {
+                    container.getResources().setReservationMemory(null);
+                } else {
+                    container.getResources().setReservationMemory(resMemText.getText());
+                }
             });
 
             limitCheck.addSelectionListener(new SelectionAdapter() {
@@ -132,19 +151,22 @@ public class ResourceArea extends Area {
                     limitComposite.setVisible(useLimits);
                     parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                     ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                    Resources newResources = container.getResources();
+                    if (newResources == null) {
+                        newResources = TyphonDLFactory.eINSTANCE.createResources();
+                    }
                     if (useLimits) {
-                        Resources newResources = container.getResources();
-                        if (newResources == null) {
-                            newResources = TyphonDLFactory.eINSTANCE.createResources();
-                        }
                         newResources.setLimitCPU(limCPUText.getText());
                         newResources.setLimitMemory(limMemText.getText());
                         container.setResources(newResources);
                     } else {
-                        reservationCheck.setSelection(false);
-                        reservationCheck.notifyListeners(13, new Event());
-                        container.setResources(null);
+                        newResources.setLimitCPU(null);
+                        newResources.setLimitMemory(null);
+                        if (newResources.getReservationCPU() == null && newResources.getReservationMemory() == null) {
+                            container.setResources(null);
+                        }
                     }
+
                 }
             });
             reservationCheck.addSelectionListener(new SelectionAdapter() {
@@ -156,20 +178,19 @@ public class ResourceArea extends Area {
                     reservationComposite.setVisible(useReservations);
                     parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                     ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                    Resources newResources = container.getResources();
+                    if (newResources == null) {
+                        newResources = TyphonDLFactory.eINSTANCE.createResources();
+                    }
                     if (useReservations) {
-                        limitCheck.setSelection(true);
-                        limitCheck.notifyListeners(13, new Event());
-                        // TODO check if this can be null:
-                        Resources newResources = container.getResources();
                         newResources.setReservationCPU(resCPUText.getText());
                         newResources.setReservationMemory(resMemText.getText());
                         container.setResources(newResources);
                     } else {
-                        Resources newResources = container.getResources();
-                        if (newResources != null) {
-                            newResources.setReservationCPU(null);
-                            newResources.setReservationMemory(null);
-                            container.setResources(newResources);
+                        newResources.setReservationCPU(null);
+                        newResources.setReservationMemory(null);
+                        if (newResources.getLimitCPU() == null && newResources.getLimitMemory() == null) {
+                            container.setResources(null);
                         }
                     }
                 }
