@@ -24,10 +24,10 @@ package de.atb.typhondl.xtext.validation
 
 import de.atb.typhondl.xtext.typhonDL.Application
 import de.atb.typhondl.xtext.typhonDL.Cluster
-import de.atb.typhondl.xtext.typhonDL.ClusterType
 import de.atb.typhondl.xtext.typhonDL.Container
 import de.atb.typhondl.xtext.typhonDL.ContainerType
 import de.atb.typhondl.xtext.typhonDL.DBType
+import de.atb.typhondl.xtext.typhonDL.Import
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList
 import de.atb.typhondl.xtext.typhonDL.Key_ValueArray
 import de.atb.typhondl.xtext.typhonDL.Key_Values
@@ -38,7 +38,8 @@ import de.atb.typhondl.xtext.typhonDL.Resources
 import de.atb.typhondl.xtext.typhonDL.TyphonDLPackage
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.Arrays
+import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.Path
 import org.eclipse.xtext.validation.Check
 
 import static extension com.google.common.io.CharStreams.*
@@ -139,11 +140,15 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
         val keys = bufferedReader.readLines
         for (property : properties) {
             if (!keys.contains(property.name)) {
-                if (property.name.equals('hostname') || property.name.equals('container_name')) {
-                    error("\"" + property.name + "\" is an internal polystore keyword and can't be defined by the user",
+                val propertyName = property.name
+                if (propertyName.equals('hostname') || propertyName.equals('container_name')) {
+                    error("\"" + propertyName + "\" is an internal polystore keyword and can't be defined by the user",
                         TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
+                } else if (propertyName.equals('command')) {
+                    warning("Using \"command\" will overwrite the starting command of the DB, be careful",
+                        TyphonDLPackage.Literals.CLUSTER__TYPE)
                 } else {
-                    error("\"" + property.name + "\" is not a " + cluster.type.name + " keyword",
+                    error("\"" + propertyName + "\" is not a " + cluster.type.name + " keyword",
                         TyphonDLPackage.Literals.CLUSTER__TYPE, INVALID_DOCKER_KEY)
                 }
             }
@@ -185,17 +190,28 @@ class TyphonDLValidator extends AbstractTyphonDLValidator {
         }
     }
 
-/**
- * import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies <br>
- * import de.atb.typhondl.xtext.ui.modelUtils.ModelService <br>
- * is not possible because adding the packages to the manifest is creating a dependency loop.
- * So this has to be changed if a new constant is added to the SupportedTechnology enum.
- */
+    /**
+     * import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies <br>
+     * import de.atb.typhondl.xtext.ui.modelUtils.ModelService <br>
+     * is not possible because adding the packages to the manifest is creating a dependency loop.
+     * So this has to be changed if a new constant is added to the SupportedTechnology enum.
+     */
     @Check
     def checkSupportedTechnologies(Cluster cluster) {
         val clusterTypeName = cluster.type.name
-        if (!((clusterTypeName).equals("Kubernetes") || clusterTypeName.equals("DockerCompose"))){
-            error("Only DockerCompose and Kubernetes are supported as clustertypes", TyphonDLPackage.Literals.CLUSTER__TYPE)
+        if (!((clusterTypeName).equals("Kubernetes") || clusterTypeName.equals("DockerCompose"))) {
+            error("Only DockerCompose and Kubernetes are supported as clustertypes",
+                TyphonDLPackage.Literals.CLUSTER__TYPE)
+        }
+    }
+
+    @Check
+    def checkImports(Import imports) {
+        val modelURI = imports.eResource.URI
+        val importURI = modelURI.trimSegments(1).appendSegment(imports.relativePath)
+        val file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(importURI.toPlatformString(true)));
+        if (!file.exists) {
+            error("File \"" + imports.relativePath + "\" does not exist", TyphonDLPackage.Literals.IMPORT__RELATIVE_PATH)
         }
     }
 
