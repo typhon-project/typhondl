@@ -221,16 +221,16 @@ public class CreationMainPage extends MyWizardPage {
         chosenTechnology = TechnologyFactory
                 .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
 
-        Composite hidden = new Composite(mainGroup, SWT.NONE);
-        hidden.setLayout(new GridLayout(2, false));
-        GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        hiddenData.exclude = true;
-        hiddenData.horizontalSpan = 2;
-        hidden.setLayoutData(hiddenData);
+        Composite hiddenKubeconfig = new Composite(mainGroup, SWT.NONE);
+        hiddenKubeconfig.setLayout(new GridLayout(2, false));
+        GridData hiddenKubeconfigData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenKubeconfigData.exclude = true;
+        hiddenKubeconfigData.horizontalSpan = 2;
+        hiddenKubeconfig.setLayoutData(hiddenKubeconfigData);
 
-        new Label(hidden, SWT.NONE).setText("kubeconfig: ");
-        Text kubeconfig = new Text(hidden, SWT.BORDER);
-        kubeconfig.setLayoutData(gridData);
+        new Label(hiddenKubeconfig, SWT.NONE).setText("kubeconfig: ");
+        Text kubeconfig = new Text(hiddenKubeconfig, SWT.BORDER);
+        kubeconfig.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         kubeconfig.setText(properties.getProperty(PropertiesService.POLYSTORE_KUBECONFIG));
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
@@ -247,6 +247,18 @@ public class CreationMainPage extends MyWizardPage {
             }
         });
 
+//        Composite hiddenLogging = new Composite(mainGroup, SWT.NONE);
+//        hiddenLogging.setLayout(new GridLayout(2, false));
+//        GridData hiddenLoggingData = new GridData(SWT.FILL, SWT.FILL, true, true);
+//        hiddenLoggingData.exclude = true;
+//        hiddenLoggingData.horizontalSpan = 2;
+//        hiddenLogging.setLayoutData(hiddenLoggingData);
+//
+//        new Label(hiddenLogging, SWT.NONE).setText("elasticsearch host: ");
+//        Text logging = new Text(hiddenLogging, SWT.BORDER);
+//        logging.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+//        logging.setText("test");
+
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -260,8 +272,8 @@ public class CreationMainPage extends MyWizardPage {
                 } else {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
-                hiddenData.exclude = !canUseKubeConfig;
-                hidden.setVisible(canUseKubeConfig);
+                hiddenKubeconfigData.exclude = !canUseKubeConfig;
+                hiddenKubeconfig.setVisible(canUseKubeConfig);
                 parent.layout(true);
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
