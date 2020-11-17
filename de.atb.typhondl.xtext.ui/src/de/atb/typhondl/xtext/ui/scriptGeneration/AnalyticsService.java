@@ -1,38 +1,11 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
-/*-
- * #%L
- * de.atb.typhondl.xtext.ui
- * %%
- * Copyright (C) 2018 - 2020 ATB
- * %%
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- * 
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is
- * available at https://www.gnu.org/software/classpath/license.html.
- * 
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- * #L%
- */
-
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
@@ -48,10 +21,8 @@ import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
-import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.technologies.ITechnology;
-import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsService {
 
@@ -101,11 +72,13 @@ public class AnalyticsService {
                             "target", properties.getProperty(PropertiesService.ANALYTICS_KAFKA_PORT) }));
                 }
                 // flink
-                Software flinkJobmanager = SoftwareService.create("FlinkJobmanager", "flink:latest");
+                Software flinkJobmanager = SoftwareService.create("FlinkJobmanager",
+                        "universityofyork/typhon-analytics");
                 flinkJobmanager.setEnvironment(
                         SoftwareService.createEnvironment(new String[] { "JOB_MANAGER_RPC_ADDRESS", "jobmanager" }));
                 model.getElements().add(flinkJobmanager);
-                Software flinkTaskmanager = SoftwareService.create("FlinkTaskmanager", "flink:latest");
+                Software flinkTaskmanager = SoftwareService.create("FlinkTaskmanager",
+                        "universityofyork/typhon-analytics");
                 flinkTaskmanager.setEnvironment(
                         SoftwareService.createEnvironment(new String[] { "JOB_MANAGER_RPC_ADDRESS", "jobmanager" }));
                 model.getElements().add(flinkTaskmanager);
@@ -117,9 +90,6 @@ public class AnalyticsService {
                         .addAll(ModelService.createListOfKey_Values(new String[] { "command", "jobmanager" }));
                 flinkJobmanagerContainer.getProperties()
                         .add(ModelService.createKeyValuesArray("expose", new String[] { "6123" }));
-                String analyticsVolume = downloadFlinkFatJar(outputFolder);
-                flinkJobmanagerContainer
-                        .setVolumes(VolumesService.create(new String[] { analyticsVolume }, null, null));
                 Container flinkTaskmanagerContainer = ContainerService.create("taskmanager", containerType,
                         flinkTaskmanager);
                 flinkTaskmanagerContainer.getDepends_on()
@@ -208,33 +178,6 @@ public class AnalyticsService {
             model = addEvolutionAnalytics(model, properties, containerType);
         }
         return model;
-    }
-
-    private static String downloadFlinkFatJar(String outputFolder)
-            throws ParserConfigurationException, IOException, SAXException {
-        final String flinkFolder = "flinkJar/";
-        final String dir = outputFolder + "/" + flinkFolder;
-        final String tempPath = dir + "temp.xml";
-        if (!Files.exists(Paths.get(outputFolder))) {
-            new File(outputFolder).mkdir();
-        }
-        if (!Files.exists(Paths.get(dir))) {
-            new File(dir).mkdir();
-        }
-        InputStream pomXML = AnalyticsKubernetesService.getAnalyticsPom(tempPath);
-        String jarName = "";
-        if (pomXML != null) {
-            jarName = AnalyticsKubernetesService.getLatestJarName(tempPath);
-        } else {
-            return "error";
-        }
-        IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (MessageDialog.openConfirm(win.getShell(), "Scripts",
-                "Analytics.jar including dependencies (~165MB) is getting downloaded. Press cancel if you want to provide it yourself.")) {
-            FileService.downloadFiles(dir + AnalyticsKubernetesService.FLINKJAR_INTERNAL_NAME,
-                    AnalyticsKubernetesService.DEPENDENCY_JAR_ADDRESS + jarName, "JobmanagerJar");
-        }
-        return "./" + flinkFolder + ":" + AnalyticsKubernetesService.FLINK_INTERNAL_FOLDER + "/";
     }
 
     private static DeploymentModel addEvolutionAnalytics(DeploymentModel model, Properties properties,
