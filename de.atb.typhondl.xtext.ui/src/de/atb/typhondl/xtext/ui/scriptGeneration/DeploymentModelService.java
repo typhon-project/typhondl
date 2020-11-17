@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,10 +52,8 @@ import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.DBService;
 import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
-import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.technologies.ITechnology;
-import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 
 public class DeploymentModelService {
 
@@ -204,61 +201,9 @@ public class DeploymentModelService {
 
         // centralised logging // TODO put logging methods in ITechnology Classes
         if (properties.getProperty(PropertiesService.POLYSTORE_LOGGING).equals("true")) {
-            if (clusterType == SupportedTechnologies.DockerCompose) {
-                model = addFluentdToAllContainers(model);
-                model = addComposeLogging(model, containerType, application);
-            }
-            if (clusterType == SupportedTechnologies.Kubernetes) {
-                addKubernetesLogging(application, containerType);
-            }
+            chosenTechnology.addLogging(model, containerType, application);
         }
 
-        return model;
-    }
-
-    private static DeploymentModel addFluentdToAllContainers(DeploymentModel model) {
-        List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
-        for (Container container : containers) {
-            container.getProperties().add(ContainerService.createComposeLogging(container.getName()));
-        }
-        return model;
-    }
-
-    private static void addKubernetesLogging(Application application, ContainerType containerType) {
-        Container fluentd = ContainerService.create("fluentd", containerType, null);
-        application.getContainers().add(fluentd);
-    }
-
-    private static DeploymentModel addComposeLogging(DeploymentModel model, ContainerType containerType,
-            Application application) {
-        // Fluentd
-        Software fluentd = SoftwareService.create("fluentd", null);
-        Container fluentdContainer = ContainerService.create("fluentd", containerType, fluentd);
-        fluentdContainer.getProperties().add(ModelService.createKey_Values("build", "./fluentd", null));
-        fluentdContainer.setVolumes(VolumesService.create(new String[] { "./fluentd:/fluentd/etc" }, null, null));
-        fluentdContainer
-                .setPorts(ContainerService.createPorts(new String[] { "target", "24224", "published", "24224" }));
-        model.getElements().add(fluentd);
-        model = ContainerService.addDependencyToAllContainers(model,
-                ContainerService.createDependsOn(fluentdContainer));
-        application.getContainers().add(fluentdContainer);
-        // Elasticsearch
-        Software elasticsearch = SoftwareService.create("elasticsearch",
-                "docker.elastic.co/elasticsearch/elasticsearch:7.9.2");
-        elasticsearch.setEnvironment(SoftwareService.createEnvironment(
-                new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
-        Container elasticsearchContainer = ContainerService.create("elasticsearch", containerType, elasticsearch);
-        elasticsearchContainer
-                .setPorts(ContainerService.createPorts(new String[] { "target", "9200", "published", "9200" }));
-        fluentdContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
-        model.getElements().add(elasticsearch);
-        application.getContainers().add(elasticsearchContainer);
-        // Kibana
-        Software kibana = SoftwareService.create("kibana", "docker.elastic.co/kibana/kibana:7.9.2");
-        Container kibanaContainer = ContainerService.create("kibana", containerType, kibana);
-        kibanaContainer.setPorts(ContainerService.createPorts(new String[] { "target", "5601", "published", "5601" }));
-        model.getElements().add(kibana);
-        application.getContainers().add(kibanaContainer);
         return model;
     }
 
