@@ -180,7 +180,7 @@ public class DeploymentModelService {
                         properties.getProperty(PropertiesService.QLSERVER_LIMIT_MEMORY),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_CPU),
                         properties.getProperty(PropertiesService.QLSERVER_RESERVATION_MEMORY)));
-        if (chosenTechnology.restartIsDefault()) {
+        if (!chosenTechnology.restartIsDefault()) {
             qlServerContainer.getProperties()
                     .addAll(ModelService.createListOfKey_Values(new String[] { "restart", "always" }));
         }
