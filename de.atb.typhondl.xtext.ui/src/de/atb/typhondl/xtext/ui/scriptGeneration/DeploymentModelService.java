@@ -56,6 +56,7 @@ import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
 import de.atb.typhondl.xtext.ui.modelUtils.VolumesService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.technologies.ITechnology;
+import de.atb.typhondl.xtext.ui.technologies.SupportedTechnologies;
 
 public class DeploymentModelService {
 
@@ -201,7 +202,7 @@ public class DeploymentModelService {
             model = NLAEService.addNLAEDEV(model, application, properties, containerType);
         }
 
-        // centralised logging
+        // centralised logging // TODO put logging methods in ITechnology Classes
         if (properties.getProperty(PropertiesService.POLYSTORE_LOGGING).equals("true")) {
             if (clusterType == SupportedTechnologies.DockerCompose) {
                 model = addFluentdToAllContainers(model);
