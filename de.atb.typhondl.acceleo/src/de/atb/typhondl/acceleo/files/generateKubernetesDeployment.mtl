@@ -70,7 +70,6 @@ sleep 1
 echo "----------------------------------------------------------------------------"
 echo "Wait for the models to be inserted into the metadata database"
 kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
-kubectl logs job/insert-models
 echo "----------------------------------------------------------------------------"
 echo "Wait for all databases to be ready"
 kubectl wait --for=condition=available --timeout=100s --all -n typhon deployments $kubeconfig
