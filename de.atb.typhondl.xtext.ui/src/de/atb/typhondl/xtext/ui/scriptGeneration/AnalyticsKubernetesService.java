@@ -1,26 +1,5 @@
 package de.atb.typhondl.xtext.ui.scriptGeneration;
 
-/*-
- * #%L
- * de.atb.typhondl.xtext.ui
- * %%
- * Copyright (C) 2018 - 2020 ATB
- * %%
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- * 
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is
- * available at https://www.gnu.org/software/classpath/license.html.
- * 
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- * #L%
- */
-
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,17 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
@@ -51,16 +25,9 @@ import de.atb.typhondl.xtext.ui.utilities.FileService;
 
 public class AnalyticsKubernetesService {
 
-    protected static final String FLINK_INTERNAL_FOLDER = "/opt/flink/usrlib";
-    private static final String FLINKJAR_POSTNAME = "-jar-with-dependencies.jar";
-    private static final String FLINKJAR_PRENAME = "ac.york.typhon.analytics-";
-    protected static final String FLINKJAR_INTERNAL_NAME = FLINKJAR_PRENAME + FLINKJAR_POSTNAME.substring(1);
     private static final String ANALYTICS_KUBERNETES_ZIP_FILENAME = "analyticsKubernetes.zip";
     private static final String ANALYTICS_ZIP_ADDRESS = "http://typhon.clmsuk.com/static/"
             + ANALYTICS_KUBERNETES_ZIP_FILENAME;
-    protected static final String DEPENDENCY_JAR_ADDRESS = "http://archiva.clmsuk.com:8090/repository/internal/typhon/ac.york.typhon.analytics/0.0.1-SNAPSHOT/";
-    private static final String DEPENDENCY_JAR_INFO = "maven-metadata.xml";
-    private static final String DEPENDENCY_JAR_NAME = "jar-with-dependencies";
 
     public static void addAnalyticsFiles(DeploymentModel model, String outputFolder, Properties properties) {
         try {
@@ -97,11 +64,9 @@ public class AnalyticsKubernetesService {
             FileService.save(flinkRestServicePath, restService(properties, flinkRestServicePath));
         }
 
-        if (!properties.get(PropertiesService.ANALYTICS_FLINK_TASKMANAGER_REPLICAS).equals("2")) {
-            Path flinkTaskmanagerPath = Paths
-                    .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
-            FileService.save(flinkTaskmanagerPath, taskmanager(properties, flinkTaskmanagerPath));
-        }
+        Path flinkTaskmanagerPath = Paths
+                .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
+        FileService.save(flinkTaskmanagerPath, taskmanager(properties, flinkTaskmanagerPath));
 
         Path kafkaClusterPath = Paths
                 .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
@@ -109,91 +74,19 @@ public class AnalyticsKubernetesService {
 
         Path flinkJobmanagerPath = Paths
                 .get(analyticsZipPath + File.separator + "flink" + File.separator + "jobmanager-deployment.yaml");
-        FileService.save(flinkJobmanagerPath, jobmanager(flinkJobmanagerPath, dir));
+        FileService.save(flinkJobmanagerPath, jobmanager(properties, flinkJobmanagerPath));
     }
 
-    private static List<String> jobmanager(Path flinkJobmanagerPath, File outputFolder)
-            throws IOException, ParserConfigurationException, SAXException {
-        List<String> jobmanagerLines = Files.readAllLines(flinkJobmanagerPath);
-        final String path = outputFolder.getAbsolutePath() + File.separator + "temp.xml";
-        InputStream input = getAnalyticsPom(path);
-        if (input != null) {
-            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumeMounts:") + 1, workdirMount());
-            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:"), initContainer(getLatestJarName(path)));
-            jobmanagerLines.addAll(getIndex(jobmanagerLines, "volumes:") + 1, initVolume());
-        }
-        return jobmanagerLines;
-    }
-
-    private static ArrayList<String> workdirMount() {
-        ArrayList<String> volumeMount = new ArrayList<>();
-        volumeMount.add("        - name: workdir");
-        volumeMount.add("          mountPath: " + FLINK_INTERNAL_FOLDER);
-        return volumeMount;
-    }
-
-    protected static InputStream getAnalyticsPom(String saveLocation) throws IOException {
-        return FileService.downloadFiles(saveLocation, DEPENDENCY_JAR_ADDRESS + DEPENDENCY_JAR_INFO, "Analytics");
-    }
-
-    private static ArrayList<String> initVolume() {
-        ArrayList<String> initVolume = new ArrayList<>();
-        initVolume.add("      - name: workdir");
-        initVolume.add("        emptyDir: {}");
-        return initVolume;
-    }
-
-    private static ArrayList<String> initContainer(String fileName) {
-        ArrayList<String> initContainer = new ArrayList<>();
-        initContainer.add("      initContainers:");
-        initContainer.add("      - name: load-jar");
-        initContainer.add("        image: busybox");
-        initContainer.add("        command:");
-        initContainer.add("        - wget");
-        initContainer.add("        - \"-O\"");
-        initContainer.add("        - \"/work-dir/" + FLINKJAR_INTERNAL_NAME + "\"");
-        initContainer.add("        - " + DEPENDENCY_JAR_ADDRESS + fileName);
-        initContainer.add("        volumeMounts:");
-        initContainer.add("        - name: workdir");
-        initContainer.add("          mountPath: \"/work-dir\"");
-        return initContainer;
-    }
-
-    protected static String getLatestJarName(String path)
-            throws ParserConfigurationException, IOException, SAXException {
-        NodeList nList = getVersionNodes(path);
-        Node toSearch = null;
-        for (int i = 0; i < nList.getLength(); i++) {
-            Node node = nList.item(i);
-            NodeList childNodes = node.getChildNodes();
-            for (int j = 0; j < childNodes.getLength(); j++) {
-                Node item = childNodes.item(j);
-                if (item.getTextContent().equals(DEPENDENCY_JAR_NAME)) {
-                    toSearch = node;
-                }
+    private static List<String> jobmanager(Properties properties, Path flinkJobmanagerPath) throws IOException {
+        List<String> flinkJobmanager = Files.readAllLines(flinkJobmanagerPath);
+        for (int i = 0; i < flinkJobmanager.size(); i++) {
+            String line = flinkJobmanager.get(i);
+            if (line.contains("image:")) {
+                flinkJobmanager.set(i, FileService.replaceOldValueWithNewValue(line, "image:",
+                        AnalyticsService.getFlinkImage(properties)));
             }
         }
-        if (toSearch != null) {
-            NodeList childNodes = toSearch.getChildNodes();
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node item = childNodes.item(i);
-                if (item.getNodeName().equalsIgnoreCase("value")) {
-                    return FLINKJAR_PRENAME + item.getTextContent() + FLINKJAR_POSTNAME;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static NodeList getVersionNodes(String path)
-            throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        ByteArrayInputStream input = new ByteArrayInputStream(encoded);
-        new File(path).delete();
-        Document doc = builder.parse(input);
-        return doc.getElementsByTagName("snapshotVersion");
+        return flinkJobmanager;
     }
 
     private static List<String> cluster(Properties properties, Path kafkaClusterPath) throws IOException {
@@ -225,9 +118,14 @@ public class AnalyticsKubernetesService {
     private static List<String> taskmanager(Properties properties, Path flinkTaskmanagerPath) throws IOException {
         List<String> flinkTaskmanager = Files.readAllLines(flinkTaskmanagerPath);
         for (int i = 0; i < flinkTaskmanager.size(); i++) {
-            if (flinkTaskmanager.get(i).contains("replicas")) {
-                flinkTaskmanager.set(i, FileService.replaceOldValueWithNewValue(flinkTaskmanager.get(i), "replicas:",
+            String line = flinkTaskmanager.get(i);
+            if (line.contains("replicas")) {
+                flinkTaskmanager.set(i, FileService.replaceOldValueWithNewValue(line, "replicas:",
                         properties.getProperty(PropertiesService.ANALYTICS_FLINK_TASKMANAGER_REPLICAS)));
+            }
+            if (line.contains("image:")) {
+                flinkTaskmanager.set(i, FileService.replaceOldValueWithNewValue(line, "image:",
+                        AnalyticsService.getFlinkImage(properties)));
             }
         }
         return flinkTaskmanager;

@@ -72,13 +72,11 @@ public class AnalyticsService {
                             "target", properties.getProperty(PropertiesService.ANALYTICS_KAFKA_PORT) }));
                 }
                 // flink
-                Software flinkJobmanager = SoftwareService.create("FlinkJobmanager",
-                        "universityofyork/typhon-analytics");
+                Software flinkJobmanager = SoftwareService.create("FlinkJobmanager", getFlinkImage(properties));
                 flinkJobmanager.setEnvironment(
                         SoftwareService.createEnvironment(new String[] { "JOB_MANAGER_RPC_ADDRESS", "jobmanager" }));
                 model.getElements().add(flinkJobmanager);
-                Software flinkTaskmanager = SoftwareService.create("FlinkTaskmanager",
-                        "universityofyork/typhon-analytics");
+                Software flinkTaskmanager = SoftwareService.create("FlinkTaskmanager", getFlinkImage(properties));
                 flinkTaskmanager.setEnvironment(
                         SoftwareService.createEnvironment(new String[] { "JOB_MANAGER_RPC_ADDRESS", "jobmanager" }));
                 model.getElements().add(flinkTaskmanager);
@@ -286,6 +284,11 @@ public class AnalyticsService {
         list.add("\"true\"");
 
         return list.toArray(new String[0]);
+    }
+
+    public static String getFlinkImage(Properties properties) {
+        String image = properties.getProperty(PropertiesService.ANALYTICS_FLINK_IMAGE);
+        return image == null ? "universityofyork/typhon-analytics:latest" : image;
     }
 
 }
