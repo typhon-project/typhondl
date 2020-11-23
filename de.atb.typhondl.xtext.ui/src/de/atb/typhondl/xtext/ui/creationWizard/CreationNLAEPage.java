@@ -24,7 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -42,10 +43,11 @@ import de.atb.typhondl.xtext.ui.utilities.InputField;
  * @author flug
  *
  */
-public class CreationNLAEPage extends WizardPage {
+public class CreationNLAEPage extends MyWizardPage {
 
     private Properties properties;
     private Composite main;
+    private Text hostText;
 
     public CreationNLAEPage(String pageName, Properties properties) {
         super(pageName);
@@ -91,13 +93,35 @@ public class CreationNLAEPage extends WizardPage {
         wideData.horizontalSpan = 2;
         info.setLayoutData(wideData);
         for (InputField inputField : new NLAEConfigEditor().fields) {
-            new Label(main, NONE).setText(inputField.label);
-            Text text = new Text(main, SWT.BORDER);
-            text.setText(properties.getProperty(inputField.propertyName));
-            text.setLayoutData(gridData);
-            text.addModifyListener(e -> {
-                properties.setProperty(inputField.propertyName, text.getText());
-            });
+            if (inputField.label.equalsIgnoreCase("NLAE API host: ")) {
+                new Label(main, NONE).setText(inputField.label);
+                hostText = new Text(main, SWT.BORDER);
+                hostText.setText(properties.getProperty(inputField.propertyName));
+                hostText.setLayoutData(gridData);
+                hostText.addModifyListener(e -> {
+                    properties.setProperty(inputField.propertyName, hostText.getText());
+                    validate();
+                });
+                validate();
+            } else {
+                new Label(main, NONE).setText(inputField.label);
+                Text text = new Text(main, SWT.BORDER);
+                text.setText(properties.getProperty(inputField.propertyName));
+                text.setLayoutData(gridData);
+                text.addModifyListener(e -> {
+                    properties.setProperty(inputField.propertyName, text.getText());
+                });
+            }
+        }
+    }
+
+    private void validate() {
+        setStatus(null);
+        final String text = hostText.getText();
+        if (!text.equalsIgnoreCase("localhost") && !text.contains("://")) {
+            setStatus(new Status(IStatus.ERROR, "CreationWizard",
+                    "Please add \"http://\" in front of your host address"));
+            return;
         }
     }
 
