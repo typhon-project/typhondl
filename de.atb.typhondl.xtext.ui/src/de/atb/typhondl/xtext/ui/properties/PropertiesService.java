@@ -89,6 +89,7 @@ public class PropertiesService {
     public static final String ANALYTICS_KAFKA_PORT = "analytics.kafka.port";
     public static final String ANALYTICS_KAFKA_STORAGECLAIM = "analytics.kafka.storageclaim";
     public static final String ANALYTICS_ZOOKEEPER_STORAGECLAIM = "analytics.zookeeper.storageclaim";
+    public static final String ANALYTICS_FLINK_IMAGE = "analytics.flink.image";
     public static final String ANALYTICS_FLINK_JOBMANAGER_HEAP_SIZE = "analytics.flink.jobmanager.heap.size";
     public static final String ANALYTICS_FLINK_TASKMANAGER_MEMORY_PROCESS_SIZE = "analytics.flink.taskmanager.memory.process.size";
     public static final String ANALYTICS_LOGGING_ROOTLOGGER = "analytics.logging.rootlogger";
