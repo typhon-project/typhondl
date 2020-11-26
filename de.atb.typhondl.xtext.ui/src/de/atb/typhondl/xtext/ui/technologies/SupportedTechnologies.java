@@ -1,5 +1,7 @@
 package de.atb.typhondl.xtext.ui.technologies;
 
+import de.atb.typhondl.xtext.validation.TyphonDLValidator;
+
 /**
  * Utility class for providing supported Technologies. Included at the moment:
  * <li>Docker Compose</li>
@@ -7,7 +9,8 @@ package de.atb.typhondl.xtext.ui.technologies;
  * 
  * In case of extension a new class implementing {@link ITechnology} has to be
  * created. Additionally a case to create that class has to be added to
- * {@link TechnologyFactory}
+ * {@link TechnologyFactory}. Also validation {@link TyphonDLValidator} has to
+ * be adjusted
  * 
  * @author flug
  */
