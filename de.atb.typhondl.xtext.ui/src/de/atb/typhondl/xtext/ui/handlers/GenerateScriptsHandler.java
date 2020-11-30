@@ -93,8 +93,16 @@ public class GenerateScriptsHandler extends AbstractHandler {
                         new File(fileLocation.substring(0, fileLocation.lastIndexOf("." + file.getFileExtension()))));
                 generationService.startGeneration();
             } catch (Exception e2) {
+                if (e2 instanceof NullPointerException) {
+                    MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
+                            "The \".properties\" file does not contain all necessary properties (probably due to an "
+                                    + "update of the DL plugin), please recreate your DL model using the TyphonDL "
+                                    + "Creation Wizard.");
+                    return null;
+                }
                 MessageDialog.openError(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), "UI",
-                        "Please select the main model file containing the Platform definition and make sure there is a <mainModelName>.properties file.");
+                        "Please select the main model file containing the Platform definition and make sure there is"
+                                + " a <mainModelName>.properties file.");
             }
             for (IProject iproject : root.getProjects()) {
                 try {
