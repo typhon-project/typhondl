@@ -22,12 +22,17 @@ package de.atb.typhondl.xtext.ui.modelUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
 
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.Dependency;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Key_Values;
 import de.atb.typhondl.xtext.typhonDL.Modes;
 import de.atb.typhondl.xtext.typhonDL.Ports;
@@ -72,9 +77,7 @@ public class ContainerService {
             container.setDeploys(reference);
         }
         if (uri != null) {
-            URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
-            uriObject.setValue(uri);
-            container.setUri(uriObject);
+            container.setUri(createURIObject(uri));
         }
         if (volumeTarget != null) {
             Volumes volumes = VolumesService.create(new String[] { volumeTarget },
@@ -82,6 +85,12 @@ public class ContainerService {
             container.setVolumes(volumes);
         }
         return container;
+    }
+
+    public static URI createURIObject(String uri) {
+        URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
+        uriObject.setValue(uri);
+        return uriObject;
     }
 
     /**
@@ -255,4 +264,24 @@ public class ContainerService {
             return null;
         }
     }
+
+    /**
+     * Adds {@link Dependency} to all containers in input {@link DeploymentModel}
+     * 
+     * @param model      the model containing containers
+     * @param dependency the dependency to add
+     * @return the model with added dependencies
+     */
+    public static DeploymentModel addDependencyToAllContainers(DeploymentModel model, Dependency dependency) {
+        List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
+        for (Container container : containers) {
+            container.getDepends_on().add(EcoreUtil.copy(dependency));
+        }
+        return model;
+    }
+
+    public static String getPort(String uri) {
+        return uri.substring(uri.lastIndexOf(':') + 1);
+    }
+
 }

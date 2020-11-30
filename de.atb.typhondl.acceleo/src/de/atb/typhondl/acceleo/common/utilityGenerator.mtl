@@ -41,6 +41,14 @@ aPorts.key_values->any(key | key.name='published')
 aPorts.key_values->any(key | key.name='target') 
 /]
 
+[query public getPort(aURI : URI) : String =  
+aURI.value.tokenize(':')->last()
+/]
+
+[query public getHost(aURI : URI) : String =  
+aURI.value.tokenize(':')->first()
+/]
+
 [query public getMongoPrint(aContainer : Container) : String =
 aContainer.properties->any(key | key.name='print').oclAsType(Key_Values).value
 /]
@@ -73,7 +81,7 @@ not(aContainer.getHelmList().oclIsUndefined())
 /]
 
 [query public getHelmList(aContainer : Container) : HelmList =  
-aContainer.deploys.reference.oclAsType(DB).helm
+aContainer.deploys.reference.helm
 /]
 
 [query public getHelmRepoAddress(aContainer : Container) : String =
@@ -98,10 +106,6 @@ aContainer.getHelmList().parameters->any(key | key.name.equalsIgnoreCase('values
 
 [query public allowsUsername(typeName: String) : Boolean =  
 typeName = 'mongo'
-/]
-
-[query public getPort(aURI : URI) : String =
-aURI.value.substring(aURI.value.indexOf(':')+1)
 /]
 
 [query public getKafkaSoftware(aDeploymentModel : DeploymentModel) : Software = 

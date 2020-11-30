@@ -187,7 +187,8 @@ public class CreationMainPage extends MyWizardPage {
 
     private void createMainGroup() {
         GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-
+        GridData gridDataWide = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        gridDataWide.horizontalSpan = 2;
         Group mainGroup = new Group(main, SWT.READ_ONLY);
         mainGroup.setLayout(new GridLayout(2, false));
         mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -220,21 +221,83 @@ public class CreationMainPage extends MyWizardPage {
         chosenTechnology = TechnologyFactory
                 .createTechnology(SupportedTechnologies.values()[templateCombo.getSelectionIndex()]);
 
-        Composite hidden = new Composite(mainGroup, SWT.NONE);
-        hidden.setLayout(new GridLayout(2, false));
-        GridData hiddenData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        hiddenData.exclude = true;
-        hiddenData.horizontalSpan = 2;
-        hidden.setLayoutData(hiddenData);
+        Composite hiddenKubeconfig = new Composite(mainGroup, SWT.NONE);
+        hiddenKubeconfig.setLayout(new GridLayout(2, false));
+        GridData hiddenKubeconfigData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenKubeconfigData.exclude = true;
+        hiddenKubeconfigData.horizontalSpan = 2;
+        hiddenKubeconfig.setLayoutData(hiddenKubeconfigData);
 
-        new Label(hidden, SWT.NONE).setText("kubeconfig: ");
-        Text kubeconfig = new Text(hidden, SWT.BORDER);
-        kubeconfig.setLayoutData(gridData);
+        new Label(hiddenKubeconfig, SWT.NONE).setText("kubeconfig: ");
+        Text kubeconfig = new Text(hiddenKubeconfig, SWT.BORDER);
+        kubeconfig.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         kubeconfig.setText(properties.getProperty(PropertiesService.POLYSTORE_KUBECONFIG));
         kubeconfig.addModifyListener(
                 e -> properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, kubeconfig.getText()));
 
-        // TODO createLoggingAndMonitoringCheckbox
+        Button checkbox = new Button(mainGroup, SWT.CHECK);
+        checkbox.setText("Use centralised logging with Elasticsearch, Kibana and Fluentd (EKF)");
+        checkbox.setSelection(false);
+        checkbox.setLayoutData(gridDataWide);
+        checkbox.setToolTipText("Check if you want use fluentd instead of stdout");
+        properties.setProperty(PropertiesService.LOGGING_ELASTICSEARCH_HOST, chosenTechnology.elasticsearchAddress());
+
+        Composite hiddenLogging = new Composite(mainGroup, SWT.NONE);
+        hiddenLogging.setLayout(new GridLayout(2, false));
+        GridData hiddenLoggingData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenLoggingData.exclude = true;
+        hiddenLoggingData.horizontalSpan = 2;
+        hiddenLogging.setLayoutData(hiddenLoggingData);
+
+        checkbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                final boolean selection = checkbox.getSelection();
+                properties.setProperty(PropertiesService.POLYSTORE_LOGGING, Boolean.toString(selection));
+                hiddenLoggingData.exclude = !selection;
+                hiddenLogging.setVisible(selection);
+                final Composite parent = mainGroup.getParent();
+                parent.layout(true);
+                parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+            }
+        });
+
+        Button checkboxLoggingExtertnal = new Button(hiddenLogging, SWT.CHECK);
+        checkboxLoggingExtertnal.setText("Deploy elasticsearch on different host");
+        checkboxLoggingExtertnal.setSelection(false);
+        GridData checkLogExtData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        checkLogExtData.horizontalSpan = 2;
+        checkboxLoggingExtertnal.setLayoutData(checkLogExtData);
+        checkboxLoggingExtertnal.setToolTipText("if you want to run elasticsearch on a different machine");
+
+        Composite hiddenLoggingHost = new Composite(hiddenLogging, SWT.NONE);
+        hiddenLoggingHost.setLayout(new GridLayout(2, false));
+        GridData hiddenLoggingDataHost = new GridData(SWT.FILL, SWT.FILL, true, true);
+        hiddenLoggingDataHost.exclude = true;
+        hiddenLoggingDataHost.horizontalSpan = 2;
+        hiddenLoggingHost.setLayoutData(hiddenLoggingDataHost);
+
+        checkboxLoggingExtertnal.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                final boolean selection = checkboxLoggingExtertnal.getSelection();
+                properties.setProperty(PropertiesService.LOGGING_ELASTICSEARCH_EXTERNAL, Boolean.toString(selection));
+                hiddenLoggingDataHost.exclude = !selection;
+                hiddenLoggingHost.setVisible(selection);
+                final Composite parent = mainGroup.getParent();
+                parent.layout(true);
+                parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+                ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
+            }
+        });
+        new Label(hiddenLoggingHost, SWT.NONE).setText("elasticsearch host: ");
+        Text logging = new Text(hiddenLoggingHost, SWT.BORDER);
+        logging.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        logging.setText(chosenTechnology.elasticsearchAddress());
+        logging.setToolTipText("Change this to your external host");
+        logging.addModifyListener(
+                e -> properties.setProperty(PropertiesService.LOGGING_ELASTICSEARCH_HOST, logging.getText()));
 
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -249,8 +312,10 @@ public class CreationMainPage extends MyWizardPage {
                 } else {
                     properties.setProperty(PropertiesService.POLYSTORE_KUBECONFIG, "");
                 }
-                hiddenData.exclude = !canUseKubeConfig;
-                hidden.setVisible(canUseKubeConfig);
+                properties.setProperty(PropertiesService.LOGGING_ELASTICSEARCH_HOST,
+                        chosenTechnology.elasticsearchAddress());
+                hiddenKubeconfigData.exclude = !canUseKubeConfig;
+                hiddenKubeconfig.setVisible(canUseKubeConfig);
                 parent.layout(true);
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));

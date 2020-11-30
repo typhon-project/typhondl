@@ -32,8 +32,7 @@ public class AnalyticsService {
         String kafkaURI = properties.getProperty(PropertiesService.ANALYTICS_KAFKA_URI);
         String kafkaPort = kafkaURI.substring(kafkaURI.indexOf(':') + 1);
         String kafkaHost = kafkaURI.substring(0, kafkaURI.indexOf(':'));
-        de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = TyphonDLFactory.eINSTANCE.createURI();
-        kafkaURIObject.setValue(kafkaURI);
+        de.atb.typhondl.xtext.typhonDL.URI kafkaURIObject = ContainerService.createURIObject(kafkaURI);
         ITechnology clusterTypeTech = ModelService.getTechnology(clusterType);
         if (clusterTypeTech.createAllAnalyticsContainers()) {
             String zookeeperPort = properties.getProperty(PropertiesService.ANALYTICS_ZOOKEEPER_PUBLISHEDPORT);

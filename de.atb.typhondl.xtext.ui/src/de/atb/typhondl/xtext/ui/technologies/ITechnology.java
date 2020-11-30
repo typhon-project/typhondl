@@ -3,7 +3,10 @@ package de.atb.typhondl.xtext.ui.technologies;
 import java.util.List;
 import java.util.Properties;
 
+import de.atb.typhondl.xtext.typhonDL.Application;
 import de.atb.typhondl.xtext.typhonDL.Container;
+import de.atb.typhondl.xtext.typhonDL.ContainerType;
+import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
 
 /**
@@ -124,5 +127,10 @@ public interface ITechnology {
      *         technology
      */
     public boolean canDeployEvolution();
+
+    public void addLogging(DeploymentModel model, ContainerType containerType, Application application,
+            Properties properties);
+
+    public String elasticsearchAddress();
 
 }

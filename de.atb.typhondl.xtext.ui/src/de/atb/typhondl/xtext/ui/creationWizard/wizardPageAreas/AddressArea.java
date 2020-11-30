@@ -27,8 +27,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.atb.typhondl.xtext.typhonDL.DB;
-import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.typhonDL.URI;
+import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 
 /**
  * WizardPage {@link Area} to give address to external database
@@ -54,13 +54,9 @@ public class AddressArea extends Area {
             if (group == null) {
                 createGroup("Database Address");
             }
-            URI address;
-            if (db.getUri() == null) {
-                address = TyphonDLFactory.eINSTANCE.createURI();
-                address.setValue("https://example.com");
-                db.setUri(address);
-            } else {
-                address = db.getUri();
+            URI address = db.getUri();
+            if (address == null) {
+                db.setUri(ContainerService.createURIObject("https://example.com"));
             }
             GridData gridDataFields = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             new Label(group, SWT.NONE).setText("Database Address: ");
