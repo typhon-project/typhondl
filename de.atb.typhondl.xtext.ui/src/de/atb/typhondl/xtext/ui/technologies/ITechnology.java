@@ -128,6 +128,9 @@ public interface ITechnology {
      */
     public boolean canDeployEvolution();
 
-    public void addLogging(DeploymentModel model, ContainerType containerType, Application application);
+    public void addLogging(DeploymentModel model, ContainerType containerType, Application application,
+            Properties properties);
+
+    public String elasticsearchAddress();
 
 }

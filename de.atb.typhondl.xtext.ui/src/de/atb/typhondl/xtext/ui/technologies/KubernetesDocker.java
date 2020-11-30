@@ -5,10 +5,14 @@ import java.util.List;
 import java.util.Properties;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
+import de.atb.typhondl.xtext.typhonDL.Platform;
+import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
+import de.atb.typhondl.xtext.ui.modelUtils.ModelService;
 import de.atb.typhondl.xtext.ui.properties.PropertiesService;
 import de.atb.typhondl.xtext.ui.scriptGeneration.DeploymentModelService;
 import de.atb.typhondl.xtext.ui.utilities.InputField;
@@ -133,9 +137,24 @@ public class KubernetesDocker implements ITechnology {
     }
 
     @Override
-    public void addLogging(DeploymentModel model, ContainerType containerType, Application application) {
-        Container fluentd = ContainerService.create("fluentd", containerType, null);
+    public void addLogging(DeploymentModel model, ContainerType containerType, Application application,
+            Properties properties) {
+        Container fluentd = ContainerService.create("fluentd", containerType, null,
+                properties.getProperty(PropertiesService.LOGGING_ELASTICSEARCH_HOST));
+        if (Boolean.parseBoolean(properties.getProperty(PropertiesService.LOGGING_ELASTICSEARCH_EXTERNAL))) {
+            Cluster elasticsearchCluster = TyphonDLFactory.eINSTANCE.createCluster();
+            elasticsearchCluster.setName("elasticsearch");
+            elasticsearchCluster.setType(((Cluster) application.eContainer()).getType());
+            elasticsearchCluster.getProperties().add(ModelService
+                    .createKubeconfig(properties.getProperty(PropertiesService.LOGGING_ELASTICSEARCH_KUBECONFIG)));
+            ((Platform) ((Cluster) application.eContainer()).eContainer()).getClusters().add(elasticsearchCluster);
+        }
         application.getContainers().add(fluentd);
+    }
+
+    @Override
+    public String elasticsearchAddress() {
+        return "elasticsearch-master";
     }
 
 }

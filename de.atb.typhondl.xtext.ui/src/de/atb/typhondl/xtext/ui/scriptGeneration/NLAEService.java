@@ -37,7 +37,6 @@ import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
-import de.atb.typhondl.xtext.typhonDL.URI;
 import de.atb.typhondl.xtext.typhonDL.Volume_Toplevel;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
 import de.atb.typhondl.xtext.ui.modelUtils.SoftwareService;
@@ -53,10 +52,8 @@ public class NLAEService {
     public static DeploymentModel addNLAE(DeploymentModel model, Properties properties) {
         Software nlae = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME), null);
         nlae.setExternal(true);
-        URI uri = TyphonDLFactory.eINSTANCE.createURI();
-        uri.setValue(properties.getProperty(PropertiesService.NLAE_API_HOST) + ":"
-                + properties.getProperty(PropertiesService.NLAE_API_PORT));
-        nlae.setUri(uri);
+        nlae.setUri(ContainerService.createURIObject(properties.getProperty(PropertiesService.NLAE_API_HOST) + ":"
+                + properties.getProperty(PropertiesService.NLAE_API_PORT)));
         model.getElements().add(nlae);
         return model;
     }
@@ -122,9 +119,8 @@ public class NLAEService {
         Software nlaeDev = SoftwareService.create(properties.getProperty(PropertiesService.NLAE_NAME),
                 properties.getProperty(PropertiesService.NLAEDEV_IMAGE));
         nlaeDev.setExternal(true);
-        de.atb.typhondl.xtext.typhonDL.URI nlaeDevURI = TyphonDLFactory.eINSTANCE.createURI();
-        nlaeDevURI.setValue("localhost:" + properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT));
-        nlaeDev.setUri(nlaeDevURI);
+        nlaeDev.setUri(ContainerService
+                .createURIObject("localhost:" + properties.getProperty(PropertiesService.NLAEDEV_PUBLISHEDPORT)));
         model.getElements().add(nlaeDev);
         Container nlaeDevContainer = ContainerService.create("nlaeDEV", containerType, nlaeDev);
         nlaeDevContainer.setPorts(ContainerService.createPorts(new String[] { "target", "8080", "published",

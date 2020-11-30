@@ -77,9 +77,7 @@ public class ContainerService {
             container.setDeploys(reference);
         }
         if (uri != null) {
-            URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
-            uriObject.setValue(uri);
-            container.setUri(uriObject);
+            container.setUri(createURIObject(uri));
         }
         if (volumeTarget != null) {
             Volumes volumes = VolumesService.create(new String[] { volumeTarget },
@@ -87,6 +85,12 @@ public class ContainerService {
             container.setVolumes(volumes);
         }
         return container;
+    }
+
+    public static URI createURIObject(String uri) {
+        URI uriObject = TyphonDLFactory.eINSTANCE.createURI();
+        uriObject.setValue(uri);
+        return uriObject;
     }
 
     /**
@@ -274,6 +278,10 @@ public class ContainerService {
             container.getDepends_on().add(EcoreUtil.copy(dependency));
         }
         return model;
+    }
+
+    public static String getPort(String uri) {
+        return uri.substring(uri.lastIndexOf(':') + 1);
     }
 
 }

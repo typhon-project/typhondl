@@ -10,6 +10,16 @@
 [file ('analyticsKubernetes/typhonAnalyticsConfig.properties', false, 'UTF-8')]
 [aCluster.analyticsConfig()/]
 [/file]
+[if (aCluster.name.equalsIgnoreCase('elasticsearch'))]
+[file ('elasticsearchDeployment.sh', false, 'UTF-8')]
+#!/bin/bash
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
+echo "Create logging namespace"
+kubectl create namespace logging $kubeconfig
+helm repo add elastic https://helm.elastic.co
+helm install elasticsearch elastic/elasticsearch --namespace logging --set replicas=1 --set minimumMasterNodes=1
+[/file]
+[/if]
 [file ('analyticsKubernetes/analyticsDeployment.sh', false, 'UTF-8')]
 #!/bin/bash
 kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
@@ -54,20 +64,24 @@ echo "It may take a few minutes for all services to be up and running."
 kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
 [for (aContainer : Container | aCluster.applications.containers)]
 [if (aContainer.name = 'fluentd')]
+echo "----------------------------------------------------------------------------"
 echo "Create logging namespace"
 kubectl create namespace logging $kubeconfig
+[if (aContainer.uri.value.contains('elasticsearch-master'))]
 helm repo add elastic https://helm.elastic.co
-helm repo add kokuwa https://kokuwaio.github.io/helm-charts
 helm install elasticsearch elastic/elasticsearch --namespace logging --set replicas=1 --set minimumMasterNodes=1 
 kubectl wait --for=condition=ready --timeout=300s -n logging pod/elasticsearch-master-0
+[/if]
+helm repo add kokuwa https://kokuwaio.github.io/helm-charts
 helm install kibana elastic/kibana --namespace logging --set service.type=NodePort
-helm install fluentd kokuwa/fluentd-elasticsearch --namespace logging --set elasticsearch.host=elasticsearch-master
+helm install fluentd kokuwa/fluentd-elasticsearch --namespace logging --set elasticsearch.host=[aContainer.uri.getHost()/]
+echo "----------------------------------------------------------------------------"
 [/if]
 [/for]
 echo "Create Typhon namespace"
 kubectl create namespace typhon $kubeconfig
 if ['['/] -n "$kubeconfig" [']'/]; then
-    echo "Using Cluster configuration file ${kubeconfig}"
+    echo "Using Cluster configuration file kubeconfig"
 fi
 sleep 1
 echo "----------------------------------------------------------------------------"

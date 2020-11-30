@@ -7,10 +7,12 @@ import java.util.Properties;
 import org.eclipse.xtext.EcoreUtil2;
 
 import de.atb.typhondl.xtext.typhonDL.Application;
+import de.atb.typhondl.xtext.typhonDL.Cluster;
 import de.atb.typhondl.xtext.typhonDL.Container;
 import de.atb.typhondl.xtext.typhonDL.ContainerType;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Key_KeyValueList;
+import de.atb.typhondl.xtext.typhonDL.Platform;
 import de.atb.typhondl.xtext.typhonDL.Software;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.modelUtils.ContainerService;
@@ -128,7 +130,8 @@ public class DockerCompose implements ITechnology {
     }
 
     @Override
-    public void addLogging(DeploymentModel model, ContainerType containerType, Application application) {
+    public void addLogging(DeploymentModel model, ContainerType containerType, Application application,
+            Properties properties) {
         List<Container> containers = EcoreUtil2.getAllContentsOfType(model, Container.class);
         for (Container container : containers) {
             container.getProperties().add(createComposeLogging(container.getName()));
@@ -150,11 +153,32 @@ public class DockerCompose implements ITechnology {
         elasticsearch.setEnvironment(SoftwareService.createEnvironment(
                 new String[] { "ES_JAVA_OPTS", "'-Xms256m -Xmx512m'", "discovery.type", "single-node" }));
         Container elasticsearchContainer = ContainerService.create("elasticsearch", containerType, elasticsearch);
-        elasticsearchContainer
-                .setPorts(ContainerService.createPorts(new String[] { "target", "9200", "published", "9200" }));
+        String elasticsearchHost = properties.getProperty(PropertiesService.LOGGING_ELASTICSEARCH_HOST);
+        final String elasticsearchPort = ContainerService.getPort(elasticsearchHost);
+        int intControl;
+        try {
+            intControl = Integer.parseInt(elasticsearchPort);
+        } catch (NumberFormatException e) {
+            intControl = 9200;
+            elasticsearchHost += ":" + intControl;
+        }
+        elasticsearchContainer.setUri(ContainerService.createURIObject(elasticsearchHost));
+        elasticsearchContainer.setPorts(
+                ContainerService.createPorts(new String[] { "target", "9200", "published", "" + intControl }));
         fluentdContainer.getDepends_on().add(ContainerService.createDependsOn(elasticsearchContainer));
         model.getElements().add(elasticsearch);
-        application.getContainers().add(elasticsearchContainer);
+        if (Boolean.parseBoolean(properties.getProperty(PropertiesService.LOGGING_ELASTICSEARCH_EXTERNAL))) {
+            Application elasticsearchApp = TyphonDLFactory.eINSTANCE.createApplication();
+            elasticsearch.setName("elasticsearch");
+            Cluster elasticsearchCluster = TyphonDLFactory.eINSTANCE.createCluster();
+            elasticsearchCluster.setName("elasticsearch");
+            elasticsearchCluster.setType(((Cluster) application.eContainer()).getType());
+            ((Platform) ((Cluster) application.eContainer()).eContainer()).getClusters().add(elasticsearchCluster);
+            elasticsearchCluster.getApplications().add(elasticsearchApp);
+            elasticsearchApp.getContainers().add(elasticsearchContainer);
+        } else {
+            application.getContainers().add(elasticsearchContainer);
+        }
         // Kibana
         Software kibana = SoftwareService.create("kibana", "docker.elastic.co/kibana/kibana:7.9.2");
         Container kibanaContainer = ContainerService.create("kibana", containerType, kibana);
@@ -178,6 +202,11 @@ public class DockerCompose implements ITechnology {
         options.getProperties().add(ModelService.createKey_Values("tag", name, null));
         logging.getProperties().add(options);
         return logging;
+    }
+
+    @Override
+    public String elasticsearchAddress() {
+        return "elasticsearch:9200";
     }
 
 }

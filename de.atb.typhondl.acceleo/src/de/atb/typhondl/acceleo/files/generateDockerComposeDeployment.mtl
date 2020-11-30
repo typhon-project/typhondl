@@ -11,6 +11,10 @@
 [file ('analyticsDeployment.yaml', false, 'UTF-8')]
 [aCluster.createYamlContent()/]
 [/file]
+[elseif (aCluster.name.equalsIgnoreCase('elasticsearch'))]
+[file ('elasticsearchDeployment.yaml', false, 'UTF-8')]
+[aCluster.createYamlContent()/]
+[/file]	
 [else]
 [file ('docker-compose.yaml', false, 'UTF-8')]
 [aCluster.createYamlContent()/]
@@ -89,7 +93,7 @@ services:
 [aCluster.analyticsConfig()/]
 [/file]
 [/if]
-[if (aContainer.name.equalsIgnoreCase('fluentd'))]
+[if (aContainer.name.equalsIgnoreCase('elasticsearch'))]
 [file ('fluentd/fluent.conf', false, 'UTF-8')]
 [aContainer.fluentConf()/]
 [/file]
@@ -133,8 +137,8 @@ volumes:
 
   <store>
     @type elasticsearch
-    host elasticsearch
-    port 9200
+    host [aContainer.uri.getHost()/]
+    port [aContainer.uri.getPort()/]
     logstash_format true
     logstash_prefix fluentd
     logstash_dateformat %Y%m%d

@@ -199,9 +199,9 @@ public class DeploymentModelService {
             model = NLAEService.addNLAEDEV(model, application, properties, containerType);
         }
 
-        // centralised logging // TODO put logging methods in ITechnology Classes
+        // centralised logging
         if (properties.getProperty(PropertiesService.POLYSTORE_LOGGING).equals("true")) {
-            chosenTechnology.addLogging(model, containerType, application);
+            chosenTechnology.addLogging(model, containerType, application, properties);
         }
 
         return model;

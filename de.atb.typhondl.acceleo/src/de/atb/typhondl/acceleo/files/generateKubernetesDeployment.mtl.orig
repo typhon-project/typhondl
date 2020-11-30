@@ -1,0 +1,816 @@
+<<<<<<< HEAD
+[comment encoding = UTF-8 /]
+[module generateKubernetesDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
+[template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+
+[file ('deploy.sh', false, 'UTF-8')]
+#!/bin/bash
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value/][/if]"
+echo "Create Typhon namespace"
+kubectl create namespace typhon $kubeconfig
+if ['['/] -n "$kubeconfig" [']'/]; then
+    echo "Using Cluster configuration file ${kubeconfig}"
+fi
+sleep 1
+echo "----------------------------------------------------------------------------"
+echo "Create databases"
+kubectl apply -n typhon -f databases.yaml $kubeconfig
+sleep 1
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.helmMoreIfs()/]
+[/if]
+[/if]
+[/for]
+echo "----------------------------------------------------------------------------"
+echo "Wait for the models to be inserted into the metadata database"
+kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
+kubectl logs job/insert-models
+echo "----------------------------------------------------------------------------"
+echo "Wait for all databases to be ready"
+kubectl wait --for=condition=available --timeout=100s --all -n typhon deployments $kubeconfig
+echo "----------------------------------------------------------------------------"
+echo "Deploy Polystore"
+kubectl apply -n typhon -f polystore.yaml $kubeconfig
+echo "----------------------------------------------------------------------------"
+echo "Wait for the API, UI and QL to be ready"
+kubectl wait --for=condition=available --timeout=300s --all -n typhon deployments $kubeconfig
+echo "----------------------------------------------------------------------------"
+[if (aDeploymentModel.useAnalytics())]
+[if (aDeploymentModel.getKafkaSoftware().external)]
+[file ('analyticsKubernetes/analyticsDeployment.sh', false, 'UTF-8')]
+#!/bin/bash
+kubeconfig="[if (aDeploymentModel.getKafkaSoftware().getKubeconfig()<>null)]--kubeconfig=[aDeploymentModel.getKafkaSoftware().getKubeconfig().value/][/if]"
+echo "Create Typhon namespace"
+kubectl create namespace typhon $kubeconfig
+echo "Running Typhon Kafka K8s installation ..."
+kubectl create namespace kafka $kubeconfig
+sleep 1
+kubectl apply -n kafka -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/ $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
+sleep 2
+kubectl create -n typhon -f analyticsKubernetes/kafka/typhon-cluster.yml $kubeconfig
+echo "Waiting for Typhon Kafka K8s deployment to complete ..."
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
+echo "Typhon Kafka K8s deployment completed."
+echo "Typhon Kafka K8s installation completed."
+echo ""
+echo "Running Typhon Flink K8s installation ..."
+sleep 2
+kubectl -n typhon apply -f analyticsKubernetes/flink/flink-configuration-configmap.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-service.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/taskmanager-deployment.yaml $kubeconfig
+sleep 1
+echo "Typhon Flink K8s installation completed."
+echo "It may take a few minutes for all services to be up and running."
+[/file]
+[else]
+echo "Running Typhon Kafka K8s installation ..."
+kubectl create namespace kafka $kubeconfig
+sleep 1
+kubectl apply -n kafka -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/ $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
+sleep 2
+kubectl create -n typhon -f analyticsKubernetes/kafka/typhon-cluster.yml $kubeconfig
+echo "Waiting for Typhon Kafka K8s deployment to complete ..."
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
+echo "Typhon Kafka K8s deployment completed."
+echo "Typhon Kafka K8s installation completed."
+echo ""
+echo "Running Typhon Flink K8s installation ..."
+sleep 2
+kubectl -n typhon apply -f analyticsKubernetes/flink/flink-configuration-configmap.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-service.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/taskmanager-deployment.yaml $kubeconfig
+sleep 1
+echo "Typhon Flink K8s installation completed."
+echo "It may take a few minutes for all services to be up and running."	
+[/if]
+[/if]
+echo "Polystore installation completed."
+[/file]
+
+[file ('polystore.yaml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
+[if ((aContainer.name = 'typhon-polystore-service')._or(aContainer.name = 'polystore-ui')._or(aContainer.name = 'typhonql-server'))]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name/]-deployment
+spec:
+[if (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+  replicas: [aContainer.replication.replicas/]
+[/if][/if]
+  selector:
+    matchLabels:
+      app: [aContainer.name/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name/]-pod
+    spec:
+      containers:
+        - name: [aContainer.name/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.oclAsType(Software).printImageAndProperties()/][/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+[if (aContainer.properties <> null)]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: [aContainer.name/]
+spec:
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+  type: NodePort
+[/if][/if]
+  ports:
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if][/if]
+  selector:
+    app: [aContainer.name/]-pod
+---
+[/if]
+[/for]
+[/file]
+
+[file ('databases.yaml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.printDB()/]
+[/if]
+[/if]
+[/for]
+[/file]
+[/for]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
+resources:
+  limits:
+    memory: "[aResources.limitMemory.convertMemoryToKubernetes()/]"
+    cpu: "[aResources.limitCPU.convertCPUToKubernetes()/]"
+[if (aResources.reservationCPU <> null)]
+  requests:
+    memory: "[aResources.reservationMemory.convertMemoryToKubernetes()/]"
+    cpu: "[aResources.reservationCPU.convertCPUToKubernetes()/]"
+[/if]
+[/template]
+
+[template public printMongoJob(aContainer : Container) post (trim())]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+---
+[/if]
+[/template]
+
+[template public printDB(aContainer : Container) post (trim())]
+[if (not(aContainer.useHelmChart()))]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name/]-deployment
+spec:
+  selector:
+    matchLabels:
+      app: [aContainer.name/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name/]-pod
+    spec:
+[if (aContainer.volumes <> null)]
+      volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
+      - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+[if (aVolumeDeclaration.oclAsType(Volume_Properties).volumeType <> null)]
+        [aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/]:
+[for (aProperty : Property | aVolumeDeclaration.oclAsType(Volume_Properties).specifics.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+[/for]
+[/if]
+      containers:
+        - name: [aContainer.name/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [if (aContainer.deploys <> null)][aContainer.printDatabase()/][/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+          [if (aContainer.volumes <> null)][aContainer.volumes.printVolumes()/][/if]
+[if (not aContainer.properties->isEmpty())]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: [aContainer.name/]
+spec:
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+  type: NodePort
+[/if][/if]
+  ports:
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if][/if]
+  selector:
+    app: [aContainer.name/]-pod
+---
+[aContainer.printMongoJob()/]
+[/if]
+[/template]
+
+[template public printDatabase(aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.credentials <> null)]
+[aDB.printCredentials()/]
+[/if]
+[if ((aDB.environment <> null) and (aDB.credentials = null))]
+[aDB.environment.print()/]
+[/if]
+[/let]
+[/template]
+
+[template public helmMoreIfs(aContainer : Container) post (trim())]
+[if (aContainer.useHelmChart())]
+[aContainer.printHelmCommand()/]
+[/if]
+[/template]
+
+[template public printCredentials(aDB : DB) post (trim())]
+env:
+[if (aDB.type.name.toLower().allowsUsername())]
+  - name: [aDB.type.name.toLower().getUsernameKey()/] 
+    value: [aDB.credentials.username/]
+[/if]  
+  - name: [aDB.type.name.toLower().getPasswordKey()/]
+    value: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)][aDB.environment.printNameValuePair()/][/if]
+[/template]
+
+[template public printNameValuePair(aEnvironment : Environment) post (trim())]
+[for (aProperty : Key_Values | aEnvironment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+env:
+[for (aProperty : Key_Values | aEnvironment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for] 
+[/template]
+
+[template public printHelmCommand(aContainer : Container) post (trim())]
+helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
+helm install [aContainer.name/][aContainer.printValuesFile()/] --set fullnameOverride=[aContainer.name/] [aContainer.addCredentials()/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+[/template]
+
+[template public printValuesFile(aContainer : Container)]
+[if (aContainer.hasHelmValuesFile())] -f [aContainer.getHelmValuesFile()/][/if]
+[/template]
+
+[template public addCredentials (aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.type.name.toLower() = 'mariadbgalera' or aDB.type.name.toLower() = 'mariadb')]
+--set rootUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'mongo' or aDB.type.name.toLower() = 'mongosharded')]
+--set mongodbRootPassword=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'cassandra')]
+--set dbUser.user=[aDB.credentials.username/],dbUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'neo4j')]
+--set acceptLicenseAgreement=yes --set neo4jPassword=[aDB.credentials.password/]
+[/if][/let]
+[/template]
+
+[template public printPolystoreMongo(aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+mongo --host [aContainer.name/] --port [aContainer.uri.getPort()/] -u [aDB.credentials.username/] -p [aDB.credentials.password/] admin --eval '[aContainer.getMongoPrint()/]';
+[/let]
+[/template]
+
+[template public printPublishedPorts(aPorts : Ports)]
+published port
+[/template]
+
+[template public printPorts(aPorts : Ports)]
+ports:
+  - containerPort: [aPorts.getTargetPort().value/] 
+[/template]
+
+[template public printVolumes(aVolumes : Volumes)]
+[for (aVolumeDeclaration : Volume_Declaration | aVolumes.decls.oclAsType(Volume_Properties))]
+volumeMounts:
+  - name: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+    mountPath: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Property) post (trim())]
+something went wrong with a Property
+[/template]
+
+[template public printKubernetes(arg : Key_Values) post (trim())]
+[if (not ((arg.name = 'print') or (arg.name = 'version')))][arg.name/]: [arg.value/][/if]
+[/template]
+
+[template public printKubernetes(arg : Key_KeyValueList) post (trim())]
+[arg.name/]:
+[for (aProperty : Property | arg.properties)]
+  [aProperty.printKubernetes()/]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Key_ValueArray) post (trim())]
+[arg.name/]:
+[for (aValue : String | arg.values)]
+  - [aValue/]
+[/for]
+[/template]
+
+[template public printImage(aService : Services) post (trim())]
+something wrong with serviceimage
+[/template]
+
+[template public printImageAndProperties(aSoftware : Software) post (trim())]
+image: [aSoftware.image.value/]
+[for (aProperty : Property | aSoftware.parameters)]
+[aProperty.printKubernetes()/]
+[/for]
+[if (aSoftware.environment<>null)][aSoftware.environment.print()/][/if]
+[/template]
+
+[template public printImage(aDB : DB)]
+image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
+[/template]
+=======
+[comment encoding = UTF-8 /]
+[module generateKubernetesDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+[import de::atb::typhondl::acceleo::files::analyticsConfig/]
+
+[template public generateKubernetesDeployment(aDeploymentModel : DeploymentModel) post (trim())]
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
+[file ('analyticsKubernetes/typhonAnalyticsConfig.properties', false, 'UTF-8')]
+[aCluster.analyticsConfig()/]
+[/file]
+[file ('analyticsKubernetes/analyticsDeployment.sh', false, 'UTF-8')]
+#!/bin/bash
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
+echo "Create Typhon namespace"
+kubectl create namespace typhon $kubeconfig
+echo "Running Typhon Kafka K8s installation ..."
+kubectl create namespace kafka $kubeconfig
+sleep 1
+kubectl apply -n kafka -f kafka/strimzi-0.17.0/install/cluster-operator/ $kubeconfig
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
+sleep 2
+kubectl create -n typhon -f kafka/typhon-cluster.yml $kubeconfig
+sleep 1
+kubectl create -n typhon -f auth-all-deployment.yaml $kubeconfig
+echo "Waiting for Typhon Kafka K8s deployment to complete ..."
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
+echo "Typhon Kafka K8s deployment completed."
+echo "Typhon Kafka K8s installation completed."
+echo ""
+echo "Running Typhon Flink K8s installation ..."
+sleep 2
+kubectl -n typhon apply -f flink/flink-configuration-configmap.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f flink/jobmanager-service.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f flink/jobmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f flink/taskmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f flink/jobmanager-rest-service.yaml $kubeconfig
+echo "Typhon Flink K8s installation completed."
+echo "It may take a few minutes for all services to be up and running."
+[/file]
+[else]
+[file ('deploy.sh', false, 'UTF-8')]
+#!/bin/bash
+kubeconfig="[if (aCluster.getKubeconfig()<>null)]--kubeconfig=[aCluster.getKubeconfig().value.substituteAll('"', '')/][/if]"
+echo "Create Typhon namespace"
+kubectl create namespace typhon $kubeconfig
+if ['['/] -n "$kubeconfig" [']'/]; then
+    echo "Using Cluster configuration file ${kubeconfig}"
+fi
+sleep 1
+echo "----------------------------------------------------------------------------"
+echo "Create databases"
+kubectl apply -n typhon -f databases.yaml $kubeconfig
+sleep 1
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.helmMoreIfs()/]
+[/if]
+[/if]
+[/for]
+echo "----------------------------------------------------------------------------"
+echo "Wait for the models to be inserted into the metadata database"
+kubectl wait --for=condition=complete --timeout=300s -n typhon job.batch/insert-models $kubeconfig
+echo "----------------------------------------------------------------------------"
+echo "Wait for all databases to be ready"
+kubectl wait --for=condition=available --timeout=100s --all -n typhon deployments $kubeconfig
+echo "----------------------------------------------------------------------------"
+echo "Deploy Polystore"
+kubectl apply -n typhon -f polystore.yaml $kubeconfig
+echo "----------------------------------------------------------------------------"
+echo "Wait for the API, UI and QL to be ready"
+kubectl wait --for=condition=available --timeout=300s --all -n typhon deployments $kubeconfig
+echo "----------------------------------------------------------------------------"
+[if (aDeploymentModel.createAnalytics())]
+[if (not aDeploymentModel.getKafkaSoftware().external)]
+[file ('analyticsKubernetes/typhonAnalyticsConfig.properties', false, 'UTF-8')]
+[aCluster.analyticsConfig()/]
+[/file]
+echo "Running Typhon Kafka K8s installation ..."
+kubectl create namespace kafka $kubeconfig
+sleep 1
+kubectl apply -n kafka -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/ $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/020-RoleBinding-strimzi-cluster-operator.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/032-RoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml $kubeconfig
+sleep 1
+kubectl apply -n typhon -f analyticsKubernetes/kafka/strimzi-0.17.0/install/cluster-operator/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml $kubeconfig
+sleep 2
+kubectl create -n typhon -f analyticsKubernetes/kafka/typhon-cluster.yml $kubeconfig
+sleep 1
+kubectl create -n typhon -f auth-all-deployment.yaml $kubeconfig
+echo "Waiting for Typhon Kafka K8s deployment to complete ..."
+kubectl wait kafka/typhon-cluster --for=condition=Ready --timeout=300s -n typhon $kubeconfig
+echo "Typhon Kafka K8s deployment completed."
+echo "Typhon Kafka K8s installation completed."
+echo ""
+echo "Running Typhon Flink K8s installation ..."
+sleep 2
+kubectl -n typhon apply -f analyticsKubernetes/flink/flink-configuration-configmap.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-service.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/taskmanager-deployment.yaml $kubeconfig
+sleep 1
+kubectl -n typhon apply -f analyticsKubernetes/flink/jobmanager-rest-service.yaml $kubeconfig
+echo "Typhon Flink K8s installation completed."
+echo "It may take a few minutes for all services to be up and running."	
+[/if]
+[/if]
+echo "Polystore installation completed."
+[/file]
+
+[file ('polystore.yaml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
+[if ((aContainer.name = 'typhon-polystore-service')._or(aContainer.name = 'polystore-ui')._or(aContainer.name = 'typhonql-server'))]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name/]-deployment
+spec:
+[if (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+  replicas: [aContainer.replication.replicas/]
+[/if][/if]
+  selector:
+    matchLabels:
+      app: [aContainer.name/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name/]-pod
+    spec:
+      containers:
+        - name: [aContainer.name/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.oclAsType(Software).printImageAndProperties()/][/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+[if (aContainer.properties <> null)]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: [aContainer.name/]
+spec:
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+  type: NodePort
+[/if][/if]
+  ports:
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if][/if]
+  selector:
+    app: [aContainer.name/]-pod
+---
+[/if]
+[/for]
+[/file]
+
+[file ('databases.yaml', false, 'UTF-8')]
+[for (aContainer : Container | aCluster.applications.containers)]
+[if (not(aContainer.deploys.oclIsUndefined()))]
+[if (aContainer.containsDB())]
+[aContainer.printDB()/]
+[/if]
+[/if]
+[/for]
+[/file]
+[/if]
+[/for]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
+resources:
+[if(aResources.limitCPU <> null or aResources.limitMemory <> null)]
+  limits:
+    [if(aResources.limitCPU <> null)]cpu: "[aResources.limitCPU/]"[/if]
+    [if(aResources.limitMemory <> null)]memory: "[aResources.limitMemory/]"[/if]
+[/if]
+[if(aResources.reservationCPU <> null or aResources.reservationMemory <> null)]
+  requests:
+    [if(aResources.reservationCPU <> null)]cpu: "[aResources.reservationCPU/]"[/if]
+    [if(aResources.reservationMemory <> null)]memory: "[aResources.reservationMemory/]"[/if]
+[/if]
+[/template]
+
+[template public printMongoJob(aContainer : Container) post (trim())]
+[if (aContainer.name.equalsIgnoreCase('polystore-mongo'))]
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: insert-models
+spec:
+  template:
+    spec:
+      containers:
+        - name: insert-models
+          image: mongo:latest
+          command: ['['/]"/bin/sh", "-c"[']'/]
+          args:
+          # wait for polystore-mongo to be ready
+            - sleep 20; 
+              [aContainer.printPolystoreMongo()/]
+      restartPolicy: Never
+---
+[/if]
+[/template]
+
+[template public printDB(aContainer : Container) post (trim())]
+[if (not(aContainer.useHelmChart()))]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [aContainer.name/]-deployment
+spec:
+  selector:
+    matchLabels:
+      app: [aContainer.name/]-pod
+  template:
+    metadata:
+      labels:
+        app: [aContainer.name/]-pod
+    spec:
+[if (aContainer.volumes <> null)]
+      volumes:
+[for (aVolumeDeclaration : Volume_Properties | aContainer.volumes.decls)]
+      - name: [aVolumeDeclaration.volumeName/]
+[if (aVolumeDeclaration.volumeType <> null)]
+        [aVolumeDeclaration.volumeType/]:
+[/if]
+[if (aVolumeDeclaration.specifics <> null)]
+[for (aProperty : Property | aVolumeDeclaration.specifics)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+[/for]
+[/if]
+      containers:
+        - name: [aContainer.name/]-container
+          [if (aContainer.deploys <> null)][aContainer.deploys.reference.printImage()/][/if]
+          [if (aContainer.deploys <> null)][aContainer.printDatabase()/][/if]
+          [if (aContainer.ports <> null)][aContainer.ports.printPorts()/][/if]
+          [if (aContainer.resources <> null)][aContainer.resources.print()/][/if]
+          [if (aContainer.volumes <> null)][aContainer.volumes.printVolumes()/][/if]
+[if (not aContainer.properties->isEmpty())]
+[for (aProperty : Property | aContainer.properties)]
+          [aProperty.printKubernetes()/]
+[/for]
+[/if]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: [aContainer.name/]
+spec:
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+  type: NodePort
+[/if][/if]
+  ports:
+    - port: [aContainer.uri.getPort()/]
+      targetPort: [aContainer.uri.getPort()/]
+[if (aContainer.ports <> null)][if (aContainer.ports.getPublishedPort()<>null)]
+      nodePort: [aContainer.ports.getPublishedPort().value/]
+[/if][/if]
+  selector:
+    app: [aContainer.name/]-pod
+---
+[aContainer.printMongoJob()/]
+[/if]
+[/template]
+
+[template public printDatabase(aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.credentials <> null)]
+[aDB.printCredentials()/]
+[/if]
+[if ((aDB.environment <> null) and (aDB.credentials = null))]
+[aDB.environment.print()/]
+[/if]
+[/let]
+[/template]
+
+[template public helmMoreIfs(aContainer : Container) post (trim())]
+[if (aContainer.useHelmChart())]
+[aContainer.printHelmCommand()/]
+[/if]
+[/template]
+
+[template public printCredentials(aDB : DB) post (trim())]
+env:
+[if (aDB.type.name.toLower().allowsUsername())]
+  - name: [aDB.type.name.toLower().getUsernameKey()/] 
+    value: [aDB.credentials.username/]
+[/if]  
+  - name: [aDB.type.name.toLower().getPasswordKey()/]
+    value: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)][aDB.environment.printNameValuePair()/][/if]
+[/template]
+
+[template public printNameValuePair(aEnvironment : Environment) post (trim())]
+[for (aProperty : Key_Values | aEnvironment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+env:
+[for (aProperty : Key_Values | aEnvironment.parameters)]
+  - name: [aProperty.name/]
+    value: [aProperty.value/]
+[/for] 
+[/template]
+
+[template public printHelmCommand(aContainer : Container) post (trim())]
+helm repo add [aContainer.getHelmRepoName()/] [aContainer.getHelmRepoAddress()/]
+helm install [aContainer.name/][aContainer.printValuesFile()/] --set fullnameOverride=[aContainer.name/] [aContainer.addCredentials()/] [aContainer.getHelmRepoName()/]/[aContainer.getHelmChart()/] -n typhon
+[/template]
+
+[template public printValuesFile(aContainer : Container)]
+[if (aContainer.hasHelmValuesFile())] -f [aContainer.getHelmValuesFile()/][/if]
+[/template]
+
+[template public addCredentials (aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+[if (aDB.type.name.toLower() = 'mariadbgalera' or aDB.type.name.toLower() = 'mariadb')]
+--set rootUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'mongo' or aDB.type.name.toLower() = 'mongosharded')]
+--set mongodbRootPassword=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'cassandra')]
+--set dbUser.user=[aDB.credentials.username/],dbUser.password=[aDB.credentials.password/]
+[elseif (aDB.type.name.toLower() = 'neo4j')]
+--set acceptLicenseAgreement=yes --set neo4jPassword=[aDB.credentials.password/]
+[/if][/let]
+[/template]
+
+[template public printPolystoreMongo(aContainer : Container) post (trim())]
+[let aDB : DB = aContainer.deploys.reference.oclAsType(DB)]
+mongo --host [aContainer.name/] --port [aContainer.uri.getPort()/] -u [aDB.credentials.username/] -p [aDB.credentials.password/] admin --eval '[aContainer.getMongoPrint()/]';
+[/let]
+[/template]
+
+[template public printPublishedPorts(aPorts : Ports)]
+published port
+[/template]
+
+[template public printPorts(aPorts : Ports)]
+ports:
+  - containerPort: [aPorts.getTargetPort().value/] 
+[/template]
+
+[template public printVolumes(aVolumes : Volumes) post (trim())]
+[for (aVolumeDeclaration : Volume_Properties | aVolumes.decls)]
+volumeMounts:
+  - name: [aVolumeDeclaration.volumeName/]
+    mountPath: [aVolumeDeclaration.volumePath.value/]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Property) post (trim())]
+something went wrong with a Property
+[/template]
+
+[template public printKubernetes(arg : Key_Values) post (trim())]
+[if (not ((arg.name = 'print') or (arg.name = 'version')))][arg.name/]: [arg.value/][/if]
+[/template]
+
+[template public printKubernetes(arg : Key_KeyValueList) post (trim())]
+[arg.name/]:
+[for (aProperty : Property | arg.properties)]
+  [aProperty.printKubernetes()/]
+[/for]
+[/template]
+
+[template public printKubernetes(arg : Key_ValueArray) post (trim())]
+[arg.name/]:
+[for (aValue : String | arg.values)]
+  - [aValue/]
+[/for]
+[/template]
+
+[template public printImage(aService : Services) post (trim())]
+something wrong with serviceimage
+[/template]
+
+[template public printImageAndProperties(aSoftware : Software) post (trim())]
+image: [aSoftware.image.value/]
+[for (aProperty : Property | aSoftware.parameters)]
+[aProperty.printKubernetes()/]
+[/for]
+[if (aSoftware.environment<>null)][aSoftware.environment.print()/][/if]
+[/template]
+
+[template public printImage(aDB : DB)]
+image: [if (aDB.image <> null)][aDB.image.value/][else][aDB.type.image.value/][/if]
+[/template]
+>>>>>>> master

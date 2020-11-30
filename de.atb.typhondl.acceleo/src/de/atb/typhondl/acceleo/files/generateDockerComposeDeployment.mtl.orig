@@ -1,0 +1,863 @@
+<<<<<<< HEAD
+[comment encoding = UTF-8 /]
+[module generateDockerComposeDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+
+[template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
+
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+	
+[file ('docker-compose.yaml', false, 'UTF-8')]
+version: '3.7'
+
+[if (aCluster.networks <> null)]
+[for (aNetwork : Cluster_Network | aCluster.networks)]
+[aNetwork.print()/]
+[/for]
+[/if]
+services:
+[for (aContainer : Container | aCluster.applications.containers)]
+  [aContainer.name/]:
+[if (aContainer.deploys <> null)]
+    [aContainer.deploys.reference.print()/]
+[/if]
+[if (not aContainer.depends_on -> isEmpty())]
+[for (aDependency : Dependency | aContainer.depends_on)]
+    depends_on: 
+      - [aDependency.reference.name/]
+[/for]
+[/if]
+[if (aContainer.networks <> null)]
+    [aContainer.networks.print()/]
+[/if]
+[if (not aContainer.volumes -> isEmpty())]
+    volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aContainer.volumes.decls.oclAsType(Volume_Properties))]
+    - type: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeType/]
+      source: [aVolumeDeclaration.oclAsType(Volume_Properties).volumeName/]
+      target: [aVolumeDeclaration.oclAsType(Volume_Properties).volumePath/]
+[/for]
+[/if]
+[if (aContainer.ports <> null)]
+    [aContainer.ports.print()/]
+[/if]
+[if (aContainer.resources <> null)]
+    [aContainer.resources.print()/]
+[/if]    
+[if (not aContainer.properties -> isEmpty())]
+[for (aProperty : Property | aContainer.properties)]
+    [aProperty.print()/]
+[/for]
+[/if]
+[if (aContainer.replication <> null)]
+[aContainer.printReplication()/]
+[/if]
+[if (aContainer.name.toLower() = 'kafka')]
+[aContainer.generateAnalyticsFiles()/]
+[/if]
+[/for]
+[if (aCluster.applications.volumes <> null)]
+
+volumes:
+[for (aVolumeDeclaration : Volume_Declaration | aCluster.applications.volumes.decls.oclAsType(Volume_Name))]
+ [aVolumeDeclaration.oclAsType(Volume_Name).volumeName/]:
+[/for]
+[/if]
+[/file]
+[/for]
+[/template]
+
+[template public printReplication(aContainer : Container)]
+[if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
+    command: mongod --replSet [aContainer.name/]Replset
+  [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
+[/template]
+
+[template public printMongoRep(aContainer : Container) post(trim())]
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+[aContainer.name/]-replica[i/]:
+  [aContainer.deploys.reference.oclAsType(DB).printImage()/]
+  command: mongod --replSet [aContainer.name/]Replset
+[/if][/for]
+[aContainer.name/]-rsinit:
+  build:
+    context: .
+    dockerfile: [aContainer.name/]/rsinit
+  entrypoint: ['['/]
+    'sh', 
+    '-c', 
+    'init_set.sh'
+    [']'/] 
+[/template]
+
+[template public printMongoInitFiles(aContainer : Container)]
+[file (aContainer.name + '/init_set.sh', false, 'UTF-8')]
+#!/bin/bash
+echo "sleeping for 10 seconds"
+sleep 10
+
+echo init_set.sh time now: `date +"%T" `
+mongo --host [aContainer.uri.value/] <<EOF
+  var cfg = {
+    "_id": "[aContainer.name/]Replset",
+    "version": 1,
+    "members": ['['/]
+      {
+        "_id": 0,
+        "host": "[aContainer.uri.value/]"
+      }
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+      ,{
+        "_id": [i/],
+        "host": "[aContainer.name/]-replica[i/]:27017"
+      }
+[/if][/for]
+    [']'/]
+  };
+  rs.initiate(cfg);
+EOF
+[/file]
+
+[file (aContainer.name + '/rsinit', false, 'UTF-8')]
+FROM mongo
+
+ADD [aContainer.name/]/init_set.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/init_set.sh
+[/file]
+[/template]
+
+[template public print(aPorts : Ports) post (trim())]
+ports:
+  - target: [aPorts.getTargetPort().value/]
+	[if (aPorts.getPublishedPort() <> null)]
+    published: [aPorts.getPublishedPort().value/]
+	[/if]
+[/template]
+
+[template public print(aNetwork : Cluster_Network) post (trim())]
+networks:
+  [aNetwork.name/]: 
+[for (key_Values : Key_Values | aNetwork.key_values)]
+    [key_Values.print()/]
+[/for]
+[/template]
+
+[template public print(networks : Container_Network) post (trim())]
+networks:
+[for (reference : Cluster_Network | networks.references)]
+  - [reference.name/]
+[/for]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
+deploy:
+  resources:
+    limits:
+      cpus: '[aResources.limitCPU/]'
+      memory: [aResources.limitMemory/]
+[if (aResources.reservationCPU <> null)]
+    reservations:
+      cpus: '[aResources.reservationCPU/]'
+      memory: [aResources.reservationMemory/]
+[/if]
+[/template]
+
+[template public print(aProperty : Property) post (trim()) ]
+	something went wrong with Rule Property
+[/template]
+
+[template public print(aProperty : Key_Values)  post (trim())]
+[if (not aProperty.name.equalsIgnoreCase('version'))][aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for][/if][/if]
+[/template]
+
+[template public print(aProperty : Key_KeyValueList)  post (trim())]
+[aProperty.name/]:
+[for (aVar : Property | aProperty.properties)]
+  [aVar.print()/]
+[/for][/template]
+
+[template public print(aProperty : Key_ValueArray)  post (trim())]
+[aProperty.name/]:
+[for (aValue : EString | aProperty.values)]
+  - [aValue/]
+[/for]
+[/template]
+
+[template public print(services : Services)  post (trim())]
+	something went wrong with Rule Services
+[/template]
+
+[template public print(software : Software)  post (trim())]
+[if (software.image <> null)]image: [software.image.value/][/if]
+[if (software.parameters <> null)]
+[for (aProperty : Property | software.parameters)]
+[aProperty.print()/]
+[/for]
+[/if]
+[if (software.environment <> null)]
+[software.environment.print()/]
+[/if]
+[/template]
+
+[template public print(db : DB)  post (trim())]
+[db.printImage()/]
+[if (db.parameters <> null)]
+[for (aProperty : Property | db.parameters)]
+[aProperty.print()/]
+[/for]
+[/if]
+[if (db.credentials <> null)]
+[db.printCredentials()/]
+[/if]
+[if ((db.environment <> null) and (db.credentials = null))]
+[db.environment.print()/]
+[/if]
+[/template]
+
+[template public printImage(db : DB) post (trim())]
+[if (db.image <> null)]
+image: [db.image.value/]
+[/if]
+[if (db.image = null)]
+image: [db.type.image.value/]
+[/if]
+[/template]
+
+[template public printCredentials(aDB : DB) post (trim())]
+environment:
+[if (aDB.type.name.toLower().allowsUsername())]
+  [aDB.type.name.toLower().getUsernameKey()/]: [aDB.credentials.username/]
+[/if]  
+  [aDB.type.name.toLower().getPasswordKey()/]: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)]
+[for (aProperty : Property | aDB.environment.parameters)]
+  [aProperty.print()/]
+[/for]
+[/if]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+environment:
+[for (aProperty : Property | aEnvironment.parameters)]
+  [aProperty.print()/]
+[/for] 
+[/template]
+
+
+[template public generateAnalyticsFiles(aContainer : Container) post (trim())]
+[file ('Dockerfile', false, 'UTF-8')]
+FROM openjdk:8u212-jre-alpine
+
+ARG kafka_version=[aContainer.getKafkaVersion()/]
+ARG scala_version=2.12
+ARG glibc_version=2.29-r0
+ARG vcs_ref=unspecified
+ARG build_date=unspecified
+
+LABEL org.label-schema.name="kafka" \
+      org.label-schema.description="Apache Kafka" \
+      org.label-schema.build-date="${build_date}" \
+      org.label-schema.vcs-url="https://github.com/wurstmeister/kafka-docker" \
+      org.label-schema.vcs-ref="${vcs_ref}" \
+      org.label-schema.version="${scala_version}_${kafka_version}" \
+      org.label-schema.schema-version="1.0" \
+      maintainer="wurstmeister"
+
+ENV KAFKA_VERSION=$kafka_version \
+    SCALA_VERSION=$scala_version \
+    KAFKA_HOME=/opt/kafka \
+    GLIBC_VERSION=$glibc_version
+
+ENV PATH=${PATH}:${KAFKA_HOME}/bin
+
+COPY download-kafka.sh start-kafka.sh broker-list.sh create-topics.sh versions.sh /tmp/
+
+RUN apk add --no-cache bash curl jq docker
+RUN chmod a+x /tmp/*.sh
+RUN mv /tmp/start-kafka.sh /tmp/broker-list.sh /tmp/create-topics.sh /tmp/versions.sh /usr/bin
+RUN sync 
+RUN /tmp/download-kafka.sh
+RUN tar xfz /tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz -C /opt
+RUN rm /tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz
+RUN ln -s /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} ${KAFKA_HOME}
+RUN rm /tmp/*
+RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk
+RUN apk add --no-cache --allow-untrusted glibc-${GLIBC_VERSION}.apk
+RUN rm glibc-${GLIBC_VERSION}.apk
+
+COPY overrides /opt/overrides
+
+VOLUME ['['/]"/kafka"[']'/] 
+
+# Use "exec" form so that it runs as PID 1 (useful for graceful shutdown)
+CMD ['['/]"start-kafka.sh"[']'/] 
+[/file]
+[file ('download-kafka.sh', false, 'UTF-8')]
+#!/bin/sh -e
+
+# shellcheck disable=SC1091
+source "/usr/bin/versions.sh"
+
+FILENAME="kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
+
+url=$(curl --stderr /dev/null "https://www.apache.org/dyn/closer.cgi?path=/kafka/${KAFKA_VERSION}/${FILENAME}&as_json=1" | jq -r '"\(.preferred)\(.path_info)"')
+
+# Test to see if the suggested mirror has this version, currently pre 2.1.1 versions
+# do not appear to be actively mirrored. This may also be useful if closer.cgi is down.
+if ['[['/] ! $(curl -s -f -I "${url}") [']]'/]; then
+    echo "Mirror does not have desired version, downloading direct from Apache"
+    url="https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/${FILENAME}"
+fi
+
+echo "Downloading Kafka from $url"
+wget "${url}" -O "/tmp/${FILENAME}"
+[/file]
+[file ('start-kafka.sh', false, 'UTF-8')]
+#!/bin/bash -e
+
+# Allow specific kafka versions to perform any unique bootstrap operations
+OVERRIDE_FILE="/opt/overrides/${KAFKA_VERSION}.sh"
+if ['[['/] -x "$OVERRIDE_FILE" [']]'/]; then
+    echo "Executing override file $OVERRIDE_FILE"
+    eval "$OVERRIDE_FILE"
+fi
+
+# Store original IFS config, so we can restore it at various stages
+ORIG_IFS=$IFS
+
+if [ '[[' /] -z "$KAFKA_ZOOKEEPER_CONNECT" [']]'/]; then
+    echo "ERROR: missing mandatory config: KAFKA_ZOOKEEPER_CONNECT"
+    exit 1
+fi
+
+if ['[['/] -z "$KAFKA_PORT" [']]'/]; then
+    export KAFKA_PORT=9092
+fi
+
+create-topics.sh &
+unset KAFKA_CREATE_TOPICS
+
+if ['[['/] -z "$KAFKA_ADVERTISED_PORT" && \
+  -z "$KAFKA_LISTENERS" && \
+  -z "$KAFKA_ADVERTISED_LISTENERS" && \
+  -S /var/run/docker.sock [']]'/]; then
+    KAFKA_ADVERTISED_PORT=$(docker port "$(hostname)" $KAFKA_PORT | sed -r 's/.*:(.*)/\1/g')
+    export KAFKA_ADVERTISED_PORT
+fi
+
+if ['[['/] -z "$KAFKA_BROKER_ID" [']]'/]; then
+    if ['[['/] -n "$BROKER_ID_COMMAND" [']]'/]; then
+        KAFKA_BROKER_ID=$(eval "$BROKER_ID_COMMAND")
+        export KAFKA_BROKER_ID
+    else
+        # By default auto allocate broker ID
+        export KAFKA_BROKER_ID=-1
+    fi
+fi
+
+if ['[['/] -z "$KAFKA_LOG_DIRS" [']]'/]; then
+    export KAFKA_LOG_DIRS="/kafka/kafka-logs-$HOSTNAME"
+fi
+
+if ['[['/] -n "$KAFKA_HEAP_OPTS" [']]'/]; then
+    sed -r -i 's/(export KAFKA_HEAP_OPTS)="(.*)"/\1="'"$KAFKA_HEAP_OPTS"'"/g' "$KAFKA_HOME/bin/kafka-server-start.sh"
+    unset KAFKA_HEAP_OPTS
+fi
+
+if ['[['/] -n "$HOSTNAME_COMMAND" [']]'/]; then
+    HOSTNAME_VALUE=$(eval "$HOSTNAME_COMMAND")
+
+    # Replace any occurences of _{HOSTNAME_COMMAND} with the value
+    IFS=$'\n'
+    for VAR in $(env); do
+        if ['[['/] $VAR =~ ^KAFKA_ && "$VAR" =~ "_{HOSTNAME_COMMAND}" [']]'/]; then
+            eval "export ${VAR//_\{HOSTNAME_COMMAND\}/$HOSTNAME_VALUE}"
+        fi
+    done
+    IFS=$ORIG_IFS
+fi
+
+if ['[['/] -n "$PORT_COMMAND" [']]'/]; then
+    PORT_VALUE=$(eval "$PORT_COMMAND")
+
+    # Replace any occurences of _{PORT_COMMAND} with the value
+    IFS=$'\n'
+    for VAR in $(env); do
+        if ['[['/] $VAR =~ ^KAFKA_ && "$VAR" =~ "_{PORT_COMMAND}" [']]'/]; then
+	    eval "export ${VAR//_\{PORT_COMMAND\}/$PORT_VALUE}"
+        fi
+    done
+    IFS=$ORIG_IFS
+fi
+
+if ['[['/] -n "$RACK_COMMAND" && -z "$KAFKA_BROKER_RACK" [']]'/]; then
+    KAFKA_BROKER_RACK=$(eval "$RACK_COMMAND")
+    export KAFKA_BROKER_RACK
+fi
+
+# Try and configure minimal settings or exit with error if there isn't enough information
+if ['[['/] -z "$KAFKA_ADVERTISED_HOST_NAME$KAFKA_LISTENERS" [']]'/]; then
+    if ['[['/] -n "$KAFKA_ADVERTISED_LISTENERS" [']]'/]; then
+        echo "ERROR: Missing environment variable KAFKA_LISTENERS. Must be specified when using KAFKA_ADVERTISED_LISTENERS"
+        exit 1
+    elif ['[['/] -z "$HOSTNAME_VALUE" [']]'/]; then
+        echo "ERROR: No listener or advertised hostname configuration provided in environment."
+        echo "       Please define KAFKA_LISTENERS / (deprecated) KAFKA_ADVERTISED_HOST_NAME"
+        exit 1
+    fi
+
+    # Maintain existing behaviour
+    # If HOSTNAME_COMMAND is provided, set that to the advertised.host.name value if listeners are not defined.
+    export KAFKA_ADVERTISED_HOST_NAME="$HOSTNAME_VALUE"
+fi
+
+#Issue newline to config file in case there is not one already
+echo "" >> "$KAFKA_HOME/config/server.properties"
+
+(
+    function updateConfig() {
+        key=$1
+        value=$2
+        file=$3
+
+        # Omit $value here, in case there is sensitive information
+        echo "['['/]Configuring[']'/] '$key' in '$file'"
+
+        # If config exists in file, replace it. Otherwise, append to file.
+        if grep -E -q "^#?$key=" "$file"; then
+            sed -r -i "s@^#?$key=.*@$key=$value@g" "$file" #note that no config values may contain an '@' char
+        else
+            echo "$key=$value" >> "$file"
+        fi
+    }
+
+    # Fixes #312
+    # KAFKA_VERSION + KAFKA_HOME + grep -rohe KAFKA['['/]A-Z0-0_[']'/]* /opt/kafka/bin | sort | uniq | tr '\n' '|'
+    EXCLUSIONS="|KAFKA_VERSION|KAFKA_HOME|KAFKA_DEBUG|KAFKA_GC_LOG_OPTS|KAFKA_HEAP_OPTS|KAFKA_JMX_OPTS|KAFKA_JVM_PERFORMANCE_OPTS|KAFKA_LOG|KAFKA_OPTS|"
+
+    # Read in env as a new-line separated array. This handles the case of env variables have spaces and/or carriage returns. See #313
+    IFS=$'\n'
+    for VAR in $(env)
+    do
+        env_var=$(echo "$VAR" | cut -d= -f1)
+        if ['[['/] "$EXCLUSIONS" = *"|$env_var|"* [']]'/]; then
+            echo "Excluding $env_var from broker config"
+            continue
+        fi
+
+        if ['[['/] $env_var =~ ^KAFKA_ [']]'/]; then
+            kafka_name=$(echo "$env_var" | cut -d_ -f2- | tr '['['/]:upper:[']'/]' '['['/]:lower:[']'/]' | tr _ .)
+            updateConfig "$kafka_name" "${!env_var}" "$KAFKA_HOME/config/server.properties"
+        fi
+
+        if ['[['/] $env_var =~ ^LOG4J_ [']]'/]; then
+            log4j_name=$(echo "$env_var" | tr '['['/]:upper:[']'/]' '['['/]:lower:[']'/]' | tr _ .)
+            updateConfig "$log4j_name" "${!env_var}" "$KAFKA_HOME/config/log4j.properties"
+        fi
+    done
+)
+
+if ['[['/] -n "$CUSTOM_INIT_SCRIPT" [']]'/] ; then
+  eval "$CUSTOM_INIT_SCRIPT"
+fi
+
+exec "$KAFKA_HOME/bin/kafka-server-start.sh" "$KAFKA_HOME/config/server.properties"
+[/file]
+[file ('/broker-list.sh', false, 'UTF-8')]
+#!/bin/bash
+
+CONTAINERS=$(docker ps | grep 9092 | awk '{print $1}')
+BROKERS=$(for CONTAINER in ${CONTAINERS}; do docker port "$CONTAINER" 9092 | sed -e "s/0.0.0.0:/$HOST_IP:/g"; done)
+echo "${BROKERS/$'\n'/,}"
+[/file]
+[file ('/create-topics.sh', false, 'UTF-8')]
+#!/bin/bash
+
+if ['[['/] -z "$KAFKA_CREATE_TOPICS" [']]'/]; then
+    exit 0
+fi
+
+if ['[['/] -z "$START_TIMEOUT" [']]'/]; then
+    START_TIMEOUT=600
+fi
+
+start_timeout_exceeded=false
+count=0
+step=10
+while netstat -lnt | awk '$4 ~ /:'"$KAFKA_PORT"'$/ {exit 1}'; do
+    echo "waiting for kafka to be ready"
+    sleep $step;
+    count=$((count + step))
+    if ['['/] $count -gt $START_TIMEOUT [']'/]; then
+        start_timeout_exceeded=true
+        break
+    fi
+done
+
+if $start_timeout_exceeded; then
+    echo "Not able to auto-create topic (waited for $START_TIMEOUT sec)"
+    exit 1
+fi
+
+# introduced in 0.10. In earlier versions, this will fail because the topic already exists.
+# shellcheck disable=SC1091
+source "/usr/bin/versions.sh"
+if ['[['/] "$MAJOR_VERSION" == "0" && "$MINOR_VERSION" -gt "9" [']]'/] || ['[['/] "$MAJOR_VERSION" -gt "0" [']]'/]; then
+    KAFKA_0_10_OPTS="--if-not-exists"
+fi
+
+# Expected format:
+#   name:partitions:replicas:cleanup.policy
+IFS="${KAFKA_CREATE_TOPICS_SEPARATOR-,}"; for topicToCreate in $KAFKA_CREATE_TOPICS; do
+    echo "creating topics: $topicToCreate"
+    IFS=':' read -r -a topicConfig <<< "$topicToCreate"
+    config=
+    if ['['/] -n "${topicConfig['['/]3[']'/]}" [']'/]; then
+        config="--config=cleanup.policy=${topicConfig['['/]3[']'/]}"
+    fi
+
+    COMMAND="JMX_PORT='' ${KAFKA_HOME}/bin/kafka-topics.sh \\
+		--create \\
+		--zookeeper ${KAFKA_ZOOKEEPER_CONNECT} \\
+		--topic ${topicConfig['['/]0[']'/]} \\
+		--partitions ${topicConfig['['/]1[']'/]} \\
+		--replication-factor ${topicConfig['['/]2[']'/]} \\
+		${config} \\
+		${KAFKA_0_10_OPTS} &"
+    eval "${COMMAND}"
+done
+
+wait
+[/file]
+[file ('/versions.sh', false, 'UTF-8')]
+#!/bin/bash -e
+
+MAJOR_VERSION=$(echo "$KAFKA_VERSION" | cut -d. -f1)
+export MAJOR_VERSION
+
+MINOR_VERSION=$(echo "$KAFKA_VERSION" | cut -d. -f2)
+export MINOR_VERSION
+[/file]
+[file ('/overrides/0.9.0.1.sh', false, 'UTF-8')]
+#!/bin/bash -e
+
+# Kafka 0.9.x.x has a 'listeners' config by default. We need to remove this
+# as the user may be configuring via the host.name / advertised.host.name properties
+echo "Removing 'listeners' from server.properties pre-bootstrap"
+sed -i -e '/^listeners=/d' "$KAFKA_HOME/config/server.properties"
+[/file]
+[/template]
+=======
+[comment encoding = UTF-8 /]
+[module generateDockerComposeDeployment('http://www.typhon.org/dsls/xtext/TyphonDL', 'http://www.eclipse.org/emf/2002/Ecore')]
+
+[import de::atb::typhondl::acceleo::common::utilityGenerator/]
+[import de::atb::typhondl::acceleo::files::analyticsConfig/]
+
+[template public generateDockerComposeDeployment(aDeploymentModel : DeploymentModel) post (trim())]
+
+[for (aCluster : Cluster | aDeploymentModel.getAllClusters())]
+[if (aCluster.name.equalsIgnoreCase('analyticsCluster'))]
+[file ('analyticsDeployment.yaml', false, 'UTF-8')]
+[aCluster.createYamlContent()/]
+[/file]
+[else]
+[file ('docker-compose.yaml', false, 'UTF-8')]
+[aCluster.createYamlContent()/]
+[/file]
+[/if]
+[/for]
+[/template]
+
+[template public createYamlContent(aCluster : Cluster)]
+version: '3.7'
+
+[if (aCluster.networks <> null)]
+[for (aNetwork : Cluster_Network | aCluster.networks)]
+[aNetwork.print()/]
+[/for]
+[/if]
+services:
+[for (aContainer : Container | aCluster.applications.containers)]
+  [aContainer.name/]:
+[if (aContainer.deploys <> null)]
+    [aContainer.deploys.reference.print()/]
+[/if]
+[if (not aContainer.depends_on -> isEmpty())]
+    depends_on:
+[for (aDependency : Dependency | aContainer.depends_on)]
+      - [aDependency.reference.name/]
+[/for]
+[/if]
+[if (aContainer.networks <> null)]
+    [aContainer.networks.print()/]
+[/if]
+[if (aContainer.volumes <> null)]
+    volumes:
+[for (aVolumeProperties : Volume_Properties | aContainer.volumes.decls)]
+[if (aVolumeProperties.volumeType <> null)]
+      - type: [aVolumeProperties.volumeType/]
+[/if]
+[if (aVolumeProperties.volumeName <> null)]
+        source: [aVolumeProperties.volumeName/]
+        target: [aContainer.volumes.decls.volumePath.value/]
+[else]
+      - [aContainer.volumes.decls.volumePath.value/]
+[if (not aContainer.volumes.decls.volumePath.values -> isEmpty())]
+[for (aValue : ValueArray | aContainer.volumes.decls.volumePath)]    
+      - [aValue.values/]
+[/for]
+[/if]
+[/if]
+[if (not aVolumeProperties.specifics -> isEmpty())]
+[for (aProperty : Property | aVolumeProperties.specifics)]
+        [aProperty.print()/]
+[/for]
+[/if]
+[/for]
+[/if]
+[if (aContainer.ports <> null)]
+    [aContainer.ports.print()/]
+[/if]
+[if (aContainer.resources <> null)]
+    [aContainer.printResourcesAndReplication()/]
+[elseif (aContainer.replication <> null)]
+[if (aContainer.replication.mode = Modes::STATELESS)]
+    [aContainer.replication.printStateless()/]
+[/if]	
+[/if]    
+[if (not aContainer.properties -> isEmpty())]
+[for (aProperty : Property | aContainer.properties)]
+    [aProperty.print()/]
+[/for]
+[/if]
+[if (aContainer.replication <> null and aContainer.containsDB())]
+[aContainer.printDBReplication()/]
+[/if]
+[if (aContainer.name.equalsIgnoreCase('kafka'))]
+[file ('typhonAnalyticsConfig.properties', false, 'UTF-8')]
+[aCluster.analyticsConfig()/]
+[/file]
+[/if]
+[/for]
+[for (aApp : Application | aCluster.applications)]
+[if (aApp.volumes <> null)]
+
+volumes:
+[if (not aApp.volumes.names -> isEmpty())]
+[for (aVolumeName : EString | aApp.volumes.names)]
+  [aVolumeName/]:
+[/for]
+[/if]
+[if (not aApp.volumes.specifics -> isEmpty())]
+[for (aProperty : Property | aApp.volumes.specifics)]
+    [aProperty.print()/]
+[/for]  
+[/if]
+[/if]
+[/for]
+[/template]
+
+[template public printDBReplication(aContainer : Container)]
+[if (aContainer.deploys.reference.oclAsType(DB).type.name.toLower() = 'mongo')]
+    command: mongod --replSet [aContainer.name/]Replset
+  [aContainer.printMongoRep()/][aContainer.printMongoInitFiles()/][/if]
+[/template]
+
+[template public printMongoRep(aContainer : Container) post(trim())]
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+[aContainer.name/]-replica[i/]:
+  [aContainer.deploys.reference.oclAsType(DB).printImage()/]
+  command: mongod --replSet [aContainer.name/]Replset
+[/if][/for]
+[aContainer.name/]-rsinit:
+  build:
+    context: .
+    dockerfile: [aContainer.name/]/rsinit
+  entrypoint: ['['/]
+    'sh', 
+    '-c', 
+    'init_set.sh'
+    [']'/] 
+[/template]
+
+[template public printMongoInitFiles(aContainer : Container)]
+[file (aContainer.name + '/init_set.sh', false, 'UTF-8')]
+#!/bin/bash
+echo "sleeping for 10 seconds"
+sleep 10
+
+echo init_set.sh time now: `date +"%T" `
+mongo --host [aContainer.uri.value/] <<EOF
+  var cfg = {
+    "_id": "[aContainer.name/]Replset",
+    "version": 1,
+    "members": ['['/]
+      {
+        "_id": 0,
+        "host": "[aContainer.uri.value/]"
+      }
+[for (Sequence{1,2,3,4,5,6,7,8,9,10})]
+[if (i <= aContainer.replication.replicas)]
+      ,{
+        "_id": [i/],
+        "host": "[aContainer.name/]-replica[i/]:27017"
+      }
+[/if][/for]
+    [']'/]
+  };
+  rs.initiate(cfg);
+EOF
+[/file]
+
+[file (aContainer.name + '/rsinit', false, 'UTF-8')]
+FROM mongo
+
+ADD [aContainer.name/]/init_set.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/init_set.sh
+[/file]
+[/template]
+
+[template public print(aPorts : Ports) post (trim())]
+ports:
+  - target: [aPorts.getTargetPort().value/]
+[for (aKey_Values : Key_Values | aPorts.key_values)]
+    [if (not (aKey_Values.name = 'target'))]
+    [aKey_Values.print()/]
+    [/if]
+[/for]
+[/template]
+
+[template public print(aNetwork : Cluster_Network) post (trim())]
+networks:
+  [aNetwork.name/]: 
+[for (key_Values : Key_Values | aNetwork.key_values)]
+    [key_Values.print()/]
+[/for]
+[/template]
+
+[template public print(networks : Container_Network) post (trim())]
+networks:
+[for (reference : Cluster_Network | networks.references)]
+  - [reference.name/]
+[/for]
+[/template]
+
+[template public printStateless(aReplication : Replication) post (trim())]
+deploy:
+  [aReplication.printStatelessInsideDeploy()/]
+[/template]
+
+[template public printStatelessInsideDeploy(aReplication : Replication)]
+replicas: [aReplication.replicas/]
+[/template]
+
+[template public print(aResources : Resources) post (trim())]
+resources:
+[if(aResources.limitCPU <> null or aResources.limitMemory <> null)]
+  limits:
+    [if(aResources.limitCPU <> null)]cpus: '[aResources.limitCPU/]'[/if]
+    [if(aResources.limitMemory <> null)]memory: [aResources.limitMemory/][/if]
+[/if]
+[if(aResources.reservationCPU <> null or aResources.reservationMemory <> null)]
+  reservations:
+    [if(aResources.reservationCPU <> null)]cpus: '[aResources.reservationCPU/]'[/if]
+    [if(aResources.reservationMemory <> null)]memory: [aResources.reservationMemory/][/if]
+[/if]
+[/template]
+
+[template public printResourcesAndReplication(aContainer : Container) post (trim())]
+deploy:
+  [aContainer.resources.print()/]
+[if (aContainer.replication <> null)]
+  [aContainer.replication.printStatelessInsideDeploy()/]
+[/if]
+[/template]
+
+[template public print(aProperty : Property) post (trim()) ]
+	something went wrong with Rule Property
+[/template]
+
+[template public print(aProperty : Key_Values)  post (trim())]
+[if (not aProperty.name.equalsIgnoreCase('version'))][aProperty.name/]: [aProperty.value/][if (aProperty.values <> null)][for (aVal : String | aProperty.values)], [aVal/][/for][/if][/if]
+[/template]
+
+[template public print(aProperty : Key_KeyValueList)  post (trim())]
+[aProperty.name/]:
+[for (aVar : Property | aProperty.properties)]
+  [aVar.print()/]
+[/for][/template]
+
+[template public print(aProperty : Key_ValueArray)  post (trim())]
+[aProperty.name/]:
+[for (aValue : EString | aProperty.values)]
+  - [aValue/]
+[/for]
+[/template]
+
+[template public print(services : Services)  post (trim())]
+	something went wrong with Rule Services
+[/template]
+
+[template public print(software : Software)  post (trim())]
+[if (software.image <> null)]image: [software.image.value/][/if]
+[if (software.parameters <> null)]
+[for (aProperty : Property | software.parameters)]
+[aProperty.print()/]
+[/for]
+[/if]
+[if (software.environment <> null)]
+[software.environment.print()/]
+[/if]
+[/template]
+
+[template public print(db : DB)  post (trim())]
+[db.printImage()/]
+[if (db.parameters <> null)]
+[for (aProperty : Property | db.parameters)]
+[aProperty.print()/]
+[/for]
+[/if]
+[if (db.credentials <> null)]
+[db.printCredentials()/]
+[/if]
+[if ((db.environment <> null) and (db.credentials = null))]
+[db.environment.print()/]
+[/if]
+[/template]
+
+[template public printImage(db : DB) post (trim())]
+[if (db.image <> null)]
+image: [db.image.value/]
+[/if]
+[if (db.image = null)]
+image: [db.type.image.value/]
+[/if]
+[/template]
+
+[template public printCredentials(aDB : DB) post (trim())]
+environment:
+[if (aDB.type.name.toLower().allowsUsername())]
+  [aDB.type.name.toLower().getUsernameKey()/]: [aDB.credentials.username/]
+[/if]  
+  [aDB.type.name.toLower().getPasswordKey()/]: [aDB.type.name.toLower().getPasswordPreValue()/][aDB.credentials.password/]
+[if (aDB.environment <> null)]
+[for (aProperty : Property | aDB.environment.parameters)]
+  [aProperty.print()/]
+[/for]
+[/if]
+[/template]
+
+[template public print(aEnvironment : Environment) post (trim())]
+environment:
+[for (aProperty : Property | aEnvironment.parameters)]
+  [aProperty.print()/]
+[/for] 
+[/template]
+>>>>>>> master
