@@ -126,15 +126,21 @@ public class FileService {
         ZipEntry entry = zipIn.getNextEntry();
         // iterates over entries in the zip file
         while (entry != null) {
-            String filePath = destDirectory + File.separator + entry.getName();
-            if (!entry.isDirectory()) {
-                // if the entry is a file, extracts it
-                extractFile(zipIn, filePath);
-            } else {
-                // if the entry is a directory, make the directory
-                File dir = new File(filePath);
+            final String name = entry.getName();
+            String filePath = destDirectory + File.separator + name;
+            if (name.contains("/")) {
+                File dir = new File(destDirectory + File.separator + name.substring(0, name.indexOf('/')));
                 dir.mkdir();
             }
+//            somehow, nextEntry() does not return directories anymore
+//            if (!entry.isDirectory()) {
+//                // if the entry is a file, extracts it
+            extractFile(zipIn, filePath);
+//            } else {
+//                // if the entry is a directory, make the directory
+//                File dir = new File(filePath);
+//                dir.mkdir();
+//            }
             zipIn.closeEntry();
             entry = zipIn.getNextEntry();
         }
