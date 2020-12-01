@@ -54,9 +54,9 @@ public class AnalyticsKubernetesService {
     private static void applyPropertiesToAnalyticsFiles(String analyticsZipPath, Properties properties, File dir)
             throws IOException, ParserConfigurationException, SAXException {
 
-        FileService.applyMapToFile(properties, Paths.get(
-                analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml"),
-                flinkConfiguration());
+        Path flinkConfigPath = Paths.get(
+                analyticsZipPath + File.separator + "flink" + File.separator + "flink-configuration-configmap.yaml");
+        FileService.save(flinkConfigPath, flinkConfiguration(properties, flinkConfigPath));
 
         if (!properties.get(PropertiesService.ANALYTICS_FLINK_REST_PORT).equals("automatic")) {
             Path flinkRestServicePath = Paths
@@ -68,13 +68,13 @@ public class AnalyticsKubernetesService {
                 .get(analyticsZipPath + File.separator + "flink" + File.separator + "taskmanager-deployment.yaml");
         FileService.save(flinkTaskmanagerPath, taskmanager(properties, flinkTaskmanagerPath));
 
-        Path kafkaClusterPath = Paths
-                .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
-        FileService.save(kafkaClusterPath, cluster(properties, kafkaClusterPath));
-
         Path flinkJobmanagerPath = Paths
                 .get(analyticsZipPath + File.separator + "flink" + File.separator + "jobmanager-deployment.yaml");
         FileService.save(flinkJobmanagerPath, jobmanager(properties, flinkJobmanagerPath));
+
+        Path kafkaClusterPath = Paths
+                .get(analyticsZipPath + File.separator + "kafka" + File.separator + "typhon-cluster.yml");
+        FileService.save(kafkaClusterPath, cluster(properties, kafkaClusterPath));
     }
 
     private static List<String> jobmanager(Properties properties, Path flinkJobmanagerPath) throws IOException {
@@ -144,7 +144,7 @@ public class AnalyticsKubernetesService {
         return newListWithAddedNodePort;
     }
 
-    private static HashMap<String, String> flinkConfiguration() {
+    private static List<String> flinkConfiguration(Properties properties, Path flinkConfigPath) throws IOException {
         HashMap<String, String> flinkPropertyMap = new HashMap<>();
         flinkPropertyMap.put("jobmanager.heap.size:", PropertiesService.ANALYTICS_FLINK_JOBMANAGER_HEAP_SIZE);
         flinkPropertyMap.put("taskmanager.memory.process.size:",
@@ -157,7 +157,9 @@ public class AnalyticsKubernetesService {
         flinkPropertyMap.put(
                 "log4j.logger.org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline=",
                 PropertiesService.ANALYTICS_LOGGING_FLINK);
-        return flinkPropertyMap;
+        List<String> flinkConfiguration = Files.readAllLines(flinkConfigPath);
+        FileService.applyMapToList(properties, flinkConfiguration, flinkPropertyMap);
+        return flinkConfiguration;
     }
 
     private static int getIndex(List<String> list, String search) {

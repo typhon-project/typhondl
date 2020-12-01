@@ -49,28 +49,29 @@ public class FileService {
 
     public static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
         String separator = propertyNameInFile.substring(propertyNameInFile.length() - 1, propertyNameInFile.length());
-        String target = string.substring(string.indexOf(separator) + 1);
+        String target = string.substring(string.indexOf(propertyNameInFile));
+        final int newLineIndex = target.indexOf("\\n");
+        String valueToReplace = target.substring(target.indexOf(separator) + 1,
+                newLineIndex == -1 ? target.length() : newLineIndex);
         if (separator.equals(":")) {
-            return string.replace(target, " " + property);
+            return string.replace(valueToReplace, " " + property);
         } else if (separator.equals("=")) {
-            return string.replace(target, property);
+            return string.replace(valueToReplace, property);
         }
         return "ERROR";
     }
 
-    public static void applyMapToFile(Properties properties, Path path, HashMap<String, String> map)
+    public static void applyMapToList(Properties properties, List<String> fileContent, HashMap<String, String> map)
             throws IOException {
-        List<String> list = Files.readAllLines(path);
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < fileContent.size(); i++) {
             for (String propertyNameInFile : map.keySet()) {
-                String string = list.get(i);
+                String string = fileContent.get(i);
                 if (string.contains(propertyNameInFile)) {
-                    list.set(i, FileService.replaceOldValueWithNewValue(string, propertyNameInFile,
+                    fileContent.set(i, FileService.replaceOldValueWithNewValue(string, propertyNameInFile,
                             properties.getProperty(map.get(propertyNameInFile))));
                 }
             }
         }
-        Files.write(path, list, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public static InputStream downloadFiles(String path, String address, String component) throws IOException {
@@ -126,7 +127,13 @@ public class FileService {
         ZipEntry entry = zipIn.getNextEntry();
         // iterates over entries in the zip file
         while (entry != null) {
-            String filePath = destDirectory + File.separator + entry.getName();
+            final String name = entry.getName();
+            String filePath = destDirectory + File.separator + name;
+//          somehow, nextEntry() does not return directories anymore (only for nlae.zip)
+            if (name.contains("/")) {
+                File dir = new File(destDirectory + File.separator + name.substring(0, name.indexOf('/')));
+                dir.mkdir();
+            }
             if (!entry.isDirectory()) {
                 // if the entry is a file, extracts it
                 extractFile(zipIn, filePath);
