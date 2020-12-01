@@ -516,12 +516,12 @@ public class CreationMainPage extends MyWizardPage {
     private void validate() {
         setStatus(null);
         if ("".equals(fileText.getText().trim())) { //$NON-NLS-1$
-            setStatus(new Status(IStatus.ERROR, "NewFileWizard", "Name must not be empty")); //$NON-NLS-1$
+            setStatus(new Status(IStatus.ERROR, "CreationWizard", "Name must not be empty")); //$NON-NLS-1$
             return;
         }
         Path filePath = Paths.get(MLmodelPath).getParent().resolve(fileText.getText() + ".tdl");
         if (Files.exists(filePath)) {
-            setStatus(new Status(IStatus.WARNING, "NewFileWizard", //$NON-NLS-1$
+            setStatus(new Status(IStatus.WARNING, "CreationWizard", //$NON-NLS-1$
                     "File '" + fileText.getText() + ".tdl"
                             + "' already exists and will be overwritten if you continue."));
             return;
