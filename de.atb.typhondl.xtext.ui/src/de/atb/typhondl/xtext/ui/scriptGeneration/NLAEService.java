@@ -74,24 +74,22 @@ public class NLAEService {
     }
 
     private static void applyPropertiesToNLAEFiles(String nlaePath, Properties properties) throws IOException {
-        Path flinkConfigPath = Paths.get(nlaePath + File.separator + "conf" + File.separator + "flink-conf.yaml");
-        HashMap<String, String> flinkPropertyMap = new HashMap<>();
-        flinkPropertyMap.put("jobmanager.heap.size:", PropertiesService.NLAE_JOBMANAGER_HEAPSIZE);
-        flinkPropertyMap.put("taskmanager.heap.size:", PropertiesService.NLAE_TASKMANAGER_HEAPSIZE);
-        flinkPropertyMap.put("taskmanager.numberOfTaskSlots:", PropertiesService.NLAE_TASKMANAGER_SLOTS);
-        flinkPropertyMap.put("parallelism.default:", PropertiesService.NLAE_PARALLELISM);
-        FileService.applyMapToFile(properties, flinkConfigPath, flinkPropertyMap);
 
         Path nlaeDeploymentPath = Paths.get(nlaePath + File.separator + "nlae-compose.yml");
         List<String> deploymentYAML = Files.readAllLines(nlaeDeploymentPath);
+        HashMap<String, String> nlaeComposePropertyMap = new HashMap<>();
+        nlaeComposePropertyMap.put("jobmanager.heap.size:", PropertiesService.NLAE_JOBMANAGER_HEAPSIZE);
+        nlaeComposePropertyMap.put("taskmanager.heap.size:", PropertiesService.NLAE_TASKMANAGER_HEAPSIZE);
+        nlaeComposePropertyMap.put("taskmanager.numberOfTaskSlots:", PropertiesService.NLAE_TASKMANAGER_SLOTS);
+        nlaeComposePropertyMap.put("parallelism.default:", PropertiesService.NLAE_PARALLELISM);
         for (int i = 0; i < deploymentYAML.size(); i++) {
             String line = deploymentYAML.get(i);
             if (line.contains("8080")) {
                 deploymentYAML.set(i, line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT)));
             }
-            if (line.contains("/path/to/models")) {
+            if (line.contains("./models")) {
                 deploymentYAML.set(i,
-                        line.replace("/path/to/models", properties.getProperty(PropertiesService.NLAE_SHAREDVOLUME)));
+                        line.replace("./models", properties.getProperty(PropertiesService.NLAE_SHAREDVOLUME)));
             }
         }
         int taskmanagerIndex = getTaskmanagerIndex(deploymentYAML);
@@ -102,6 +100,7 @@ public class NLAEService {
                         line.replace("2", properties.getProperty(PropertiesService.NLAE_TASKMANAGER_REPLICAS)));
             }
         }
+        FileService.applyMapToList(properties, deploymentYAML, nlaeComposePropertyMap);
         Files.write(nlaeDeploymentPath, deploymentYAML, StandardOpenOption.TRUNCATE_EXISTING);
     }
 

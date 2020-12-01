@@ -49,28 +49,29 @@ public class FileService {
 
     public static String replaceOldValueWithNewValue(String string, String propertyNameInFile, String property) {
         String separator = propertyNameInFile.substring(propertyNameInFile.length() - 1, propertyNameInFile.length());
-        String target = string.substring(string.indexOf(separator) + 1);
+        String target = string.substring(string.indexOf(propertyNameInFile));
+        final int newLineIndex = target.indexOf("\\n");
+        String valueToReplace = target.substring(target.indexOf(separator) + 1,
+                newLineIndex == -1 ? target.length() - 1 : newLineIndex);
         if (separator.equals(":")) {
-            return string.replace(target, " " + property);
+            return string.replace(valueToReplace, " " + property);
         } else if (separator.equals("=")) {
-            return string.replace(target, property);
+            return string.replace(valueToReplace, property);
         }
         return "ERROR";
     }
 
-    public static void applyMapToFile(Properties properties, Path path, HashMap<String, String> map)
+    public static void applyMapToList(Properties properties, List<String> fileContent, HashMap<String, String> map)
             throws IOException {
-        List<String> list = Files.readAllLines(path);
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < fileContent.size(); i++) {
             for (String propertyNameInFile : map.keySet()) {
-                String string = list.get(i);
+                String string = fileContent.get(i);
                 if (string.contains(propertyNameInFile)) {
-                    list.set(i, FileService.replaceOldValueWithNewValue(string, propertyNameInFile,
+                    fileContent.set(i, FileService.replaceOldValueWithNewValue(string, propertyNameInFile,
                             properties.getProperty(map.get(propertyNameInFile))));
                 }
             }
         }
-        Files.write(path, list, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public static InputStream downloadFiles(String path, String address, String component) throws IOException {
