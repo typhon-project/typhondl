@@ -52,7 +52,7 @@ public class FileService {
         String target = string.substring(string.indexOf(propertyNameInFile));
         final int newLineIndex = target.indexOf("\\n");
         String valueToReplace = target.substring(target.indexOf(separator) + 1,
-                newLineIndex == -1 ? target.length() - 1 : newLineIndex);
+                newLineIndex == -1 ? target.length() : newLineIndex);
         if (separator.equals(":")) {
             return string.replace(valueToReplace, " " + property);
         } else if (separator.equals("=")) {
@@ -129,19 +129,19 @@ public class FileService {
         while (entry != null) {
             final String name = entry.getName();
             String filePath = destDirectory + File.separator + name;
+//          somehow, nextEntry() does not return directories anymore (only for nlae.zip)
             if (name.contains("/")) {
                 File dir = new File(destDirectory + File.separator + name.substring(0, name.indexOf('/')));
                 dir.mkdir();
             }
-//            somehow, nextEntry() does not return directories anymore
-//            if (!entry.isDirectory()) {
-//                // if the entry is a file, extracts it
-            extractFile(zipIn, filePath);
-//            } else {
-//                // if the entry is a directory, make the directory
-//                File dir = new File(filePath);
-//                dir.mkdir();
-//            }
+            if (!entry.isDirectory()) {
+                // if the entry is a file, extracts it
+                extractFile(zipIn, filePath);
+            } else {
+                // if the entry is a directory, make the directory
+                File dir = new File(filePath);
+                dir.mkdir();
+            }
             zipIn.closeEntry();
             entry = zipIn.getNextEntry();
         }
