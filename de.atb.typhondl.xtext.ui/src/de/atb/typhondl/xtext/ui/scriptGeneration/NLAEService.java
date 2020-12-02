@@ -85,7 +85,8 @@ public class NLAEService {
         for (int i = 0; i < deploymentYAML.size(); i++) {
             String line = deploymentYAML.get(i);
             if (line.contains("8080")) {
-                deploymentYAML.set(i, line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT)));
+                deploymentYAML.set(i,
+                        line.replace("8080", properties.getProperty(PropertiesService.NLAE_API_PORT) + ":8080"));
             }
             if (line.contains("./models")) {
                 deploymentYAML.set(i,
