@@ -53,6 +53,12 @@ public class FileService {
         final int newLineIndex = target.indexOf("\\n");
         String valueToReplace = target.substring(target.indexOf(separator) + 1,
                 newLineIndex == -1 ? target.length() : newLineIndex);
+        if (valueToReplace.endsWith("\"") && !valueToReplace.startsWith("\"")) {
+            valueToReplace = valueToReplace.substring(0, valueToReplace.length() - 1);
+        }
+        if (valueToReplace.endsWith("\'") && !valueToReplace.startsWith("\'")) {
+            valueToReplace = valueToReplace.substring(0, valueToReplace.length() - 1);
+        }
         if (separator.equals(":")) {
             return string.replace(valueToReplace, " " + property);
         } else if (separator.equals("=")) {
