@@ -22,9 +22,15 @@
  */
 package de.atb.typhondl.xtext
 
+import org.eclipse.xtext.scoping.IGlobalScopeProvider
+import de.atb.typhondl.xtext.scoping.MyGlobalScopeProvider
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 class TyphonDLRuntimeModule extends AbstractTyphonDLRuntimeModule {
+    
+    override Class<? extends IGlobalScopeProvider> bindIGlobalScopeProvider() {
+        return typeof(MyGlobalScopeProvider); 
+    }
 }
