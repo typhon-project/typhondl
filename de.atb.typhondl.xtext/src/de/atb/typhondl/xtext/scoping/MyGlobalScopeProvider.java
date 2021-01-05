@@ -12,7 +12,7 @@ import com.google.common.base.Predicate;
 public class MyGlobalScopeProvider extends DefaultGlobalScopeProvider {
     @Override
     public IScope getScope(Resource resource, EReference reference, Predicate<IEObjectDescription> filter) {
-        filter = new Predicate<IEObjectDescription>() {
+        Predicate<IEObjectDescription> predicate = new Predicate<IEObjectDescription>() {
             @Override
             public boolean apply(IEObjectDescription input) {
                 final URI uriResource = resource.getURI();
@@ -22,6 +22,11 @@ public class MyGlobalScopeProvider extends DefaultGlobalScopeProvider {
                 return !uriReference.equals(uriResource) && folderResource.equals(folderReference);
             }
         };
+        if (filter != null) {
+            filter.and(predicate);
+        } else {
+            filter = predicate;
+        }
         return super.getScope(resource, reference, filter);
     }
 }
