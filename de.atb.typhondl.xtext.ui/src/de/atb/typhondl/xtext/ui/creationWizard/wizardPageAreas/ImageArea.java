@@ -61,7 +61,7 @@ public class ImageArea extends Area {
             imageText.setText(imageTextValue);
             imageText.setLayoutData(gridDataFields);
             imageText.addModifyListener(e -> {
-                if (imageText.getText().equalsIgnoreCase(db.getType().getImage().getValue())) {
+                if (imageText.getText().equalsIgnoreCase(getImageValue())) {
                     db.setImage(null);
                 } else {
                     IMAGE image = TyphonDLFactory.eINSTANCE.createIMAGE();

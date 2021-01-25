@@ -89,6 +89,10 @@ public class ClusterTypeDialog extends StatusDialog {
             ITechnology chosenTechnology = TechnologyFactory
                     .createTechnology(SupportedTechnologies.values()[typeCombo.getSelectionIndex()]);
             newClusterType.setName(chosenTechnology.getType().name());
+            if (properties.getProperty(PropertiesService.POLYSTORE_USEEVOLUTION).equalsIgnoreCase("true")
+                    && !chosenTechnology.canDeployEvolution()) {
+                properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
+            }
             for (Text text : portList) {
                 if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
                     text.setText(ContainerService.createRandomPort(chosenTechnology));

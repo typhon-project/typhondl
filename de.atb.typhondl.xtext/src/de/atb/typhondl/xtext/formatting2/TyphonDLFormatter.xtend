@@ -108,7 +108,10 @@ class TyphonDLFormatter extends AbstractFormatter2 {
             environment.regionFor.keyword('}').prepend[newLine].append[newLine],
             [indent]
         )
-        environment.parameters.format
+        for (property : environment.parameters) {
+            property.format
+            property.append[newLine]
+        }
     }	
 	
 	def dispatch void format(Credentials credentials, extension IFormattableDocument document) {

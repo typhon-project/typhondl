@@ -57,6 +57,7 @@ import de.atb.typhondl.xtext.typhonDL.DB;
 import de.atb.typhondl.xtext.typhonDL.DeploymentModel;
 import de.atb.typhondl.xtext.typhonDL.Environment;
 import de.atb.typhondl.xtext.typhonDL.HelmList;
+import de.atb.typhondl.xtext.typhonDL.IMAGE;
 import de.atb.typhondl.xtext.typhonDL.Property;
 import de.atb.typhondl.xtext.typhonDL.TyphonDLFactory;
 import de.atb.typhondl.xtext.ui.activator.Activator;
@@ -478,6 +479,10 @@ public class CreationDBMSPage extends MyWizardPage {
         if (templateDB.getUri() != null) {
             de.atb.typhondl.xtext.typhonDL.URI uri = EcoreUtil.copy(templateDB.getUri());
             db.setUri(uri);
+        }
+        if (templateDB.getImage() != null) {
+            IMAGE image = EcoreUtil.copy(templateDB.getImage());
+            db.setImage(image);
         }
         return db;
     }

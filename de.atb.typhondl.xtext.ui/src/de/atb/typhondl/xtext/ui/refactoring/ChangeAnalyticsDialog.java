@@ -27,8 +27,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -104,6 +107,23 @@ public class ChangeAnalyticsDialog extends StatusDialog {
                 });
             }
             validatePorts();
+        } else if (chosenTechnology.canDeployEvolution() && analyticsContained) {
+            Group evolution = new Group(main, SWT.READ_ONLY);
+            evolution.setLayout(new GridLayout(1, false));
+            GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+            layoutData.horizontalSpan = 2;
+            evolution.setLayoutData(layoutData);
+            evolution.setText("Evolution");
+            Button useEvolutionCheck = new Button(evolution, SWT.CHECK);
+            useEvolutionCheck.setText("Use Typhon Continuous Evolution");
+            useEvolutionCheck.setSelection(false);
+            useEvolutionCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION,
+                            String.valueOf(useEvolutionCheck.getSelection()));
+                }
+            });
         }
         return main;
     }
