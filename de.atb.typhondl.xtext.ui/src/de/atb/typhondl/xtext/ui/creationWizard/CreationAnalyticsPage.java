@@ -135,6 +135,7 @@ public class CreationAnalyticsPage extends MyWizardPage {
             for (InputField inputField : evEditor.getInputFields()) {
                 new Label(evolution, SWT.NONE).setText(inputField.label);
                 Text text = new Text(evolution, SWT.BORDER);
+                text.setText(properties.getProperty(inputField.propertyName));
                 if (!ContainerService.isPortValidRange(text.getText(), chosenTechnology)) {
                     text.setText(ContainerService.createRandomPort(chosenTechnology));
                     properties.setProperty(inputField.propertyName, text.getText());
