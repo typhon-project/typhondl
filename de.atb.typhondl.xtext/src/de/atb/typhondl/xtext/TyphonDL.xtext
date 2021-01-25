@@ -224,7 +224,7 @@ ValueArray:
 	value=Value (',' values+=Value)* 
 ;
 Value:
-	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}')+;
+	(STRING | ID | INT | '-' | '.' | '=' | '/' | ':' | '//' | '_' | '{}' | '*')+;
 
 Name:
 	(STRING | ID | INT | '-')+;
