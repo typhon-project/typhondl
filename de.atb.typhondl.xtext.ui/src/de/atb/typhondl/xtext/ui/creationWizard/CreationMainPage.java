@@ -99,6 +99,8 @@ public class CreationMainPage extends MyWizardPage {
 
     private Text analyticsURIText;
 
+    private Button useEvolutionCheck;
+
     private static final int pageWidth = 607;
 
     /**
@@ -319,11 +321,18 @@ public class CreationMainPage extends MyWizardPage {
                 parent.layout(true);
                 parent.setSize(parent.computeSize(pageWidth, SWT.DEFAULT));
                 ((ScrolledComposite) parent.getParent()).setMinSize(parent.computeSize(pageWidth, SWT.DEFAULT));
-
+                uncheckEvolutionIfNotSupported();
                 setKafkaProperties();
                 setResourceProperties();
             }
         });
+    }
+
+    protected void uncheckEvolutionIfNotSupported() {
+        if (!analyticsContained || !chosenTechnology.canDeployEvolution()) {
+            useEvolutionCheck.setSelection(false);
+            properties.setProperty(PropertiesService.POLYSTORE_USEEVOLUTION, "false");
+        }
     }
 
     protected void setResourceProperties() {
@@ -377,7 +386,7 @@ public class CreationMainPage extends MyWizardPage {
         useExistingCheck.setLayoutData(gridData);
         useExistingCheck.setToolTipText("Check if you already have the Analytics component running somewhere");
 
-        Button useEvolutionCheck = new Button(hidden, SWT.CHECK);
+        useEvolutionCheck = new Button(hidden, SWT.CHECK);
         useEvolutionCheck.setText("Use Typhon Continuous Evolution");
         useEvolutionCheck.setSelection(false);
         useEvolutionCheck.setLayoutData(gridData);
